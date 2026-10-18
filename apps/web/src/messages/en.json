@@ -133,6 +133,14 @@
     "IDEMPOTENCY_KEY_REQUIRED": "Technical error: incomplete request.",
     "IDEMPOTENCY_KEY_REUSED": "This operation was already sent with different data.",
     "IDEMPOTENCY_REQUEST_IN_PROGRESS": "Operation already in progress. Please wait.",
-    "NETWORK": "Cannot reach the server. Check your connection."
+    "NETWORK": "Cannot reach the server. Check your connection.",
+    "PRODUCT_NOT_FOUND": "Product not found.",
+    "PRODUCT_MODIFIED": "Someone else changed this product. Reload the page and make your changes again.",
+    "REFERENCE_ALREADY_USED": "This reference is already used by another product.",
+    "BARCODE_ALREADY_USED": "This barcode is already used by another product.",
+    "INVALID_PRODUCT_UNITS": "The product units are not valid.",
+    "CATEGORY_NAME_TAKEN": "A category already has this name.",
+    "CATEGORY_TOO_DEEP": "A subcategory cannot have its own subcategory.",
+    "CATEGORY_NOT_EMPTY": "This category still has products or subcategories."
   }
 }

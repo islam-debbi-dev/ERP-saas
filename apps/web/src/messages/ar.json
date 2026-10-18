@@ -133,6 +133,14 @@
     "IDEMPOTENCY_KEY_REQUIRED": "خطأ تقني: طلب غير مكتمل.",
     "IDEMPOTENCY_KEY_REUSED": "أُرسلت هذه العملية سابقًا ببيانات مختلفة.",
     "IDEMPOTENCY_REQUEST_IN_PROGRESS": "العملية قيد التنفيذ. يرجى الانتظار.",
-    "NETWORK": "تعذّر الاتصال بالخادم. تحقق من الشبكة."
+    "NETWORK": "تعذّر الاتصال بالخادم. تحقق من الشبكة.",
+    "PRODUCT_NOT_FOUND": "المنتج غير موجود.",
+    "PRODUCT_MODIFIED": "عدّل شخص آخر هذا المنتج. أعد تحميل الصفحة ثم أعد تغييراتك.",
+    "REFERENCE_ALREADY_USED": "هذا المرجع مستعمل لمنتج آخر.",
+    "BARCODE_ALREADY_USED": "هذا الرمز الشريطي مستعمل لمنتج آخر.",
+    "INVALID_PRODUCT_UNITS": "وحدات المنتج غير صالحة.",
+    "CATEGORY_NAME_TAKEN": "توجد فئة بهذا الاسم.",
+    "CATEGORY_TOO_DEEP": "لا يمكن إضافة فئة فرعية داخل فئة فرعية.",
+    "CATEGORY_NOT_EMPTY": "تحتوي هذه الفئة على منتجات أو فئات فرعية."
   }
 }
