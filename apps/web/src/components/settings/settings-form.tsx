@@ -213,6 +213,8 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
       api.request<TenantSettingsResponse>('/tenant/settings', { method: 'PATCH', body: values }),
     onSuccess: (saved) => {
       queryClient.setQueryData(SETTINGS_KEY, saved);
+      // The number of price levels may have changed.
+      void queryClient.invalidateQueries({ queryKey: ['price-levels'] });
       toast.success(t('common.saved'));
     },
     onError: (err) => toast.error(errorMessage(err)),
