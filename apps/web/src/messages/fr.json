@@ -166,7 +166,11 @@
     "CLIENT_REQUIRED_FOR_CREDIT": "Choisissez un client pour vendre à crédit, ou encaissez la totalité.",
     "PRICE_OVERRIDE_FORBIDDEN": "Seul un gérant peut changer le prix ou accorder une remise.",
     "PRICE_MISSING": "Ce produit n'a pas de prix pour ce niveau. Demandez à un gérant de le saisir.",
-    "RETURN_EXCEEDS_SOLD": "La quantité retournée dépasse la quantité vendue restante."
+    "RETURN_EXCEEDS_SOLD": "La quantité retournée dépasse la quantité vendue restante.",
+    "PAYMENT_NOT_VALID": "Ce versement est déjà annulé ou impayé.",
+    "PAYMENT_NOT_CHEQUE": "Seul un chèque peut être déclaré impayé.",
+    "PAYMENT_LINKED_TO_SALE": "Ce versement a été encaissé avec une vente. Annulez la vente pour l'annuler.",
+    "ALLOCATION_INVALID": "La répartition sur les documents n'est pas valide (document d'un autre client, ou montant supérieur au reste à payer)."
   },
   "units": {
     "PIECE": "Pièce",

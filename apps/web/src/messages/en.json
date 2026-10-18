@@ -166,7 +166,11 @@
     "CLIENT_REQUIRED_FOR_CREDIT": "Pick a client to sell on credit, or take the full amount.",
     "PRICE_OVERRIDE_FORBIDDEN": "Only a manager can change the price or give a discount.",
     "PRICE_MISSING": "This product has no price at this level. Ask a manager to set it.",
-    "RETURN_EXCEEDS_SOLD": "The returned quantity is more than what is left of the sale."
+    "RETURN_EXCEEDS_SOLD": "The returned quantity is more than what is left of the sale.",
+    "PAYMENT_NOT_VALID": "This payment is already cancelled or bounced.",
+    "PAYMENT_NOT_CHEQUE": "Only a cheque can be marked as bounced.",
+    "PAYMENT_LINKED_TO_SALE": "This payment was taken with a sale. Cancel the sale to cancel it.",
+    "ALLOCATION_INVALID": "The allocation to documents is not valid (another client's document, or more than what is left to pay)."
   },
   "units": {
     "PIECE": "Piece",
