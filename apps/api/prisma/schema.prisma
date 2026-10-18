@@ -110,19 +110,23 @@ model User {
 
 /// One logged-in device. The refresh token is `<sessionId>.<secret>`; only sha256(secret) is stored.
 model Session {
-  id               String    @id @default(uuid()) @db.Uuid
-  tenantId         String    @db.Uuid
-  userId           String    @db.Uuid
-  refreshTokenHash String    @db.Char(64)
-  deviceName       String?   @db.VarChar(100)
-  userAgent        String?   @db.VarChar(255)
-  ip               String?   @db.VarChar(45)
-  createdAt        DateTime  @default(now()) @db.Timestamptz(3)
-  lastUsedAt       DateTime  @default(now()) @db.Timestamptz(3)
-  expiresAt        DateTime  @db.Timestamptz(3)
-  revokedAt        DateTime? @db.Timestamptz(3)
+  id                       String    @id @default(uuid()) @db.Uuid
+  tenantId                 String    @db.Uuid
+  userId                   String    @db.Uuid
+  refreshTokenHash         String    @db.Char(64)
+  /// The token replaced by the last rotation, accepted once more during a short grace
+  /// window (a reload that lost the response must not log the user out).
+  previousRefreshTokenHash String?   @db.Char(64)
+  rotatedAt                DateTime? @db.Timestamptz(3)
+  deviceName               String?   @db.VarChar(100)
+  userAgent                String?   @db.VarChar(255)
+  ip                       String?   @db.VarChar(45)
+  createdAt                DateTime  @default(now()) @db.Timestamptz(3)
+  lastUsedAt               DateTime  @default(now()) @db.Timestamptz(3)
+  expiresAt                DateTime  @db.Timestamptz(3)
+  revokedAt                DateTime? @db.Timestamptz(3)
   /// LOGOUT | REVOKED | REUSE_DETECTED
-  revokedReason    String?   @db.VarChar(30)
+  revokedReason            String?   @db.VarChar(30)
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
   user   User   @relation(fields: [userId], references: [id])

@@ -15,6 +15,11 @@ export class TokenService {
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
+  /** How long the previous refresh token stays usable after a rotation. */
+  get reuseGraceSeconds(): number {
+    return this.config.REFRESH_REUSE_GRACE_SECONDS;
+  }
+
   get accessTtlSeconds(): number {
     return this.config.ACCESS_TOKEN_TTL_SECONDS;
   }

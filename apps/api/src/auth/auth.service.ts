@@ -138,14 +138,38 @@ export class AuthService {
 
       const presentedHash = TokenService.hash(parsed.secret);
       const next = this.tokens.newRefreshSecret();
-      // Compare-and-swap: only succeeds if the presented token is still the current one,
-      // so two concurrent refreshes with the same token can't both win.
-      const swapped = TokenService.sameHash(presentedHash, session.refreshTokenHash)
-        ? await this.prisma.db.session.updateMany({
-            where: { id: session.id, refreshTokenHash: presentedHash, revokedAt: null },
-            data: { refreshTokenHash: next.hash, lastUsedAt: new Date() },
-          })
-        : { count: 0 };
+      const now = new Date();
+
+      // Normal case. Compare-and-swap on the current hash, so two concurrent
+      // refreshes with the same token cannot both rotate it.
+      let swapped = { count: 0 };
+      if (TokenService.sameHash(presentedHash, session.refreshTokenHash)) {
+        swapped = await this.prisma.db.session.updateMany({
+          where: { id: session.id, refreshTokenHash: presentedHash, revokedAt: null },
+          data: {
+            refreshTokenHash: next.hash,
+            previousRefreshTokenHash: presentedHash,
+            rotatedAt: now,
+            lastUsedAt: now,
+          },
+        });
+      }
+
+      // Grace: the token replaced moments ago (a reload or a second tab whose
+      // response was lost) is accepted once more. The window counts from the
+      // original rotation, so repeating the old token does not extend it.
+      if (swapped.count === 0) {
+        const graceStart = new Date(now.getTime() - this.tokens.reuseGraceSeconds * 1000);
+        swapped = await this.prisma.db.session.updateMany({
+          where: {
+            id: session.id,
+            previousRefreshTokenHash: presentedHash,
+            rotatedAt: { gte: graceStart },
+            revokedAt: null,
+          },
+          data: { refreshTokenHash: next.hash, lastUsedAt: now },
+        });
+      }
 
       if (swapped.count === 0) {
         await this.revokeForReuse(session.id, session.tenantId, session.userId);
