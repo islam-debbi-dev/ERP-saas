@@ -8,3 +8,4 @@ apps/api/prisma/migrations
 graphify-out
 docs
 *.md
+apps/api/src/generated

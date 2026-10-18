@@ -57,5 +57,6 @@ export type TenantSettingsResponse = z.output<typeof tenantSettingsSchema> & {
   updatedAt: string;
 };
 
-export const updateTenantSettingsSchema = tenantSettingsSchema.partial();
+// strict(): unknown keys (e.g. a tenantId in the body) are rejected, not silently dropped.
+export const updateTenantSettingsSchema = tenantSettingsSchema.partial().strict();
 export type UpdateTenantSettingsInput = z.infer<typeof updateTenantSettingsSchema>;

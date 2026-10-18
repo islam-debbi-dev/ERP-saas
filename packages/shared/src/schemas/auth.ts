@@ -21,10 +21,15 @@ export const loginSchema = z.object({
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 
-/** Native clients send the refresh token in the body; the web uses the httpOnly cookie. */
-export const refreshSchema = z.object({
-  refreshToken: z.string().min(1).max(512).optional(),
-});
+/**
+ * Native clients send the refresh token in the body; the web uses the httpOnly cookie
+ * and may send no body at all.
+ */
+export const refreshSchema = z
+  .object({
+    refreshToken: z.string().min(1).max(512).optional(),
+  })
+  .optional();
 export type RefreshInput = z.infer<typeof refreshSchema>;
 
 export interface AuthUser {
