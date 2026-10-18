@@ -20,7 +20,7 @@ export function AuthCard({
           <BrandMark className="size-10 rounded-xl" />
           <div>
             <p className="text-lg font-bold leading-none tracking-tight">{t('name')}</p>
-            <p className="text-xs text-muted-foreground">{title}</p>
+            <h1 className="text-xs font-normal text-muted-foreground">{title}</h1>
           </div>
         </div>
         <CardDescription>{description}</CardDescription>

@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { AuthResponse, AuthUser, LoginInput, RegisterInput } from '@erp/shared';
 import { api, ApiError } from './api-client';
+import { sessionHint } from './session-hint';
 
 type AuthState =
   | { status: 'loading'; user: null }
@@ -29,12 +30,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const accept = useCallback((auth: AuthResponse) => {
     api.setAccessToken(auth.accessToken);
+    sessionHint.set(true);
     setState({ status: 'authenticated', user: auth.user });
   }, []);
 
   // On load, the httpOnly refresh cookie (if any) restores the session.
   useEffect(() => {
     let cancelled = false;
+    if (!sessionHint.get()) {
+      // Logged out on this browser: no session to restore.
+      queueMicrotask(() => setState({ status: 'anonymous', user: null }));
+      return;
+    }
     api
       .refresh()
       .then((auth) => {
@@ -75,6 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (!(err instanceof ApiError)) throw err;
         }
         api.setAccessToken(null);
+        sessionHint.set(false);
         queryClient.clear();
         setState({ status: 'anonymous', user: null });
       },

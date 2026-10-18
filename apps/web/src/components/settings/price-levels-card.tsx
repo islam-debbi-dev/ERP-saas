@@ -60,7 +60,7 @@ function LevelRow({ level, canEdit }: { level: PriceLevelDto; canEdit: boolean }
           type="submit"
           variant="outline"
           size="icon"
-          aria-label={tc('save')}
+          aria-label={`${tc('save')} — ${t('name', { position: level.position })}`}
           disabled={rename.isPending || !name.trim() || name.trim() === level.name}
         >
           {rename.isPending ? (
@@ -86,7 +86,9 @@ export function PriceLevelsCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('title')}</CardTitle>
+        <CardTitle role="heading" aria-level={2}>
+          {t('title')}
+        </CardTitle>
         <CardDescription>{t('help')}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-2">

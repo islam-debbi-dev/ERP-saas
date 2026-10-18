@@ -105,19 +105,9 @@ export function DataTable<TData>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() ? 'selected' : undefined}
-                  tabIndex={onRowClick ? 0 : undefined}
+                  // Mouse convenience only: put a real link in one cell for keyboard users.
                   onClick={onRowClick ? () => onRowClick(row.original) : undefined}
-                  onKeyDown={
-                    onRowClick
-                      ? (event) => {
-                          if (event.key === 'Enter') onRowClick(row.original);
-                        }
-                      : undefined
-                  }
-                  className={cn(
-                    onRowClick &&
-                      'cursor-pointer focus-visible:bg-muted/60 focus-visible:outline-none',
-                  )}
+                  className={cn(onRowClick && 'cursor-pointer')}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

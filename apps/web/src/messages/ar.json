@@ -12,7 +12,8 @@
     "retry": "إعادة المحاولة",
     "close": "إغلاق",
     "comingSoon": "هذه الوحدة ستتوفر في إصدار قادم.",
-    "comingSoonTitle": "قريبًا"
+    "comingSoonTitle": "قريبًا",
+    "notifications": "الإشعارات"
   },
   "nav": {
     "groupMain": "النشاط",
@@ -32,7 +33,8 @@
     "themeLight": "فاتح",
     "themeDark": "داكن",
     "themeSystem": "حسب النظام",
-    "language": "اللغة"
+    "language": "اللغة",
+    "mainNavigation": "القائمة الرئيسية"
   },
   "roles": {
     "OWNER": "المالك",

@@ -8,7 +8,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <LanguageSwitcher variant="ghost" showLabel />
         <ThemeToggle />
       </div>
-      <div className="flex w-full max-w-md flex-col gap-6">{children}</div>
+      <main className="flex w-full max-w-md flex-col gap-6">{children}</main>
     </div>
   );
 }

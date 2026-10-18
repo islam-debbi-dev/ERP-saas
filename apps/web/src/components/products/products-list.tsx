@@ -66,7 +66,16 @@ export function ProductsList() {
       {
         id: 'designation',
         header: t('colDesignation'),
-        cell: ({ row }) => row.original.designation,
+        // A real link: keyboard and screen-reader users open the product without the row click.
+        cell: ({ row }) => (
+          <Link
+            href={`/produits/${row.original.id}`}
+            className="font-medium underline-offset-4 hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {row.original.designation}
+          </Link>
+        ),
       },
       {
         id: 'category',

@@ -127,7 +127,9 @@ function Section({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle role="heading" aria-level={2}>
+          {title}
+        </CardTitle>
         {description ? <CardDescription>{description}</CardDescription> : null}
       </CardHeader>
       <CardContent className={className}>{children}</CardContent>
@@ -261,7 +263,11 @@ export function ProductForm({
   };
 
   return (
-    <form onSubmit={(e) => void onSubmit(e)} noValidate className="grid gap-6">
+    <form
+      onSubmit={(e) => void onSubmit(e)}
+      noValidate
+      className="grid grid-cols-[minmax(0,1fr)] gap-6"
+    >
       {product?.archivedAt ? (
         <Alert>
           <AlertDescription>{t('archivedBanner')}</AlertDescription>
@@ -279,7 +285,7 @@ export function ProductForm({
         </Alert>
       ) : null}
 
-      <fieldset disabled={busy} className="grid min-w-0 gap-6">
+      <fieldset disabled={busy} className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6">
         <Section
           title={t('generalSection')}
           description={t('generalHelp')}

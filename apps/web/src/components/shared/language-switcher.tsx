@@ -53,12 +53,8 @@ export function LanguageSwitcher({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant={variant}
-          size="sm"
-          className={cn('gap-2', className)}
-          aria-label={t('language')}
-        >
+        <Button variant={variant} size="sm" className={cn('gap-2', className)}>
+          <span className="sr-only">{t('language')}</span>
           {pending ? (
             <Loader2 className="size-4 animate-spin" aria-hidden />
           ) : (

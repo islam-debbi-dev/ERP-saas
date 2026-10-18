@@ -12,7 +12,8 @@
     "retry": "Try again",
     "close": "Close",
     "comingSoon": "This module is coming in a later version.",
-    "comingSoonTitle": "Coming soon"
+    "comingSoonTitle": "Coming soon",
+    "notifications": "Notifications"
   },
   "nav": {
     "groupMain": "Activity",
@@ -32,7 +33,8 @@
     "themeLight": "Light",
     "themeDark": "Dark",
     "themeSystem": "System",
-    "language": "Language"
+    "language": "Language",
+    "mainNavigation": "Main menu"
   },
   "roles": {
     "OWNER": "Owner",
