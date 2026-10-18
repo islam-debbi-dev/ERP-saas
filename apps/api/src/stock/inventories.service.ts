@@ -119,7 +119,11 @@ export class InventoriesService {
   async setLines(id: string, input: InventoryLinesInput): Promise<InventoryDto> {
     await this.prisma.db.$transaction(async (tx) => {
       await this.lockOpen(tx, id);
-      const toSet = input.lines.filter((l): l is typeof l & { qty: string } => l.qty !== null);
+      const toSet = input.lines.flatMap((l) =>
+        l.qty !== null && l.unitId
+          ? [{ productId: l.productId, unitId: l.unitId, qty: l.qty }]
+          : [],
+      );
       const toRemove = input.lines.filter((l) => l.qty === null).map((l) => l.productId);
       const converted = await toBaseLines(tx, toSet);
       const tenantId = tenantContext.requireTenantId();

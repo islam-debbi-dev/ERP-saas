@@ -40,6 +40,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Switch } from '@/components/ui/switch';
+import { ProductCost } from './product-cost';
 import { api, ApiError } from '@/lib/api-client';
 import { catalogKeys, flattenCategories, useCategories, useUnitLabel } from '@/lib/catalog';
 import { useErrorMessage } from '@/lib/use-error-message';
@@ -576,7 +577,7 @@ export function ProductForm({
         </Section>
 
         <Section title={t('costSection')}>
-          <p className="text-sm text-muted-foreground">{t('costPending')}</p>
+          <ProductCost productId={product?.id ?? null} />
         </Section>
       </fieldset>
 

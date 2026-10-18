@@ -73,12 +73,18 @@ export type CreateInventoryInput = z.infer<typeof createInventorySchema>;
 export const inventoryLinesSchema = z.object({
   lines: z
     .array(
-      z.object({
-        productId: id,
-        unitId: id,
-        /** Counted quantity in `unitId`; null removes the line. */
-        qty: quantityString({ positive: false }).transform(normalizeDecimal).nullable(),
-      }),
+      z
+        .object({
+          productId: id,
+          /** Required with a quantity; not needed to remove a line. */
+          unitId: id.optional(),
+          /** Counted quantity in `unitId`; null removes the line. */
+          qty: quantityString({ positive: false }).transform(normalizeDecimal).nullable(),
+        })
+        .refine((l) => l.qty === null || l.unitId !== undefined, {
+          message: 'unit_required',
+          path: ['unitId'],
+        }),
     )
     .min(1)
     .max(500)
