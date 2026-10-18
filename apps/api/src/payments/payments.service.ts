@@ -1,0 +1,600 @@
+import { Injectable } from '@nestjs/common';
+import {
+  type BouncePaymentInput,
+  type CashSummaryDto,
+  ClientLedgerType,
+  type CreatePaymentInput,
+  DocType,
+  ErrorCode,
+  money,
+  type Money,
+  type PaymentDto,
+  type PaymentListQuery,
+  type PaymentMode,
+  type PaymentPage,
+  PaymentStatus,
+  Role,
+  toMoneyString,
+  type UnpaidDocumentDto,
+} from '@erp/shared';
+import { AuditService } from '../audit/audit.service';
+import type { CurrentUserInfo } from '../auth/auth.types';
+import { ClientAccountService } from '../clients/client-account.service';
+import { AppException } from '../common/app-exception';
+import { tenantContext } from '../common/tenant-context';
+import { DocumentNumberingService } from '../documents/document-numbering.service';
+import { Prisma } from '../generated/prisma/client';
+import { PrismaService, type Tx } from '../prisma/prisma.service';
+
+const paymentInclude = {
+  client: { select: { id: true, code: true, name: true } },
+  sale: { select: { id: true, number: true } },
+  allocations: {
+    orderBy: { createdAt: 'asc' },
+    include: { sale: { select: { number: true, type: true } } },
+  },
+} satisfies Prisma.PaymentInclude;
+type PaymentWithRelations = Prisma.PaymentGetPayload<{ include: typeof paymentInclude }>;
+
+const MANAGERS = new Set<string>([Role.OWNER, Role.MANAGER]);
+
+/** Algiers has no DST: its midnight is 23:00 UTC the day before. */
+const algiersMidnight = (day: string): Date => new Date(`${day}T00:00:00+01:00`);
+const nextDay = (day: string): string => {
+  const d = new Date(`${day}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+};
+export const algiersDay = (d: Date): string =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Algiers' }).format(d);
+
+function toDto(
+  p: PaymentWithRelations,
+  users: Map<string, { id: string; fullName: string }>,
+): PaymentDto {
+  return {
+    id: p.id,
+    number: p.number,
+    client: p.client,
+    sale: p.sale,
+    amount: toMoneyString(p.amount.toString()),
+    mode: p.mode,
+    status: p.status,
+    reference: p.reference,
+    bank: p.bank,
+    dueDate: p.dueDate?.toISOString().slice(0, 10) ?? null,
+    note: p.note,
+    receivedBy: p.receivedBy ? (users.get(p.receivedBy) ?? null) : null,
+    receivedAt: p.receivedAt.toISOString(),
+    cancelReason: p.cancelReason,
+    cancelledAt: p.cancelledAt?.toISOString() ?? null,
+    bounceReason: p.bounceReason,
+    bouncedAt: p.bouncedAt?.toISOString() ?? null,
+    allocations: p.allocations.map((a) => ({
+      saleId: a.saleId,
+      saleNumber: a.sale.number,
+      saleType: a.sale.type,
+      amount: toMoneyString(a.amount.toString()),
+    })),
+    version: p.version,
+  };
+}
+
+/**
+ * Versements: the only writer of payments and payment_allocations. The money side
+ * goes through ClientAccountService. Lock order everywhere: payment rows, then the
+ * client balance (sales take sale and stock rows before both).
+ */
+@Injectable()
+export class PaymentsService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly account: ClientAccountService,
+    private readonly numbering: DocumentNumberingService,
+    private readonly audit: AuditService,
+  ) {}
+
+  // ---------------------------------------------------------------- used by sales
+
+  /**
+   * The part paid at the moment of sale. The sale posts its own ledger entry (in
+   * the same transaction); this records the money and allocates it to the sale.
+   */
+  async recordForSaleInTx(
+    tx: Tx,
+    input: {
+      clientId: string | null;
+      saleId: string;
+      amount: string;
+      mode: PaymentMode;
+      receivedBy: string;
+    },
+  ): Promise<void> {
+    const tenantId = tenantContext.requireTenantId();
+    const payment = await tx.payment.create({
+      data: {
+        tenantId,
+        number: await this.numbering.next(tx, tenantId, DocType.VER),
+        clientId: input.clientId,
+        saleId: input.saleId,
+        amount: input.amount,
+        mode: input.mode,
+        receivedBy: input.receivedBy,
+      },
+    });
+    await tx.paymentAllocation.create({
+      data: { tenantId, paymentId: payment.id, saleId: input.saleId, amount: input.amount },
+    });
+  }
+
+  /**
+   * Cancels the sale's payments that still count (a bounced cheque was already
+   * reversed) and returns their total, for the sale to reverse exactly that.
+   */
+  async cancelForSaleInTx(
+    tx: Tx,
+    saleId: string,
+    user: CurrentUserInfo,
+    reason: string,
+  ): Promise<Money> {
+    const rows = await tx.$queryRaw<{ id: string; amount: Prisma.Decimal }[]>`
+      SELECT id, amount FROM payments
+      WHERE "tenantId" = ${tenantContext.requireTenantId()}::uuid
+        AND "saleId" = ${saleId}::uuid AND status = 'VALID'
+      ORDER BY id
+      FOR UPDATE`;
+    if (rows.length === 0) return money(0);
+    await tx.payment.updateMany({
+      where: { id: { in: rows.map((r) => r.id) } },
+      data: {
+        status: PaymentStatus.CANCELLED,
+        cancelReason: reason,
+        cancelledBy: user.id,
+        cancelledAt: new Date(),
+        version: { increment: 1 },
+      },
+    });
+    return rows.reduce((s, r) => s.plus(r.amount.toString()), money(0));
+  }
+
+  // ---------------------------------------------------------------- versements
+
+  async create(input: CreatePaymentInput, user: CurrentUserInfo): Promise<PaymentDto> {
+    const id = await this.prisma.db.$transaction(async (tx) => {
+      const tenantId = tenantContext.requireTenantId();
+      const client = await tx.client.findFirst({ where: { id: input.clientId, deletedAt: null } });
+      if (!client) {
+        throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown client', {
+          field: 'clientId',
+        });
+      }
+      const number = await this.numbering.next(tx, tenantId, DocType.VER);
+      const payment = await tx.payment.create({
+        data: {
+          tenantId,
+          number,
+          clientId: client.id,
+          amount: input.amount,
+          mode: input.mode,
+          reference: input.reference,
+          bank: input.bank,
+          dueDate: input.dueDate ? new Date(`${input.dueDate}T00:00:00.000Z`) : null,
+          note: input.note,
+          receivedBy: user.id,
+        },
+      });
+      // Posting first locks the client balance: concurrent versements of the same
+      // client compute their allocations one after the other.
+      await this.account.post(tx, [
+        {
+          clientId: client.id,
+          type: ClientLedgerType.PAYMENT,
+          amount: money(input.amount).negated().toString(),
+          label: number,
+          refType: 'Payment',
+          refId: payment.id,
+        },
+      ]);
+      const allocations = await this.allocate(
+        tx,
+        client.id,
+        money(input.amount),
+        input.allocations,
+      );
+      if (allocations.length > 0) {
+        await tx.paymentAllocation.createMany({
+          data: allocations.map((a) => ({
+            tenantId,
+            paymentId: payment.id,
+            saleId: a.saleId,
+            amount: a.amount.toString(),
+          })),
+        });
+      }
+      await this.audit.log(tx, {
+        action: 'PAYMENT_CREATED',
+        entity: 'Payment',
+        entityId: payment.id,
+        after: {
+          number,
+          clientId: client.id,
+          amount: input.amount,
+          mode: input.mode,
+          allocations: allocations.map((a) => ({ saleId: a.saleId, amount: a.amount.toString() })),
+        },
+      });
+      return payment.id;
+    });
+    return this.get(id);
+  }
+
+  /** Input mistake: the money is taken back off the account. Never deleted. */
+  async cancel(id: string, reason: string, user: CurrentUserInfo): Promise<PaymentDto> {
+    await this.prisma.db.$transaction(async (tx) => {
+      const p = await this.lockValid(tx, id);
+      if (p.saleId) {
+        throw new AppException(ErrorCode.PAYMENT_LINKED_TO_SALE, 'Cancel the sale instead', {
+          saleId: p.saleId,
+        });
+      }
+      if (!MANAGERS.has(user.role)) {
+        const sameDay = algiersDay(p.receivedAt) === algiersDay(new Date());
+        if (p.receivedBy !== user.id || !sameDay) {
+          throw new AppException(ErrorCode.FORBIDDEN, 'Only a manager can cancel this payment', {
+            permission: 'PAYMENT_CANCEL',
+            rule: 'same_day_only',
+          });
+        }
+      }
+      await tx.payment.update({
+        where: { id },
+        data: {
+          status: PaymentStatus.CANCELLED,
+          cancelReason: reason,
+          cancelledBy: user.id,
+          cancelledAt: new Date(),
+          version: { increment: 1 },
+        },
+      });
+      if (p.clientId) {
+        await this.account.post(tx, [
+          {
+            clientId: p.clientId,
+            type: ClientLedgerType.REVERSAL,
+            amount: p.amount.toString(),
+            label: p.number,
+            reason,
+            refType: 'Payment',
+            refId: id,
+          },
+        ]);
+      }
+      await this.audit.log(tx, {
+        action: 'PAYMENT_CANCELLED',
+        entity: 'Payment',
+        entityId: id,
+        before: { status: p.status },
+        after: { reason },
+      });
+    });
+    return this.get(id);
+  }
+
+  /** Chèque impayé: the debt comes back, plus the bank fees if any. */
+  async bounce(id: string, input: BouncePaymentInput, user: CurrentUserInfo): Promise<PaymentDto> {
+    await this.prisma.db.$transaction(async (tx) => {
+      const p = await this.lockValid(tx, id);
+      if (p.mode !== 'CHEQUE') {
+        throw new AppException(ErrorCode.PAYMENT_NOT_CHEQUE, 'Only a cheque can bounce');
+      }
+      if (!p.clientId) {
+        throw new AppException(
+          ErrorCode.VALIDATION_FAILED,
+          'A counter sale cheque has no account',
+          {
+            rule: 'bounce_needs_client',
+          },
+        );
+      }
+      await tx.payment.update({
+        where: { id },
+        data: {
+          status: PaymentStatus.BOUNCED,
+          bounceReason: input.reason,
+          bouncedBy: user.id,
+          bouncedAt: new Date(),
+          version: { increment: 1 },
+        },
+      });
+      const fees = money(input.bankFees);
+      await this.account.post(tx, [
+        {
+          clientId: p.clientId,
+          type: ClientLedgerType.REVERSAL,
+          amount: p.amount.toString(),
+          label: p.number,
+          reason: input.reason,
+          refType: 'Payment',
+          refId: id,
+        },
+        ...(fees.gt(0)
+          ? [
+              {
+                clientId: p.clientId,
+                type: ClientLedgerType.ADJUSTMENT,
+                amount: fees.toString(),
+                label: p.number,
+                reason: input.reason,
+                refType: 'Payment',
+                refId: id,
+              },
+            ]
+          : []),
+      ]);
+      await this.audit.log(tx, {
+        action: 'PAYMENT_BOUNCED',
+        entity: 'Payment',
+        entityId: id,
+        after: { reason: input.reason, bankFees: fees.toString() },
+      });
+    });
+    return this.get(id);
+  }
+
+  // ---------------------------------------------------------------- reads
+
+  async get(id: string): Promise<PaymentDto> {
+    const p = await this.prisma.db.payment.findUnique({ where: { id }, include: paymentInclude });
+    if (!p) throw new AppException(ErrorCode.NOT_FOUND, 'Payment not found');
+    return toDto(p, await this.users([p.receivedBy]));
+  }
+
+  async list(query: PaymentListQuery): Promise<PaymentPage> {
+    const where: Prisma.PaymentWhereInput = {
+      ...(query.clientId ? { clientId: query.clientId } : {}),
+      ...(query.mode ? { mode: query.mode } : {}),
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.receivedBy ? { receivedBy: query.receivedBy } : {}),
+      ...(query.from || query.to
+        ? {
+            receivedAt: {
+              ...(query.from ? { gte: algiersMidnight(query.from) } : {}),
+              ...(query.to ? { lt: algiersMidnight(nextDay(query.to)) } : {}),
+            },
+          }
+        : {}),
+    };
+    const orderBy: Prisma.PaymentOrderByWithRelationInput[] =
+      query.sort === 'dueDate'
+        ? [{ dueDate: { sort: 'asc', nulls: 'last' } }, { id: 'asc' }]
+        : [{ receivedAt: 'desc' }, { id: 'desc' }];
+    const rows = await this.prisma.db.payment.findMany({
+      where,
+      include: paymentInclude,
+      orderBy,
+      take: query.limit + 1,
+      ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
+    });
+    const page = rows.slice(0, query.limit);
+    const users = await this.users(page.map((p) => p.receivedBy));
+    return {
+      items: page.map((p) => toDto(p, users)),
+      nextCursor: rows.length > query.limit ? (page.at(-1)?.id ?? null) : null,
+    };
+  }
+
+  async unpaidDocuments(clientId: string): Promise<UnpaidDocumentDto[]> {
+    const client = await this.prisma.db.client.findUnique({ where: { id: clientId } });
+    if (!client) throw new AppException(ErrorCode.NOT_FOUND, 'Client not found');
+    return (await this.unpaid(this.prisma.db, clientId)).map((d) => ({
+      saleId: d.id,
+      type: d.type,
+      number: d.number,
+      documentDate: d.documentDate.toISOString().slice(0, 10),
+      totalTtc: toMoneyString(d.totalTtc),
+      returned: toMoneyString(d.returned),
+      paid: toMoneyString(d.paid),
+      remaining: toMoneyString(d.remaining),
+    }));
+  }
+
+  /** Journal de caisse: money received that Algiers day, by mode and by user. */
+  async summary(date: string): Promise<CashSummaryDto> {
+    const tenantId = tenantContext.requireTenantId();
+    const rows = await this.prisma.db.$queryRaw<
+      { mode: PaymentMode; receivedBy: string | null; count: bigint; total: Prisma.Decimal }[]
+    >`
+      SELECT mode, "receivedBy", COUNT(*) AS count, SUM(amount) AS total
+      FROM payments
+      WHERE "tenantId" = ${tenantId}::uuid AND status = 'VALID'
+        AND "receivedAt" >= ${algiersMidnight(date)} AND "receivedAt" < ${algiersMidnight(nextDay(date))}
+      GROUP BY mode, "receivedBy"
+      ORDER BY mode, "receivedBy"`;
+    const users = await this.users(rows.map((r) => r.receivedBy));
+    const byMode = new Map<PaymentMode, { count: number; total: Money }>();
+    const byUser = new Map<
+      string,
+      { count: number; total: Money; modes: Map<PaymentMode, Money> }
+    >();
+    let total = money(0);
+    let count = 0;
+    for (const r of rows) {
+      const amount = money(r.total.toString());
+      const n = Number(r.count); // a row count, not money
+      total = total.plus(amount);
+      count += n;
+      const m = byMode.get(r.mode) ?? { count: 0, total: money(0) };
+      byMode.set(r.mode, { count: m.count + n, total: m.total.plus(amount) });
+      const key = r.receivedBy ?? '';
+      const u = byUser.get(key) ?? { count: 0, total: money(0), modes: new Map<PaymentMode, Money>() };
+      u.count += n;
+      u.total = u.total.plus(amount);
+      u.modes.set(r.mode, (u.modes.get(r.mode) ?? money(0)).plus(amount));
+      byUser.set(key, u);
+    }
+    return {
+      date,
+      total: toMoneyString(total),
+      count,
+      byMode: [...byMode].map(([mode, v]) => ({
+        mode,
+        count: v.count,
+        total: toMoneyString(v.total),
+      })),
+      byUser: [...byUser].map(([userId, v]) => ({
+        user: userId ? (users.get(userId) ?? null) : null,
+        count: v.count,
+        total: toMoneyString(v.total),
+        byMode: [...v.modes].map(([mode, t]) => ({ mode, total: toMoneyString(t) })),
+      })),
+    };
+  }
+
+  // ---------------------------------------------------------------- internals
+
+  private async lockValid(
+    tx: Tx,
+    id: string,
+  ): Promise<{
+    id: string;
+    number: string;
+    status: PaymentStatus;
+    mode: PaymentMode;
+    amount: Prisma.Decimal;
+    clientId: string | null;
+    saleId: string | null;
+    receivedBy: string | null;
+    receivedAt: Date;
+  }> {
+    const rows = await tx.$queryRaw<
+      {
+        id: string;
+        number: string;
+        status: PaymentStatus;
+        mode: PaymentMode;
+        amount: Prisma.Decimal;
+        clientId: string | null;
+        saleId: string | null;
+        receivedBy: string | null;
+        receivedAt: Date;
+      }[]
+    >`
+      SELECT id, number, status, mode, amount, "clientId", "saleId", "receivedBy", "receivedAt"
+      FROM payments
+      WHERE id = ${id}::uuid AND "tenantId" = ${tenantContext.requireTenantId()}::uuid
+      FOR UPDATE`;
+    const p = rows[0];
+    if (!p) throw new AppException(ErrorCode.NOT_FOUND, 'Payment not found');
+    if (p.status !== PaymentStatus.VALID) {
+      throw new AppException(ErrorCode.PAYMENT_NOT_VALID, 'Payment already cancelled or bounced', {
+        status: p.status,
+      });
+    }
+    return p;
+  }
+
+  /**
+   * Validated documents that moved the client account (BLs and direct factures; a
+   * facture grouping BLs carries no effect of its own), oldest first, with what is
+   * left to pay after avoirs and the allocations of valid versements.
+   */
+  private async unpaid(
+    db: Tx | PrismaService['db'],
+    clientId: string,
+  ): Promise<
+    {
+      id: string;
+      type: 'BL' | 'FACTURE';
+      number: string | null;
+      documentDate: Date;
+      totalTtc: Money;
+      returned: Money;
+      paid: Money;
+      remaining: Money;
+    }[]
+  > {
+    const tenantId = tenantContext.requireTenantId();
+    const rows = await db.$queryRaw<
+      {
+        id: string;
+        type: 'BL' | 'FACTURE';
+        number: string | null;
+        documentDate: Date;
+        totalTtc: Prisma.Decimal;
+        returned: Prisma.Decimal;
+        paid: Prisma.Decimal;
+      }[]
+    >`
+      SELECT s.id, s.type, s.number, s."documentDate", s."totalTtc",
+        COALESCE((SELECT SUM(r."totalTtc") FROM sale_returns r WHERE r."saleId" = s.id), 0) AS returned,
+        COALESCE((SELECT SUM(a.amount) FROM payment_allocations a
+                  JOIN payments p ON p.id = a."paymentId"
+                  WHERE a."saleId" = s.id AND p.status = 'VALID'), 0) AS paid
+      FROM sales s
+      WHERE s."tenantId" = ${tenantId}::uuid AND s."clientId" = ${clientId}::uuid
+        AND s.status = 'VALIDATED'
+        AND NOT EXISTS (SELECT 1 FROM sales b WHERE b."invoiceId" = s.id)
+      ORDER BY s."documentDate", s."createdAt", s.id`;
+    return rows
+      .map((r) => {
+        const totalTtc = money(r.totalTtc.toString());
+        const returned = money(r.returned.toString());
+        const paid = money(r.paid.toString());
+        return { ...r, totalTtc, returned, paid, remaining: totalTtc.minus(returned).minus(paid) };
+      })
+      .filter((r) => r.remaining.gt(0));
+  }
+
+  /** Manual allocations are checked against what is left; none = oldest first. */
+  private async allocate(
+    tx: Tx,
+    clientId: string,
+    amount: Money,
+    manual: { saleId: string; amount: string }[] | undefined,
+  ): Promise<{ saleId: string; amount: Money }[]> {
+    const open = await this.unpaid(tx, clientId);
+    if (manual) {
+      const byId = new Map(open.map((d) => [d.id, d]));
+      let sum = money(0);
+      const out = manual.map((m) => {
+        const doc = byId.get(m.saleId);
+        const value = money(m.amount);
+        if (!doc || value.gt(doc.remaining)) {
+          throw new AppException(ErrorCode.ALLOCATION_INVALID, 'Cannot allocate to this document', {
+            saleId: m.saleId,
+            remaining: doc ? toMoneyString(doc.remaining) : null,
+          });
+        }
+        sum = sum.plus(value);
+        return { saleId: m.saleId, amount: value };
+      });
+      if (sum.gt(amount)) {
+        throw new AppException(ErrorCode.ALLOCATION_INVALID, 'More allocated than paid', {
+          allocated: toMoneyString(sum),
+        });
+      }
+      return out;
+    }
+    const out: { saleId: string; amount: Money }[] = [];
+    let left = amount;
+    for (const doc of open) {
+      if (left.lte(0)) break;
+      const part = left.lt(doc.remaining) ? left : doc.remaining;
+      out.push({ saleId: doc.id, amount: part });
+      left = left.minus(part);
+    }
+    return out;
+  }
+
+  private async users(
+    ids: (string | null)[],
+  ): Promise<Map<string, { id: string; fullName: string }>> {
+    const unique = [...new Set(ids.filter((u): u is string => !!u))];
+    if (unique.length === 0) return new Map();
+    const rows = await this.prisma.db.user.findMany({
+      where: { id: { in: unique } },
+      select: { id: true, fullName: true },
+    });
+    return new Map(rows.map((u) => [u.id, u]));
+  }
+}

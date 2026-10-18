@@ -104,6 +104,7 @@ model Tenant {
   saleReturns         SaleReturn[]
   saleReturnLines     SaleReturnLine[]
   payments            Payment[]
+  paymentAllocations  PaymentAllocation[]
 
   @@map("tenants")
 }
@@ -780,13 +781,14 @@ model Sale {
   createdAt      DateTime     @default(now()) @db.Timestamptz(3)
   updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
 
-  tenant    Tenant       @relation(fields: [tenantId], references: [id])
-  client    Client?      @relation(fields: [clientId], references: [id])
-  invoice   Sale?        @relation("InvoiceBls", fields: [invoiceId], references: [id])
-  sourceBls Sale[]       @relation("InvoiceBls")
-  lines     SaleLine[]
-  returns   SaleReturn[]
-  payments  Payment[]
+  tenant             Tenant              @relation(fields: [tenantId], references: [id])
+  client             Client?             @relation(fields: [clientId], references: [id])
+  invoice            Sale?               @relation("InvoiceBls", fields: [invoiceId], references: [id])
+  sourceBls          Sale[]              @relation("InvoiceBls")
+  lines              SaleLine[]
+  returns            SaleReturn[]
+  payments           Payment[]
+  paymentAllocations PaymentAllocation[]
 
   @@unique([tenantId, number])
   @@index([tenantId, createdAt])
@@ -883,28 +885,61 @@ model SaleReturnLine {
 /// Versement: money received. Created at sale time for the paid part (also for
 /// counter sales, without client); phase 7 adds standalone versements.
 model Payment {
-  id         String        @id @default(uuid()) @db.Uuid
-  tenantId   String        @db.Uuid
-  number     String        @db.VarChar(20)
-  clientId   String?       @db.Uuid
-  saleId     String?       @db.Uuid
-  amount     Decimal       @db.Decimal(14, 2)
-  mode       PaymentMode
-  status     PaymentStatus @default(VALID)
-  reference  String?       @db.VarChar(80)
-  note       String?       @db.VarChar(255)
-  receivedBy String?       @db.Uuid
-  receivedAt DateTime      @default(now()) @db.Timestamptz(3)
-  createdAt  DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt  DateTime      @updatedAt @db.Timestamptz(3)
+  id           String        @id @default(uuid()) @db.Uuid
+  tenantId     String        @db.Uuid
+  number       String        @db.VarChar(20)
+  clientId     String?       @db.Uuid
+  saleId       String?       @db.Uuid
+  amount       Decimal       @db.Decimal(14, 2)
+  mode         PaymentMode
+  status       PaymentStatus @default(VALID)
+  /// Cheque or transfer number.
+  reference    String?       @db.VarChar(80)
+  bank         String?       @db.VarChar(80)
+  /// Cheque due date (échéance).
+  dueDate      DateTime?     @db.Date
+  note         String?       @db.VarChar(255)
+  receivedBy   String?       @db.Uuid
+  receivedAt   DateTime      @default(now()) @db.Timestamptz(3)
+  cancelReason String?       @db.VarChar(255)
+  cancelledBy  String?       @db.Uuid
+  cancelledAt  DateTime?     @db.Timestamptz(3)
+  bounceReason String?       @db.VarChar(255)
+  bouncedBy    String?       @db.Uuid
+  bouncedAt    DateTime?     @db.Timestamptz(3)
+  version      Int           @default(1)
+  createdAt    DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime      @updatedAt @db.Timestamptz(3)
 
-  tenant Tenant  @relation(fields: [tenantId], references: [id])
-  client Client? @relation(fields: [clientId], references: [id])
-  sale   Sale?   @relation(fields: [saleId], references: [id])
+  tenant      Tenant              @relation(fields: [tenantId], references: [id])
+  client      Client?             @relation(fields: [clientId], references: [id])
+  sale        Sale?               @relation(fields: [saleId], references: [id])
+  allocations PaymentAllocation[]
 
   @@unique([tenantId, number])
   @@index([tenantId, receivedAt])
   @@index([tenantId, clientId])
   @@index([tenantId, saleId])
+  @@index([tenantId, mode, status, dueDate])
   @@map("payments")
+}
+
+/// Which documents a versement pays. Informational: feeds "reste à payer" and
+/// aging; the client balance is the ledger and never depends on it.
+model PaymentAllocation {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @db.Uuid
+  paymentId String   @db.Uuid
+  saleId    String   @db.Uuid
+  amount    Decimal  @db.Decimal(14, 2)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  payment Payment @relation(fields: [paymentId], references: [id])
+  sale    Sale    @relation(fields: [saleId], references: [id])
+
+  @@unique([paymentId, saleId])
+  @@index([tenantId, saleId])
+  @@index([tenantId, paymentId])
+  @@map("payment_allocations")
 }
