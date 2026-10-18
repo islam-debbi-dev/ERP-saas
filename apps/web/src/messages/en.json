@@ -152,7 +152,11 @@
     "PURCHASE_NOT_VALIDATED": "Only a validated receipt allows this action.",
     "PURCHASE_EMPTY": "Add at least one line before validating.",
     "PURCHASE_MODIFIED": "Someone else changed this receipt. Reload the page and make your changes again.",
-    "RETURN_EXCEEDS_RECEIVED": "The returned quantity is more than what is left from the receipt."
+    "RETURN_EXCEEDS_RECEIVED": "The returned quantity is more than what is left from the receipt.",
+    "CLIENT_CODE_TAKEN": "This customer code is already used.",
+    "CLIENT_MODIFIED": "Someone else changed this customer. Reload the page and make your changes again.",
+    "CLIENT_OPENING_ALREADY_SET": "This customer's opening balance is already set. Use an adjustment to correct it.",
+    "CREDIT_LIMIT_EXCEEDED": "This customer's credit limit would be exceeded."
   },
   "units": {
     "PIECE": "Piece",

@@ -103,3 +103,20 @@ export const PurchaseStatus = {
   CANCELLED: 'CANCELLED',
 } as const;
 export type PurchaseStatus = (typeof PurchaseStatus)[keyof typeof PurchaseStatus];
+
+export const ClientType = {
+  PARTICULIER: 'PARTICULIER',
+  PROFESSIONNEL: 'PROFESSIONNEL',
+} as const;
+export type ClientType = (typeof ClientType)[keyof typeof ClientType];
+
+/** Client account entries. Positive amounts mean the client owes more. */
+export const ClientLedgerType = {
+  OPENING: 'OPENING',
+  SALE: 'SALE',
+  PAYMENT: 'PAYMENT',
+  RETURN: 'RETURN',
+  ADJUSTMENT: 'ADJUSTMENT',
+  REVERSAL: 'REVERSAL',
+} as const;
+export type ClientLedgerType = (typeof ClientLedgerType)[keyof typeof ClientLedgerType];

@@ -152,7 +152,11 @@
     "PURCHASE_NOT_VALIDATED": "Seul un bon de réception validé permet cette action.",
     "PURCHASE_EMPTY": "Ajoutez au moins une ligne avant de valider.",
     "PURCHASE_MODIFIED": "Ce bon a été modifié par quelqu'un d'autre. Rechargez la page puis refaites vos changements.",
-    "RETURN_EXCEEDS_RECEIVED": "La quantité retournée dépasse la quantité reçue restante."
+    "RETURN_EXCEEDS_RECEIVED": "La quantité retournée dépasse la quantité reçue restante.",
+    "CLIENT_CODE_TAKEN": "Ce code client est déjà utilisé.",
+    "CLIENT_MODIFIED": "Ce client a été modifié par quelqu'un d'autre. Rechargez la page puis refaites vos changements.",
+    "CLIENT_OPENING_ALREADY_SET": "Le solde d'ouverture de ce client est déjà saisi. Utilisez un ajustement pour corriger.",
+    "CREDIT_LIMIT_EXCEEDED": "Le plafond de crédit de ce client serait dépassé."
   },
   "units": {
     "PIECE": "Pièce",
