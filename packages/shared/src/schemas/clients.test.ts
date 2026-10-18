@@ -23,9 +23,9 @@ describe('client schemas', () => {
     );
   });
 
-  it('opening balance may be negative or zero; adjustments are signed, non-zero and need a reason', () => {
+  it('opening balance may be negative but not zero; adjustments are signed, non-zero and need a reason', () => {
     expect(openingBalanceSchema.parse({ amount: '-1 500,50' }).amount).toBe('-1500.5');
-    expect(openingBalanceSchema.safeParse({ amount: '0' }).success).toBe(true);
+    expect(openingBalanceSchema.safeParse({ amount: '0' }).success).toBe(false);
     expect(clientAdjustmentSchema.safeParse({ amount: '0', reason: 'erreur' }).success).toBe(false);
     expect(clientAdjustmentSchema.safeParse({ amount: '-2000' }).success).toBe(false);
     expect(

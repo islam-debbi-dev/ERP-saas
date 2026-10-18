@@ -25,10 +25,13 @@ export const TENANT_SCOPED_MODELS = new Set<string>([
   'PurchaseLine',
   'PurchaseReturn',
   'PurchaseReturnLine',
+  'Client',
+  'ClientLedgerEntry',
+  'ClientBalance',
 ]);
 
 /** Append-only models: any update or delete is a bug (AGENTS.md rules 1 and 7). */
-const APPEND_ONLY_MODELS = new Set<string>(['AuditLog', 'StockMovement']);
+const APPEND_ONLY_MODELS = new Set<string>(['AuditLog', 'StockMovement', 'ClientLedgerEntry']);
 
 const WHERE_OPERATIONS = new Set<string>([
   'findUnique',

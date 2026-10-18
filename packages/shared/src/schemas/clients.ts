@@ -66,9 +66,9 @@ export const clientListQuerySchema = z.object({
 });
 export type ClientListQuery = z.infer<typeof clientListQuerySchema>;
 
-/** Can be negative: an avoir in the client's favour. */
+/** Can be negative (an avoir in the client's favour); zero has nothing to record. */
 export const openingBalanceSchema = z.object({
-  amount: signedAmount({ nonZero: false }),
+  amount: signedAmount({ nonZero: true }),
   note: optionalText(255),
 });
 export type OpeningBalanceInput = z.infer<typeof openingBalanceSchema>;
