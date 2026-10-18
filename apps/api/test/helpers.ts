@@ -69,3 +69,78 @@ export function asTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> 
 export function bearer(token: string): [string, string] {
   return ['Authorization', `Bearer ${token}`];
 }
+
+// ---------------------------------------------------------------- catalog helpers
+
+export interface TenantCatalog {
+  units: Record<string, { id: string }>;
+  levels: { id: string }[];
+}
+
+export async function catalogOf(t: TestApp, who: RegisteredTenant): Promise<TenantCatalog> {
+  const units = (
+    await t
+      .http()
+      .get('/units')
+      .set(...bearer(who.auth.accessToken))
+      .expect(200)
+  ).body as {
+    id: string;
+    code: string;
+  }[];
+  const levels = (
+    await t
+      .http()
+      .get('/price-levels')
+      .set(...bearer(who.auth.accessToken))
+      .expect(200)
+  ).body as { id: string }[];
+  return { units: Object.fromEntries(units.map((u) => [u.code, u])), levels };
+}
+
+let productSeq = 0;
+
+/** Creates a pièce product with a carton of `cartonFactor` and returns its ids. */
+export async function createProduct(
+  t: TestApp,
+  who: RegisteredTenant,
+  catalog: TenantCatalog,
+  opts: {
+    cartonFactor?: string;
+    minStock?: string;
+    designation?: string;
+    base?: 'PIECE' | 'KG';
+  } = {},
+): Promise<{ id: string; baseUnitId: string; cartonUnitId: string }> {
+  const base = catalog.units[opts.base ?? 'PIECE']!.id;
+  const carton = catalog.units[opts.base === 'KG' ? 'SAC' : 'CARTON']!.id;
+  const res = await t
+    .http()
+    .post('/products')
+    .set(...bearer(who.auth.accessToken))
+    .send({
+      reference: `P-${Date.now()}-${productSeq++}`,
+      designation: opts.designation ?? `Produit ${productSeq}`,
+      baseUnitId: base,
+      tvaRate: '19',
+      minStock: opts.minStock ?? '0',
+      units: [
+        {
+          unitId: base,
+          factorToBase: '1',
+          barcode: null,
+          isDefaultSale: true,
+          isDefaultPurchase: false,
+        },
+        {
+          unitId: carton,
+          factorToBase: opts.cartonFactor ?? '24',
+          barcode: null,
+          isDefaultSale: false,
+          isDefaultPurchase: true,
+        },
+      ],
+    })
+    .expect(201);
+  return { id: (res.body as { id: string }).id, baseUnitId: base, cartonUnitId: carton };
+}
