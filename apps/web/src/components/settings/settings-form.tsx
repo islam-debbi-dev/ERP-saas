@@ -2,7 +2,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
 import { Controller, type FieldErrors, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import type { z } from 'zod';
@@ -28,10 +27,16 @@ type TextField = 'raisonSociale' | 'adresse' | 'telephone' | 'rc' | 'nif' | 'nis
 type AmountField = 'timbreRate' | 'timbreMin' | 'timbreMax' | 'timbreThreshold';
 
 const SETTINGS_KEY = ['tenant-settings'] as const;
+const TIMBRE_FIELDS: readonly AmountField[] = [
+  'timbreRate',
+  'timbreMin',
+  'timbreMax',
+  'timbreThreshold',
+];
 
-/** API values → form values (amounts shown the French way, nulls as empty inputs). */
+/** API values → form values (amounts shown the French way). Unset amounts stay null. */
 function toForm(s: TenantSettingsResponse): FormInput {
-  const amount = (v: string | null) => (v === null ? '' : formatDA(v, { currency: false }));
+  const amount = (v: string | null) => (v === null ? null : formatDA(v, { currency: false }));
   return {
     raisonSociale: s.raisonSociale,
     adresse: s.adresse ?? '',
@@ -46,7 +51,7 @@ function toForm(s: TenantSettingsResponse): FormInput {
     negativeStockMode: s.negativeStockMode,
     priceLevelCount: s.priceLevelCount,
     timbreEnabled: s.timbreEnabled,
-    timbreRate: s.timbreRate ?? '',
+    timbreRate: s.timbreRate,
     timbreMin: amount(s.timbreMin),
     timbreMax: amount(s.timbreMax),
     timbreThreshold: amount(s.timbreThreshold),
@@ -90,35 +95,9 @@ function Section({
 }
 
 export function SettingsForm() {
-  const { state } = useAuth();
-  const queryClient = useQueryClient();
-  const canEdit =
-    state.status === 'authenticated' &&
-    (state.user.role === Role.OWNER || state.user.role === Role.MANAGER);
-
   const query = useQuery({
     queryKey: SETTINGS_KEY,
     queryFn: () => api.request<TenantSettingsResponse>('/tenant/settings'),
-  });
-
-  const form = useForm<FormInput, unknown, TenantSettings>({
-    resolver: zodResolver(tenantSettingsSchema),
-  });
-  const { errors, isDirty } = form.formState;
-  const timbreEnabled = useWatch({ control: form.control, name: 'timbreEnabled' });
-
-  useEffect(() => {
-    if (query.data) form.reset(toForm(query.data));
-  }, [query.data, form]);
-
-  const mutation = useMutation({
-    mutationFn: (values: TenantSettings) =>
-      api.request<TenantSettingsResponse>('/tenant/settings', { method: 'PATCH', body: values }),
-    onSuccess: (saved) => {
-      queryClient.setQueryData(SETTINGS_KEY, saved);
-      toast.success(t('common.saved'));
-    },
-    onError: (err) => toast.error(messageFor(err)),
   });
 
   if (query.isPending) {
@@ -138,6 +117,33 @@ export function SettingsForm() {
       </div>
     );
   }
+  // Remount after each save so the form restarts clean from the saved values.
+  return <SettingsFormFields key={query.data.updatedAt} settings={query.data} />;
+}
+
+function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) {
+  const { state } = useAuth();
+  const queryClient = useQueryClient();
+  const canEdit =
+    state.status === 'authenticated' &&
+    (state.user.role === Role.OWNER || state.user.role === Role.MANAGER);
+
+  const form = useForm<FormInput, unknown, TenantSettings>({
+    resolver: zodResolver(tenantSettingsSchema),
+    defaultValues: toForm(settings),
+  });
+  const { errors, isDirty } = form.formState;
+  const timbreEnabled = useWatch({ control: form.control, name: 'timbreEnabled' });
+
+  const mutation = useMutation({
+    mutationFn: (values: TenantSettings) =>
+      api.request<TenantSettingsResponse>('/tenant/settings', { method: 'PATCH', body: values }),
+    onSuccess: (saved) => {
+      queryClient.setQueryData(SETTINGS_KEY, saved);
+      toast.success(t('common.saved'));
+    },
+    onError: (err) => toast.error(messageFor(err)),
+  });
 
   const text = (
     name: TextField,
@@ -255,7 +261,15 @@ export function SettingsForm() {
               control={form.control}
               name="timbreEnabled"
               render={({ field }) => (
-                <Switch id="timbreEnabled" checked={field.value} onCheckedChange={field.onChange} />
+                <Switch
+                  id="timbreEnabled"
+                  checked={field.value}
+                  onCheckedChange={(on) => {
+                    field.onChange(on);
+                    // Hidden fields must not keep a half-typed value that blocks saving.
+                    if (!on) TIMBRE_FIELDS.forEach((name) => form.resetField(name));
+                  }}
+                />
               )}
             />
           </div>
