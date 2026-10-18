@@ -143,7 +143,11 @@
     "INVALID_PRODUCT_UNITS": "The product units are not valid.",
     "CATEGORY_NAME_TAKEN": "A category already has this name.",
     "CATEGORY_TOO_DEEP": "A subcategory cannot have its own subcategory.",
-    "CATEGORY_NOT_EMPTY": "This category still has products or subcategories."
+    "CATEGORY_NOT_EMPTY": "This category still has products or subcategories.",
+    "STOCK_INSUFFICIENT": "Not enough stock for this operation.",
+    "OPENING_ALREADY_SET": "Opening stock is already set for this product. Use an adjustment to correct it.",
+    "INVENTORY_CLOSED": "This stock count is closed and can no longer be changed.",
+    "PRODUCT_ARCHIVED": "This product is archived. Restore it before changing its stock."
   },
   "units": {
     "PIECE": "Piece",

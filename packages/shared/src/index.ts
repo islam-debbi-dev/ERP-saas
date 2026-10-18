@@ -4,3 +4,4 @@ export * from './money';
 export * from './pricing';
 export * from './quantity';
 export * from './schemas';
+export * from './stock';

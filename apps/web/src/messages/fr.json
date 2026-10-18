@@ -143,7 +143,11 @@
     "INVALID_PRODUCT_UNITS": "Les unités du produit ne sont pas valides.",
     "CATEGORY_NAME_TAKEN": "Une catégorie porte déjà ce nom.",
     "CATEGORY_TOO_DEEP": "Une sous-catégorie ne peut pas avoir de sous-catégorie.",
-    "CATEGORY_NOT_EMPTY": "Cette catégorie contient des produits ou des sous-catégories."
+    "CATEGORY_NOT_EMPTY": "Cette catégorie contient des produits ou des sous-catégories.",
+    "STOCK_INSUFFICIENT": "Stock insuffisant pour cette opération.",
+    "OPENING_ALREADY_SET": "Le stock d'ouverture de ce produit est déjà saisi. Utilisez un ajustement pour corriger.",
+    "INVENTORY_CLOSED": "Cet inventaire est clôturé et ne peut plus être modifié.",
+    "PRODUCT_ARCHIVED": "Ce produit est archivé. Restaurez-le avant de modifier son stock."
   },
   "units": {
     "PIECE": "Pièce",
