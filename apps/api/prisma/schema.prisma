@@ -79,6 +79,12 @@ model Tenant {
   auditLogs         AuditLog[]
   documentSequences DocumentSequence[]
   idempotencyKeys   IdempotencyKey[]
+  categories        Category[]
+  units             Unit[]
+  priceLevels       PriceLevel[]
+  products          Product[]
+  productUnits      ProductUnit[]
+  productPrices     ProductPrice[]
 
   @@map("tenants")
 }
@@ -179,4 +185,138 @@ model IdempotencyKey {
   @@unique([tenantId, key])
   @@index([tenantId, createdAt])
   @@map("idempotency_keys")
+}
+
+// ---------------------------------------------------------------- catalog (phase 2)
+
+/// Product category. One level of nesting (enforced in CategoriesService).
+/// Name uniqueness among live categories is checked in the service under a tenant lock.
+model Category {
+  id        String    @id @default(uuid()) @db.Uuid
+  tenantId  String    @db.Uuid
+  name      String    @db.VarChar(80)
+  parentId  String?   @db.Uuid
+  deletedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3)
+
+  tenant   Tenant     @relation(fields: [tenantId], references: [id])
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children Category[] @relation("CategoryTree")
+  products Product[]
+
+  @@index([tenantId, parentId])
+  @@map("categories")
+}
+
+/// Tenant-level unit catalog. Default units have a stable code translated in the UI;
+/// custom units have code CUSTOM-xxxx and a free-text name.
+model Unit {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @db.Uuid
+  code          String   @db.VarChar(40)
+  name          String?  @db.VarChar(40)
+  allowsDecimal Boolean
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  baseOf       Product[]
+  productUnits ProductUnit[]
+
+  @@unique([tenantId, code])
+  @@map("units")
+}
+
+/// Price levels 1..5 (Gros, Demi-gros, Détail...). Only the first `priceLevelCount` are shown.
+model PriceLevel {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @db.Uuid
+  position  Int      @db.SmallInt
+  name      String   @db.VarChar(40)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  tenant Tenant         @relation(fields: [tenantId], references: [id])
+  prices ProductPrice[]
+
+  @@unique([tenantId, position])
+  @@map("price_levels")
+}
+
+/// Master data: archived with deletedAt, never deleted.
+model Product {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenantId    String    @db.Uuid
+  reference   String    @db.VarChar(40)
+  designation String    @db.VarChar(160)
+  categoryId  String?   @db.Uuid
+  baseUnitId  String    @db.Uuid
+  tvaRate     Decimal   @db.Decimal(5, 2)
+  minStock    Decimal   @default(0) @db.Decimal(14, 3)
+  active      Boolean   @default(true)
+  /// Optimistic lock: every update must send the version it read.
+  version     Int       @default(1)
+  deletedAt   DateTime? @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
+
+  tenant   Tenant         @relation(fields: [tenantId], references: [id])
+  category Category?      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  baseUnit Unit           @relation(fields: [baseUnitId], references: [id])
+  units    ProductUnit[]
+  prices   ProductPrice[]
+
+  @@unique([tenantId, reference])
+  @@index([tenantId, designation])
+  @@index([tenantId, categoryId])
+  @@map("products")
+}
+
+/// A unit a product is sold or bought in (pièce, carton = 24...). The base unit has factor 1.
+/// Removing a unit soft-deletes it and moves its barcode to deletedBarcode, freeing the code.
+model ProductUnit {
+  id                String    @id @default(uuid()) @db.Uuid
+  tenantId          String    @db.Uuid
+  productId         String    @db.Uuid
+  unitId            String    @db.Uuid
+  factorToBase      Decimal   @db.Decimal(14, 3)
+  barcode           String?   @db.VarChar(64)
+  deletedBarcode    String?   @db.VarChar(64)
+  isDefaultSale     Boolean   @default(false)
+  isDefaultPurchase Boolean   @default(false)
+  deletedAt         DateTime? @db.Timestamptz(3)
+  createdAt         DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime  @updatedAt @db.Timestamptz(3)
+
+  tenant  Tenant         @relation(fields: [tenantId], references: [id])
+  product Product        @relation(fields: [productId], references: [id])
+  unit    Unit           @relation(fields: [unitId], references: [id])
+  prices  ProductPrice[]
+
+  /// One barcode per tenant across all units (NULLs are allowed many times).
+  @@unique([tenantId, barcode])
+  @@unique([productId, unitId])
+  @@map("product_units")
+}
+
+/// Current selling price HT for one product unit at one price level.
+/// History lives in the audit log (old and new value on every change).
+model ProductPrice {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @db.Uuid
+  productId     String   @db.Uuid
+  productUnitId String   @db.Uuid
+  priceLevelId  String   @db.Uuid
+  priceHt       Decimal  @db.Decimal(14, 2)
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(3)
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id])
+  product     Product     @relation(fields: [productId], references: [id])
+  productUnit ProductUnit @relation(fields: [productUnitId], references: [id])
+  priceLevel  PriceLevel  @relation(fields: [priceLevelId], references: [id])
+
+  @@unique([productUnitId, priceLevelId])
+  @@index([tenantId, productId])
+  @@map("product_prices")
 }

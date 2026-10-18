@@ -10,6 +10,7 @@ import {
   type SessionInfo,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
+import { CatalogService } from '../catalog/catalog.service';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
@@ -40,6 +41,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly tokens: TokenService,
     private readonly audit: AuditService,
+    private readonly catalog: CatalogService,
   ) {}
 
   /** Creates the company (tenant) and its OWNER in one transaction, then logs them in. */
@@ -51,6 +53,7 @@ export class AuthService {
           const tenant = await tx.tenant.create({
             data: { name: input.companyName, raisonSociale: input.companyName },
           });
+          await this.catalog.initTenant(tx, tenant.id, tenant.priceLevelCount);
           const user = await tx.user.create({
             data: {
               tenantId: tenant.id,
