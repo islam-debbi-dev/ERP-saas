@@ -1,8 +1,8 @@
+import { ClientsList } from '@/components/clients/clients-list';
 import { titled } from '@/lib/page-metadata';
-import { ComingSoon } from '@/components/shared/coming-soon';
 
 export const generateMetadata = titled('nav.clients');
 
-export default function Page() {
-  return <ComingSoon title="clients" />;
+export default function ClientsPage() {
+  return <ClientsList />;
 }

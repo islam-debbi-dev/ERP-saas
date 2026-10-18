@@ -28,23 +28,13 @@ import { api } from '@/lib/api-client';
 import { catalogKeys, useProduct, useUnitLabel } from '@/lib/catalog';
 import { formatQty, stockKeys } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
+import { useIdempotencyKey } from '@/lib/use-idempotency-key';
 
 interface DialogProps {
   productId: string;
   productName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
-
-/** One idempotency key per opening of the dialog: a retry of the same submit is a replay. */
-function useIdempotencyKey(open: boolean): string {
-  const [state, setState] = useState({ open, key: crypto.randomUUID() });
-  if (state.open !== open) {
-    const next = { open, key: open ? crypto.randomUUID() : state.key };
-    setState(next);
-    return next.key;
-  }
-  return state.key;
 }
 
 function useStockMutation(productId: string, onDone: (result: StockOperationResult) => void) {
