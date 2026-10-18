@@ -1,0 +1,22 @@
+import type { SVGProps } from 'react';
+
+export function SidebarIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      {...props}
+    >
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M9 4v16" />
+      <path d="M14 9h3M14 12h3" />
+    </svg>
+  );
+}
+
+export default SidebarIcon;

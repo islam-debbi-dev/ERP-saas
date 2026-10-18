@@ -1,0 +1,11 @@
+node_modules
+dist
+.next
+coverage
+.turbo
+pnpm-lock.yaml
+apps/api/prisma/migrations
+graphify-out
+docs
+*.md
+apps/api/src/generated

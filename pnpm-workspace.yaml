@@ -1,0 +1,13 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Packages allowed to run install scripts (pnpm blocks them by default).
+allowBuilds:
+  '@prisma/engines': true
+  prisma: true
+  argon2: true
+  esbuild: true
+  '@parcel/watcher': false
+  unrs-resolver: false
+  '@swc/core': false

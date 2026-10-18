@@ -1,0 +1,182 @@
+// Phase 1 schema: tenancy, users, sessions, audit, numbering, idempotency.
+// Rules (AGENTS.md §3): every business table has tenantId (indexes start with it),
+// money is Decimal(14,2), no hard deletes on business data, audit log is append-only.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  OWNER
+  MANAGER
+  SELLER
+  STOREKEEPER
+}
+
+enum CreditLimitMode {
+  WARN
+  BLOCK
+}
+
+enum NegativeStockMode {
+  ALLOW
+  WARN
+  BLOCK
+}
+
+enum DocType {
+  BL
+  FAC
+  AV
+  BR
+  VER
+}
+
+enum IdempotencyStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+/// A grossiste (our customer). Holds the tenant settings from docs/domain.md.
+model Tenant {
+  id   String @id @default(uuid()) @db.Uuid
+  name String @db.VarChar(120)
+
+  // Invoice header
+  raisonSociale String  @db.VarChar(160)
+  adresse       String? @db.VarChar(255)
+  telephone     String? @db.VarChar(40)
+  rc            String? @db.VarChar(40)
+  nif           String? @db.VarChar(40)
+  nis           String? @db.VarChar(40)
+  ai            String? @db.VarChar(40)
+  rib           String? @db.VarChar(60)
+
+  // Business rules
+  assujettiTva      Boolean           @default(true)
+  creditLimitMode   CreditLimitMode   @default(WARN)
+  negativeStockMode NegativeStockMode @default(WARN)
+  priceLevelCount   Int               @default(3) @db.SmallInt
+
+  // Timbre fiscal rule (cash-paid factures). Off until the tenant sets current law values.
+  timbreEnabled   Boolean  @default(false)
+  timbreRate      Decimal? @db.Decimal(7, 4) // percent, e.g. 1.0000
+  timbreMin       Decimal? @db.Decimal(14, 2)
+  timbreMax       Decimal? @db.Decimal(14, 2)
+  timbreThreshold Decimal? @db.Decimal(14, 2)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  users             User[]
+  sessions          Session[]
+  auditLogs         AuditLog[]
+  documentSequences DocumentSequence[]
+  idempotencyKeys   IdempotencyKey[]
+
+  @@map("tenants")
+}
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  tenantId     String    @db.Uuid
+  /// Globally unique (lowercased) so login needs no company code.
+  email        String    @unique @db.VarChar(254)
+  passwordHash String    @db.VarChar(255)
+  fullName     String    @db.VarChar(120)
+  role         Role
+  deletedAt    DateTime? @db.Timestamptz(3)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @db.Timestamptz(3)
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  sessions Session[]
+
+  @@index([tenantId, role])
+  @@map("users")
+}
+
+/// One logged-in device. The refresh token is `<sessionId>.<secret>`; only sha256(secret) is stored.
+model Session {
+  id               String    @id @default(uuid()) @db.Uuid
+  tenantId         String    @db.Uuid
+  userId           String    @db.Uuid
+  refreshTokenHash String    @db.Char(64)
+  deviceName       String?   @db.VarChar(100)
+  userAgent        String?   @db.VarChar(255)
+  ip               String?   @db.VarChar(45)
+  createdAt        DateTime  @default(now()) @db.Timestamptz(3)
+  lastUsedAt       DateTime  @default(now()) @db.Timestamptz(3)
+  expiresAt        DateTime  @db.Timestamptz(3)
+  revokedAt        DateTime? @db.Timestamptz(3)
+  /// LOGOUT | REVOKED | REUSE_DETECTED
+  revokedReason    String?   @db.VarChar(30)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([tenantId, userId, revokedAt])
+  @@map("sessions")
+}
+
+/// Append-only: never updated or deleted (enforced by the tenant Prisma extension).
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @db.Uuid
+  userId     String?  @db.Uuid
+  sessionId  String?  @db.Uuid
+  deviceName String?  @db.VarChar(100)
+  ip         String?  @db.VarChar(45)
+  action     String   @db.VarChar(60)
+  entity     String   @db.VarChar(60)
+  entityId   String?  @db.VarChar(64)
+  before     Json?
+  after      Json?
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, entity, entityId])
+  @@map("audit_logs")
+}
+
+/// Last number used per tenant, document type and year. Incremented under SELECT ... FOR UPDATE.
+model DocumentSequence {
+  tenantId   String  @db.Uuid
+  docType    DocType
+  year       Int     @db.SmallInt
+  lastNumber Int     @default(0)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@id([tenantId, docType, year])
+  @@map("document_sequences")
+}
+
+model IdempotencyKey {
+  id             String            @id @default(uuid()) @db.Uuid
+  tenantId       String            @db.Uuid
+  key            String            @db.VarChar(100)
+  method         String            @db.VarChar(10)
+  path           String            @db.VarChar(255)
+  /// sha256 of method + path + canonical JSON body.
+  requestHash    String            @db.Char(64)
+  status         IdempotencyStatus @default(IN_PROGRESS)
+  responseStatus Int?              @db.SmallInt
+  responseBody   Json?
+  createdAt      DateTime          @default(now()) @db.Timestamptz(3)
+  completedAt    DateTime?         @db.Timestamptz(3)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, key])
+  @@index([tenantId, createdAt])
+  @@map("idempotency_keys")
+}
