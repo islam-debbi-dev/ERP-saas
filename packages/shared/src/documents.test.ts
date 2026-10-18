@@ -49,3 +49,40 @@ describe('computeTotals', () => {
     ]);
   });
 });
+
+describe('computeTotals with discounts', () => {
+  it('applies the line discount before rounding the line', () => {
+    // 3 x 1 000 at 10 % = 2 700; 7 x 33.33 at 2.5 % = 227.477... -> 227.48
+    const r = computeTotals(
+      [
+        { qty: '3', unitPrice: '1000', tvaRate: '19', discountPct: '10' },
+        { qty: '7', unitPrice: '33.33', tvaRate: '9', discountPct: '2.5' },
+      ],
+      true,
+    );
+    expect(r.lines.map((l) => l.lineHt.toString())).toEqual(['2700', '227.48']);
+    expect(r.totalTva.toString()).toBe('533.47'); // 513 + 20.4732 -> 20.47
+    expect(r.totalTtc.toString()).toBe('3460.95');
+  });
+
+  it('no discount and 0 % give the same result', () => {
+    const a = computeTotals([{ qty: '2', unitPrice: '10.005', tvaRate: '19' }], true);
+    const b = computeTotals(
+      [{ qty: '2', unitPrice: '10.005', tvaRate: '19', discountPct: '0' }],
+      true,
+    );
+    expect(a.totalTtc.toString()).toBe(b.totalTtc.toString());
+  });
+
+  it('100 % discount gives a free line; IFU ignores TVA but keeps discounts', () => {
+    const r = computeTotals(
+      [
+        { qty: '1', unitPrice: '500', tvaRate: '19', discountPct: '100' },
+        { qty: '4', unitPrice: '250', tvaRate: '19', discountPct: '5' },
+      ],
+      false,
+    );
+    expect(r.lines.map((l) => l.lineHt.toString())).toEqual(['0', '950']);
+    expect(r.totalTtc.toString()).toBe('950');
+  });
+});

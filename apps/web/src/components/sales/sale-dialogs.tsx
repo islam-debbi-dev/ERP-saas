@@ -1,0 +1,246 @@
+'use client';
+
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import {
+  formatDA,
+  parseDA,
+  qty,
+  type ReturnDisposition,
+  type SaleDto,
+  type SaleResultDto,
+} from '@erp/shared';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { NativeSelect } from '@/components/ui/native-select';
+import { api } from '@/lib/api-client';
+import { useUnitLabel } from '@/lib/catalog';
+import { clientKeys } from '@/lib/clients';
+import { saleKeys } from '@/lib/sales';
+import { formatQty, stockKeys } from '@/lib/stock';
+import { useErrorMessage } from '@/lib/use-error-message';
+import { useIdempotencyKey } from '@/lib/use-idempotency-key';
+import { isolateLtr } from '@/lib/utils';
+
+interface DialogProps {
+  sale: SaleDto;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+function useSaleAction(sale: SaleDto, onDone: (r: SaleResultDto) => void) {
+  const queryClient = useQueryClient();
+  const errorMessage = useErrorMessage();
+  return useMutation({
+    mutationFn: ({ path, body, key }: { path: string; body: object; key: string }) =>
+      api.request<SaleResultDto>(path, { method: 'POST', body, idempotencyKey: key }),
+    onSuccess: (r) => {
+      queryClient.setQueryData(saleKeys.one(sale.id), r.sale);
+      void queryClient.invalidateQueries({ queryKey: saleKeys.all });
+      void queryClient.invalidateQueries({ queryKey: stockKeys.all });
+      void queryClient.invalidateQueries({ queryKey: clientKeys.all });
+      onDone(r);
+    },
+    onError: (err) => toast.error(errorMessage(err)),
+  });
+}
+
+export function CancelSaleDialog({ sale, open, onOpenChange }: DialogProps) {
+  const t = useTranslations('sales');
+  const key = useIdempotencyKey(open);
+  const [reason, setReason] = useState('');
+  const action = useSaleAction(sale, () => {
+    toast.success(t('cancelled'));
+    onOpenChange(false);
+  });
+  const valid = reason.trim().length >= 3;
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <form
+          className="grid gap-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (valid && !action.isPending) {
+              action.mutate({
+                path: `/sales/${sale.id}/cancel`,
+                key,
+                body: { reason: reason.trim() },
+              });
+            }
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle>
+              {sale.status === 'DRAFT' ? t('cancelDraftTitle') : t('cancelTitle')}
+            </DialogTitle>
+            <DialogDescription>
+              {sale.status === 'DRAFT'
+                ? t('cancelDraftBody')
+                : sale.sourceBls.length > 0
+                  ? t('cancelInvoiceBody')
+                  : t('cancelBody')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="cancel-reason">{t('reason')}</Label>
+            <Input
+              id="cancel-reason"
+              autoFocus
+              required
+              minLength={3}
+              maxLength={255}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              {t('keep')}
+            </Button>
+            <Button type="submit" variant="destructive" disabled={!valid || action.isPending}>
+              {action.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
+              {t('confirmCancel')}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function ReturnDialog({ sale, open, onOpenChange }: DialogProps) {
+  const t = useTranslations('sales');
+  const unitLabel = useUnitLabel();
+  const key = useIdempotencyKey(open);
+  const [quantities, setQuantities] = useState<Record<string, string>>({});
+  const [disposition, setDisposition] = useState<ReturnDisposition>('RESTOCK');
+  const [reason, setReason] = useState('');
+  const action = useSaleAction(sale, (r) => {
+    toast.success(t('returned', { number: r.sale.returns.at(-1)?.number ?? '' }));
+    onOpenChange(false);
+    setQuantities({});
+    setReason('');
+  });
+
+  /** What is left to return, in the line's unit. */
+  const available = (l: SaleDto['lines'][number]) =>
+    qty(l.qtyBase).minus(l.returnedQtyBase).div(l.factorToBase);
+  const picked = sale.lines.flatMap((l) => {
+    const q = parseDA(quantities[l.id] ?? '');
+    return q && q.gt(0) ? [{ line: l, qty: q }] : [];
+  });
+  const tooMuch = picked.some((p) => p.qty.gt(available(p.line)));
+  const valid = picked.length > 0 && !tooMuch && reason.trim().length >= 3;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl">
+        <form
+          className="grid gap-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!valid || action.isPending) return;
+            action.mutate({
+              path: `/sales/${sale.id}/returns`,
+              key,
+              body: {
+                disposition,
+                reason: reason.trim(),
+                lines: picked.map((p) => ({ saleLineId: p.line.id, qty: p.qty.toString() })),
+              },
+            });
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle>{t('returnTitle')}</DialogTitle>
+            <DialogDescription>{t('returnHelp')}</DialogDescription>
+          </DialogHeader>
+          <ul className="max-h-72 divide-y overflow-y-auto rounded-md border">
+            {sale.lines.map((l) => {
+              const left = available(l);
+              const q = parseDA(quantities[l.id] ?? '');
+              return (
+                <li
+                  key={l.id}
+                  className="flex flex-wrap items-center justify-between gap-3 px-3 py-2"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium">{l.designation}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t('leftToReturn', {
+                        qty: isolateLtr(formatQty(left.toString())),
+                        unit: unitLabel({ code: l.unitCode, name: l.unitName }),
+                        price: isolateLtr(formatDA(l.unitPriceHt)),
+                      })}
+                    </p>
+                  </div>
+                  <Input
+                    aria-label={t('returnQtyOf', { product: l.designation })}
+                    dir="ltr"
+                    inputMode="decimal"
+                    className="num w-28"
+                    disabled={left.lte(0)}
+                    aria-invalid={q !== null && q.gt(left)}
+                    value={quantities[l.id] ?? ''}
+                    onChange={(e) => setQuantities((s) => ({ ...s, [l.id]: e.target.value }))}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="return-disposition">{t('disposition')}</Label>
+              <NativeSelect
+                id="return-disposition"
+                value={disposition}
+                onChange={(e) => setDisposition(e.target.value as ReturnDisposition)}
+              >
+                <option value="RESTOCK">{t('dispositionRESTOCK')}</option>
+                <option value="DAMAGED">{t('dispositionDAMAGED')}</option>
+              </NativeSelect>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="return-reason">{t('reason')}</Label>
+              <Input
+                id="return-reason"
+                required
+                minLength={3}
+                maxLength={255}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+            </div>
+          </div>
+          {tooMuch ? (
+            <p role="status" className="text-sm text-destructive">
+              {t('returnTooMuch')}
+            </p>
+          ) : null}
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              {t('keep')}
+            </Button>
+            <Button type="submit" disabled={!valid || action.isPending}>
+              {action.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
+              {t('confirmReturn')}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -120,3 +120,41 @@ export const ClientLedgerType = {
   REVERSAL: 'REVERSAL',
 } as const;
 export type ClientLedgerType = (typeof ClientLedgerType)[keyof typeof ClientLedgerType];
+
+export const SaleType = {
+  /** Bon de livraison: the everyday sale document. */
+  BL: 'BL',
+  FACTURE: 'FACTURE',
+} as const;
+export type SaleType = (typeof SaleType)[keyof typeof SaleType];
+
+export const SaleStatus = {
+  DRAFT: 'DRAFT',
+  VALIDATED: 'VALIDATED',
+  CANCELLED: 'CANCELLED',
+} as const;
+export type SaleStatus = (typeof SaleStatus)[keyof typeof SaleStatus];
+
+export const PaymentMode = {
+  ESPECES: 'ESPECES',
+  CHEQUE: 'CHEQUE',
+  VIREMENT: 'VIREMENT',
+} as const;
+export type PaymentMode = (typeof PaymentMode)[keyof typeof PaymentMode];
+export const PAYMENT_MODES = Object.values(PaymentMode);
+
+export const PaymentStatus = {
+  VALID: 'VALID',
+  CANCELLED: 'CANCELLED',
+  BOUNCED: 'BOUNCED',
+} as const;
+export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus];
+
+/** What happens to goods a client brings back. */
+export const ReturnDisposition = {
+  /** Back on the shelf. */
+  RESTOCK: 'RESTOCK',
+  /** Taken back but unsellable: returned then written off (ADJUSTMENT, CASSE). */
+  DAMAGED: 'DAMAGED',
+} as const;
+export type ReturnDisposition = (typeof ReturnDisposition)[keyof typeof ReturnDisposition];

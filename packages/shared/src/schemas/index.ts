@@ -5,3 +5,4 @@ export * from './common';
 export * from './purchases';
 export * from './stock';
 export * from './tenant-settings';
+export * from './sales';

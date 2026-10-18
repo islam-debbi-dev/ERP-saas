@@ -99,6 +99,11 @@ model Tenant {
   clients             Client[]
   clientLedger        ClientLedgerEntry[]
   clientBalances      ClientBalance[]
+  sales               Sale[]
+  saleLines           SaleLine[]
+  saleReturns         SaleReturn[]
+  saleReturnLines     SaleReturnLine[]
+  payments            Payment[]
 
   @@map("tenants")
 }
@@ -289,6 +294,7 @@ model Product {
   inventoryLines      InventoryLine[]
   purchaseLines       PurchaseLine[]
   purchaseReturnLines PurchaseReturnLine[]
+  saleLines           SaleLine[]
 
   @@unique([tenantId, reference])
   @@index([tenantId, designation])
@@ -654,6 +660,8 @@ model Client {
   priceLevel PriceLevel?         @relation(fields: [priceLevelId], references: [id], onDelete: Restrict)
   ledger     ClientLedgerEntry[]
   balance    ClientBalance?
+  sales      Sale[]
+  payments   Payment[]
 
   @@unique([tenantId, code])
   @@index([tenantId, name])
@@ -701,4 +709,202 @@ model ClientBalance {
 
   @@index([tenantId, balance])
   @@map("client_balances")
+}
+
+// ---------------------------------------------------------------- sales
+
+enum SaleType {
+  BL
+  FACTURE
+}
+
+enum SaleStatus {
+  DRAFT
+  VALIDATED
+  CANCELLED
+}
+
+enum PaymentMode {
+  ESPECES
+  CHEQUE
+  VIREMENT
+}
+
+enum PaymentStatus {
+  VALID
+  CANCELLED
+  BOUNCED
+}
+
+enum ReturnDisposition {
+  RESTOCK
+  DAMAGED
+}
+
+/// A sale document: bon de livraison or facture. A facture either sells directly
+/// (stock + ledger effects) or groups validated BLs (`sourceBls`, no stock effect).
+model Sale {
+  id             String       @id @default(uuid()) @db.Uuid
+  tenantId       String       @db.Uuid
+  type           SaleType
+  number         String?      @db.VarChar(20)
+  status         SaleStatus   @default(DRAFT)
+  /// null = client comptoir: everything is paid at once, nothing goes on credit.
+  clientId       String?      @db.Uuid
+  /// Client name, address and legal IDs as they were at validation (printing).
+  clientSnapshot Json?
+  documentDate   DateTime     @db.Date
+  priceLevelId   String?      @db.Uuid
+  note           String?      @db.VarChar(255)
+  /// The tenant's TVA regime when the sale was validated (frozen for returns).
+  assujettiTva   Boolean      @default(true)
+  totalHt        Decimal      @default(0) @db.Decimal(14, 2)
+  totalTva       Decimal      @default(0) @db.Decimal(14, 2)
+  totalTtc       Decimal      @default(0) @db.Decimal(14, 2)
+  /// Timbre fiscal (factures paid in cash). Computed from phase 8; 0 until then.
+  timbre         Decimal      @default(0) @db.Decimal(14, 2)
+  /// Kept part of what was handed over (never more than TTC).
+  paidAmount     Decimal      @default(0) @db.Decimal(14, 2)
+  paymentMode    PaymentMode?
+  /// Set on a BL once it is grouped in a facture.
+  invoiceId      String?      @db.Uuid
+  /// Validated over the plafond by a manager.
+  creditOverride Boolean      @default(false)
+  cancelReason   String?      @db.VarChar(255)
+  version        Int          @default(1)
+  createdBy      String?      @db.Uuid
+  validatedBy    String?      @db.Uuid
+  validatedAt    DateTime?    @db.Timestamptz(3)
+  cancelledBy    String?      @db.Uuid
+  cancelledAt    DateTime?    @db.Timestamptz(3)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
+
+  tenant    Tenant       @relation(fields: [tenantId], references: [id])
+  client    Client?      @relation(fields: [clientId], references: [id])
+  invoice   Sale?        @relation("InvoiceBls", fields: [invoiceId], references: [id])
+  sourceBls Sale[]       @relation("InvoiceBls")
+  lines     SaleLine[]
+  returns   SaleReturn[]
+  payments  Payment[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, clientId])
+  @@index([tenantId, type, status])
+  @@index([tenantId, invoiceId])
+  @@map("sales")
+}
+
+/// A line keeps a frozen copy of the product and the price as they were (AGENTS.md rule 9).
+model SaleLine {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @db.Uuid
+  saleId       String   @db.Uuid
+  position     Int      @db.SmallInt
+  productId    String   @db.Uuid
+  unitId       String   @db.Uuid
+  designation  String   @db.VarChar(160)
+  unitCode     String   @db.VarChar(40)
+  unitName     String?  @db.VarChar(40)
+  factorToBase Decimal  @db.Decimal(14, 3)
+  qty          Decimal  @db.Decimal(14, 3)
+  qtyBase      Decimal  @db.Decimal(14, 3)
+  /// Price of the client's level when the line was entered (audit of overrides).
+  listPriceHt  Decimal? @db.Decimal(14, 2)
+  /// Price HT of one `unitId` actually charged.
+  unitPriceHt  Decimal  @db.Decimal(14, 2)
+  discountPct  Decimal  @default(0) @db.Decimal(5, 2)
+  tvaRate      Decimal  @db.Decimal(5, 2)
+  lineHt       Decimal  @db.Decimal(14, 2)
+  /// CUMP of one base unit at validation (margin, and the value of returns).
+  unitCostBase Decimal  @default(0) @db.Decimal(14, 4)
+  /// For facture lines copied from a BL line.
+  sourceLineId String?  @db.Uuid
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant      Tenant           @relation(fields: [tenantId], references: [id])
+  sale        Sale             @relation(fields: [saleId], references: [id])
+  product     Product          @relation(fields: [productId], references: [id])
+  returnLines SaleReturnLine[]
+
+  @@index([tenantId, saleId])
+  @@index([tenantId, productId])
+  @@map("sale_lines")
+}
+
+/// Avoir: goods brought back by the client, at the frozen sale price.
+model SaleReturn {
+  id          String            @id @default(uuid()) @db.Uuid
+  tenantId    String            @db.Uuid
+  number      String            @db.VarChar(20)
+  saleId      String            @db.Uuid
+  clientId    String?           @db.Uuid
+  disposition ReturnDisposition
+  reason      String            @db.VarChar(255)
+  totalHt     Decimal           @db.Decimal(14, 2)
+  totalTva    Decimal           @db.Decimal(14, 2)
+  totalTtc    Decimal           @db.Decimal(14, 2)
+  createdBy   String?           @db.Uuid
+  createdAt   DateTime          @default(now()) @db.Timestamptz(3)
+
+  tenant Tenant           @relation(fields: [tenantId], references: [id])
+  sale   Sale             @relation(fields: [saleId], references: [id])
+  lines  SaleReturnLine[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId, saleId])
+  @@map("sale_returns")
+}
+
+model SaleReturnLine {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  returnId    String   @db.Uuid
+  saleLineId  String   @db.Uuid
+  productId   String   @db.Uuid
+  qty         Decimal  @db.Decimal(14, 3)
+  qtyBase     Decimal  @db.Decimal(14, 3)
+  unitPriceHt Decimal  @db.Decimal(14, 2)
+  discountPct Decimal  @default(0) @db.Decimal(5, 2)
+  tvaRate     Decimal  @db.Decimal(5, 2)
+  lineHt      Decimal  @db.Decimal(14, 2)
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant   Tenant     @relation(fields: [tenantId], references: [id])
+  return   SaleReturn @relation(fields: [returnId], references: [id])
+  saleLine SaleLine   @relation(fields: [saleLineId], references: [id])
+
+  @@index([tenantId, returnId])
+  @@index([tenantId, saleLineId])
+  @@map("sale_return_lines")
+}
+
+/// Versement: money received. Created at sale time for the paid part (also for
+/// counter sales, without client); phase 7 adds standalone versements.
+model Payment {
+  id         String        @id @default(uuid()) @db.Uuid
+  tenantId   String        @db.Uuid
+  number     String        @db.VarChar(20)
+  clientId   String?       @db.Uuid
+  saleId     String?       @db.Uuid
+  amount     Decimal       @db.Decimal(14, 2)
+  mode       PaymentMode
+  status     PaymentStatus @default(VALID)
+  reference  String?       @db.VarChar(80)
+  note       String?       @db.VarChar(255)
+  receivedBy String?       @db.Uuid
+  receivedAt DateTime      @default(now()) @db.Timestamptz(3)
+  createdAt  DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime      @updatedAt @db.Timestamptz(3)
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id])
+  client Client? @relation(fields: [clientId], references: [id])
+  sale   Sale?   @relation(fields: [saleId], references: [id])
+
+  @@unique([tenantId, number])
+  @@index([tenantId, receivedAt])
+  @@index([tenantId, clientId])
+  @@index([tenantId, saleId])
+  @@map("payments")
 }
