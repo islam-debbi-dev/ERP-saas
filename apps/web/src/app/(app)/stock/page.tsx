@@ -1,8 +1,8 @@
+import { StockLevels } from '@/components/stock/stock-levels';
 import { titled } from '@/lib/page-metadata';
-import { ComingSoon } from '@/components/shared/coming-soon';
 
 export const generateMetadata = titled('nav.stock');
 
-export default function Page() {
-  return <ComingSoon title="stock" />;
+export default function StockPage() {
+  return <StockLevels />;
 }

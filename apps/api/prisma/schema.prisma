@@ -36,6 +36,7 @@ enum DocType {
   AV
   BR
   VER
+  INV
 }
 
 enum IdempotencyStatus {
@@ -85,6 +86,10 @@ model Tenant {
   products          Product[]
   productUnits      ProductUnit[]
   productPrices     ProductPrice[]
+  productStocks     ProductStock[]
+  stockMovements    StockMovement[]
+  inventories       Inventory[]
+  inventoryLines    InventoryLine[]
 
   @@map("tenants")
 }
@@ -264,11 +269,14 @@ model Product {
   createdAt   DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
 
-  tenant   Tenant         @relation(fields: [tenantId], references: [id])
-  category Category?      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  baseUnit Unit           @relation(fields: [baseUnitId], references: [id])
-  units    ProductUnit[]
-  prices   ProductPrice[]
+  tenant         Tenant          @relation(fields: [tenantId], references: [id])
+  category       Category?       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  baseUnit       Unit            @relation(fields: [baseUnitId], references: [id])
+  units          ProductUnit[]
+  prices         ProductPrice[]
+  stock          ProductStock?
+  stockMovements StockMovement[]
+  inventoryLines InventoryLine[]
 
   @@unique([tenantId, reference])
   @@index([tenantId, designation])
@@ -323,4 +331,124 @@ model ProductPrice {
   @@unique([productUnitId, priceLevelId])
   @@index([tenantId, productId])
   @@map("product_prices")
+}
+
+// ---------------------------------------------------------------- stock (phase 3)
+
+enum StockMovementType {
+  OPENING
+  PURCHASE
+  PURCHASE_RETURN
+  SALE
+  SALE_RETURN
+  ADJUSTMENT
+  INVENTORY
+}
+
+enum AdjustmentReason {
+  CASSE
+  PERTE
+  ERREUR
+  AUTRE
+}
+
+enum InventoryStatus {
+  OPEN
+  VALIDATED
+  CANCELLED
+}
+
+/// Stock ledger. Append-only (tenant extension + DB trigger): never updated or deleted.
+/// Written only through StockService.applyMovements, under the ProductStock row lock.
+model StockMovement {
+  id           String            @id @default(uuid()) @db.Uuid
+  /// Insertion order. Movements of one product are written under its row lock, so
+  /// seq is their true order (createdAt is the transaction start, shared by a batch).
+  seq          BigInt            @unique @default(autoincrement())
+  tenantId     String            @db.Uuid
+  productId    String            @db.Uuid
+  type         StockMovementType
+  /// Signed quantity in the product's base unit (+ in, - out).
+  qtyBase      Decimal           @db.Decimal(14, 3)
+  /// Cost of one base unit for entries (4 decimals, see docs: CUMP precision).
+  unitCost     Decimal?          @db.Decimal(14, 4)
+  /// Stock and CUMP right after this movement (running balance of the stock card).
+  balanceAfter Decimal           @db.Decimal(14, 3)
+  avgCostAfter Decimal           @db.Decimal(14, 4)
+  reason       AdjustmentReason?
+  /// What caused the movement (Inventory, Purchase, Sale...) and its id.
+  refType      String?           @db.VarChar(30)
+  refId        String?           @db.Uuid
+  note         String?           @db.VarChar(255)
+  createdBy    String?           @db.Uuid
+  createdAt    DateTime          @default(now()) @db.Timestamptz(3)
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([tenantId, productId, seq])
+  @@index([tenantId, refType, refId])
+  @@map("stock_movements")
+}
+
+/// Cached stock level and CUMP per product, updated in the same transaction as the
+/// movement and reconcilable from the ledger (GET /stock/reconcile).
+model ProductStock {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @db.Uuid
+  productId  String   @unique @db.Uuid
+  qtyBase    Decimal  @default(0) @db.Decimal(14, 3)
+  avgCost    Decimal  @default(0) @db.Decimal(14, 4)
+  /// Opening stock is one-time; checked under the row lock.
+  hasOpening Boolean  @default(false)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(3)
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@map("product_stocks")
+}
+
+/// A physical stock count (inventaire). Validating writes INVENTORY movements for differences.
+model Inventory {
+  id          String          @id @default(uuid()) @db.Uuid
+  tenantId    String          @db.Uuid
+  number      String          @db.VarChar(20)
+  status      InventoryStatus @default(OPEN)
+  note        String?         @db.VarChar(255)
+  createdBy   String?         @db.Uuid
+  validatedBy String?         @db.Uuid
+  validatedAt DateTime?       @db.Timestamptz(3)
+  cancelledAt DateTime?       @db.Timestamptz(3)
+  createdAt   DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime        @updatedAt @db.Timestamptz(3)
+
+  tenant Tenant          @relation(fields: [tenantId], references: [id])
+  lines  InventoryLine[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId, createdAt])
+  @@map("inventories")
+}
+
+model InventoryLine {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @db.Uuid
+  inventoryId     String   @db.Uuid
+  productId       String   @db.Uuid
+  countedQtyBase  Decimal  @db.Decimal(14, 3)
+  /// Frozen at validation (null while the count is open).
+  expectedQtyBase Decimal? @db.Decimal(14, 3)
+  diffQtyBase     Decimal? @db.Decimal(14, 3)
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(3)
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  inventory Inventory @relation(fields: [inventoryId], references: [id])
+  product   Product   @relation(fields: [productId], references: [id])
+
+  @@unique([inventoryId, productId])
+  @@index([tenantId, inventoryId])
+  @@map("inventory_lines")
 }
