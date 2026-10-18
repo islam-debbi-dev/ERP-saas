@@ -6,6 +6,7 @@ import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { ClientsModule } from './clients/clients.module';
+import { SalesModule } from './sales/sales.module';
 import { AllExceptionsFilter } from './common/all-exceptions.filter';
 import { RequestContextMiddleware } from './common/request-context.middleware';
 import { APP_CONFIG, type AppConfig } from './config/app-config';
@@ -50,6 +51,7 @@ import { TenantsModule } from './tenants/tenants.module';
     StockModule,
     PurchasesModule,
     ClientsModule,
+    SalesModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],

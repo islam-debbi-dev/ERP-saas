@@ -94,6 +94,27 @@ export class ClientAccountService {
   }
 
   /**
+   * Net amount a document put on the account (sum of its entries), so a
+   * cancellation can reverse exactly what is left. Call with the client locked or
+   * the document locked, so the sum cannot change before the reversal is posted.
+   */
+  async netOf(
+    tx: Tx,
+    refs: { refType: string; refIds: string[]; types?: ClientLedgerType[] },
+  ): Promise<Money> {
+    if (refs.refIds.length === 0) return money(0);
+    const agg = await tx.clientLedgerEntry.aggregate({
+      where: {
+        refType: refs.refType,
+        refId: { in: refs.refIds },
+        ...(refs.types ? { type: { in: refs.types } } : {}),
+      },
+      _sum: { amount: true },
+    });
+    return money(agg._sum.amount?.toString() ?? '0');
+  }
+
+  /**
    * Would `additional` push the client over the plafond? Locks the balance row, so
    * the answer stays true until the caller's transaction posts the sale.
    */
