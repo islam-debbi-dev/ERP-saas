@@ -156,7 +156,17 @@
     "CLIENT_CODE_TAKEN": "Ce code client est déjà utilisé.",
     "CLIENT_MODIFIED": "Ce client a été modifié par quelqu'un d'autre. Rechargez la page puis refaites vos changements.",
     "CLIENT_OPENING_ALREADY_SET": "Le solde d'ouverture de ce client est déjà saisi. Utilisez un ajustement pour corriger.",
-    "CREDIT_LIMIT_EXCEEDED": "Le plafond de crédit de ce client serait dépassé."
+    "CREDIT_LIMIT_EXCEEDED": "Le plafond de crédit de ce client serait dépassé.",
+    "SALE_NOT_DRAFT": "Cette vente est déjà validée ou annulée.",
+    "SALE_NOT_VALIDATED": "Seule une vente validée permet cette action.",
+    "SALE_EMPTY": "Ajoutez au moins une ligne avant de valider.",
+    "SALE_MODIFIED": "Cette vente a été modifiée par quelqu'un d'autre. Rechargez la page puis refaites vos changements.",
+    "SALE_INVOICED": "Ce BL est déjà facturé. Annulez d'abord la facture.",
+    "INVOICE_SOURCES_INVALID": "Choisissez des BL validés, non facturés, du même client.",
+    "CLIENT_REQUIRED_FOR_CREDIT": "Choisissez un client pour vendre à crédit, ou encaissez la totalité.",
+    "PRICE_OVERRIDE_FORBIDDEN": "Seul un gérant peut changer le prix ou accorder une remise.",
+    "PRICE_MISSING": "Ce produit n'a pas de prix pour ce niveau. Demandez à un gérant de le saisir.",
+    "RETURN_EXCEEDS_SOLD": "La quantité retournée dépasse la quantité vendue restante."
   },
   "units": {
     "PIECE": "Pièce",

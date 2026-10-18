@@ -1,6 +1,6 @@
 /**
  * Document totals shared by purchases (BR), sales (BL, facture) and avoirs.
- * Line HT is rounded to 2 decimals; TVA is computed per rate on the summed HT of
+ * Line HT (after the line discount) is rounded to 2 decimals; TVA is computed per rate on the summed HT of
  * that rate (how Algerian factures present it: "TVA 19 % sur ...").
  */
 import { type MoneyInput, money, type Money, round2 } from './money';
@@ -10,6 +10,8 @@ export interface TotalsLineInput {
   unitPrice: MoneyInput;
   /** Percent, e.g. "19". */
   tvaRate: MoneyInput;
+  /** Line discount in percent (remise), applied before rounding the line. */
+  discountPct?: MoneyInput;
 }
 
 export interface DocumentTotals {
@@ -23,7 +25,12 @@ export interface DocumentTotals {
 
 export function computeTotals(lines: TotalsLineInput[], assujettiTva: boolean): DocumentTotals {
   const computed = lines.map((l) => ({
-    lineHt: round2(money(l.qty).times(money(l.unitPrice))),
+    lineHt: round2(
+      money(l.qty)
+        .times(money(l.unitPrice))
+        .times(money(100).minus(money(l.discountPct ?? 0)))
+        .div(100),
+    ),
     rate: money(l.tvaRate),
   }));
   const totalHt = computed.reduce<Money>((acc, l) => acc.plus(l.lineHt), money(0));

@@ -156,7 +156,17 @@
     "CLIENT_CODE_TAKEN": "This customer code is already used.",
     "CLIENT_MODIFIED": "Someone else changed this customer. Reload the page and make your changes again.",
     "CLIENT_OPENING_ALREADY_SET": "This customer's opening balance is already set. Use an adjustment to correct it.",
-    "CREDIT_LIMIT_EXCEEDED": "This customer's credit limit would be exceeded."
+    "CREDIT_LIMIT_EXCEEDED": "This customer's credit limit would be exceeded.",
+    "SALE_NOT_DRAFT": "This sale is already validated or cancelled.",
+    "SALE_NOT_VALIDATED": "Only a validated sale allows this action.",
+    "SALE_EMPTY": "Add at least one line before validating.",
+    "SALE_MODIFIED": "Someone else changed this sale. Reload the page and redo your changes.",
+    "SALE_INVOICED": "This BL is already invoiced. Cancel the facture first.",
+    "INVOICE_SOURCES_INVALID": "Pick validated, not yet invoiced BLs of the same client.",
+    "CLIENT_REQUIRED_FOR_CREDIT": "Pick a client to sell on credit, or take the full amount.",
+    "PRICE_OVERRIDE_FORBIDDEN": "Only a manager can change the price or give a discount.",
+    "PRICE_MISSING": "This product has no price at this level. Ask a manager to set it.",
+    "RETURN_EXCEEDS_SOLD": "The returned quantity is more than what is left of the sale."
   },
   "units": {
     "PIECE": "Piece",
