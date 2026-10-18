@@ -14,3 +14,8 @@ coverage/
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# graphify knowledge graph output (local tool)
+graphify-out/
+next-env.d.ts
+*.tsbuildinfo
