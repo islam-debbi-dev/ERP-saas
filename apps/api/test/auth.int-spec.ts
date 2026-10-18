@@ -93,16 +93,24 @@ describe('auth', () => {
     expect((refreshed.body as AuthResponse).accessToken).toBeTruthy();
   });
 
-  it('rotates the refresh token; reusing an old one revokes the whole session', async () => {
+  const refreshNative = (refreshToken: string) =>
+    t.http().post('/auth/refresh').set('X-Client-Type', 'native').send({ refreshToken });
+
+  /** Pretends the last rotation of this session happened `seconds` ago. */
+  const ageRotation = (tenantId: string, sessionId: string, seconds: number) =>
+    asTenant(tenantId, () =>
+      t.prisma.db.session.update({
+        where: { id: sessionId },
+        data: { rotatedAt: new Date(Date.now() - seconds * 1000) },
+      }),
+    );
+
+  it('rotates the refresh token; reusing an old one after the grace window revokes the session', async () => {
     const reg = await registerTenant(t);
     const first = reg.auth.refreshToken;
+    const sessionId = first.split('.')[0]!;
 
-    const r1 = await t
-      .http()
-      .post('/auth/refresh')
-      .set('X-Client-Type', 'native')
-      .send({ refreshToken: first })
-      .expect(200);
+    const r1 = await refreshNative(first).expect(200);
     const second = (r1.body as AuthResponse).refreshToken!;
     expect(second).not.toBe(first);
     const access2 = (r1.body as AuthResponse).accessToken;
@@ -112,22 +120,13 @@ describe('auth', () => {
       .set(...bearer(access2))
       .expect(200);
 
-    // Replay of the old token: theft signal.
-    const reuse = await t
-      .http()
-      .post('/auth/refresh')
-      .set('X-Client-Type', 'native')
-      .send({ refreshToken: first })
-      .expect(401);
+    // Replay of the old token long after the rotation: theft signal.
+    await ageRotation(reg.tenantId, sessionId, 120);
+    const reuse = await refreshNative(first).expect(401);
     expect(reuse.body).toMatchObject({ code: ErrorCode.REFRESH_TOKEN_REUSED });
 
     // The legitimate latest token and access token are now dead too.
-    const after = await t
-      .http()
-      .post('/auth/refresh')
-      .set('X-Client-Type', 'native')
-      .send({ refreshToken: second })
-      .expect(401);
+    const after = await refreshNative(second).expect(401);
     expect(after.body).toMatchObject({ code: ErrorCode.SESSION_REVOKED });
     const me = await t
       .http()
@@ -142,18 +141,31 @@ describe('auth', () => {
     expect(audit).toBe(1);
   });
 
-  it('two concurrent refreshes with the same token: one wins, the session is then revoked', async () => {
+  it('a reload that lost the refresh response keeps the session (grace window)', async () => {
     const reg = await registerTenant(t);
-    const results = await Promise.all(
-      [1, 2].map(() =>
-        t
-          .http()
-          .post('/auth/refresh')
-          .set('X-Client-Type', 'native')
-          .send({ refreshToken: reg.auth.refreshToken }),
-      ),
-    );
-    expect(results.map((r) => r.status).sort()).toEqual([200, 401]);
+    const first = reg.auth.refreshToken;
+
+    // The browser sent `first`, the server rotated, but the response never arrived.
+    await refreshNative(first).expect(200);
+    // The next page load still holds `first`: accepted once more, with a new token.
+    const retry = await refreshNative(first).expect(200);
+    const latest = (retry.body as AuthResponse).refreshToken!;
+    await refreshNative(latest).expect(200);
+  });
+
+  it('a token from two rotations ago is reuse even inside the grace window', async () => {
+    const reg = await registerTenant(t);
+    const first = reg.auth.refreshToken;
+    const second = (await refreshNative(first).expect(200)).body as AuthResponse;
+    await refreshNative(second.refreshToken!).expect(200);
+    const res = await refreshNative(first).expect(401);
+    expect(res.body).toMatchObject({ code: ErrorCode.REFRESH_TOKEN_REUSED });
+  });
+
+  it('two concurrent refreshes with the same token both succeed (second uses the grace window)', async () => {
+    const reg = await registerTenant(t);
+    const results = await Promise.all([1, 2].map(() => refreshNative(reg.auth.refreshToken)));
+    expect(results.map((r) => r.status)).toEqual([200, 200]);
   });
 
   it('rejects malformed and unknown refresh tokens', async () => {

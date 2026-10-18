@@ -1,5 +1,8 @@
-import { ComingSoon } from '@/components/shared/coming-soon';
+import { titled } from '@/lib/page-metadata';
+import { ProductsList } from '@/components/products/products-list';
 
-export default function Page() {
-  return <ComingSoon title="products" />;
+export const generateMetadata = titled('nav.products');
+
+export default function ProductsPage() {
+  return <ProductsList />;
 }

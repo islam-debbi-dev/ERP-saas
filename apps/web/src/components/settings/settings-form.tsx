@@ -88,7 +88,9 @@ function Section({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle role="heading" aria-level={2}>
+          {title}
+        </CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-2">{children}</CardContent>
@@ -213,6 +215,8 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
       api.request<TenantSettingsResponse>('/tenant/settings', { method: 'PATCH', body: values }),
     onSuccess: (saved) => {
       queryClient.setQueryData(SETTINGS_KEY, saved);
+      // The number of price levels may have changed.
+      void queryClient.invalidateQueries({ queryKey: ['price-levels'] });
       toast.success(t('common.saved'));
     },
     onError: (err) => toast.error(errorMessage(err)),
@@ -269,7 +273,7 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
     <form
       onSubmit={(e) => void form.handleSubmit((v) => mutation.mutate(v))(e)}
       noValidate
-      className="grid gap-6"
+      className="grid grid-cols-[minmax(0,1fr)] gap-6"
     >
       {!canEdit ? (
         <Alert>
@@ -277,7 +281,10 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
         </Alert>
       ) : null}
 
-      <fieldset disabled={!canEdit || mutation.isPending} className="grid min-w-0 gap-6">
+      <fieldset
+        disabled={!canEdit || mutation.isPending}
+        className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6"
+      >
         <Section title={t('settings.headerSection')} description={t('settings.headerHelp')}>
           {text('raisonSociale', { wide: true })}
           {text('adresse', { wide: true, optional: true })}

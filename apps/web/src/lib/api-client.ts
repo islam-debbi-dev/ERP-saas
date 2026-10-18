@@ -1,4 +1,5 @@
 import type { ApiError as ApiErrorBody, AuthResponse } from '@erp/shared';
+import { sessionHint } from './session-hint';
 
 export class ApiError extends Error {
   constructor(
@@ -131,6 +132,7 @@ export class ApiClient {
 export const api = new ApiClient({
   baseUrl: process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:3001',
   onSessionEnd: () => {
+    sessionHint.set(false);
     if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
       // Full reload on purpose: drops every in-memory query and token of the old session.
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination

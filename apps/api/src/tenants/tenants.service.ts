@@ -6,6 +6,7 @@ import {
   type UpdateTenantSettingsInput,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
+import { CatalogService } from '../catalog/catalog.service';
 import { tenantContext } from '../common/tenant-context';
 import { type Tenant } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -47,6 +48,7 @@ export class TenantsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly catalog: CatalogService,
   ) {}
 
   async getSettings(): Promise<TenantSettingsResponse> {
@@ -72,6 +74,9 @@ export class TenantsService {
           timbreThreshold: normalizeAmount(input.timbreThreshold),
         },
       });
+      if (after.priceLevelCount > before.priceLevelCount) {
+        await this.catalog.ensurePriceLevels(tx, tenantId, after.priceLevelCount);
+      }
       await this.audit.log(tx, {
         action: 'TENANT_SETTINGS_UPDATED',
         entity: 'Tenant',

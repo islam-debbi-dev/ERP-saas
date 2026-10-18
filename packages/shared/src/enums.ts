@@ -32,3 +32,36 @@ export const NegativeStockMode = {
   BLOCK: 'BLOCK',
 } as const;
 export type NegativeStockMode = (typeof NegativeStockMode)[keyof typeof NegativeStockMode];
+
+/**
+ * Units every tenant starts with. Codes are stable identifiers translated in the
+ * UI (`units.PIECE` …); tenants can add custom units with a free-text name.
+ */
+export const DEFAULT_UNITS = [
+  { code: 'PIECE', allowsDecimal: false },
+  { code: 'KG', allowsDecimal: true },
+  { code: 'LITRE', allowsDecimal: true },
+  { code: 'METRE', allowsDecimal: true },
+  { code: 'CARTON', allowsDecimal: false },
+  { code: 'FARDEAU', allowsDecimal: false },
+  { code: 'SAC', allowsDecimal: false },
+  { code: 'BOITE', allowsDecimal: false },
+  { code: 'PAQUET', allowsDecimal: false },
+] as const;
+export type DefaultUnitCode = (typeof DEFAULT_UNITS)[number]['code'];
+
+/** Names given to price levels 1..5 when a tenant is created; editable afterwards. */
+export const DEFAULT_PRICE_LEVEL_NAMES = [
+  'Gros',
+  'Demi-gros',
+  'Détail',
+  'Niveau 4',
+  'Niveau 5',
+] as const;
+export const MAX_PRICE_LEVELS = 5;
+
+/**
+ * TVA rates offered in the product form. Only a UI shortcut: the rate is stored
+ * on each product and the API accepts any value between 0 and 100.
+ */
+export const COMMON_TVA_RATES = ['0', '9', '19'] as const;

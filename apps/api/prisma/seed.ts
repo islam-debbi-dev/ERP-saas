@@ -5,6 +5,7 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as argon2 from 'argon2';
+import { createDefaultUnits, ensurePriceLevels } from '../src/catalog/catalog-defaults';
 import { PrismaClient } from '../src/generated/prisma/client';
 
 export const DEMO_TENANT_ID = '00000000-0000-4000-8000-00000000d3e0';
@@ -30,6 +31,10 @@ async function main(): Promise<void> {
           assujettiTva: true,
         },
       });
+
+      // Idempotent too: skipDuplicates on the unique keys.
+      await createDefaultUnits(tx, tenant.id);
+      await ensurePriceLevels(tx, tenant.id, tenant.priceLevelCount);
 
       const existing = await tx.user.findUnique({ where: { email: DEMO_OWNER_EMAIL } });
       if (existing) {

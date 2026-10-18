@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { CreditLimitMode, NegativeStockMode } from '../enums';
-import { parseDA } from '../money';
+import { amountString, percentString } from './common';
 
 const optionalText = (max: number) =>
   z
@@ -10,17 +10,7 @@ const optionalText = (max: number) =>
     .transform((v) => (v === '' ? null : v))
     .nullable();
 
-/** A non-negative money amount sent as a string (`"1500.00"`, `"1 500,00"`). */
-const moneyString = z.string().refine((v) => {
-  const parsed = parseDA(v);
-  return parsed !== null && !parsed.isNegative() && parsed.decimalPlaces() <= 2;
-}, 'invalid_amount');
-
-/** A rate in percent, 0 to 100, at most 4 decimals (e.g. `"1"` for 1 %). */
-const percentString = z.string().refine((v) => {
-  const parsed = parseDA(v);
-  return parsed !== null && !parsed.isNegative() && parsed.lte(100) && parsed.decimalPlaces() <= 4;
-}, 'invalid_rate');
+const timbreRateString = percentString(4);
 
 /** Tenant settings, see the settings table in docs/domain.md. */
 export const tenantSettingsSchema = z.object({
@@ -44,10 +34,10 @@ export const tenantSettingsSchema = z.object({
   priceLevelCount: z.number().int().min(1).max(5),
   // Timbre fiscal rule: off by default; values come from the current loi de finances.
   timbreEnabled: z.boolean(),
-  timbreRate: percentString.nullable(),
-  timbreMin: moneyString.nullable(),
-  timbreMax: moneyString.nullable(),
-  timbreThreshold: moneyString.nullable(),
+  timbreRate: timbreRateString.nullable(),
+  timbreMin: amountString.nullable(),
+  timbreMax: amountString.nullable(),
+  timbreThreshold: amountString.nullable(),
 });
 export type TenantSettings = z.infer<typeof tenantSettingsSchema>;
 /** What the API returns: same fields, amounts as canonical strings. */

@@ -82,28 +82,30 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {NAV_GROUPS.map((group) => (
-          <SidebarGroup key={group.key}>
-            <SidebarGroupLabel>{t(`nav.${group.key}`)}</SidebarGroupLabel>
-            <SidebarMenu>
-              {group.items.map((item) => {
-                const active = isActive(pathname, item.url);
-                const label = t(`nav.${item.key}`);
-                const Icon = item.icon;
-                return (
-                  <SidebarMenuItem key={item.key}>
-                    <SidebarMenuButton asChild isActive={active} tooltip={label}>
-                      <Link href={item.url} aria-current={active ? 'page' : undefined}>
-                        <Icon aria-hidden />
-                        <span className="truncate">{label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroup>
-        ))}
+        <nav aria-label={t('nav.mainNavigation')} className="contents">
+          {NAV_GROUPS.map((group) => (
+            <SidebarGroup key={group.key}>
+              <SidebarGroupLabel>{t(`nav.${group.key}`)}</SidebarGroupLabel>
+              <SidebarMenu>
+                {group.items.map((item) => {
+                  const active = isActive(pathname, item.url);
+                  const label = t(`nav.${item.key}`);
+                  const Icon = item.icon;
+                  return (
+                    <SidebarMenuItem key={item.key}>
+                      <SidebarMenuButton asChild isActive={active} tooltip={label}>
+                        <Link href={item.url} aria-current={active ? 'page' : undefined}>
+                          <Icon aria-hidden />
+                          <span className="truncate">{label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroup>
+          ))}
+        </nav>
       </SidebarContent>
 
       <SidebarFooter className="border-t">

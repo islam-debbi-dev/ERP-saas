@@ -10,6 +10,12 @@ export const TENANT_SCOPED_MODELS = new Set<string>([
   'AuditLog',
   'DocumentSequence',
   'IdempotencyKey',
+  'Category',
+  'Unit',
+  'PriceLevel',
+  'Product',
+  'ProductUnit',
+  'ProductPrice',
 ]);
 
 /** Append-only models: any update or delete is a bug (AGENTS.md rules 1 and 7). */
