@@ -37,6 +37,7 @@ enum DocType {
   BR
   VER
   INV
+  RF
 }
 
 enum IdempotencyStatus {
@@ -75,21 +76,26 @@ model Tenant {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
-  users             User[]
-  sessions          Session[]
-  auditLogs         AuditLog[]
-  documentSequences DocumentSequence[]
-  idempotencyKeys   IdempotencyKey[]
-  categories        Category[]
-  units             Unit[]
-  priceLevels       PriceLevel[]
-  products          Product[]
-  productUnits      ProductUnit[]
-  productPrices     ProductPrice[]
-  productStocks     ProductStock[]
-  stockMovements    StockMovement[]
-  inventories       Inventory[]
-  inventoryLines    InventoryLine[]
+  users               User[]
+  sessions            Session[]
+  auditLogs           AuditLog[]
+  documentSequences   DocumentSequence[]
+  idempotencyKeys     IdempotencyKey[]
+  categories          Category[]
+  units               Unit[]
+  priceLevels         PriceLevel[]
+  products            Product[]
+  productUnits        ProductUnit[]
+  productPrices       ProductPrice[]
+  productStocks       ProductStock[]
+  stockMovements      StockMovement[]
+  inventories         Inventory[]
+  inventoryLines      InventoryLine[]
+  suppliers           Supplier[]
+  purchases           Purchase[]
+  purchaseLines       PurchaseLine[]
+  purchaseReturns     PurchaseReturn[]
+  purchaseReturnLines PurchaseReturnLine[]
 
   @@map("tenants")
 }
@@ -269,14 +275,16 @@ model Product {
   createdAt   DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
 
-  tenant         Tenant          @relation(fields: [tenantId], references: [id])
-  category       Category?       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  baseUnit       Unit            @relation(fields: [baseUnitId], references: [id])
-  units          ProductUnit[]
-  prices         ProductPrice[]
-  stock          ProductStock?
-  stockMovements StockMovement[]
-  inventoryLines InventoryLine[]
+  tenant              Tenant               @relation(fields: [tenantId], references: [id])
+  category            Category?            @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  baseUnit            Unit                 @relation(fields: [baseUnitId], references: [id])
+  units               ProductUnit[]
+  prices              ProductPrice[]
+  stock               ProductStock?
+  stockMovements      StockMovement[]
+  inventoryLines      InventoryLine[]
+  purchaseLines       PurchaseLine[]
+  purchaseReturnLines PurchaseReturnLine[]
 
   @@unique([tenantId, reference])
   @@index([tenantId, designation])
@@ -451,4 +459,147 @@ model InventoryLine {
   @@unique([inventoryId, productId])
   @@index([tenantId, inventoryId])
   @@map("inventory_lines")
+}
+
+// ---------------------------------------------------------------- purchases (phase 4)
+
+enum PurchaseStatus {
+  DRAFT
+  VALIDATED
+  CANCELLED
+}
+
+/// Master data: archived with deletedAt, never deleted.
+model Supplier {
+  id        String    @id @default(uuid()) @db.Uuid
+  tenantId  String    @db.Uuid
+  name      String    @db.VarChar(120)
+  phone     String?   @db.VarChar(40)
+  address   String?   @db.VarChar(255)
+  rc        String?   @db.VarChar(40)
+  nif       String?   @db.VarChar(40)
+  nis       String?   @db.VarChar(40)
+  ai        String?   @db.VarChar(40)
+  notes     String?   @db.VarChar(500)
+  deletedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3)
+
+  tenant    Tenant           @relation(fields: [tenantId], references: [id])
+  purchases Purchase[]
+  returns   PurchaseReturn[]
+
+  @@index([tenantId, name])
+  @@map("suppliers")
+}
+
+/// Bon de réception. Only validation has effects (stock, CUMP); the number is
+/// assigned at validation so abandoned drafts never consume one.
+model Purchase {
+  id           String         @id @default(uuid()) @db.Uuid
+  tenantId     String         @db.Uuid
+  number       String?        @db.VarChar(20)
+  supplierId   String         @db.Uuid
+  status       PurchaseStatus @default(DRAFT)
+  documentDate DateTime       @db.Date
+  supplierRef  String?        @db.VarChar(60)
+  note         String?        @db.VarChar(255)
+  totalHt      Decimal        @default(0) @db.Decimal(14, 2)
+  totalTva     Decimal        @default(0) @db.Decimal(14, 2)
+  totalTtc     Decimal        @default(0) @db.Decimal(14, 2)
+  /// Paid at reception. Supplier accounts come in v1.1.
+  paidAmount   Decimal        @default(0) @db.Decimal(14, 2)
+  version      Int            @default(1)
+  createdBy    String?        @db.Uuid
+  validatedBy  String?        @db.Uuid
+  validatedAt  DateTime?      @db.Timestamptz(3)
+  cancelledBy  String?        @db.Uuid
+  cancelledAt  DateTime?      @db.Timestamptz(3)
+  createdAt    DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime       @updatedAt @db.Timestamptz(3)
+
+  tenant   Tenant           @relation(fields: [tenantId], references: [id])
+  supplier Supplier         @relation(fields: [supplierId], references: [id])
+  lines    PurchaseLine[]
+  returns  PurchaseReturn[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, supplierId])
+  @@map("purchases")
+}
+
+/// A line keeps a frozen copy of the product as it was (AGENTS.md rule 9).
+model PurchaseLine {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @db.Uuid
+  purchaseId   String   @db.Uuid
+  position     Int      @db.SmallInt
+  productId    String   @db.Uuid
+  unitId       String   @db.Uuid
+  designation  String   @db.VarChar(160)
+  unitCode     String   @db.VarChar(40)
+  unitName     String?  @db.VarChar(40)
+  factorToBase Decimal  @db.Decimal(14, 3)
+  tvaRate      Decimal  @db.Decimal(5, 2)
+  qty          Decimal  @db.Decimal(14, 3)
+  qtyBase      Decimal  @db.Decimal(14, 3)
+  /// Cost HT of one `unitId`.
+  unitCost     Decimal  @db.Decimal(14, 4)
+  lineHt       Decimal  @db.Decimal(14, 2)
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant      Tenant               @relation(fields: [tenantId], references: [id])
+  purchase    Purchase             @relation(fields: [purchaseId], references: [id])
+  product     Product              @relation(fields: [productId], references: [id])
+  returnLines PurchaseReturnLine[]
+
+  @@index([tenantId, purchaseId])
+  @@map("purchase_lines")
+}
+
+/// Retour fournisseur: a partial return of a validated bon de réception.
+model PurchaseReturn {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @db.Uuid
+  number     String   @db.VarChar(20)
+  purchaseId String   @db.Uuid
+  supplierId String   @db.Uuid
+  note       String?  @db.VarChar(255)
+  totalHt    Decimal  @db.Decimal(14, 2)
+  totalTva   Decimal  @db.Decimal(14, 2)
+  totalTtc   Decimal  @db.Decimal(14, 2)
+  createdBy  String?  @db.Uuid
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant   Tenant               @relation(fields: [tenantId], references: [id])
+  purchase Purchase             @relation(fields: [purchaseId], references: [id])
+  supplier Supplier             @relation(fields: [supplierId], references: [id])
+  lines    PurchaseReturnLine[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId, purchaseId])
+  @@map("purchase_returns")
+}
+
+model PurchaseReturnLine {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @db.Uuid
+  returnId       String   @db.Uuid
+  purchaseLineId String   @db.Uuid
+  productId      String   @db.Uuid
+  qty            Decimal  @db.Decimal(14, 3)
+  qtyBase        Decimal  @db.Decimal(14, 3)
+  unitCost       Decimal  @db.Decimal(14, 4)
+  tvaRate        Decimal  @db.Decimal(5, 2)
+  lineHt         Decimal  @db.Decimal(14, 2)
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant       Tenant         @relation(fields: [tenantId], references: [id])
+  return       PurchaseReturn @relation(fields: [returnId], references: [id])
+  purchaseLine PurchaseLine   @relation(fields: [purchaseLineId], references: [id])
+  product      Product        @relation(fields: [productId], references: [id])
+
+  @@index([tenantId, purchaseLineId])
+  @@map("purchase_return_lines")
 }

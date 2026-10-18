@@ -13,6 +13,7 @@ import { DocumentsModule } from './documents/documents.module';
 import { HealthController } from './health/health.controller';
 import { IdempotencyModule } from './idempotency/idempotency.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { PurchasesModule } from './purchases/purchases.module';
 import { StockModule } from './stock/stock.module';
 import { TenantsModule } from './tenants/tenants.module';
 
@@ -46,6 +47,7 @@ import { TenantsModule } from './tenants/tenants.module';
     TenantsModule,
     CatalogModule,
     StockModule,
+    PurchasesModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],

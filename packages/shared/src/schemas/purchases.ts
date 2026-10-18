@@ -1,0 +1,199 @@
+import { z } from 'zod';
+import { type PurchaseStatus } from '../enums';
+import { parseDA } from '../money';
+import { amountString, normalizeDecimal, quantityString } from './common';
+
+const id = z.uuid();
+const optionalText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .transform((v) => (v === '' ? null : v))
+    .nullable()
+    .default(null);
+
+/** A cost per unit, up to 4 decimals (prices per kg or per piece can need them). */
+const costString = z.string().refine((v) => {
+  const parsed = parseDA(v);
+  return parsed !== null && !parsed.isNegative() && parsed.decimalPlaces() <= 4;
+}, 'invalid_amount');
+
+/** ISO date `YYYY-MM-DD` (a document date, no time). */
+const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'invalid_date');
+
+// ---------------------------------------------------------------- suppliers
+
+export const supplierSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  phone: optionalText(40),
+  address: optionalText(255),
+  rc: optionalText(40),
+  nif: optionalText(40),
+  nis: optionalText(40),
+  ai: optionalText(40),
+  notes: optionalText(500),
+});
+export type SupplierInput = z.infer<typeof supplierSchema>;
+export const updateSupplierSchema = supplierSchema.partial().strict();
+export type UpdateSupplierInput = z.infer<typeof updateSupplierSchema>;
+
+export interface SupplierDto {
+  id: string;
+  name: string;
+  phone: string | null;
+  address: string | null;
+  rc: string | null;
+  nif: string | null;
+  nis: string | null;
+  ai: string | null;
+  notes: string | null;
+  archivedAt: string | null;
+}
+
+export const supplierListQuerySchema = z.object({
+  search: z.string().trim().max(100).optional(),
+  cursor: id.optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+});
+export type SupplierListQuery = z.infer<typeof supplierListQuerySchema>;
+
+export interface SupplierPage {
+  items: SupplierDto[];
+  nextCursor: string | null;
+}
+
+// ---------------------------------------------------------------- bon de réception
+
+export const purchaseLineInputSchema = z.object({
+  productId: id,
+  unitId: id,
+  qty: quantityString({ positive: true }).transform(normalizeDecimal),
+  /** Cost HT of one `unitId` (e.g. one carton). */
+  unitCost: costString.transform(normalizeDecimal),
+});
+export type PurchaseLineInput = z.infer<typeof purchaseLineInputSchema>;
+
+const purchaseFields = {
+  supplierId: id,
+  documentDate: dateString,
+  supplierRef: optionalText(60),
+  note: optionalText(255),
+  /** Paid to the supplier at reception (supplier accounts come in v1.1). */
+  paidAmount: amountString.transform(normalizeDecimal).default('0'),
+  lines: z.array(purchaseLineInputSchema).max(300),
+};
+
+export const createPurchaseSchema = z.object(purchaseFields);
+export type CreatePurchaseInput = z.infer<typeof createPurchaseSchema>;
+
+export const updatePurchaseSchema = z.object({
+  ...purchaseFields,
+  version: z.number().int().min(1),
+});
+export type UpdatePurchaseInput = z.infer<typeof updatePurchaseSchema>;
+
+export const validatePurchaseSchema = z.object({
+  /** Selling prices the user chose to change on the validation screen. Never automatic. */
+  priceUpdates: z
+    .array(
+      z.object({
+        productId: id,
+        unitId: id,
+        priceLevelId: id,
+        priceHt: amountString.transform(normalizeDecimal),
+      }),
+    )
+    .max(500)
+    .default([]),
+});
+export type ValidatePurchaseInput = z.infer<typeof validatePurchaseSchema>;
+
+export const purchaseReturnSchema = z.object({
+  note: optionalText(255),
+  lines: z
+    .array(
+      z.object({
+        purchaseLineId: id,
+        qty: quantityString({ positive: true }).transform(normalizeDecimal),
+      }),
+    )
+    .min(1)
+    .max(300),
+});
+export type PurchaseReturnInput = z.infer<typeof purchaseReturnSchema>;
+
+export const purchaseListQuerySchema = z.object({
+  status: z.enum(['DRAFT', 'VALIDATED', 'CANCELLED']).optional(),
+  supplierId: id.optional(),
+  from: dateString.optional(),
+  to: dateString.optional(),
+  cursor: id.optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+});
+export type PurchaseListQuery = z.infer<typeof purchaseListQuerySchema>;
+
+export interface PurchaseLineDto {
+  id: string;
+  position: number;
+  productId: string;
+  unitId: string;
+  designation: string;
+  unitCode: string;
+  unitName: string | null;
+  factorToBase: string;
+  tvaRate: string;
+  qty: string;
+  qtyBase: string;
+  unitCost: string;
+  lineHt: string;
+  /** Already returned to the supplier, in base unit. */
+  returnedQtyBase: string;
+}
+
+export interface PurchaseReturnDto {
+  id: string;
+  number: string;
+  note: string | null;
+  totalHt: string;
+  totalTva: string;
+  totalTtc: string;
+  createdAt: string;
+  lines: { purchaseLineId: string; qty: string; qtyBase: string; lineHt: string }[];
+}
+
+export interface PurchaseDto {
+  id: string;
+  number: string | null;
+  status: PurchaseStatus;
+  supplier: { id: string; name: string };
+  documentDate: string;
+  supplierRef: string | null;
+  note: string | null;
+  totalHt: string;
+  totalTva: string;
+  totalTtc: string;
+  tvaByRate: { rate: string; baseHt: string; tva: string }[];
+  paidAmount: string;
+  version: number;
+  createdAt: string;
+  validatedAt: string | null;
+  cancelledAt: string | null;
+  lines: PurchaseLineDto[];
+  returns: PurchaseReturnDto[];
+}
+
+export interface PurchaseSummaryDto {
+  id: string;
+  number: string | null;
+  status: PurchaseStatus;
+  supplier: { id: string; name: string };
+  documentDate: string;
+  totalTtc: string;
+  lineCount: number;
+}
+
+export interface PurchasePage {
+  items: PurchaseSummaryDto[];
+  nextCursor: string | null;
+}
