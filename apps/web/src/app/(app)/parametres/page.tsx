@@ -1,11 +1,12 @@
+import { getTranslations } from 'next-intl/server';
 import { SettingsForm } from '@/components/settings/settings-form';
-import { PageHeader } from '@/components/shell/page-header';
-import { t } from '@/lib/i18n';
+import { PageHeader } from '@/components/shared/page-header';
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const t = await getTranslations('settings');
   return (
     <>
-      <PageHeader title={t('settings.title')} description={t('settings.subtitle')} />
+      <PageHeader title={t('title')} description={t('subtitle')} />
       <SettingsForm />
     </>
   );

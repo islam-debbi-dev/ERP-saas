@@ -1,39 +1,40 @@
 import type { Metadata, Viewport } from 'next';
-import { Fira_Code, Fira_Sans } from 'next/font/google';
-import { t } from '@/lib/i18n';
+import { Cairo, Inter } from 'next/font/google';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages, getTranslations } from 'next-intl/server';
+import { dirFor, TIMEZONE } from '@/i18n/config';
 import { Providers } from './providers';
 import './globals.css';
 
-const firaSans = Fira_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-fira-sans',
-  display: 'swap',
-});
+const cairo = Cairo({ variable: '--font-arabic', subsets: ['arabic', 'latin'], display: 'swap' });
+const inter = Inter({ variable: '--font-latin', subsets: ['latin'], display: 'swap' });
 
-const firaCode = Fira_Code({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-fira-code',
-  display: 'swap',
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('app');
+  return {
+    title: { default: t('name'), template: `%s · ${t('name')}` },
+    description: t('tagline'),
+  };
+}
 
-export const metadata: Metadata = {
-  title: { default: t('app.name'), template: `%s · ${t('app.name')}` },
-  description: t('app.tagline'),
-};
+export const viewport: Viewport = { width: 'device-width', initialScale: 1 };
 
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  themeColor: '#fafbfc',
-};
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+  const dir = dirFor(locale);
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${firaSans.variable} ${firaCode.variable}`}>
-      <body>
-        <Providers>{children}</Providers>
+    <html
+      lang={locale}
+      dir={dir}
+      suppressHydrationWarning
+      className={`${cairo.variable} ${inter.variable}`}
+    >
+      <body className="font-sans antialiased">
+        <NextIntlClientProvider locale={locale} messages={messages} timeZone={TIMEZONE}>
+          <Providers dir={dir}>{children}</Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

@@ -1,5 +1,5 @@
-import { ComingSoon } from '@/components/shell/coming-soon';
+import { ComingSoon } from '@/components/shared/coming-soon';
 
 export default function Page() {
-  return <ComingSoon title="nav.stock" />;
+  return <ComingSoon title="stock" />;
 }

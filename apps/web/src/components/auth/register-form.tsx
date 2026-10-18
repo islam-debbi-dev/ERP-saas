@@ -1,19 +1,23 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Building2, Loader2, LockKeyhole, Mail, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { type RegisterInput, registerSchema } from '@erp/shared';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Field, fieldAria } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
 import { useAuth } from '@/lib/auth';
-import { messageFor } from '@/lib/form-errors';
-import { t } from '@/lib/i18n';
+import { useErrorMessage } from '@/lib/use-error-message';
+import { AuthCard } from './auth-card';
+import { IconField, PasswordField } from './form-bits';
 
 export function RegisterForm() {
+  const t = useTranslations();
+  const errorMessage = useErrorMessage();
   const { register: registerCompany } = useAuth();
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
@@ -29,81 +33,75 @@ export function RegisterForm() {
       await registerCompany(values);
       router.replace('/tableau-de-bord');
     } catch (err) {
-      setFormError(messageFor(err));
+      setFormError(errorMessage(err));
     }
   });
 
   return (
-    <>
-      <h1 className="text-2xl font-semibold tracking-tight">{t('auth.registerTitle')}</h1>
-      <p className="mt-1.5 text-muted-foreground">{t('auth.registerSubtitle')}</p>
-
-      <form onSubmit={(e) => void onSubmit(e)} noValidate className="mt-8 flex flex-col gap-5">
+    <AuthCard title={t('auth.registerTitle')} description={t('auth.registerDescription')}>
+      <form onSubmit={(e) => void onSubmit(e)} className="space-y-4" noValidate>
         {formError ? (
-          <p
-            role="alert"
-            className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-          >
-            {formError}
-          </p>
+          <Alert variant="destructive">
+            <AlertDescription>{formError}</AlertDescription>
+          </Alert>
         ) : null}
-        <Field
+        <IconField
           id="companyName"
           label={t('auth.companyName')}
+          icon={Building2}
+          autoComplete="organization"
+          autoFocus
           hint={t('auth.companyNameHint')}
           error={errors.companyName && t('validation.tooShort')}
-        >
-          <Input
-            {...fieldAria('companyName', errors.companyName?.message, 'hint')}
-            autoComplete="organization"
-            autoFocus
-            {...form.register('companyName')}
-          />
-        </Field>
-        <Field
+          {...form.register('companyName')}
+        />
+        <IconField
           id="fullName"
           label={t('auth.fullName')}
+          icon={UserRound}
+          autoComplete="name"
           error={errors.fullName && t('validation.tooShort')}
-        >
-          <Input
-            {...fieldAria('fullName', errors.fullName?.message)}
-            autoComplete="name"
-            {...form.register('fullName')}
-          />
-        </Field>
-        <Field id="email" label={t('auth.email')} error={errors.email && t('validation.email')}>
-          <Input
-            {...fieldAria('email', errors.email?.message)}
-            type="email"
-            autoComplete="email"
-            inputMode="email"
-            {...form.register('email')}
-          />
-        </Field>
-        <Field
+          {...form.register('fullName')}
+        />
+        <IconField
+          id="email"
+          label={t('auth.email')}
+          icon={Mail}
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          dir="ltr"
+          placeholder={t('auth.emailPlaceholder')}
+          error={errors.email && t('validation.email')}
+          {...form.register('email')}
+        />
+        <PasswordField
           id="password"
           label={t('auth.password')}
+          icon={LockKeyhole}
+          autoComplete="new-password"
           hint={t('auth.passwordHint')}
           error={errors.password && t('validation.passwordMin')}
-        >
-          <Input
-            {...fieldAria('password', errors.password?.message, 'hint')}
-            type="password"
-            autoComplete="new-password"
-            {...form.register('password')}
-          />
-        </Field>
-        <Button type="submit" disabled={isSubmitting} className="mt-1">
+          {...form.register('password')}
+        />
+        <Button type="submit" className="w-full gap-2" disabled={isSubmitting}>
+          {isSubmitting ? (
+            <Loader2 className="animate-spin" aria-hidden />
+          ) : (
+            <Building2 aria-hidden />
+          )}
           {isSubmitting ? t('auth.registering') : t('auth.register')}
         </Button>
+        <p className="text-center text-sm text-muted-foreground">
+          {t('auth.haveAccount')}{' '}
+          <Link
+            href="/login"
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            {t('auth.goToLogin')}
+          </Link>
+        </p>
       </form>
-
-      <p className="mt-8 text-sm text-muted-foreground">
-        {t('auth.haveAccount')}{' '}
-        <Link href="/login" className="font-medium text-primary hover:underline">
-          {t('auth.goToLogin')}
-        </Link>
-      </p>
-    </>
+    </AuthCard>
   );
 }

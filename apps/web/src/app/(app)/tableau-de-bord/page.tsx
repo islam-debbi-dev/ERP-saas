@@ -1,20 +1,28 @@
 'use client';
 
+import { Settings } from 'lucide-react';
 import Link from 'next/link';
-import { PageHeader } from '@/components/shell/page-header';
+import { useTranslations } from 'next-intl';
+import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth';
-import { t } from '@/lib/i18n';
 
 export default function DashboardPage() {
+  const t = useTranslations('dashboard');
   const { state } = useAuth();
   const name = state.status === 'authenticated' ? state.user.fullName : '';
   return (
-    <>
-      <PageHeader title={t('dashboard.welcome', { name })} description={t('dashboard.intro')} />
-      <Button asChild variant="outline">
-        <Link href="/parametres">{t('dashboard.goToSettings')}</Link>
-      </Button>
-    </>
+    <PageHeader
+      title={t('welcome', { name })}
+      description={t('intro')}
+      actions={
+        <Button asChild>
+          <Link href="/parametres">
+            <Settings aria-hidden />
+            {t('goToSettings')}
+          </Link>
+        </Button>
+      }
+    />
   );
 }

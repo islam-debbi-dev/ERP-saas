@@ -1,8 +1,11 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { RegisterForm } from '@/components/auth/register-form';
-import { t } from '@/lib/i18n';
 
-export const metadata: Metadata = { title: t('auth.registerTitle') };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('auth');
+  return { title: t('registerTitle') };
+}
 
 export default function RegisterPage() {
   return <RegisterForm />;

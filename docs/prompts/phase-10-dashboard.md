@@ -31,7 +31,7 @@ Branch: `phase-10-dashboard`. Phases 1–9 are merged.
 - `GET /dashboard`, `GET /reports/:name?from=&to=&groupBy=`, `GET /reports/:name/export.xlsx`.
 
 ### Web
-- Dashboard cards + one bar chart (sales per day this month) + top debtors table. Keep it simple, French labels, amounts formatted `1 234 567,89 DA`.
+- Dashboard cards + one bar chart (sales per day this month) + top debtors table. Keep it simple, labels translated in ar/fr/en, amounts formatted `1 234 567,89 DA`.
 
 ### Tests
 - Integration with a fixture of sales, returns, cancellations and versements across two months and two tenants: every dashboard figure equals a hand-computed expected value; day boundary in Algiers time; role filtering; tenant isolation.

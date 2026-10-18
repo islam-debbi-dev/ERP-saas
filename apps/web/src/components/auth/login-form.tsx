@@ -1,19 +1,23 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2, LockKeyhole, LogIn, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { type LoginInput, loginSchema } from '@erp/shared';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Field, fieldAria } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
 import { useAuth } from '@/lib/auth';
-import { messageFor } from '@/lib/form-errors';
-import { t } from '@/lib/i18n';
+import { useErrorMessage } from '@/lib/use-error-message';
+import { AuthCard } from './auth-card';
+import { IconField, PasswordField } from './form-bits';
 
 export function LoginForm({ expired }: { expired: boolean }) {
+  const t = useTranslations();
+  const errorMessage = useErrorMessage();
   const { login, state } = useAuth();
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(
@@ -34,57 +38,53 @@ export function LoginForm({ expired }: { expired: boolean }) {
     try {
       await login(values);
     } catch (err) {
-      setFormError(messageFor(err));
+      setFormError(errorMessage(err));
     }
   });
 
   return (
-    <>
-      <h1 className="text-2xl font-semibold tracking-tight">{t('auth.loginTitle')}</h1>
-      <p className="mt-1.5 text-muted-foreground">{t('auth.loginSubtitle')}</p>
-
-      <form onSubmit={(e) => void onSubmit(e)} noValidate className="mt-8 flex flex-col gap-5">
+    <AuthCard title={t('auth.loginTitle')} description={t('auth.loginDescription')}>
+      <form onSubmit={(e) => void onSubmit(e)} className="space-y-4" noValidate>
         {formError ? (
-          <p
-            role="alert"
-            className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-          >
-            {formError}
-          </p>
+          <Alert variant="destructive">
+            <AlertDescription>{formError}</AlertDescription>
+          </Alert>
         ) : null}
-        <Field id="email" label={t('auth.email')} error={errors.email && t('validation.email')}>
-          <Input
-            {...fieldAria('email', errors.email?.message)}
-            type="email"
-            autoComplete="email"
-            inputMode="email"
-            autoFocus
-            {...form.register('email')}
-          />
-        </Field>
-        <Field
+        <IconField
+          id="email"
+          label={t('auth.email')}
+          icon={Mail}
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          dir="ltr"
+          autoFocus
+          placeholder={t('auth.emailPlaceholder')}
+          error={errors.email && t('validation.email')}
+          {...form.register('email')}
+        />
+        <PasswordField
           id="password"
           label={t('auth.password')}
+          icon={LockKeyhole}
+          autoComplete="current-password"
           error={errors.password && t('validation.required')}
-        >
-          <Input
-            {...fieldAria('password', errors.password?.message)}
-            type="password"
-            autoComplete="current-password"
-            {...form.register('password')}
-          />
-        </Field>
-        <Button type="submit" disabled={isSubmitting} className="mt-1">
+          {...form.register('password')}
+        />
+        <Button type="submit" className="w-full gap-2" disabled={isSubmitting}>
+          {isSubmitting ? <Loader2 className="animate-spin" aria-hidden /> : <LogIn aria-hidden />}
           {isSubmitting ? t('auth.loggingIn') : t('auth.login')}
         </Button>
+        <p className="text-center text-sm text-muted-foreground">
+          {t('auth.noAccount')}{' '}
+          <Link
+            href="/inscription"
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            {t('auth.createCompany')}
+          </Link>
+        </p>
       </form>
-
-      <p className="mt-8 text-sm text-muted-foreground">
-        {t('auth.noAccount')}{' '}
-        <Link href="/inscription" className="font-medium text-primary hover:underline">
-          {t('auth.createCompany')}
-        </Link>
-      </p>
-    </>
+    </AuthCard>
   );
 }

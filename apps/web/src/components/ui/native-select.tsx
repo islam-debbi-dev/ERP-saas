@@ -1,12 +1,18 @@
 import type * as React from 'react';
 import { cn } from '@/lib/utils';
 
-/** Native <select>: instant keyboard selection by typing, which fast typists rely on. */
+/**
+ * Native <select> styled like Input. Kept native on purpose: typing a letter
+ * jumps to the option, which fast typists rely on.
+ */
 export function NativeSelect({ className, ...props }: React.ComponentProps<'select'>) {
   return (
     <select
+      data-slot="native-select"
       className={cn(
-        'h-10 w-full cursor-pointer rounded-md border border-input bg-card px-3 text-[0.9375rem] focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-offset-0 disabled:cursor-not-allowed disabled:bg-muted',
+        'border-input dark:bg-input/30 flex h-9 w-full min-w-0 cursor-pointer rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
+        'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
+        'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
         className,
       )}
       {...props}

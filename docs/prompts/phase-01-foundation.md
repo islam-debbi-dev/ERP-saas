@@ -27,7 +27,7 @@ Set up the monorepo and the foundation everything else will build on. Do not imp
 - Money helpers in `packages/shared/money` using `decimal.js` (add, sub, mul, round2, sum, format `1 234,56 DA`, parse) with unit tests.
 
 ### 4. Web foundation (Next.js)
-- App Router, Tailwind + shadcn/ui, TanStack Query, i18n messages file (French).
+- App Router, Tailwind + shadcn/ui, TanStack Query, i18n messages files (Arabic default, French, English).
 - Login page, register-company page, authenticated layout with sidebar (Tableau de bord, Produits, Achats, Ventes, Clients, Versements, Stock, Paramètres) — pages can be empty placeholders.
 - API client with automatic token refresh (single in-flight refresh, queued retries).
 - Settings page for the company invoice header and tenant settings.

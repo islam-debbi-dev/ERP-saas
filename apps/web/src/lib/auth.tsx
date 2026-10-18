@@ -20,7 +20,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 function deviceName(): string {
-  return typeof navigator === 'undefined' ? 'Navigateur' : `Navigateur – ${navigator.platform}`;
+  return typeof navigator === 'undefined' ? 'Web' : `Web – ${navigator.platform}`;
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {

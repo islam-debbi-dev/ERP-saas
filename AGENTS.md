@@ -45,7 +45,7 @@ When a request is ambiguous, choose the option that protects data correctness, a
 ## 4. Code conventions
 
 - TypeScript `strict: true` everywhere. No `any` unless commented with why.
-- Code, identifiers, comments and commit messages in **English**. UI text in **French** through the i18n messages file (never hard-coded strings in components). Business terms keep their French names in code where clearer (`versement`, `bonLivraison`, `avoir`) and are explained once in `docs/domain.md`.
+- Code, identifiers, comments and commit messages in **English**. UI text in **Arabic (default, RTL), French and English** through the next-intl messages files `apps/web/src/messages/{ar,fr,en}.json`, which must keep identical keys (a test checks it); never hard-coded strings in components. Use logical CSS (`ms-`, `pe-`, `start-`, `text-start`) so layouts work right-to-left. Printed legal documents (factures, bons) stay in French. Business terms keep their French names in code where clearer (`versement`, `bonLivraison`, `avoir`) and are explained once in `docs/domain.md`.
 - NestJS: thin controllers, logic in services, DB access only through Prisma inside services. Modules talk through exported services, never by querying another module's tables.
 - Every input validated (zod schema from `packages/shared` through a `ZodValidationPipe`, or class-validator DTO; pick zod for anything the web also uses).
 - Errors: throw `AppException(code, message, details?)`; the global filter returns `{ code, message, details? }`. Error codes are `SCREAMING_SNAKE_CASE` and listed in `packages/shared/errors.ts`.
@@ -100,5 +100,5 @@ The MVP is defined in `docs/ROADMAP.md`. If a task drifts into something not in 
 - [ ] `pnpm lint && pnpm typecheck && pnpm test && pnpm build` pass locally and in CI.
 - [ ] New env vars are in `.env.example`; new setup steps are in `README.md`.
 - [ ] Money/stock paths have integration tests (happy path, idempotency, concurrency, tenant isolation).
-- [ ] UI strings are in the French messages file.
+- [ ] UI strings are in all three messages files (ar, fr, en).
 - [ ] The phase summary is written (What / How to test / Decisions / Next phase).

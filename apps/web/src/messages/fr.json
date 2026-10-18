@@ -9,13 +9,15 @@
     "saved": "Modifications enregistrées",
     "loading": "Chargement…",
     "optional": "facultatif",
-    "yes": "Oui",
-    "no": "Non",
     "retry": "Réessayer",
-    "comingSoon": "Ce module arrive dans une prochaine version."
+    "close": "Fermer",
+    "comingSoon": "Ce module arrive dans une prochaine version.",
+    "comingSoonTitle": "Bientôt disponible"
   },
   "nav": {
-    "label": "Navigation principale",
+    "groupMain": "Activité",
+    "groupStock": "Stock et achats",
+    "groupManagement": "Gestion",
     "dashboard": "Tableau de bord",
     "products": "Produits",
     "purchases": "Achats",
@@ -25,21 +27,33 @@
     "stock": "Stock",
     "settings": "Paramètres",
     "logout": "Se déconnecter",
-    "shortcutHint": "Raccourci : Alt + {key}",
-    "openMenu": "Ouvrir le menu",
-    "closeMenu": "Fermer le menu"
+    "toggleSidebar": "Afficher ou masquer le menu",
+    "theme": "Thème",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
+    "themeSystem": "Système",
+    "language": "Langue"
+  },
+  "roles": {
+    "OWNER": "Propriétaire",
+    "MANAGER": "Gérant",
+    "SELLER": "Vendeur",
+    "STOREKEEPER": "Magasinier"
   },
   "auth": {
     "loginTitle": "Connexion",
-    "loginSubtitle": "Entrez l'e-mail et le mot de passe de votre compte.",
+    "loginDescription": "Entrez l'e-mail et le mot de passe de votre compte.",
     "email": "E-mail",
+    "emailPlaceholder": "nom@entreprise.dz",
     "password": "Mot de passe",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
     "login": "Se connecter",
     "loggingIn": "Connexion…",
     "noAccount": "Pas encore de compte ?",
     "createCompany": "Créer mon entreprise",
     "registerTitle": "Créer votre entreprise",
-    "registerSubtitle": "Vous serez le propriétaire du compte. Vous pourrez ajouter vos employés ensuite.",
+    "registerDescription": "Vous serez le propriétaire du compte. Vous pourrez ajouter vos employés ensuite.",
     "companyName": "Nom de l'entreprise",
     "companyNameHint": "Tel qu'il apparaîtra sur vos bons et factures. Modifiable dans Paramètres.",
     "fullName": "Votre nom complet",
@@ -48,22 +62,9 @@
     "registering": "Création…",
     "haveAccount": "Déjà un compte ?",
     "goToLogin": "Se connecter",
-    "sessionExpired": "Votre session a expiré. Reconnectez-vous.",
-    "stub": {
-      "title": "Bon de livraison",
-      "client": "Client",
-      "clientName": "Superette El Baraka, Blida",
-      "line1": "Huile Elio 5 L",
-      "line2": "Sucre 1 kg (fardeau ×10)",
-      "line3": "Lait UHT 1 L (carton ×12)",
-      "total": "Total",
-      "paid": "Versé",
-      "credit": "Reste au crédit",
-      "caption": "Chaque bon numéroté, chaque dinar suivi."
-    }
+    "sessionExpired": "Votre session a expiré. Reconnectez-vous."
   },
   "dashboard": {
-    "title": "Tableau de bord",
     "welcome": "Bonjour {name}",
     "intro": "Votre espace est prêt. Commencez par compléter l'en-tête de vos factures dans Paramètres.",
     "goToSettings": "Compléter les paramètres"
