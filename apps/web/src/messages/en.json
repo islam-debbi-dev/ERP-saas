@@ -147,7 +147,12 @@
     "STOCK_INSUFFICIENT": "Not enough stock for this operation.",
     "OPENING_ALREADY_SET": "Opening stock is already set for this product. Use an adjustment to correct it.",
     "INVENTORY_CLOSED": "This stock count is closed and can no longer be changed.",
-    "PRODUCT_ARCHIVED": "This product is archived. Restore it before changing its stock."
+    "PRODUCT_ARCHIVED": "This product is archived. Restore it before changing its stock.",
+    "PURCHASE_NOT_DRAFT": "This receipt is already validated or cancelled.",
+    "PURCHASE_NOT_VALIDATED": "Only a validated receipt allows this action.",
+    "PURCHASE_EMPTY": "Add at least one line before validating.",
+    "PURCHASE_MODIFIED": "Someone else changed this receipt. Reload the page and make your changes again.",
+    "RETURN_EXCEEDS_RECEIVED": "The returned quantity is more than what is left from the receipt."
   },
   "units": {
     "PIECE": "Piece",

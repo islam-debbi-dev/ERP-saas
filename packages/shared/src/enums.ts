@@ -18,6 +18,8 @@ export const DocType = {
   VER: 'VER',
   /** Inventaire (physical stock count). */
   INV: 'INV',
+  /** Retour fournisseur (partial return of a bon de réception). */
+  RF: 'RF',
 } as const;
 export type DocType = (typeof DocType)[keyof typeof DocType];
 export const DOC_TYPES = Object.values(DocType);
@@ -94,3 +96,10 @@ export const InventoryStatus = {
   CANCELLED: 'CANCELLED',
 } as const;
 export type InventoryStatus = (typeof InventoryStatus)[keyof typeof InventoryStatus];
+
+export const PurchaseStatus = {
+  DRAFT: 'DRAFT',
+  VALIDATED: 'VALIDATED',
+  CANCELLED: 'CANCELLED',
+} as const;
+export type PurchaseStatus = (typeof PurchaseStatus)[keyof typeof PurchaseStatus];

@@ -147,7 +147,12 @@
     "STOCK_INSUFFICIENT": "Stock insuffisant pour cette opération.",
     "OPENING_ALREADY_SET": "Le stock d'ouverture de ce produit est déjà saisi. Utilisez un ajustement pour corriger.",
     "INVENTORY_CLOSED": "Cet inventaire est clôturé et ne peut plus être modifié.",
-    "PRODUCT_ARCHIVED": "Ce produit est archivé. Restaurez-le avant de modifier son stock."
+    "PRODUCT_ARCHIVED": "Ce produit est archivé. Restaurez-le avant de modifier son stock.",
+    "PURCHASE_NOT_DRAFT": "Ce bon de réception est déjà validé ou annulé.",
+    "PURCHASE_NOT_VALIDATED": "Seul un bon de réception validé permet cette action.",
+    "PURCHASE_EMPTY": "Ajoutez au moins une ligne avant de valider.",
+    "PURCHASE_MODIFIED": "Ce bon a été modifié par quelqu'un d'autre. Rechargez la page puis refaites vos changements.",
+    "RETURN_EXCEEDS_RECEIVED": "La quantité retournée dépasse la quantité reçue restante."
   },
   "units": {
     "PIECE": "Pièce",
