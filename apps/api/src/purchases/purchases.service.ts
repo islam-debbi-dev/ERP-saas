@@ -29,8 +29,7 @@ export class PurchasesService {
     const id = await this.prisma.db.$transaction(async (tx) => {
       const tenantId = tenantContext.requireTenantId();
       await this.checkSupplier(tx, input.supplierId);
-      const assujetti = await this.assujettiTva(tx);
-      const { lines, totals } = await snapshotLines(tx, input.lines, assujetti);
+      const { lines, totals } = await snapshotLines(tx, input.lines);
       this.checkPaid(input.paidAmount, totals.totalTtc.toString());
       const purchase = await tx.purchase.create({
         data: {
@@ -77,8 +76,7 @@ export class PurchasesService {
         });
       }
       await this.checkSupplier(tx, input.supplierId);
-      const assujetti = await this.assujettiTva(tx);
-      const { lines, totals } = await snapshotLines(tx, input.lines, assujetti);
+      const { lines, totals } = await snapshotLines(tx, input.lines);
       this.checkPaid(input.paidAmount, totals.totalTtc.toString());
       // Draft lines have no effect anywhere, so they are simply replaced.
       await tx.purchaseLine.deleteMany({ where: { purchaseId: id } });
@@ -115,7 +113,7 @@ export class PurchasesService {
   async get(id: string): Promise<PurchaseDto> {
     const p = await this.prisma.db.purchase.findUnique({ where: { id }, include: purchaseInclude });
     if (!p) throw new AppException(ErrorCode.NOT_FOUND, 'Purchase not found');
-    return toPurchaseDto(p, await this.assujettiTva(this.prisma.db));
+    return toPurchaseDto(p);
   }
 
   async list(query: PurchaseListQuery): Promise<PurchasePage> {
@@ -170,14 +168,6 @@ export class PurchasesService {
         field: 'paidAmount',
       });
     }
-  }
-
-  private async assujettiTva(db: Pick<Tx, 'tenant'>): Promise<boolean> {
-    const t = await db.tenant.findUniqueOrThrow({
-      where: { id: tenantContext.requireTenantId() },
-      select: { assujettiTva: true },
-    });
-    return t.assujettiTva;
   }
 }
 

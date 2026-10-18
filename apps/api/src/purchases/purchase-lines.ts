@@ -22,11 +22,13 @@ export interface SnapshotLine {
  * Copies what the product is now (designation, unit, factor, TVA rate) onto the
  * lines and computes their HT. Called on every draft save and again at validation,
  * so the validated document freezes the product as it was that day.
+ *
+ * Totals always include TVA: the supplier charges it whatever our regime. Whether
+ * we can recover it (assujetti) only changes the cost that enters the CUMP.
  */
 export async function snapshotLines(
   tx: Tx,
   lines: PurchaseLineInput[],
-  assujettiTva: boolean,
 ): Promise<{ lines: SnapshotLine[]; totals: DocumentTotals }> {
   const converted = await toBaseLines(tx, lines);
   const products = await tx.product.findMany({
@@ -66,7 +68,7 @@ export async function snapshotLines(
   });
   const totals = computeTotals(
     snap.map((s) => ({ qty: s.qty, unitPrice: s.unitCost, tvaRate: s.tvaRate })),
-    assujettiTva,
+    true,
   );
   snap.forEach((s, i) => {
     s.lineHt = totals.lines[i]?.lineHt.toString() ?? '0';

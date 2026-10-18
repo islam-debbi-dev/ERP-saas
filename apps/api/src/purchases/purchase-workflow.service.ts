@@ -66,7 +66,6 @@ export class PurchaseWorkflowService {
           qty: l.qty.toString(),
           unitCost: l.unitCost.toString(),
         })),
-        assujetti,
       );
       await tx.purchaseLine.deleteMany({ where: { purchaseId: id } });
       await tx.purchaseLine.createMany({
@@ -151,7 +150,8 @@ export class PurchaseWorkflowService {
             qtyBase: r.remaining.negated().toString(),
             refType: 'Purchase',
             refId: id,
-            note: `${purchase.number ?? ''} annulé`,
+            // Language-neutral: the stock card shows notes as-is in every UI language.
+            note: purchase.number,
           })),
         );
       }
@@ -236,15 +236,13 @@ export class PurchaseWorkflowService {
         }
         return { line, qty: r.qty, qtyBase };
       });
-
-      const assujetti = await this.assujettiTva(tx);
       const totals = computeTotals(
         returnLines.map((r) => ({
           qty: r.qty,
           unitPrice: r.line.unitCost.toString(),
           tvaRate: r.line.tvaRate.toString(),
         })),
-        assujetti,
+        true,
       );
       const number = await this.numbering.next(tx, tenantId, DocType.RF);
       const created = await tx.purchaseReturn.create({

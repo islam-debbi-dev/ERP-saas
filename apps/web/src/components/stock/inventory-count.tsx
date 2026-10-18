@@ -6,14 +6,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import {
-  type BarcodeMatchDto,
-  type InventoryDto,
-  parseDA,
-  type ProductDto,
-  type ProductPage,
-  qty,
-} from '@erp/shared';
+import { type InventoryDto, parseDA, type ProductDto, qty } from '@erp/shared';
 import { PageHeader } from '@/components/shared/page-header';
 import {
   AlertDialog,
@@ -33,8 +26,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { api, ApiError } from '@/lib/api-client';
-import { useUnitLabel } from '@/lib/catalog';
+import { api } from '@/lib/api-client';
+import { findProductByCode, useUnitLabel } from '@/lib/catalog';
 import { formatQty, stockKeys, useInventory } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
@@ -44,23 +37,6 @@ interface Entry {
   product: ProductDto;
   unitId: string;
   qty: string;
-}
-
-/** Barcode first; a reference typed by hand also works (exact match). */
-async function findProduct(code: string): Promise<{ product: ProductDto; unitId: string } | null> {
-  try {
-    const match = await api.request<BarcodeMatchDto>(
-      `/products/by-barcode/${encodeURIComponent(code)}`,
-    );
-    return { product: match.product, unitId: match.unit.unitId };
-  } catch (err) {
-    if (!(err instanceof ApiError) || err.status !== 404) throw err;
-  }
-  const page = await api.request<ProductPage>(
-    `/products?search=${encodeURIComponent(code)}&limit=5`,
-  );
-  const exact = page.items.find((p) => p.reference.toLowerCase() === code.toLowerCase());
-  return exact ? { product: exact, unitId: exact.baseUnitId } : null;
 }
 
 export function InventoryCount({ id }: { id: string }) {
@@ -127,7 +103,7 @@ export function InventoryCount({ id }: { id: string }) {
     if (!value) return;
     setLooking(true);
     try {
-      const found = await findProduct(value);
+      const found = await findProductByCode(value);
       if (!found) {
         toast.error(t('notFound', { code: value }));
         setCode('');
@@ -186,7 +162,7 @@ export function InventoryCount({ id }: { id: string }) {
       />
 
       {inv && !open ? (
-        <Alert>
+        <Alert role="status">
           <AlertDescription>{t('readOnly')}</AlertDescription>
         </Alert>
       ) : null}

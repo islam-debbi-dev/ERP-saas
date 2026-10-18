@@ -218,7 +218,7 @@ describe('purchases', () => {
       .expect(409);
   });
 
-  it('a tenant not subject to TVA puts the TVA into the CUMP', async () => {
+  it('a tenant not subject to TVA still sees the supplier TVA, and it goes into the CUMP', async () => {
     const c = await registerTenant(t, 'IFU');
     const cat = await catalogOf(t, c);
     await as(c).patch('/tenant/settings', { assujettiTva: false }).expect(200);
@@ -227,7 +227,8 @@ describe('purchases', () => {
     const d = await draft(c, s.id, [
       { productId: p.id, unitId: p.cartonUnitId, qty: '1', unitCost: '1000' },
     ]);
-    expect(d).toMatchObject({ totalHt: '1000.00', totalTva: '0.00', totalTtc: '1000.00' });
+    // The supplier still charges TVA: the document shows it even for an IFU buyer.
+    expect(d).toMatchObject({ totalHt: '1000.00', totalTva: '190.00', totalTtc: '1190.00' });
     await as(c).post(`/purchases/${d.id}/validate`).expect(200);
     // 1 000 HT at 19 % = 1 190 paid for 10 pieces
     expect((await level(c, p.id)).avgCost).toBe('119.0000');

@@ -3,6 +3,7 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import {
+  type BarcodeMatchDto,
   type CategoryDto,
   DEFAULT_UNITS,
   type DefaultUnitCode,
@@ -11,7 +12,7 @@ import {
   type ProductPage,
   type UnitDto,
 } from '@erp/shared';
-import { api } from './api-client';
+import { api, ApiError } from './api-client';
 
 export const catalogKeys = {
   units: ['units'] as const,
@@ -84,4 +85,26 @@ export function flattenCategories(tree: CategoryDto[]): { id: string; label: str
     { id: c.id, label: c.name },
     ...c.children.map((child) => ({ id: child.id, label: `${c.name} › ${child.name}` })),
   ]);
+}
+
+/**
+ * Scan or typed code: barcode first (gives the scanned unit), then an exact
+ * reference match (base unit). Null when nothing matches.
+ */
+export async function findProductByCode(
+  code: string,
+): Promise<{ product: ProductDto; unitId: string } | null> {
+  try {
+    const match = await api.request<BarcodeMatchDto>(
+      `/products/by-barcode/${encodeURIComponent(code)}`,
+    );
+    return { product: match.product, unitId: match.unit.unitId };
+  } catch (err) {
+    if (!(err instanceof ApiError) || err.status !== 404) throw err;
+  }
+  const page = await api.request<ProductPage>(
+    `/products?search=${encodeURIComponent(code)}&limit=5`,
+  );
+  const exact = page.items.find((p) => p.reference.toLowerCase() === code.toLowerCase());
+  return exact ? { product: exact, unitId: exact.baseUnitId } : null;
 }

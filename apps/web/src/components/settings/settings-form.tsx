@@ -276,7 +276,7 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
       className="grid grid-cols-[minmax(0,1fr)] gap-6"
     >
       {!canEdit ? (
-        <Alert>
+        <Alert role="status">
           <AlertDescription>{t('settings.readOnly')}</AlertDescription>
         </Alert>
       ) : null}

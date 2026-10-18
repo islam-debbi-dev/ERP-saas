@@ -270,7 +270,7 @@ export function ProductForm({
       className="grid grid-cols-[minmax(0,1fr)] gap-6"
     >
       {product?.archivedAt ? (
-        <Alert>
+        <Alert role="status">
           <AlertDescription>{t('archivedBanner')}</AlertDescription>
         </Alert>
       ) : null}

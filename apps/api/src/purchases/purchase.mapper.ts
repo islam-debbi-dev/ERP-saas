@@ -12,14 +12,15 @@ export type PurchaseWithRelations = Prisma.PurchaseGetPayload<{ include: typeof 
 export const toIsoDate = (d: Date): string => d.toISOString().slice(0, 10);
 export const fromIsoDate = (s: string): Date => new Date(`${s}T00:00:00.000Z`);
 
-export function toPurchaseDto(p: PurchaseWithRelations, assujettiTva: boolean): PurchaseDto {
+/** Supplier documents always show the supplier's TVA (see snapshotLines). */
+export function toPurchaseDto(p: PurchaseWithRelations): PurchaseDto {
   const totals = computeTotals(
     p.lines.map((l) => ({
       qty: l.qty.toString(),
       unitPrice: l.unitCost.toString(),
       tvaRate: l.tvaRate.toString(),
     })),
-    assujettiTva,
+    true,
   );
   return {
     id: p.id,
