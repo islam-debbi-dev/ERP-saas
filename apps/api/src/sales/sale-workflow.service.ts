@@ -563,7 +563,13 @@ export class SaleWorkflowService {
         FOR UPDATE`;
       const bls = await tx.sale.findMany({
         where: { id: { in: ids } },
-        include: { lines: { orderBy: { position: 'asc' } } },
+        include: {
+          lines: {
+            orderBy: { position: 'asc' },
+            include: { returnLines: { select: { qty: true } } },
+          },
+          returns: { select: { totalTtc: true } },
+        },
         orderBy: [{ documentDate: 'asc' }, { number: 'asc' }],
       });
       const first = bls[0];
@@ -590,17 +596,41 @@ export class SaleWorkflowService {
       }
       const clientId = first.clientId;
       const client = await tx.client.findUniqueOrThrow({ where: { id: clientId } });
-      const sourceLines = bls.flatMap((b) => b.lines);
+      // Bill what the client kept: returns already made on a BL are left out. Return
+      // quantities are in the line's unit, so the remainder is exact.
+      const sourceLines = bls
+        .flatMap((b) => b.lines)
+        .map((l) => {
+          const kept = qty(l.qty.toString()).minus(
+            l.returnLines.reduce((sum, r) => sum.plus(r.qty.toString()), qty(0)),
+          );
+          return { line: l, kept, keptBase: toBase(kept, l.factorToBase.toString()) };
+        })
+        .filter((x) => x.kept.gt(0));
+      if (sourceLines.length === 0) {
+        throw new AppException(ErrorCode.INVOICE_SOURCES_INVALID, 'Everything was returned', {
+          saleIds: input.saleIds,
+          rule: 'nothing_left_to_invoice',
+        });
+      }
       const totals = computeTotals(
-        sourceLines.map((l) => ({
-          qty: l.qty.toString(),
+        sourceLines.map(({ line: l, kept }) => ({
+          qty: kept.toString(),
           unitPrice: l.unitPriceHt.toString(),
           tvaRate: l.tvaRate.toString(),
           discountPct: l.discountPct.toString(),
         })),
         first.assujettiTva,
       );
-      const blTtc = bls.reduce((s, b) => s.plus(b.totalTtc.toString()), money(0));
+      // What the BLs left on the account: their TTC minus the avoirs already made on them.
+      const blTtc = bls.reduce(
+        (s, b) =>
+          b.returns.reduce(
+            (acc, r) => acc.minus(r.totalTtc.toString()),
+            s.plus(b.totalTtc.toString()),
+          ),
+        money(0),
+      );
       const blPaid = bls.reduce((s, b) => s.plus(b.paidAmount.toString()), money(0));
       const diff = totals.totalTtc.minus(blTtc);
       const number = await this.numbering.next(tx, tenantId, DocType.FAC);
@@ -636,7 +666,7 @@ export class SaleWorkflowService {
         },
       });
       await tx.saleLine.createMany({
-        data: sourceLines.map((l, i) => ({
+        data: sourceLines.map(({ line: l, kept, keptBase }, i) => ({
           tenantId,
           saleId: facture.id,
           position: i + 1,
@@ -646,8 +676,8 @@ export class SaleWorkflowService {
           unitCode: l.unitCode,
           unitName: l.unitName,
           factorToBase: l.factorToBase,
-          qty: l.qty,
-          qtyBase: l.qtyBase,
+          qty: kept.toString(),
+          qtyBase: keptBase.toString(),
           listPriceHt: l.listPriceHt,
           unitPriceHt: l.unitPriceHt,
           discountPct: l.discountPct,

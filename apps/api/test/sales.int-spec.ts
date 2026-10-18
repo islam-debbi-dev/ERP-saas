@@ -571,6 +571,31 @@ describe('sales', () => {
     expect(await balance(a, c.id)).toBe('0.08');
   });
 
+  it('a facture bills BLs net of the returns already made, without crediting them twice', async () => {
+    const p = await product(a, catA);
+    const c = await client(a);
+    const bl = (
+      (await quick(a, { clientId: c.id, lines: [cartons(p, '1')] }).expect(201))
+        .body as SaleResultDto
+    ).sale;
+    await as(a)
+      .post(`/sales/${bl.id}/returns`, {
+        disposition: 'RESTOCK',
+        reason: 'invendus',
+        lines: [{ saleLineId: bl.lines[0]!.id, qty: '0.25' }],
+      })
+      .expect(201);
+    expect(await balance(a, c.id)).toBe('2052.75'); // 2 737 - 684.25
+    const fac = (
+      await as(a)
+        .post('/invoices/from-bls', { saleIds: [bl.id], documentDate: TODAY })
+        .expect(201)
+    ).body as SaleResultDto;
+    expect(fac.sale.lines[0]).toMatchObject({ qty: '0.750', qtyBase: '18.000', lineHt: '1725.00' });
+    expect(fac.sale.totalTtc).toBe('2052.75');
+    expect(await balance(a, c.id)).toBe('2052.75');
+  });
+
   it('changing the product after the sale never changes the sale', async () => {
     const p = await product(a, catA);
     const sale = (await quick(a, { lines: [cartons(p, '1')], paidAmount: '2737' }).expect(201))
