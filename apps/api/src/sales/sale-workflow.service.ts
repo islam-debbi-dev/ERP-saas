@@ -29,6 +29,7 @@ import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
 import { Prisma } from '../generated/prisma/client';
+import { PaymentsService } from '../payments/payments.service';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { StockService } from '../stock/stock.service';
 import { fromIsoDate } from './sale.mapper';
@@ -52,6 +53,7 @@ export class SaleWorkflowService {
     private readonly stock: StockService,
     private readonly account: ClientAccountService,
     private readonly numbering: DocumentNumberingService,
+    private readonly payments: PaymentsService,
     private readonly audit: AuditService,
   ) {}
 
@@ -214,16 +216,12 @@ export class SaleWorkflowService {
       await this.account.post(tx, entries);
     }
     if (paid.gt(0)) {
-      await tx.payment.create({
-        data: {
-          tenantId,
-          number: await this.numbering.next(tx, tenantId, DocType.VER),
-          clientId: client?.id ?? null,
-          saleId: id,
-          amount: paid.toString(),
-          mode: input.paymentMode,
-          receivedBy: user.id,
-        },
+      await this.payments.recordForSaleInTx(tx, {
+        clientId: client?.id ?? null,
+        saleId: id,
+        amount: paid.toString(),
+        mode: input.paymentMode,
+        receivedBy: user.id,
       });
     }
 
@@ -330,6 +328,9 @@ export class SaleWorkflowService {
             })),
           );
         }
+        // Payments before the client balance (lock order). Only payments that still
+        // count are reversed: a bounced cheque already gave its amount back.
+        const paidBack = await this.payments.cancelForSaleInTx(tx, id, user, reason);
         if (sale.clientId) {
           const saleNet = (
             await this.account.netOf(tx, {
@@ -343,12 +344,7 @@ export class SaleWorkflowService {
               refIds: sale.returns.map((r) => r.id),
             }),
           );
-          const paidNet = await this.account.netOf(tx, {
-            refType: 'Sale',
-            refIds: [id],
-            types: [ClientLedgerType.PAYMENT],
-          });
-          const entries: LedgerEntryInput[] = [saleNet, paidNet]
+          const entries: LedgerEntryInput[] = [saleNet, paidBack.negated()]
             .filter((net) => !net.isZero())
             .map((net) => ({
               clientId: sale.clientId ?? '',
@@ -361,10 +357,6 @@ export class SaleWorkflowService {
             }));
           await this.account.post(tx, entries);
         }
-        await tx.payment.updateMany({
-          where: { saleId: id, status: 'VALID' },
-          data: { status: 'CANCELLED' },
-        });
       }
       await tx.sale.update({
         where: { id },

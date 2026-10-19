@@ -21,10 +21,13 @@ export function ClientPicker({
   open,
   onOpenChange,
   onPick,
+  withCounter = true,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onPick: (client: ClientDto | null) => void;
+  /** Offer "client comptoir" as the first row (sales only). */
+  withCounter?: boolean;
 }) {
   const t = useTranslations('sales');
   const [search, setSearch] = useState('');
@@ -33,9 +36,13 @@ export function ClientPicker({
   const debounced = useDebouncedValue(search.trim(), 200);
   const pages = useClientPages({ search: debounced, hasDebt: false, overLimit: false });
   const clients = pages.data?.pages[0]?.items.slice(0, 20) ?? [];
-  // Row 0 is "client comptoir", then the clients.
-  const options: (ClientDto | null)[] = [null, ...clients];
-  const current = Math.min(active ?? (debounced && clients.length > 0 ? 1 : 0), options.length - 1);
+  // Row 0 is "client comptoir" (sales), then the clients.
+  const options: (ClientDto | null)[] = withCounter ? [null, ...clients] : clients;
+  const firstClient = withCounter ? 1 : 0;
+  const current = Math.max(
+    0,
+    Math.min(active ?? (debounced && clients.length > 0 ? firstClient : 0), options.length - 1),
+  );
 
   const pick = (c: ClientDto | null) => {
     onPick(c);
@@ -72,7 +79,8 @@ export function ClientPicker({
               setActive(Math.max(current - 1, 0));
             } else if (e.key === 'Enter') {
               e.preventDefault();
-              pick(options[current] ?? null);
+              const choice = options[current];
+              if (choice !== undefined) pick(choice);
             }
           }}
         />
