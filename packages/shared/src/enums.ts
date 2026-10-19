@@ -158,3 +158,19 @@ export const ReturnDisposition = {
   DAMAGED: 'DAMAGED',
 } as const;
 export type ReturnDisposition = (typeof ReturnDisposition)[keyof typeof ReturnDisposition];
+
+/** Paper size of printed documents (thermal 80 mm comes with the caisse). */
+export const PrintFormat = {
+  A4: 'A4',
+  A5: 'A5',
+} as const;
+export type PrintFormat = (typeof PrintFormat)[keyof typeof PrintFormat];
+
+/** Documents printed through `GET /documents/:type/:id/pdf`. */
+export const PrintableDocType = {
+  BL: 'BL',
+  FAC: 'FAC',
+  AV: 'AV',
+  BR: 'BR',
+} as const;
+export type PrintableDocType = (typeof PrintableDocType)[keyof typeof PrintableDocType];

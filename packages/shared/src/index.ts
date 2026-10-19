@@ -1,3 +1,4 @@
+export * from './amount-in-words';
 export * from './documents';
 export * from './enums';
 export * from './errors';
@@ -6,3 +7,4 @@ export * from './pricing';
 export * from './quantity';
 export * from './schemas';
 export * from './stock';
+export * from './timbre';

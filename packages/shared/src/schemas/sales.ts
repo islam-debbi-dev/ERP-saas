@@ -147,7 +147,15 @@ export interface SaleReturnDto {
   totalTva: string;
   totalTtc: string;
   createdAt: string;
-  lines: { saleLineId: string; qty: string; qtyBase: string; lineHt: string }[];
+  lines: {
+    saleLineId: string;
+    qty: string;
+    qtyBase: string;
+    unitPriceHt: string;
+    discountPct: string;
+    tvaRate: string;
+    lineHt: string;
+  }[];
 }
 
 export interface SalePaymentDto {
@@ -165,12 +173,28 @@ export interface SaleClientDto {
   name: string;
 }
 
+/** Client name, address and legal IDs frozen at validation (what documents print). */
+export interface SaleClientSnapshot {
+  code: string;
+  name: string;
+  type?: string;
+  phone: string | null;
+  address: string | null;
+  wilaya: string | null;
+  commune: string | null;
+  rc: string | null;
+  nif: string | null;
+  nis: string | null;
+  ai: string | null;
+}
+
 export interface SaleDto {
   id: string;
   type: SaleType;
   number: string | null;
   status: SaleStatus;
   client: SaleClientDto | null;
+  clientSnapshot: SaleClientSnapshot | null;
   documentDate: string;
   note: string | null;
   priceLevelId: string | null;
