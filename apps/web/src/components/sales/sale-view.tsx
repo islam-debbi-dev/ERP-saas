@@ -30,6 +30,7 @@ import { saleKeys, useSale } from '@/lib/sales';
 import { formatQty } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { useIdempotencyKey } from '@/lib/use-idempotency-key';
+import { PaymentDetailDialog } from '@/components/payments/payment-detail-dialog';
 import { CancelSaleDialog, ReturnDialog } from './sale-dialogs';
 import { SaleStatusBadge } from './sale-status-badge';
 
@@ -51,6 +52,7 @@ export function SaleView({ id }: { id: string }) {
   const canManage = useCanManageCredit();
   const sale = useSale(id);
   const [dialog, setDialog] = useState<'cancel' | 'return' | null>(null);
+  const [paymentId, setPaymentId] = useState<string | null>(null);
   const invoiceKey = useIdempotencyKey(true);
 
   const invoice = useMutation({
@@ -354,9 +356,14 @@ export function SaleView({ id }: { id: string }) {
                       className="flex flex-wrap items-center justify-between gap-2 py-2"
                     >
                       <span>
-                        <span dir="ltr" className="font-medium">
+                        <button
+                          type="button"
+                          dir="ltr"
+                          className="font-medium underline-offset-4 hover:underline"
+                          onClick={() => setPaymentId(p.id)}
+                        >
                           {p.number}
-                        </span>{' '}
+                        </button>{' '}
                         <span className="text-muted-foreground">
                           · {t(`mode${p.mode as 'ESPECES'}`)}
                         </span>
@@ -407,6 +414,9 @@ export function SaleView({ id }: { id: string }) {
 
       {dialog === 'cancel' ? (
         <CancelSaleDialog sale={s} open onOpenChange={(o) => !o && setDialog(null)} />
+      ) : null}
+      {paymentId ? (
+        <PaymentDetailDialog id={paymentId} open onOpenChange={(o) => !o && setPaymentId(null)} />
       ) : null}
       {dialog === 'return' ? (
         <ReturnDialog sale={s} open onOpenChange={(o) => !o && setDialog(null)} />

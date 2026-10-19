@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Archive, ArrowLeft, FileText, Pencil, Scale, Wallet } from 'lucide-react';
+import { Archive, ArrowLeft, Banknote, FileText, Pencil, Scale, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
@@ -48,6 +48,9 @@ import {
 } from '@/lib/clients';
 import { todayInAlgiers } from '@/lib/purchases';
 import { useErrorMessage } from '@/lib/use-error-message';
+import { PaymentDialog } from '@/components/payments/payment-dialog';
+import { UnpaidDocuments } from '@/components/payments/unpaid-documents';
+import { useUnpaidDocuments } from '@/lib/payments';
 import { BalanceAmount, PlafondBar } from './balance-amount';
 import { AdjustmentDialog, OpeningBalanceDialog } from './client-dialogs';
 
@@ -58,7 +61,9 @@ export function ClientDetail({ clientId }: { clientId: string }) {
   const queryClient = useQueryClient();
   const canManage = useCanManageCredit();
   const client = useClient(clientId);
-  const [dialog, setDialog] = useState<'opening' | 'adjust' | null>(null);
+  // Fetched in parallel with the client; UnpaidDocuments reads the same cache.
+  const unpaid = useUnpaidDocuments(clientId);
+  const [dialog, setDialog] = useState<'opening' | 'adjust' | 'payment' | null>(null);
 
   const archive = useMutation({
     mutationFn: () => api.request<void>(`/clients/${clientId}`, { method: 'DELETE' }),
@@ -108,9 +113,15 @@ export function ClientDetail({ clientId }: { clientId: string }) {
               </Button>
             ) : null}
             {live && canManage ? (
-              <Button onClick={() => setDialog('adjust')}>
+              <Button variant="outline" onClick={() => setDialog('adjust')}>
                 <Scale aria-hidden />
                 {t('adjust')}
+              </Button>
+            ) : null}
+            {live ? (
+              <Button onClick={() => setDialog('payment')}>
+                <Banknote aria-hidden />
+                {t('newPayment')}
               </Button>
             ) : null}
           </>
@@ -123,9 +134,21 @@ export function ClientDetail({ clientId }: { clientId: string }) {
         </Alert>
       ) : null}
 
-      {c ? <Summary client={c} /> : <Skeleton className="h-32 w-full" />}
-      {c ? <Info client={c} /> : null}
-      <StatementSection clientId={clientId} />
+      {/* Sections appear together once client and unpaid documents are loaded (no layout shift). */}
+      {c && unpaid.data ? (
+        <>
+          <Summary client={c} />
+          <UnpaidDocuments clientId={c.id} />
+          <Info client={c} />
+          <StatementSection clientId={clientId} />
+        </>
+      ) : (
+        <div className="grid gap-4" aria-busy>
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-40 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      )}
 
       {live && canManage ? (
         <div className="flex justify-end">
@@ -154,6 +177,9 @@ export function ClientDetail({ clientId }: { clientId: string }) {
 
       {c && dialog === 'opening' ? (
         <OpeningBalanceDialog client={c} open onOpenChange={(o) => !o && setDialog(null)} />
+      ) : null}
+      {c && dialog === 'payment' ? (
+        <PaymentDialog client={c} open onOpenChange={(o) => !o && setDialog(null)} />
       ) : null}
       {c && dialog === 'adjust' ? (
         <AdjustmentDialog client={c} open onOpenChange={(o) => !o && setDialog(null)} />
@@ -376,6 +402,9 @@ function StatementTable({ statement }: { statement: ClientStatementDto }) {
                         {tl(e.type)}
                       </Badge>
                       {e.label ? <p className="text-xs text-muted-foreground">{e.label}</p> : null}
+                      {e.reason && e.reason !== e.label ? (
+                        <p className="text-xs text-muted-foreground">{e.reason}</p>
+                      ) : null}
                       {e.createdBy ? (
                         <p className="text-xs text-muted-foreground">{e.createdBy.fullName}</p>
                       ) : null}
