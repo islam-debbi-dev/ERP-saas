@@ -119,6 +119,7 @@ model Tenant {
   payments            Payment[]
   paymentAllocations  PaymentAllocation[]
   documentPrints      DocumentPrint[]
+  importJobs          ImportJob[]
 
   @@map("tenants")
 }
@@ -975,4 +976,51 @@ model PaymentAllocation {
   @@index([tenantId, saleId])
   @@index([tenantId, paymentId])
   @@map("payment_allocations")
+}
+
+// ---------------------------------------------------------------- imports
+
+enum ImportType {
+  PRODUCTS
+  OPENING_STOCK
+  CLIENTS
+}
+
+enum ImportStatus {
+  PREVIEWED
+  COMPLETED
+  FAILED
+}
+
+/// One Excel/CSV import (preview, then confirm). Kept for audit; the file itself
+/// is dropped after its retention period (fileData set to null).
+model ImportJob {
+  id            String       @id @default(uuid()) @db.Uuid
+  tenantId      String       @db.Uuid
+  type          ImportType
+  status        ImportStatus @default(PREVIEWED)
+  fileName      String       @db.VarChar(255)
+  fileMime      String       @db.VarChar(120)
+  fileData      Bytes?
+  fileExpiresAt DateTime     @db.Timestamptz(3)
+  /// Field key -> column index used by the last preview and the confirm.
+  mapping       Json         @default("{}")
+  totalRows     Int          @default(0)
+  errorRows     Int          @default(0)
+  warningRows   Int          @default(0)
+  createdRows   Int          @default(0)
+  updatedRows   Int          @default(0)
+  openingRows   Int          @default(0)
+  /// First row errors of the last preview or failed confirm, for the history screen.
+  errors        Json         @default("[]")
+  createdBy     String?      @db.Uuid
+  confirmedAt   DateTime?    @db.Timestamptz(3)
+  createdAt     DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime     @updatedAt @db.Timestamptz(3)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, createdAt])
+  @@index([fileExpiresAt])
+  @@map("import_jobs")
 }

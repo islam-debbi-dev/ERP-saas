@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import {
   type BarcodeMatchDto,
@@ -11,6 +12,7 @@ import {
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import { AppException } from '../common/app-exception';
+import { chunks } from '../common/chunks';
 import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
@@ -103,88 +105,87 @@ export class ProductsService {
    */
   async update(id: string, input: UpdateProductInput): Promise<ProductDto> {
     return this.withUniqueErrors(() =>
-      this.prisma.db.$transaction(async (tx) => {
-        await this.lockProduct(tx, id);
-        const current = await this.load(tx, id);
-        if (current.version !== input.version) {
-          throw new AppException(ErrorCode.PRODUCT_MODIFIED, 'Product changed since it was read', {
-            currentVersion: current.version,
-          });
-        }
-        if (input.baseUnitId !== current.baseUnitId) {
-          // Stock is stored in the base unit: changing it would reinterpret every quantity.
-          throw new AppException(
-            ErrorCode.INVALID_PRODUCT_UNITS,
-            'The base unit cannot be changed',
-            {
-              rule: 'base_unit_immutable',
-            },
-          );
-        }
-        await this.validate(tx, input);
-        const before = toProductDto(current);
-        const tenantId = tenantContext.requireTenantId();
-
-        // Units: match by catalog unit. Free the barcodes that move or disappear
-        // first, so swapping two barcodes in one save does not trip the unique index.
-        const live = new Map(current.units.map((u) => [u.unitId, u]));
-        const wanted = new Map(input.units.map((u) => [u.unitId, u]));
-        for (const [unitId, row] of live) {
-          const next = wanted.get(unitId);
-          if (row.barcode && (!next || next.barcode !== row.barcode)) {
-            await tx.productUnit.update({
-              where: { id: row.id },
-              data: next
-                ? { barcode: null }
-                : { barcode: null, deletedBarcode: row.barcode, deletedAt: new Date() },
-            });
-          } else if (!next) {
-            await tx.productUnit.update({ where: { id: row.id }, data: { deletedAt: new Date() } });
-          }
-        }
-        const productUnitIds = new Map<string, string>();
-        for (const u of input.units) {
-          const data = {
-            factorToBase: u.factorToBase,
-            barcode: u.barcode,
-            isDefaultSale: u.isDefaultSale,
-            isDefaultPurchase: u.isDefaultPurchase,
-            deletedAt: null,
-          };
-          // A unit removed earlier is revived (the (product, unit) pair is unique).
-          const row = await tx.productUnit.upsert({
-            where: { productId_unitId: { productId: id, unitId: u.unitId } },
-            update: data,
-            create: { ...data, tenantId, productId: id, unitId: u.unitId },
-          });
-          productUnitIds.set(u.unitId, row.id);
-        }
-
-        const priceChanges = await this.syncPrices(tx, id, current, input, productUnitIds);
-
-        await tx.product.update({
-          where: { id },
-          data: {
-            reference: input.reference,
-            designation: input.designation,
-            categoryId: input.categoryId,
-            tvaRate: input.tvaRate,
-            minStock: input.minStock,
-            active: input.active,
-            version: { increment: 1 },
-          },
-        });
-        const after = toProductDto(await this.load(tx, id));
-        await this.audit.log(tx, {
-          action: 'PRODUCT_UPDATED',
-          entity: 'Product',
-          entityId: id,
-          before,
-          after: { ...after, priceChanges },
-        });
-        return after;
-      }),
+      this.prisma.db.$transaction((tx) => this.updateInTx(tx, id, input)),
     );
+  }
+
+  /** `update` inside the caller's transaction (the Excel import updates many products in one). */
+  async updateInTx(tx: Tx, id: string, input: UpdateProductInput): Promise<ProductDto> {
+    await this.lockProduct(tx, id);
+    const current = await this.load(tx, id);
+    if (current.version !== input.version) {
+      throw new AppException(ErrorCode.PRODUCT_MODIFIED, 'Product changed since it was read', {
+        currentVersion: current.version,
+      });
+    }
+    if (input.baseUnitId !== current.baseUnitId) {
+      // Stock is stored in the base unit: changing it would reinterpret every quantity.
+      throw new AppException(ErrorCode.INVALID_PRODUCT_UNITS, 'The base unit cannot be changed', {
+        rule: 'base_unit_immutable',
+      });
+    }
+    await this.validate(tx, input);
+    const before = toProductDto(current);
+    const tenantId = tenantContext.requireTenantId();
+
+    // Units: match by catalog unit. Free the barcodes that move or disappear
+    // first, so swapping two barcodes in one save does not trip the unique index.
+    const live = new Map(current.units.map((u) => [u.unitId, u]));
+    const wanted = new Map(input.units.map((u) => [u.unitId, u]));
+    for (const [unitId, row] of live) {
+      const next = wanted.get(unitId);
+      if (row.barcode && (!next || next.barcode !== row.barcode)) {
+        await tx.productUnit.update({
+          where: { id: row.id },
+          data: next
+            ? { barcode: null }
+            : { barcode: null, deletedBarcode: row.barcode, deletedAt: new Date() },
+        });
+      } else if (!next) {
+        await tx.productUnit.update({ where: { id: row.id }, data: { deletedAt: new Date() } });
+      }
+    }
+    const productUnitIds = new Map<string, string>();
+    for (const u of input.units) {
+      const data = {
+        factorToBase: u.factorToBase,
+        barcode: u.barcode,
+        isDefaultSale: u.isDefaultSale,
+        isDefaultPurchase: u.isDefaultPurchase,
+        deletedAt: null,
+      };
+      // A unit removed earlier is revived (the (product, unit) pair is unique).
+      const row = await tx.productUnit.upsert({
+        where: { productId_unitId: { productId: id, unitId: u.unitId } },
+        update: data,
+        create: { ...data, tenantId, productId: id, unitId: u.unitId },
+      });
+      productUnitIds.set(u.unitId, row.id);
+    }
+
+    const priceChanges = await this.syncPrices(tx, id, current, input, productUnitIds);
+
+    await tx.product.update({
+      where: { id },
+      data: {
+        reference: input.reference,
+        designation: input.designation,
+        categoryId: input.categoryId,
+        tvaRate: input.tvaRate,
+        minStock: input.minStock,
+        active: input.active,
+        version: { increment: 1 },
+      },
+    });
+    const after = toProductDto(await this.load(tx, id));
+    await this.audit.log(tx, {
+      action: 'PRODUCT_UPDATED',
+      entity: 'Product',
+      entityId: id,
+      before,
+      after: { ...after, priceChanges },
+    });
+    return after;
   }
 
   async archive(id: string, archived: boolean): Promise<ProductDto> {
@@ -276,12 +277,138 @@ export class ProductsService {
   private async validate(tx: Tx, input: ProductInput): Promise<void> {
     const unitIds = input.units.map((u) => u.unitId);
     const units = await tx.unit.findMany({ where: { id: { in: unitIds } } });
-    if (units.length !== new Set(unitIds).size) {
+    if (input.prices.length > 0) {
+      const active = await this.priceLevels.activeIds(tx);
+      const unknown = input.prices.find((p) => !active.has(p.priceLevelId));
+      if (unknown) {
+        throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown price level', {
+          priceLevelId: unknown.priceLevelId,
+        });
+      }
+    }
+    if (input.categoryId) {
+      const category = await tx.category.findFirst({
+        where: { id: input.categoryId, deletedAt: null },
+      });
+      if (!category) throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown category');
+    }
+    this.checkUnits(input, units);
+  }
+
+  /**
+   * Creates many new products with their units and prices in the caller's
+   * transaction, with set-based checks and batched inserts (Excel import).
+   */
+  async createManyInTx(tx: Tx, inputs: CreateProductInput[]): Promise<string[]> {
+    if (inputs.length === 0) return [];
+    const tenantId = tenantContext.requireTenantId();
+    const units = await tx.unit.findMany();
+    const active = await this.priceLevels.activeIds(tx);
+    const categoryIds = new Set(
+      (await tx.category.findMany({ where: { deletedAt: null }, select: { id: true } })).map(
+        (c) => c.id,
+      ),
+    );
+    const products: Prisma.ProductCreateManyInput[] = [];
+    const productUnits: Prisma.ProductUnitCreateManyInput[] = [];
+    const prices: Prisma.ProductPriceCreateManyInput[] = [];
+    for (const input of inputs) {
+      this.checkUnits(input, units);
+      if (input.prices.some((p) => !active.has(p.priceLevelId))) {
+        throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown price level');
+      }
+      if (input.categoryId && !categoryIds.has(input.categoryId)) {
+        throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown category');
+      }
+      const productId = randomUUID();
+      products.push({
+        id: productId,
+        tenantId,
+        reference: input.reference,
+        designation: input.designation,
+        categoryId: input.categoryId,
+        baseUnitId: input.baseUnitId,
+        tvaRate: input.tvaRate,
+        minStock: input.minStock,
+        active: input.active,
+      });
+      const productUnitIds = new Map<string, string>();
+      for (const u of input.units) {
+        const id = randomUUID();
+        productUnitIds.set(u.unitId, id);
+        productUnits.push({
+          id,
+          tenantId,
+          productId,
+          unitId: u.unitId,
+          factorToBase: u.factorToBase,
+          barcode: u.barcode,
+          isDefaultSale: u.isDefaultSale,
+          isDefaultPurchase: u.isDefaultPurchase,
+        });
+      }
+      for (const p of input.prices) {
+        prices.push({
+          tenantId,
+          productId,
+          productUnitId: productUnitIds.get(p.unitId) ?? '',
+          priceLevelId: p.priceLevelId,
+          priceHt: p.priceHt,
+        });
+      }
+    }
+    await this.withUniqueErrors(async () => {
+      for (const chunk of chunks(products)) await tx.product.createMany({ data: chunk });
+      for (const chunk of chunks(productUnits)) await tx.productUnit.createMany({ data: chunk });
+      for (const chunk of chunks(prices)) await tx.productPrice.createMany({ data: chunk });
+    });
+    await this.audit.logMany(
+      tx,
+      products.map((p, i) => ({
+        action: 'PRODUCT_CREATED',
+        entity: 'Product',
+        entityId: p.id ?? null,
+        after: { id: p.id, ...inputs[i] },
+      })),
+    );
+    return products.map((p) => p.id ?? '');
+  }
+
+  /** Products (archived included) by reference, for matching imported rows. */
+  async byReferences(tx: Tx, references: string[]): Promise<Map<string, ProductDto>> {
+    const out = new Map<string, ProductDto>();
+    for (const chunk of chunks([...new Set(references)])) {
+      const rows = await tx.product.findMany({
+        where: { reference: { in: chunk } },
+        include: productInclude,
+      });
+      for (const r of rows) out.set(r.reference, toProductDto(r));
+    }
+    return out;
+  }
+
+  /** Barcodes already used by live units, among `barcodes`, with the owning product id. */
+  async usedBarcodes(tx: Tx, barcodes: string[]): Promise<Map<string, string>> {
+    const out = new Map<string, string>();
+    for (const chunk of chunks([...new Set(barcodes)])) {
+      const rows = await tx.productUnit.findMany({
+        where: { barcode: { in: chunk } },
+        select: { barcode: true, productId: true },
+      });
+      for (const r of rows) if (r.barcode) out.set(r.barcode, r.productId);
+    }
+    return out;
+  }
+
+  /** Units belong to the tenant; counted base units need whole factors and minimum stock. */
+  private checkUnits(input: ProductInput, tenantUnits: { id: string; allowsDecimal: boolean }[]) {
+    const known = new Map(tenantUnits.map((u) => [u.id, u]));
+    if (input.units.some((u) => !known.has(u.unitId))) {
       throw new AppException(ErrorCode.INVALID_PRODUCT_UNITS, 'Unknown unit', {
         rule: 'unknown_unit',
       });
     }
-    const base = units.find((u) => u.id === input.baseUnitId);
+    const base = known.get(input.baseUnitId);
     if (base && !base.allowsDecimal) {
       // Counted products (pièce): a carton holds a whole number of pieces.
       const fractional = input.units.find((u) => !isWholeQuantity(u.factorToBase));
@@ -300,21 +427,6 @@ export class ProductsService {
           },
         );
       }
-    }
-    if (input.prices.length > 0) {
-      const active = await this.priceLevels.activeIds(tx);
-      const unknown = input.prices.find((p) => !active.has(p.priceLevelId));
-      if (unknown) {
-        throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown price level', {
-          priceLevelId: unknown.priceLevelId,
-        });
-      }
-    }
-    if (input.categoryId) {
-      const category = await tx.category.findFirst({
-        where: { id: input.categoryId, deletedAt: null },
-      });
-      if (!category) throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown category');
     }
   }
 

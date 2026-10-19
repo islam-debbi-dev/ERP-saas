@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import {
   type ClientAdjustmentInput,
@@ -19,6 +20,7 @@ import {
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { AppException } from '../common/app-exception';
+import { chunks } from '../common/chunks';
 import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
@@ -146,43 +148,81 @@ export class ClientsService {
   /** Compare-and-swap on `version`: two people editing the same client cannot overwrite each other. */
   async update(id: string, input: UpdateClientInput, user: CurrentUserInfo): Promise<ClientDto> {
     return this.withCodeErrors(() =>
-      this.prisma.db.$transaction(async (tx) => {
-        const before = await tx.client.findFirst({ where: { id, deletedAt: null } });
-        if (!before) throw new AppException(ErrorCode.NOT_FOUND, 'Client not found');
-        const limitChanged =
-          (before.creditLimit?.toString() ?? null) !==
-          (input.creditLimit === null ? null : money(input.creditLimit).toString());
-        if (limitChanged && !PLAFOND_ROLES.has(user.role)) {
-          throw new AppException(
-            ErrorCode.FORBIDDEN,
-            'Only a manager can change the credit limit',
-            {
-              field: 'creditLimit',
-            },
-          );
-        }
-        await this.checkPriceLevel(tx, input.priceLevelId);
-        const { version, ...data } = input;
-        const { count } = await tx.client.updateMany({
-          where: { id, version, deletedAt: null },
-          data: { ...data, version: { increment: 1 } },
-        });
-        if (count === 0) {
-          throw new AppException(ErrorCode.CLIENT_MODIFIED, 'Client changed since it was read', {
-            currentVersion: before.version,
-          });
-        }
-        const after = await tx.client.findUniqueOrThrow({ where: { id }, include: clientInclude });
-        await this.audit.log(tx, {
-          action: 'CLIENT_UPDATED',
-          entity: 'Client',
-          entityId: id,
-          before,
-          after,
-        });
-        return toDto(after);
-      }),
+      this.prisma.db.$transaction((tx) => this.updateInTx(tx, id, input, user)),
     );
+  }
+
+  /** `update` inside the caller's transaction (Excel import). */
+  async updateInTx(
+    tx: Tx,
+    id: string,
+    input: UpdateClientInput,
+    user: CurrentUserInfo,
+  ): Promise<ClientDto> {
+    const before = await tx.client.findFirst({ where: { id, deletedAt: null } });
+    if (!before) throw new AppException(ErrorCode.NOT_FOUND, 'Client not found');
+    const limitChanged =
+      (before.creditLimit?.toString() ?? null) !==
+      (input.creditLimit === null ? null : money(input.creditLimit).toString());
+    if (limitChanged && !PLAFOND_ROLES.has(user.role)) {
+      throw new AppException(ErrorCode.FORBIDDEN, 'Only a manager can change the credit limit', {
+        field: 'creditLimit',
+      });
+    }
+    await this.checkPriceLevel(tx, input.priceLevelId);
+    const { version, ...data } = input;
+    const { count } = await tx.client.updateMany({
+      where: { id, version, deletedAt: null },
+      data: { ...data, version: { increment: 1 } },
+    });
+    if (count === 0) {
+      throw new AppException(ErrorCode.CLIENT_MODIFIED, 'Client changed since it was read', {
+        currentVersion: before.version,
+      });
+    }
+    const after = await tx.client.findUniqueOrThrow({ where: { id }, include: clientInclude });
+    await this.audit.log(tx, {
+      action: 'CLIENT_UPDATED',
+      entity: 'Client',
+      entityId: id,
+      before,
+      after,
+    });
+    return toDto(after);
+  }
+
+  /** Clients (archived included) by code, for matching imported rows. */
+  async byCodes(tx: Tx, codes: string[]): Promise<Map<string, ClientDto>> {
+    const out = new Map<string, ClientDto>();
+    for (const chunk of chunks([...new Set(codes)])) {
+      const rows = await tx.client.findMany({
+        where: { code: { in: chunk } },
+        include: clientInclude,
+      });
+      for (const c of rows) out.set(c.code, toDto(c));
+    }
+    return out;
+  }
+
+  /**
+   * Creates many clients in the caller's transaction with batched inserts
+   * (Excel import, managers only: plafonds are allowed). Returns ids in order.
+   */
+  async createManyInTx(tx: Tx, inputs: CreateClientInput[]): Promise<string[]> {
+    if (inputs.length === 0) return [];
+    const tenantId = tenantContext.requireTenantId();
+    for (const priceLevelId of new Set(inputs.map((i) => i.priceLevelId))) {
+      await this.checkPriceLevel(tx, priceLevelId);
+    }
+    const rows = inputs.map((input) => ({ ...input, id: randomUUID(), tenantId }));
+    await this.withCodeErrors(async () => {
+      for (const chunk of chunks(rows)) await tx.client.createMany({ data: chunk });
+    });
+    await this.audit.logMany(
+      tx,
+      rows.map((r) => ({ action: 'CLIENT_CREATED', entity: 'Client', entityId: r.id, after: r })),
+    );
+    return rows.map((r) => r.id);
   }
 
   /** Soft delete; the account history stays. */

@@ -12,6 +12,7 @@ import {
   toQtyString,
 } from '@erp/shared';
 import { AppException } from '../common/app-exception';
+import { chunks } from '../common/chunks';
 import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
 import { type Tx } from '../prisma/prisma.service';
@@ -157,6 +158,27 @@ export class StockService {
       });
     }
     return { movementIds, warnings };
+  }
+
+  /**
+   * Quantity and opening flag per product, without locking (import preview). Products
+   * with no level row yet are absent: they have no stock and no opening.
+   */
+  async levelsSnapshot(
+    tx: Tx,
+    productIds: string[],
+  ): Promise<Map<string, { qtyBase: string; hasOpening: boolean }>> {
+    const out = new Map<string, { qtyBase: string; hasOpening: boolean }>();
+    for (const chunk of chunks([...new Set(productIds)])) {
+      const rows = await tx.productStock.findMany({
+        where: { productId: { in: chunk } },
+        select: { productId: true, qtyBase: true, hasOpening: true },
+      });
+      for (const r of rows) {
+        out.set(r.productId, { qtyBase: toQtyString(r.qtyBase), hasOpening: r.hasOpening });
+      }
+    }
+    return out;
   }
 
   /** Current level of one product, read under the same lock rules (for read-modify paths). */

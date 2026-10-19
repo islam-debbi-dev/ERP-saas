@@ -118,6 +118,44 @@ export class CategoriesService {
   }
 
   /**
+   * Category id per name (case-insensitive, any level), creating the missing
+   * ones as top-level categories in the caller's transaction (Excel import).
+   */
+  async ensureByNames(tx: Tx, names: string[]): Promise<Map<string, string>> {
+    const wanted = new Map(names.map((n) => [n.trim().toLowerCase(), n.trim()]));
+    wanted.delete('');
+    const out = new Map<string, string>();
+    if (wanted.size === 0) return out;
+    await this.lockTenant(tx);
+    const live = await tx.category.findMany({
+      where: { deletedAt: null },
+      orderBy: [{ parentId: { sort: 'asc', nulls: 'first' } }, { name: 'asc' }],
+    });
+    for (const c of live) {
+      const key = c.name.toLowerCase();
+      if (wanted.has(key) && !out.has(key)) out.set(key, c.id);
+    }
+    for (const [key, name] of wanted) {
+      if (out.has(key)) continue;
+      const c = await tx.category.create({
+        data: {
+          tenantId: tenantContext.requireTenantId(),
+          name: name.slice(0, 80),
+          parentId: null,
+        },
+      });
+      await this.audit.log(tx, {
+        action: 'CATEGORY_CREATED',
+        entity: 'Category',
+        entityId: c.id,
+        after: c,
+      });
+      out.set(key, c.id);
+    }
+    return out;
+  }
+
+  /**
    * Category writes are rare, so they are serialized per tenant: the name check
    * below then cannot race with a concurrent create.
    */
