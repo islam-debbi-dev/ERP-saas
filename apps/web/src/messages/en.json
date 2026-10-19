@@ -101,10 +101,25 @@
     "timbreSection": "Stamp duty (timbre fiscal)",
     "timbreHelp": "Applies to invoices paid in cash. Enter the values from the current finance law.",
     "timbreEnabled": "Apply stamp duty",
-    "timbreRate": "Rate (%)",
     "timbreMin": "Minimum (DA)",
     "timbreMax": "Maximum (DA)",
-    "timbreThreshold": "Threshold (DA)"
+    "timbreThreshold": "Threshold (DA)",
+    "timbreTranches": "Tranches",
+    "timbreTranchesHint": "The whole TTC amount is taxed at the rate of its tranche. Leave \"Up to\" empty for the last tranche.",
+    "trancheUpTo": "Up to (DA)",
+    "trancheNoLimit": "No limit",
+    "trancheRate": "Rate (%)",
+    "trancheRemove": "Remove the tranche",
+    "trancheAdd": "Add a tranche",
+    "timbreLawWarning": "Check these values against the current loi de finances before applying them: they change.",
+    "documentsSection": "Printed documents",
+    "documentsHelp": "Format and wording of BLs, factures, avoirs, receipts and statements (printed in French).",
+    "defaultPrintFormat": "Default print format",
+    "tvaMention": "TVA wording",
+    "tvaMentionHint": "Printed on your documents because you are not subject to TVA.",
+    "tvaMentionUnused": "Used only when you are not subject to TVA.",
+    "documentFooter": "Footer",
+    "documentFooterHint": "Printed at the bottom of every page (terms, thanks…)."
   },
   "validation": {
     "required": "This field is required.",
@@ -113,7 +128,8 @@
     "tooShort": "Too short.",
     "invalidAmount": "Invalid amount (e.g. 1 500,00).",
     "invalidRate": "Invalid rate (between 0 and 100).",
-    "range": "Value out of range."
+    "range": "Value out of range.",
+    "invalidTranches": "Invalid tranches: increasing amounts, rates between 0 and 100, only the last one without a limit."
   },
   "errors": {
     "VALIDATION_FAILED": "Some information is invalid.",
@@ -748,7 +764,10 @@
     "emptyTitle": "No sales yet",
     "emptyDescription": "Make your first sale from “New sale”.",
     "loadMore": "Show more",
-    "cancelInvoiceBody": "The delivery notes can be invoiced again. Stock and the client account do not change."
+    "cancelInvoiceBody": "The delivery notes can be invoiced again. Stock and the client account do not change.",
+    "timbre": "Stamp duty (timbre)",
+    "netToPay": "Net to pay",
+    "print": "Print"
   },
   "payments": {
     "title": "Payments",
@@ -819,5 +838,13 @@
     "unpaidTotal": "Left to pay:",
     "unpaidNone": "All documents are paid.",
     "ofTotal": "of"
+  },
+  "print": {
+    "print": "Print",
+    "chooseFormat": "Choose the format",
+    "formatA4": "A4 (full page)",
+    "formatA5": "A5 (half page)",
+    "preparing": "Preparing the document…",
+    "popupBlocked": "The browser blocked the document. Allow pop-ups for this site."
   }
 }

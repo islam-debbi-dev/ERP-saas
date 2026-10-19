@@ -22,6 +22,8 @@ export interface RequestOptions {
   /** Required by the API on POSTs that create money or stock effects. */
   idempotencyKey?: string;
   signal?: AbortSignal;
+  /** `blob` for files (PDF); errors still come back as JSON. */
+  as?: 'json' | 'blob';
 }
 
 export interface ApiClientOptions {
@@ -72,6 +74,11 @@ export class ApiClient {
     }
   }
 
+  /** A file (PDF…) with the same token and refresh handling as `request`. */
+  download(path: string, options: Pick<RequestOptions, 'signal'> = {}): Promise<Blob> {
+    return this.request<Blob>(path, { ...options, as: 'blob' });
+  }
+
   /** Single in-flight refresh shared by every caller. */
   refresh(): Promise<AuthResponse> {
     if (!this.refreshing) {
@@ -96,7 +103,9 @@ export class ApiClient {
   }
 
   private async send<T>(path: string, options: RequestOptions): Promise<T> {
-    const headers: Record<string, string> = { Accept: 'application/json' };
+    const headers: Record<string, string> = {
+      Accept: options.as === 'blob' ? '*/*' : 'application/json',
+    };
     if (options.body !== undefined) headers['Content-Type'] = 'application/json';
     if (this.accessToken) headers['Authorization'] = `Bearer ${this.accessToken}`;
     if (options.idempotencyKey) headers['Idempotency-Key'] = options.idempotencyKey;
@@ -115,6 +124,7 @@ export class ApiClient {
     }
 
     if (res.status === 204) return undefined as T;
+    if (res.ok && options.as === 'blob') return (await res.blob()) as T;
     const data: unknown = await res.json().catch(() => null);
     if (!res.ok) {
       const body = (data ?? {}) as Partial<ApiErrorBody>;

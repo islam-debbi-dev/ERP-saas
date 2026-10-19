@@ -2,13 +2,14 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Plus, Save, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Controller, type FieldErrors, useForm, useWatch } from 'react-hook-form';
+import { Controller, type FieldErrors, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import type { z } from 'zod';
 import {
   formatDA,
+  money,
   Role,
   type TenantSettings,
   type TenantSettingsResponse,
@@ -22,6 +23,7 @@ import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth';
 import { useErrorMessage } from '@/lib/use-error-message';
@@ -29,16 +31,11 @@ import { cn } from '@/lib/utils';
 
 type FormInput = z.input<typeof tenantSettingsSchema>;
 type TextField = 'raisonSociale' | 'adresse' | 'telephone' | 'rc' | 'nif' | 'nis' | 'ai' | 'rib';
-type AmountField = 'timbreRate' | 'timbreMin' | 'timbreMax' | 'timbreThreshold';
-type ValidationKey = 'tooShort' | 'range' | 'invalidRate' | 'invalidAmount';
+type AmountField = 'timbreMin' | 'timbreMax' | 'timbreThreshold';
+type ValidationKey = 'tooShort' | 'range' | 'invalidAmount' | 'invalidTranches' | 'required';
 
 const SETTINGS_KEY = ['tenant-settings'] as const;
-const TIMBRE_FIELDS: readonly AmountField[] = [
-  'timbreRate',
-  'timbreMin',
-  'timbreMax',
-  'timbreThreshold',
-];
+const TIMBRE_FIELDS = ['timbreTranches', 'timbreMin', 'timbreMax', 'timbreThreshold'] as const;
 
 /** API values → form values (amounts shown the French way). Unset amounts stay null. */
 function toForm(s: TenantSettingsResponse): FormInput {
@@ -57,10 +54,16 @@ function toForm(s: TenantSettingsResponse): FormInput {
     negativeStockMode: s.negativeStockMode,
     priceLevelCount: s.priceLevelCount,
     timbreEnabled: s.timbreEnabled,
-    timbreRate: s.timbreRate,
+    timbreTranches: s.timbreTranches.map((tr) => ({
+      upTo: tr.upTo === null ? null : formatDA(tr.upTo, { currency: false }),
+      rate: money(tr.rate).toString(),
+    })),
     timbreMin: amount(s.timbreMin),
     timbreMax: amount(s.timbreMax),
     timbreThreshold: amount(s.timbreThreshold),
+    defaultPrintFormat: s.defaultPrintFormat,
+    documentFooter: s.documentFooter ?? '',
+    tvaMention: s.tvaMention,
   };
 }
 
@@ -70,7 +73,8 @@ const emptyToNull = (v: unknown) => (v === '' ? null : v);
 const ERROR_KEYS: Partial<Record<keyof FormInput, ValidationKey>> = {
   raisonSociale: 'tooShort',
   priceLevelCount: 'range',
-  timbreRate: 'invalidRate',
+  timbreTranches: 'invalidTranches',
+  tvaMention: 'required',
   timbreMin: 'invalidAmount',
   timbreMax: 'invalidAmount',
   timbreThreshold: 'invalidAmount',
@@ -209,6 +213,8 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
   });
   const { errors, isDirty } = form.formState;
   const timbreEnabled = useWatch({ control: form.control, name: 'timbreEnabled' });
+  const assujettiTva = useWatch({ control: form.control, name: 'assujettiTva' });
+  const tranches = useFieldArray({ control: form.control, name: 'timbreTranches' });
 
   const mutation = useMutation({
     mutationFn: (values: TenantSettings) =>
@@ -368,12 +374,113 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
           </SwitchRow>
           {timbreEnabled ? (
             <>
-              {amount('timbreRate')}
+              <fieldset className="space-y-2 sm:col-span-2" aria-describedby="timbreTranches-hint">
+                <legend className="text-sm font-medium">{t('settings.timbreTranches')}</legend>
+                <p id="timbreTranches-hint" className="text-xs text-muted-foreground">
+                  {t('settings.timbreTranchesHint')}
+                </p>
+                {tranches.fields.map((field, i) => (
+                  <div key={field.id} className="flex items-end gap-2">
+                    <div className="flex-1 space-y-1">
+                      <Label htmlFor={`tranche-${i}-upTo`} className="text-xs">
+                        {t('settings.trancheUpTo')}
+                      </Label>
+                      <Input
+                        id={`tranche-${i}-upTo`}
+                        dir="ltr"
+                        inputMode="decimal"
+                        className="num text-end"
+                        placeholder={t('settings.trancheNoLimit')}
+                        {...form.register(`timbreTranches.${i}.upTo`, { setValueAs: emptyToNull })}
+                      />
+                    </div>
+                    <div className="w-28 space-y-1">
+                      <Label htmlFor={`tranche-${i}-rate`} className="text-xs">
+                        {t('settings.trancheRate')}
+                      </Label>
+                      <Input
+                        id={`tranche-${i}-rate`}
+                        dir="ltr"
+                        inputMode="decimal"
+                        className="num text-end"
+                        {...form.register(`timbreTranches.${i}.rate`)}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      aria-label={t('settings.trancheRemove')}
+                      onClick={() => tranches.remove(i)}
+                    >
+                      <Trash2 aria-hidden />
+                    </Button>
+                  </div>
+                ))}
+                {errors.timbreTranches ? (
+                  <p role="alert" className="text-xs text-destructive">
+                    {t('validation.invalidTranches')}
+                  </p>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  disabled={tranches.fields.length >= 10}
+                  onClick={() => tranches.append({ upTo: null, rate: '' })}
+                >
+                  <Plus aria-hidden />
+                  {t('settings.trancheAdd')}
+                </Button>
+              </fieldset>
               {amount('timbreThreshold')}
               {amount('timbreMin')}
               {amount('timbreMax')}
+              <Alert role="note" className="sm:col-span-2">
+                <AlertDescription>{t('settings.timbreLawWarning')}</AlertDescription>
+              </Alert>
             </>
           ) : null}
+        </Section>
+
+        <Section title={t('settings.documentsSection')} description={t('settings.documentsHelp')}>
+          <FieldShell id="defaultPrintFormat" label={t('settings.defaultPrintFormat')}>
+            <NativeSelect id="defaultPrintFormat" {...form.register('defaultPrintFormat')}>
+              <option value="A4">{t('print.formatA4')}</option>
+              <option value="A5">{t('print.formatA5')}</option>
+            </NativeSelect>
+          </FieldShell>
+          <FieldShell
+            id="tvaMention"
+            label={t('settings.tvaMention')}
+            hint={t(assujettiTva ? 'settings.tvaMentionUnused' : 'settings.tvaMentionHint')}
+            error={errorFor(errors, 'tvaMention')}
+          >
+            <Input
+              {...aria('tvaMention', errorFor(errors, 'tvaMention'), true)}
+              lang="fr"
+              dir="ltr"
+              {...form.register('tvaMention')}
+            />
+          </FieldShell>
+          <FieldShell
+            id="documentFooter"
+            label={t('settings.documentFooter')}
+            hint={t('settings.documentFooterHint')}
+            optional={t('common.optional')}
+            wide
+          >
+            <Textarea
+              id="documentFooter"
+              aria-describedby="documentFooter-hint"
+              lang="fr"
+              dir="ltr"
+              rows={2}
+              maxLength={500}
+              {...form.register('documentFooter')}
+            />
+          </FieldShell>
         </Section>
       </fieldset>
 
