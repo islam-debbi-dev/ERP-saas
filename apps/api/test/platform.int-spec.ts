@@ -106,7 +106,10 @@ describe('health, errors, roles and tenant settings', () => {
         negativeStockMode: 'BLOCK',
         priceLevelCount: 2,
         timbreEnabled: true,
-        timbreRate: '1',
+        timbreTranches: [
+          { upTo: '30 000', rate: '1' },
+          { upTo: null, rate: '1,5' },
+        ],
         timbreMin: '5,00',
         timbreMax: '10 000',
       })
@@ -118,7 +121,10 @@ describe('health, errors, roles and tenant settings', () => {
       negativeStockMode: 'BLOCK',
       priceLevelCount: 2,
       timbreEnabled: true,
-      timbreRate: '1',
+      timbreTranches: [
+        { upTo: '30000.00', rate: '1' },
+        { upTo: null, rate: '1.5' },
+      ],
       timbreMin: '5.00',
       timbreMax: '10000.00',
       timbreThreshold: null,

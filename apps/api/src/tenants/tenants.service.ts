@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  normalizeDecimal,
   parseDA,
   type TenantSettingsResponse,
   toMoneyString,
@@ -10,6 +11,7 @@ import { CatalogService } from '../catalog/catalog.service';
 import { tenantContext } from '../common/tenant-context';
 import { type Tenant } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { readTranches } from './timbre-rule';
 
 function toResponse(t: Tenant): TenantSettingsResponse {
   return {
@@ -29,10 +31,13 @@ function toResponse(t: Tenant): TenantSettingsResponse {
     negativeStockMode: t.negativeStockMode,
     priceLevelCount: t.priceLevelCount,
     timbreEnabled: t.timbreEnabled,
-    timbreRate: t.timbreRate?.toString() ?? null,
+    timbreTranches: readTranches(t.timbreTranches),
     timbreMin: t.timbreMin ? toMoneyString(t.timbreMin) : null,
     timbreMax: t.timbreMax ? toMoneyString(t.timbreMax) : null,
     timbreThreshold: t.timbreThreshold ? toMoneyString(t.timbreThreshold) : null,
+    defaultPrintFormat: t.defaultPrintFormat,
+    documentFooter: t.documentFooter,
+    tvaMention: t.tvaMention,
   };
 }
 
@@ -68,7 +73,10 @@ export class TenantsService {
         where: { id: tenantId },
         data: {
           ...input,
-          timbreRate: normalizeAmount(input.timbreRate),
+          timbreTranches: input.timbreTranches?.map((tr) => ({
+            upTo: tr.upTo === null ? null : toMoneyString(normalizeDecimal(tr.upTo)),
+            rate: normalizeDecimal(tr.rate),
+          })),
           timbreMin: normalizeAmount(input.timbreMin),
           timbreMax: normalizeAmount(input.timbreMax),
           timbreThreshold: normalizeAmount(input.timbreThreshold),

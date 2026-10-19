@@ -21,6 +21,7 @@ import {
   toMoneyString,
   toQtyString,
   type ValidateSaleInput,
+  computeTimbre,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
@@ -32,6 +33,7 @@ import { Prisma } from '../generated/prisma/client';
 import { PaymentsService } from '../payments/payments.service';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { StockService } from '../stock/stock.service';
+import { timbreRuleOf } from '../tenants/timbre-rule';
 import { fromIsoDate } from './sale.mapper';
 import { snapshotSaleLines } from './sale-lines';
 import { canOverride, lockSale, SalesService } from './sales.service';
@@ -97,7 +99,14 @@ export class SaleWorkflowService {
     const tenantId = tenantContext.requireTenantId();
     const tenant = await tx.tenant.findUniqueOrThrow({
       where: { id: tenantId },
-      select: { assujettiTva: true },
+      select: {
+        assujettiTva: true,
+        timbreEnabled: true,
+        timbreThreshold: true,
+        timbreTranches: true,
+        timbreMin: true,
+        timbreMax: true,
+      },
     });
     const client = sale.clientId
       ? await tx.client.findFirst({ where: { id: sale.clientId, deletedAt: null } })
@@ -127,8 +136,16 @@ export class SaleWorkflowService {
 
     const ttc = totals.totalTtc;
     const handed = money(input.paidAmount);
-    const paid = handed.gt(ttc) ? ttc : handed;
-    const credit = ttc.minus(paid);
+    // Timbre fiscal: a facture paid in cash owes TTC + timbre (phase 8 decisions).
+    const timbre = computeTimbre({
+      ttc,
+      saleType: sale.type,
+      paymentMode: handed.gt(0) ? input.paymentMode : null,
+      rule: timbreRuleOf(tenant),
+    });
+    const due = ttc.plus(timbre);
+    const paid = handed.gt(due) ? due : handed;
+    const credit = due.minus(paid);
     if (credit.gt(0) && !client) {
       throw new AppException(
         ErrorCode.CLIENT_REQUIRED_FOR_CREDIT,
@@ -193,11 +210,11 @@ export class SaleWorkflowService {
 
     if (client) {
       const entries: LedgerEntryInput[] = [];
-      if (!ttc.isZero()) {
+      if (!due.isZero()) {
         entries.push({
           clientId: client.id,
           type: ClientLedgerType.SALE,
-          amount: ttc.toString(),
+          amount: due.toString(),
           label: number,
           refType: 'Sale',
           refId: id,
@@ -234,6 +251,7 @@ export class SaleWorkflowService {
         totalHt: totals.totalHt.toString(),
         totalTva: totals.totalTva.toString(),
         totalTtc: ttc.toString(),
+        timbre: timbre.toString(),
         paidAmount: paid.toString(),
         paymentMode: paid.gt(0) ? input.paymentMode : null,
         creditOverride,
@@ -242,6 +260,7 @@ export class SaleWorkflowService {
               clientSnapshot: {
                 code: client.code,
                 name: client.name,
+                type: client.type,
                 phone: client.phone,
                 address: client.address,
                 wilaya: client.wilaya,
@@ -265,6 +284,7 @@ export class SaleWorkflowService {
       after: {
         number,
         totalTtc: ttc.toString(),
+        timbre: timbre.toString(),
         paid: paid.toString(),
         credit: credit.toString(),
         creditOverride,

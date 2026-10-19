@@ -1,4 +1,10 @@
-import { computeTotals, type SaleDto, toMoneyString, toQtyString } from '@erp/shared';
+import {
+  computeTotals,
+  type SaleClientSnapshot,
+  type SaleDto,
+  toMoneyString,
+  toQtyString,
+} from '@erp/shared';
 import { Prisma } from '../generated/prisma/client';
 
 export const saleInclude = {
@@ -37,6 +43,7 @@ export function toSaleDto(
     number: s.number,
     status: s.status,
     client: s.client,
+    clientSnapshot: (s.clientSnapshot as SaleClientSnapshot | null) ?? null,
     documentDate: toIsoDate(s.documentDate),
     note: s.note,
     priceLevelId: s.priceLevelId,
@@ -92,6 +99,9 @@ export function toSaleDto(
         saleLineId: rl.saleLineId,
         qty: toQtyString(rl.qty.toString()),
         qtyBase: toQtyString(rl.qtyBase.toString()),
+        unitPriceHt: toMoneyString(rl.unitPriceHt.toString()),
+        discountPct: rl.discountPct.toFixed(2),
+        tvaRate: rl.tvaRate.toFixed(2),
         lineHt: toMoneyString(rl.lineHt.toString()),
       })),
     })),

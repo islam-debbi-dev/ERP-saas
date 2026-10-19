@@ -40,6 +40,11 @@ enum DocType {
   RF
 }
 
+enum PrintFormat {
+  A4
+  A5
+}
+
 enum IdempotencyStatus {
   IN_PROGRESS
   COMPLETED
@@ -68,10 +73,18 @@ model Tenant {
 
   // Timbre fiscal rule (cash-paid factures). Off until the tenant sets current law values.
   timbreEnabled   Boolean  @default(false)
-  timbreRate      Decimal? @db.Decimal(7, 4) // percent, e.g. 1.0000
+  /// Deprecated (phase 8): replaced by timbreTranches, no longer read. Drop in a later release.
+  timbreRate      Decimal? @db.Decimal(7, 4)
   timbreMin       Decimal? @db.Decimal(14, 2)
   timbreMax       Decimal? @db.Decimal(14, 2)
   timbreThreshold Decimal? @db.Decimal(14, 2)
+  /// [{ upTo: "30000.00" | null, rate: "1" }] in increasing order, see packages/shared/timbre.
+  timbreTranches  Json     @default("[]")
+
+  // Printed documents
+  defaultPrintFormat PrintFormat @default(A4)
+  documentFooter     String?     @db.VarChar(500)
+  tvaMention         String      @default("Non assujetti à la TVA") @db.VarChar(120)
 
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
@@ -105,6 +118,7 @@ model Tenant {
   saleReturnLines     SaleReturnLine[]
   payments            Payment[]
   paymentAllocations  PaymentAllocation[]
+  documentPrints      DocumentPrint[]
 
   @@map("tenants")
 }
@@ -178,6 +192,25 @@ model AuditLog {
 }
 
 /// Last number used per tenant, document type and year. Incremented under SELECT ... FOR UPDATE.
+/// Print log (append-only). The first print of a document is the original,
+/// every later one is a DUPLICATA.
+model DocumentPrint {
+  id        String      @id @default(uuid()) @db.Uuid
+  /// Insertion order: decides which print came first, even within one millisecond.
+  seq       BigInt      @unique @default(autoincrement())
+  tenantId  String      @db.Uuid
+  docType   DocType
+  docId     String      @db.Uuid
+  format    PrintFormat
+  printedBy String?     @db.Uuid
+  createdAt DateTime    @default(now()) @db.Timestamptz(3)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, docType, docId, seq])
+  @@map("document_prints")
+}
+
 model DocumentSequence {
   tenantId   String  @db.Uuid
   docType    DocType

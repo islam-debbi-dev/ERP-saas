@@ -29,6 +29,17 @@ async function main(): Promise<void> {
           adresse: 'Zone d’activité, Oued Smar, Alger',
           telephone: '023 00 00 00',
           assujettiTva: true,
+          // EXAMPLE timbre values only, left disabled: verify them against the current
+          // loi de finances before enabling (README, "Timbre fiscal").
+          timbreEnabled: false,
+          timbreThreshold: '300.00',
+          timbreTranches: [
+            { upTo: '30000.00', rate: '1' },
+            { upTo: '100000.00', rate: '1.5' },
+            { upTo: null, rate: '2' },
+          ],
+          timbreMin: '5.00',
+          timbreMax: '10000.00',
         },
       });
 
