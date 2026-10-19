@@ -18,6 +18,7 @@ const REFRESHABLE = new Set(['TOKEN_EXPIRED', 'UNAUTHENTICATED', 'INVALID_TOKEN'
 
 export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+  /** JSON-encoded, except `FormData` (file uploads), sent as multipart. */
   body?: unknown;
   /** Required by the API on POSTs that create money or stock effects. */
   idempotencyKey?: string;
@@ -106,7 +107,9 @@ export class ApiClient {
     const headers: Record<string, string> = {
       Accept: options.as === 'blob' ? '*/*' : 'application/json',
     };
-    if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+    const multipart = options.body instanceof FormData;
+    // The browser sets the multipart Content-Type with its boundary.
+    if (options.body !== undefined && !multipart) headers['Content-Type'] = 'application/json';
     if (this.accessToken) headers['Authorization'] = `Bearer ${this.accessToken}`;
     if (options.idempotencyKey) headers['Idempotency-Key'] = options.idempotencyKey;
 
@@ -115,7 +118,12 @@ export class ApiClient {
       res = await this.fetchFn(`${this.options.baseUrl}${path}`, {
         method: options.method ?? 'GET',
         headers,
-        body: options.body === undefined ? undefined : JSON.stringify(options.body),
+        body:
+          options.body === undefined
+            ? undefined
+            : multipart
+              ? (options.body as FormData)
+              : JSON.stringify(options.body),
         credentials: 'include',
         signal: options.signal,
       });

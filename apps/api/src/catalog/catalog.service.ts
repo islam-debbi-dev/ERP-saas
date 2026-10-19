@@ -1,12 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { ErrorCode } from '@erp/shared';
+import {
+  type CreateProductInput,
+  ErrorCode,
+  type ProductDto,
+  type UnitDto,
+  type UpdateProductInput,
+} from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
 import { type Tx } from '../prisma/prisma.service';
 import { createDefaultUnits, ensurePriceLevels } from './catalog-defaults';
+import { CategoriesService } from './categories.service';
 import { PriceLevelsService } from './price-levels.service';
+import { ProductsService } from './products.service';
 
 export interface PriceUpdate {
   productId: string;
@@ -15,13 +23,66 @@ export interface PriceUpdate {
   priceHt: string;
 }
 
+export interface CatalogLookups {
+  units: UnitDto[];
+  /** Active levels only, by position. */
+  priceLevels: { id: string; position: number; name: string }[];
+  categories: { id: string; name: string }[];
+}
+
 /** Entry point other modules use to set up or adjust a tenant's catalog. */
 @Injectable()
 export class CatalogService {
   constructor(
     private readonly priceLevels: PriceLevelsService,
     private readonly audit: AuditService,
+    private readonly products: ProductsService,
+    private readonly categories: CategoriesService,
   ) {}
+
+  // ---------------------------------------------------------------- Excel import
+
+  /** Units, active price levels and live categories, to validate imported rows. */
+  async importLookups(tx: Tx): Promise<CatalogLookups> {
+    const active = await this.priceLevels.activeIds(tx);
+    const [units, levels, categories] = await Promise.all([
+      tx.unit.findMany({ orderBy: { createdAt: 'asc' } }),
+      tx.priceLevel.findMany({ orderBy: { position: 'asc' } }),
+      tx.category.findMany({ where: { deletedAt: null }, select: { id: true, name: true } }),
+    ]);
+    return {
+      units: units.map((u) => ({
+        id: u.id,
+        code: u.code,
+        name: u.name,
+        allowsDecimal: u.allowsDecimal,
+      })),
+      priceLevels: levels
+        .filter((l) => active.has(l.id))
+        .map((l) => ({ id: l.id, position: l.position, name: l.name })),
+      categories,
+    };
+  }
+
+  productsByReference(tx: Tx, references: string[]): Promise<Map<string, ProductDto>> {
+    return this.products.byReferences(tx, references);
+  }
+
+  usedBarcodes(tx: Tx, barcodes: string[]): Promise<Map<string, string>> {
+    return this.products.usedBarcodes(tx, barcodes);
+  }
+
+  ensureCategories(tx: Tx, names: string[]): Promise<Map<string, string>> {
+    return this.categories.ensureByNames(tx, names);
+  }
+
+  createProducts(tx: Tx, inputs: CreateProductInput[]): Promise<string[]> {
+    return this.products.createManyInTx(tx, inputs);
+  }
+
+  updateProduct(tx: Tx, id: string, input: UpdateProductInput): Promise<ProductDto> {
+    return this.products.updateInTx(tx, id, input);
+  }
 
   /** Called inside the registration transaction. */
   async initTenant(tx: Tx, tenantId: string, priceLevelCount: number): Promise<void> {

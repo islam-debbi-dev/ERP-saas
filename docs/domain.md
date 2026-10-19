@@ -40,6 +40,16 @@
 - Amount in words (en lettres) in French is expected on factures.
 - Many grossistes are on the **IFU** (forfait) regime and don't charge TVA → tenant setting "assujetti TVA: oui/non".
 
+## Excel import (phase 9)
+- Three imports: **Produits**, **Stock initial**, **Clients et soldes**, from .xlsx or .csv (10 MB, 10 000 rows max).
+- Preview writes nothing but the `ImportJob`. A preview with any error row cannot be confirmed: the trader fixes the file and uploads it again. Warnings do not block.
+- Confirm re-validates against current data and writes every row in one transaction; any failure rolls the whole import back and marks the job `FAILED`.
+- Matching: products by reference, clients by code. An existing record gets only the non-empty cells (a blank cell keeps the stored value); importing products never touches stock.
+- Opening stock and opening balance go through the ledgers (`OPENING`) and are refused for a product/client that already has one, so re-importing the same file never doubles them.
+- Numbers accept `1 234,50`, `1.234,50`, `1,234.50`, `1234.5`, `1 234 DA`. A lone `,` is decimal; a single `.` is decimal; several `.` are thousands separators.
+- New products: base unit is the default sale and purchase unit; empty TVA means 0 % (shown as a warning). Unknown categories are created.
+- The original file is kept 30 days, then dropped; the job row stays for audit.
+
 ## Typical edge cases to always consider
 - Selling the last carton from two devices at the same time.
 - Negative stock (allow with warning? tenant setting) – common in real shops because entries are late.

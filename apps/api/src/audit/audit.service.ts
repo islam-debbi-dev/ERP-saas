@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { chunks } from '../common/chunks';
 import { tenantContext } from '../common/tenant-context';
 import { type Prisma } from '../generated/prisma/client';
 import { type Tx } from '../prisma/prisma.service';
@@ -45,5 +46,24 @@ export class AuditService {
         after: toJson(entry.after),
       },
     });
+  }
+
+  /** Many rows in one insert (imports). Same rules as `log`. */
+  async logMany(tx: Tx, entries: AuditEntry[]): Promise<void> {
+    if (entries.length === 0) return;
+    const ctx = tenantContext.get();
+    const rows = entries.map((entry) => ({
+      tenantId: entry.tenantId ?? tenantContext.requireTenantId(),
+      userId: entry.userId ?? ctx?.userId ?? null,
+      sessionId: entry.sessionId ?? ctx?.sessionId ?? null,
+      deviceName: ctx?.deviceName ?? null,
+      ip: ctx?.ip ?? null,
+      action: entry.action,
+      entity: entry.entity,
+      entityId: entry.entityId ?? null,
+      before: toJson(entry.before),
+      after: toJson(entry.after),
+    }));
+    for (const chunk of chunks(rows)) await tx.auditLog.createMany({ data: chunk });
   }
 }

@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger, type OnModuleDestroy } from '@nestjs/common';
 import { type PrintFormat } from '@erp/shared';
-import puppeteer, { type Browser } from 'puppeteer';
+import type { Browser } from 'puppeteer';
 import { APP_CONFIG, type AppConfig } from '../config/app-config';
 import { escapeHtml } from './templates/html';
 
@@ -55,15 +55,19 @@ export class PdfRendererService implements OnModuleDestroy {
 
   private getBrowser(): Promise<Browser> {
     if (!this.browser) {
-      const launching = puppeteer.launch({
-        // Puppeteer's download is chrome-headless-shell; a system Chromium runs headless.
-        headless: this.config.CHROMIUM_PATH ? true : 'shell',
-        executablePath: this.config.CHROMIUM_PATH,
-        // The API container runs as a non-root user without user namespaces.
-        args: ['--no-sandbox', '--disable-dev-shm-usage', '--font-render-hinting=none'],
-        // A stuck browser fails the request instead of hanging it.
-        protocolTimeout: 20_000,
-      });
+      // puppeteer is ESM-only: a static import becomes a require(), which Jest on
+      // Node < 24.9 cannot load. import() works everywhere.
+      const launching = import('puppeteer').then(({ default: puppeteer }) =>
+        puppeteer.launch({
+          // Puppeteer's download is chrome-headless-shell; a system Chromium runs headless.
+          headless: this.config.CHROMIUM_PATH ? true : 'shell',
+          executablePath: this.config.CHROMIUM_PATH,
+          // The API container runs as a non-root user without user namespaces.
+          args: ['--no-sandbox', '--disable-dev-shm-usage', '--font-render-hinting=none'],
+          // A stuck browser fails the request instead of hanging it.
+          protocolTimeout: 20_000,
+        }),
+      );
       this.browser = launching;
       launching
         .then((b) =>
