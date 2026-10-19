@@ -15,6 +15,7 @@ import { ConfigModule } from './config/config.module';
 import { DocumentsModule } from './documents/documents.module';
 import { HealthController } from './health/health.controller';
 import { IdempotencyModule } from './idempotency/idempotency.module';
+import { PrintingModule } from './printing/printing.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { PurchasesModule } from './purchases/purchases.module';
 import { StockModule } from './stock/stock.module';
@@ -54,6 +55,7 @@ import { TenantsModule } from './tenants/tenants.module';
     ClientsModule,
     SalesModule,
     PaymentsModule,
+    PrintingModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],
