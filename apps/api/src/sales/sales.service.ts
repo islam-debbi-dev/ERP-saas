@@ -152,6 +152,16 @@ export class SalesService {
     return toSaleDto(s, seller);
   }
 
+  /** The sale an avoir was made on (printing an avoir starts from its id). */
+  async saleIdOfReturn(returnId: string): Promise<string> {
+    const r = await this.prisma.db.saleReturn.findUnique({
+      where: { id: returnId },
+      select: { saleId: true },
+    });
+    if (!r) throw new AppException(ErrorCode.NOT_FOUND, 'Avoir not found');
+    return r.saleId;
+  }
+
   async list(query: SaleListQuery): Promise<SalePage> {
     const where: Prisma.SaleWhereInput = {
       ...(query.type ? { type: query.type } : {}),

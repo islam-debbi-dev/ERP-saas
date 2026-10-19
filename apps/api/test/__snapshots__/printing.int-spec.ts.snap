@@ -1,0 +1,221 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`printing renders the facture HTML from frozen data (assujetti and non-assujetti): facture assujetti 1`] = `
+"<!doctype html>
+    <html lang="fr">
+      <head>
+        <meta charset="utf-8" />
+        <title>FACTURE FAC-NUMBER</title>
+        <style>…</style>
+      </head>
+      <body class="A4">
+        
+        <header>
+          <div class="seller">
+            <h1>SARL Snapshot TVA</h1>
+            <p>Zone d’activité, Oued Smar, Alger</p>
+            <p>Tél. : 023 00 00 00</p>
+            <div class="ids">
+              <span class="id"><b>RC</b> 16/00-1234567B21</span><span class="id"><b>NIF</b> 000016001234567</span><span class="id"><b>NIS</b> 000116001234567</span><span class="id"><b>AI</b> 16012345678</span> 
+            </div>
+          </div>
+          <div class="doc">
+            <div class="title">FACTURE</div>
+            <div class="number">N° FAC-NUMBER</div>
+            <div>Date : 19/10/2026</div>
+            
+          </div>
+        </header>
+        <div class="top">
+          <div class="party">
+                  <div class="label">Client</div>
+                  <p class="name">
+                    Superette El Baraka <span>(C001)</span>
+                  </p>
+                  <p>12 rue Larbi Ben M’hidi</p><p>Alger</p>
+                  <div class="ids"><span class="id"><b>RC</b> 16/00-7654321A20</span><span class="id"><b>NIF</b> 000216007654321</span></div>
+                </div>
+          <table class="meta">
+                  <tr>
+                        <td>Mode de paiement</td>
+                        <td>Espèces</td>
+                      </tr>
+                </table>
+        </div>
+        
+    <table class="lines">
+    <thead>
+      <tr>
+        <th class="center">N°</th>
+        <th>Désignation</th>
+        <th class="num">Qté</th>
+        <th>Unité</th>
+        <th class="num">P.U. HT</th>
+        
+        <th class="num">TVA %</th>
+        <th class="num">Montant HT</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+            <td class="center">1</td>
+            <td>Huile Elio 5 L</td>
+            <td class="num">12</td>
+            <td>Pièce</td>
+            <td class="num">650,00</td>
+            
+            <td class="num">19</td>
+            <td class="num">7 800,00</td>
+          </tr><tr>
+            <td class="center">2</td>
+            <td>Sucre &lt;blanc&gt; &amp; cristal</td>
+            <td class="num">3</td>
+            <td>Pièce</td>
+            <td class="num">95,50</td>
+            
+            <td class="num">19</td>
+            <td class="num">286,50</td>
+          </tr>
+    </tbody>
+  </table>
+    <div class="after">
+      <div></div>
+      <table class="totals">
+    <tr class="">
+          <td>Total HT</td>
+          <td>8 086,50 DA</td>
+        </tr><tr class="">
+          <td>TVA 19 %</td>
+          <td>1 536,44 DA</td>
+        </tr><tr class="">
+          <td>Total TTC</td>
+          <td>9 622,94 DA</td>
+        </tr><tr class="">
+          <td>Timbre fiscal</td>
+          <td>96,23 DA</td>
+        </tr><tr class="grand">
+          <td>Net à payer</td>
+          <td>9 719,17 DA</td>
+        </tr><tr class="">
+          <td>Montant versé</td>
+          <td>9 719,17 DA</td>
+        </tr>
+  </table>
+    </div>
+    <p class="words">Arrêtée la présente facture à la somme de : <b>Neuf mille sept cent dix-neuf dinars algériens et dix-sept centimes</b>.</p>
+    
+    <div class="signatures">
+      <div>Le client</div>
+      <div>Cachet et signature</div>
+    </div>
+  
+      </body>
+    </html>"
+`;
+
+exports[`printing renders the facture HTML from frozen data (assujetti and non-assujetti): facture non assujetti 1`] = `
+"<!doctype html>
+    <html lang="fr">
+      <head>
+        <meta charset="utf-8" />
+        <title>FACTURE FAC-NUMBER</title>
+        <style>…</style>
+      </head>
+      <body class="A4">
+        
+        <header>
+          <div class="seller">
+            <h1>SARL Snapshot IFU</h1>
+            <p>Zone d’activité, Oued Smar, Alger</p>
+            <p>Tél. : 023 00 00 00</p>
+            <div class="ids">
+              <span class="id"><b>RC</b> 16/00-1234567B21</span><span class="id"><b>NIF</b> 000016001234567</span><span class="id"><b>NIS</b> 000116001234567</span><span class="id"><b>AI</b> 16012345678</span> 
+            </div>
+          </div>
+          <div class="doc">
+            <div class="title">FACTURE</div>
+            <div class="number">N° FAC-NUMBER</div>
+            <div>Date : 19/10/2026</div>
+            
+          </div>
+        </header>
+        <div class="top">
+          <div class="party">
+                  <div class="label">Client</div>
+                  <p class="name">
+                    Superette El Baraka <span>(C001)</span>
+                  </p>
+                  <p>12 rue Larbi Ben M’hidi</p><p>Alger</p>
+                  <div class="ids"><span class="id"><b>RC</b> 16/00-7654321A20</span><span class="id"><b>NIF</b> 000216007654321</span></div>
+                </div>
+          <table class="meta">
+                  <tr>
+                        <td>Mode de paiement</td>
+                        <td>Espèces</td>
+                      </tr>
+                </table>
+        </div>
+        
+    <table class="lines">
+    <thead>
+      <tr>
+        <th class="center">N°</th>
+        <th>Désignation</th>
+        <th class="num">Qté</th>
+        <th>Unité</th>
+        <th class="num">P.U. HT</th>
+        
+        
+        <th class="num">Montant HT</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+            <td class="center">1</td>
+            <td>Huile Elio 5 L</td>
+            <td class="num">12</td>
+            <td>Pièce</td>
+            <td class="num">650,00</td>
+            
+            
+            <td class="num">7 800,00</td>
+          </tr><tr>
+            <td class="center">2</td>
+            <td>Sucre &lt;blanc&gt; &amp; cristal</td>
+            <td class="num">3</td>
+            <td>Pièce</td>
+            <td class="num">95,50</td>
+            
+            
+            <td class="num">286,50</td>
+          </tr>
+    </tbody>
+  </table>
+    <div class="after">
+      <div><p class="mention">Non assujetti à la TVA</p></div>
+      <table class="totals">
+    <tr class="">
+          <td>Total</td>
+          <td>8 086,50 DA</td>
+        </tr><tr class="">
+          <td>Timbre fiscal</td>
+          <td>80,87 DA</td>
+        </tr><tr class="grand">
+          <td>Net à payer</td>
+          <td>8 167,37 DA</td>
+        </tr><tr class="">
+          <td>Montant versé</td>
+          <td>8 167,37 DA</td>
+        </tr>
+  </table>
+    </div>
+    <p class="words">Arrêtée la présente facture à la somme de : <b>Huit mille cent soixante-sept dinars algériens et trente-sept centimes</b>.</p>
+    
+    <div class="signatures">
+      <div>Le client</div>
+      <div>Cachet et signature</div>
+    </div>
+  
+      </body>
+    </html>"
+`;

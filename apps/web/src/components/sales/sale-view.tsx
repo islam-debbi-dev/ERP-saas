@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { formatDA, money, qty, type SaleResultDto } from '@erp/shared';
 import { PageHeader } from '@/components/shared/page-header';
+import { PrintButton } from '@/components/shared/print-button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -83,7 +84,10 @@ export function SaleView({ id }: { id: string }) {
   const validated = s.status === 'VALIDATED';
   const grouped = s.sourceBls.length > 0;
   const returnsTtc = s.returns.reduce((sum, r) => sum.plus(r.totalTtc), money(0));
-  const rest = money(s.totalTtc).minus(s.paidAmount).minus(returnsTtc);
+  const hasTimbre = money(s.timbre).gt(0);
+  // A cash facture owes TTC + timbre (the timbre is not refunded by an avoir).
+  const due = money(s.totalTtc).plus(s.timbre);
+  const rest = due.minus(s.paidAmount).minus(returnsTtc);
   const day = (iso: string) =>
     format.dateTime(new Date(`${iso}T12:00:00Z`), { dateStyle: 'medium' });
   const at = (iso: string) =>
@@ -102,6 +106,9 @@ export function SaleView({ id }: { id: string }) {
                 {t('back')}
               </Link>
             </Button>
+            {s.status !== 'DRAFT' ? (
+              <PrintButton path={`/documents/${s.type === 'FACTURE' ? 'FAC' : 'BL'}/${s.id}/pdf`} />
+            ) : null}
             {s.status === 'DRAFT' ? (
               <Button asChild>
                 <Link href={`/ventes/nouvelle?brouillon=${s.id}`}>
@@ -255,6 +262,22 @@ export function SaleView({ id }: { id: string }) {
                   <Amount value={s.totalTtc} />
                 </dd>
               </div>
+              {hasTimbre ? (
+                <>
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-muted-foreground">{t('timbre')}</dt>
+                    <dd>
+                      <Amount value={s.timbre} />
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-2 font-semibold">
+                    <dt>{t('netToPay')}</dt>
+                    <dd>
+                      <Amount value={due.toString()} />
+                    </dd>
+                  </div>
+                </>
+              ) : null}
               <div className="flex justify-between gap-2">
                 <dt className="text-muted-foreground">{t('paid')}</dt>
                 <dd>
@@ -402,7 +425,10 @@ export function SaleView({ id }: { id: string }) {
                           · {t(`disposition${r.disposition}`)} · {r.reason}
                         </span>
                       </span>
-                      <Amount value={r.totalTtc} />
+                      <span className="flex items-center gap-2">
+                        <Amount value={r.totalTtc} />
+                        <PrintButton path={`/documents/AV/${r.id}/pdf`} variant="ghost" size="sm" />
+                      </span>
                     </li>
                   ))}
                 </ul>

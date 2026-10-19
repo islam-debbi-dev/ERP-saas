@@ -26,6 +26,7 @@ import { paymentKeys, usePayment } from '@/lib/payments';
 import { saleKeys } from '@/lib/sales';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { useIdempotencyKey } from '@/lib/use-idempotency-key';
+import { PrintButton } from '@/components/shared/print-button';
 import { PaymentStatusBadge } from './payment-status-badge';
 
 /** Mirrors the API: sellers cancel their own versement of the day; managers any. */
@@ -253,6 +254,7 @@ export function PaymentDetailDialog({
                 {p.sale && p.status === 'VALID' ? (
                   <p className="me-auto text-xs text-muted-foreground">{t('linkedToSale')}</p>
                 ) : null}
+                <PrintButton path={`/payments/${p.id}/receipt.pdf`} />
                 {canBounce ? (
                   <Button variant="outline" onClick={() => setAction('bounce')}>
                     <TriangleAlert aria-hidden />

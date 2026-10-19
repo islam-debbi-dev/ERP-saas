@@ -15,6 +15,8 @@ const envSchema = z.object({
     .transform((v) => v === 'true'),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'silent']).default('info'),
   SENTRY_DSN: z.string().optional(),
+  /** Chromium used to render PDFs; unset = the browser puppeteer downloaded. */
+  CHROMIUM_PATH: z.string().min(1).optional(),
 });
 
 export type AppConfig = z.infer<typeof envSchema>;

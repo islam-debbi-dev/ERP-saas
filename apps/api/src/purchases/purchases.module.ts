@@ -12,5 +12,6 @@ import { SuppliersService } from './suppliers.service';
   imports: [StockModule, CatalogModule, DocumentsModule],
   controllers: [SuppliersController, PurchasesController],
   providers: [SuppliersService, PurchasesService, PurchaseWorkflowService],
+  exports: [PurchasesService],
 })
 export class PurchasesModule {}

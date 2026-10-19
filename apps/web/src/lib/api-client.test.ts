@@ -101,6 +101,31 @@ describe('ApiClient token refresh', () => {
     expect(init.credentials).toBe('include');
   });
 
+  it('downloads a file as a Blob after refreshing an expired token', async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(json(401, { code: 'TOKEN_EXPIRED', message: 'expired' }))
+      .mockResolvedValueOnce(json(200, { accessToken: 't2', user: {} }))
+      .mockResolvedValueOnce(
+        new Response('%PDF-1.7', { status: 200, headers: { 'Content-Type': 'application/pdf' } }),
+      );
+    const client = new ApiClient({ baseUrl: 'http://api', fetch: fetchFn as typeof fetch });
+    client.setAccessToken('t1');
+    const blob = await client.download('/documents/FAC/x/pdf');
+    expect(await blob.text()).toBe('%PDF-1.7');
+    expect(fetchFn.mock.calls[2]![0]).toBe('http://api/documents/FAC/x/pdf');
+  });
+
+  it('a failed download rejects with the API error, not a broken file', async () => {
+    const fetchFn = vi.fn(() => Promise.resolve(json(404, { code: 'NOT_FOUND', message: 'no' })));
+    const client = new ApiClient({ baseUrl: 'http://api', fetch: fetchFn });
+    client.setAccessToken('t1');
+    await expect(client.download('/documents/BL/x/pdf')).rejects.toMatchObject({
+      status: 404,
+      code: 'NOT_FOUND',
+    });
+  });
+
   it('maps network failures to a NETWORK error without ending the session', async () => {
     const onSessionEnd = vi.fn();
     const fetchFn = vi.fn(() => Promise.reject(new TypeError('Failed to fetch')));

@@ -619,6 +619,132 @@ describe('sales', () => {
     expect(again.totalTtc).toBe('2737.00');
   });
 
+  describe('timbre fiscal', () => {
+    let tt: RegisteredTenant;
+    let cat: TenantCatalog;
+
+    beforeAll(async () => {
+      tt = await registerTenant(t, 'Ventes timbre');
+      cat = await catalogOf(t, tt);
+      // Example values (README: verify them against the current loi de finances).
+      await setSettings(tt, {
+        timbreEnabled: true,
+        timbreThreshold: '300',
+        timbreTranches: [
+          { upTo: '30000', rate: '1' },
+          { upTo: '100000', rate: '1.5' },
+          { upTo: null, rate: '2' },
+        ],
+        timbreMin: '5',
+        timbreMax: '10000',
+      });
+    });
+
+    const facture = (body: object) => quick(tt, { type: 'FACTURE', ...body });
+
+    it('a facture paid in cash owes TTC + timbre: stored, on the ledger, fully paid', async () => {
+      const p = await product(tt, cat);
+      const c = await client(tt);
+      // 2 cartons: 4 600 HT, 5 474 TTC, timbre 1 % = 54.74
+      const r = (
+        await facture({
+          clientId: c.id,
+          lines: [cartons(p, '2')],
+          paidAmount: '6000',
+          paymentMode: 'ESPECES',
+        }).expect(201)
+      ).body as SaleResultDto;
+      expect(r.sale).toMatchObject({
+        totalTtc: '5474.00',
+        timbre: '54.74',
+        paidAmount: '5528.74',
+      });
+      expect(r.change).toBe('471.26');
+      const sale = await asTenant(tt.tenantId, () =>
+        t.prisma.db.clientLedgerEntry.findFirstOrThrow({
+          where: { refId: r.sale.id, type: 'SALE' },
+        }),
+      );
+      expect(sale.amount.toString()).toBe('5528.74');
+      expect(await balance(tt, c.id)).toBe('0.00');
+    });
+
+    it('a cash facture partly paid leaves TTC + timbre minus paid on credit', async () => {
+      const p = await product(tt, cat);
+      const c = await client(tt);
+      const r = (
+        await facture({
+          clientId: c.id,
+          lines: [cartons(p, '2')],
+          paidAmount: '1000',
+          paymentMode: 'ESPECES',
+        }).expect(201)
+      ).body as SaleResultDto;
+      expect(r.sale.timbre).toBe('54.74');
+      expect(await balance(tt, c.id)).toBe('4528.74');
+      const unpaid = (await as(tt).get(`/clients/${c.id}/unpaid-documents`).expect(200)).body as {
+        remaining: string;
+      }[];
+      expect(unpaid.map((u) => u.remaining)).toEqual(['4528.74']);
+    });
+
+    it('no timbre for a cheque, for credit, for a BL, or when the rule is off', async () => {
+      const p = await product(tt, cat, { stock: 240 });
+      const c = await client(tt);
+      const cheque = (
+        await facture({
+          clientId: c.id,
+          lines: [cartons(p, '1')],
+          paidAmount: '2737',
+          paymentMode: 'CHEQUE',
+        }).expect(201)
+      ).body as SaleResultDto;
+      const credit = (await facture({ clientId: c.id, lines: [cartons(p, '1')] }).expect(201))
+        .body as SaleResultDto;
+      const bl = (
+        await quick(tt, {
+          clientId: c.id,
+          lines: [cartons(p, '1')],
+          paidAmount: '2737',
+          paymentMode: 'ESPECES',
+        }).expect(201)
+      ).body as SaleResultDto;
+      expect([cheque.sale.timbre, credit.sale.timbre, bl.sale.timbre]).toEqual([
+        '0.00',
+        '0.00',
+        '0.00',
+      ]);
+
+      const off = await registerTenant(t, 'Ventes sans timbre');
+      const offCat = await catalogOf(t, off);
+      const q = await product(off, offCat);
+      const r = (
+        await quick(off, {
+          type: 'FACTURE',
+          lines: [cartons(q, '1')],
+          paidAmount: '2737',
+          paymentMode: 'ESPECES',
+        }).expect(201)
+      ).body as SaleResultDto;
+      expect(r.sale.timbre).toBe('0.00');
+    });
+
+    it('cancelling a cash facture gives the timbre back with the rest', async () => {
+      const p = await product(tt, cat);
+      const c = await client(tt);
+      const r = (
+        await facture({
+          clientId: c.id,
+          lines: [cartons(p, '2')],
+          paidAmount: '1000',
+          paymentMode: 'ESPECES',
+        }).expect(201)
+      ).body as SaleResultDto;
+      await as(tt).post(`/sales/${r.sale.id}/cancel`, { reason: 'Erreur' }).expect(200);
+      expect(await balance(tt, c.id)).toBe('0.00');
+    });
+  });
+
   it('lists sales with filters', async () => {
     const p = await product(a, catA);
     const c = await client(a);

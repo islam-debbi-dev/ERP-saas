@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { type ProductDto, type PurchaseDto, qty, type TenantSettingsResponse } from '@erp/shared';
 import { PageHeader } from '@/components/shared/page-header';
+import { PrintButton } from '@/components/shared/print-button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -51,6 +52,7 @@ export function PurchasePage({ id }: { id: string | null }) {
       actions={
         <>
           {p ? <PurchaseStatusBadge status={p.status} /> : null}
+          {p && p.status !== 'DRAFT' ? <PrintButton path={`/documents/BR/${p.id}/pdf`} /> : null}
           <Button asChild variant="ghost">
             <Link href="/achats">
               <ArrowLeft className="rtl-flip" aria-hidden />

@@ -42,6 +42,21 @@ Integration tests reset the **test** database (`DATABASE_URL_TEST`, port 5433) a
 
 `docker compose -f infra/docker-compose.yml up --build` also builds and runs the API and web containers.
 
+## Printing (PDF)
+
+Documents (BL, facture, avoir, bon de réception, relevé de compte, reçu de versement) are rendered **on the server** as A4 or A5 PDFs by headless Chromium (puppeteer), so a print looks the same on every machine.
+
+- `pnpm install` downloads the headless browser into `~/.cache/puppeteer` (allowed in `pnpm-workspace.yaml`). To use another Chromium, set `CHROMIUM_PATH` in `apps/api/.env`.
+- On Linux without Chromium's system libraries, install them once: `npx puppeteer browsers install chrome-headless-shell --install-deps` (from `apps/api`).
+- The Docker image installs Alpine's `chromium` and fonts and sets `CHROMIUM_PATH`.
+- Settings → Documents: default format, footer text, "Non assujetti à la TVA" mention, timbre rule.
+
+### Timbre fiscal
+
+The timbre is a **tenant rule**, off by default: threshold, tranches (rate in % per amount band; the whole TTC is taxed at the rate of its band), minimum and maximum. It applies only to a facture paid in cash (espèces), is added to what the client owes and printed on the facture.
+
+The values put in the demo seed (300 DA threshold, 1 % / 1.5 % / 2 % tranches, 5 DA minimum, 10 000 DA maximum) are **examples only**. Before enabling the rule for a real grossiste, verify every value against the **current loi de finances** and enter them in Settings → Documents.
+
 ## Repo layout
 
 ```

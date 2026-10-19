@@ -8,6 +8,8 @@ allowBuilds:
   prisma: true
   argon2: true
   esbuild: true
+  # Downloads the headless Chrome used to render PDFs (skipped in the Docker image).
+  puppeteer: true
   '@parcel/watcher': false
   unrs-resolver: false
   '@swc/core': false

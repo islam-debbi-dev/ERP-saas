@@ -534,7 +534,8 @@ export class PaymentsService {
         paid: Prisma.Decimal;
       }[]
     >`
-      SELECT s.id, s.type, s.number, s."documentDate", s."totalTtc",
+      -- What the document asks for: TTC plus the timbre of a cash facture.
+      SELECT s.id, s.type, s.number, s."documentDate", s."totalTtc" + s.timbre AS "totalTtc",
         COALESCE((SELECT SUM(r."totalTtc") FROM sale_returns r WHERE r."saleId" = s.id), 0) AS returned,
         COALESCE((SELECT SUM(a.amount) FROM payment_allocations a
                   JOIN payments p ON p.id = a."paymentId"

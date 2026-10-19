@@ -101,10 +101,25 @@
     "timbreSection": "Timbre fiscal",
     "timbreHelp": "S'applique aux factures payées en espèces. Saisissez les valeurs de la loi de finances en vigueur.",
     "timbreEnabled": "Appliquer le timbre fiscal",
-    "timbreRate": "Taux (%)",
     "timbreMin": "Minimum (DA)",
     "timbreMax": "Maximum (DA)",
-    "timbreThreshold": "Seuil d'application (DA)"
+    "timbreThreshold": "Seuil d'application (DA)",
+    "timbreTranches": "Tranches",
+    "timbreTranchesHint": "Tout le montant TTC est taxé au taux de sa tranche. Laissez « Jusqu'à » vide pour la dernière tranche.",
+    "trancheUpTo": "Jusqu'à (DA)",
+    "trancheNoLimit": "Sans limite",
+    "trancheRate": "Taux (%)",
+    "trancheRemove": "Supprimer la tranche",
+    "trancheAdd": "Ajouter une tranche",
+    "timbreLawWarning": "Vérifiez ces valeurs dans la loi de finances en vigueur avant de les appliquer : elles changent.",
+    "documentsSection": "Documents imprimés",
+    "documentsHelp": "Format et mentions des BL, factures, avoirs, reçus et relevés (imprimés en français).",
+    "defaultPrintFormat": "Format d'impression par défaut",
+    "tvaMention": "Mention TVA",
+    "tvaMentionHint": "Imprimée sur vos documents puisque vous n’êtes pas assujetti à la TVA.",
+    "tvaMentionUnused": "Utilisée seulement si vous n'êtes pas assujetti à la TVA.",
+    "documentFooter": "Pied de page",
+    "documentFooterHint": "Imprimé en bas de chaque page (conditions, remerciements…)."
   },
   "validation": {
     "required": "Ce champ est obligatoire.",
@@ -113,7 +128,8 @@
     "tooShort": "Trop court.",
     "invalidAmount": "Montant invalide (ex. 1 500,00).",
     "invalidRate": "Taux invalide (entre 0 et 100).",
-    "range": "Valeur hors limites."
+    "range": "Valeur hors limites.",
+    "invalidTranches": "Tranches invalides : montants croissants, taux entre 0 et 100, seule la dernière sans limite."
   },
   "errors": {
     "VALIDATION_FAILED": "Certaines informations sont invalides.",
@@ -748,7 +764,10 @@
     "emptyTitle": "Aucune vente",
     "emptyDescription": "Faites votre première vente depuis « Nouvelle vente ».",
     "loadMore": "Afficher plus",
-    "cancelInvoiceBody": "Les bons de livraison redeviennent facturables. Le stock et le compte du client ne changent pas."
+    "cancelInvoiceBody": "Les bons de livraison redeviennent facturables. Le stock et le compte du client ne changent pas.",
+    "timbre": "Timbre fiscal",
+    "netToPay": "Net à payer",
+    "print": "Imprimer"
   },
   "payments": {
     "title": "Versements",
@@ -819,5 +838,13 @@
     "unpaidTotal": "Reste à payer :",
     "unpaidNone": "Tous les documents sont réglés.",
     "ofTotal": "sur"
+  },
+  "print": {
+    "print": "Imprimer",
+    "chooseFormat": "Choisir le format",
+    "formatA4": "A4 (page entière)",
+    "formatA5": "A5 (demi-page)",
+    "preparing": "Préparation du document…",
+    "popupBlocked": "Le navigateur a bloqué l'ouverture du document. Autorisez les fenêtres pour ce site."
   }
 }
