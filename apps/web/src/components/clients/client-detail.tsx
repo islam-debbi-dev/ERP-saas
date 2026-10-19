@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { type ClientDto, type ClientStatementDto, formatDA, money } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
+import { PrintButton } from '@/components/shared/print-button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -301,7 +302,7 @@ function StatementSection({ clientId }: { clientId: string }) {
           </h2>
           <p className="text-sm text-muted-foreground">{t('statementHelp')}</p>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 items-end gap-3 sm:flex">
           <div className="space-y-1">
             <Label htmlFor="st-from">{t('from')}</Label>
             <Input
@@ -324,6 +325,12 @@ function StatementSection({ clientId }: { clientId: string }) {
               onChange={(e) => setRange((r) => ({ ...r, to: e.target.value }))}
             />
           </div>
+          {badRange ? null : (
+            <PrintButton
+              className="col-span-2"
+              path={`/clients/${clientId}/statement/pdf?from=${range.from}&to=${range.to}`}
+            />
+          )}
         </div>
       </div>
       {badRange ? (

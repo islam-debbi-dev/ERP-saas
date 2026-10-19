@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import {
   type ClientDto,
   computeTotals,
+  computeTimbre,
   formatDA,
   money,
   parseDA,
@@ -48,6 +49,7 @@ import { effectiveLevel, listPrice, saleKeys } from '@/lib/sales';
 import { formatQty, stockKeys } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn, isolateLtr } from '@/lib/utils';
+import { usePrint } from '@/components/shared/print-button';
 import { ClientPicker } from './client-picker';
 import { Kbd } from './kbd';
 
@@ -79,6 +81,7 @@ export function SaleScreen({
 }) {
   const t = useTranslations('sales');
   const errorMessage = useErrorMessage();
+  const { print } = usePrint();
   const unitLabel = useUnitLabel();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -122,11 +125,26 @@ export function SaleScreen({
     [lines, levelId, settings.assujettiTva],
   );
   const ttc = totals.totalTtc;
-  const paidText = paid ?? (client ? '' : formatDA(ttc, { currency: false }));
+  // Preview of the timbre the API adds when this facture is paid in cash.
+  const cashTimbre = computeTimbre({
+    ttc,
+    saleType: type,
+    paymentMode: mode,
+    rule: {
+      enabled: settings.timbreEnabled,
+      threshold: settings.timbreThreshold,
+      tranches: settings.timbreTranches,
+      min: settings.timbreMin,
+      max: settings.timbreMax,
+    },
+  });
+  const paidText = paid ?? (client ? '' : formatDA(ttc.plus(cashTimbre), { currency: false }));
   const handed = parseDA(paidText) ?? money(0);
-  const kept = handed.gt(ttc) ? ttc : handed;
+  const timbre = handed.gt(0) ? cashTimbre : money(0);
+  const due = ttc.plus(timbre);
+  const kept = handed.gt(due) ? due : handed;
   const change = handed.minus(kept);
-  const credit = ttc.minus(kept);
+  const credit = due.minus(kept);
   const projected = client ? money(client.balance).plus(credit) : null;
   const overLimit =
     client?.creditLimit != null && projected !== null && projected.gt(client.creditLimit);
@@ -283,8 +301,14 @@ export function SaleScreen({
     },
     onSuccess: (result) => {
       invalidate();
+      const docType = result.sale.type === SaleType.FACTURE ? 'FAC' : 'BL';
       toast.success(t('validatedToast', { number: result.sale.number ?? '' }), {
-        action: { label: t('open'), onClick: () => router.push(`/ventes/${result.sale.id}`) },
+        duration: 10000,
+        action: {
+          label: t('print'),
+          onClick: () => void print(`/documents/${docType}/${result.sale.id}/pdf`),
+        },
+        cancel: { label: t('open'), onClick: () => router.push(`/ventes/${result.sale.id}`) },
       });
       if (money(result.change).gt(0)) {
         toast.info(t('changeToast', { amount: isolateLtr(formatDA(result.change)) }), {
@@ -749,6 +773,22 @@ export function SaleScreen({
                     {formatDA(ttc)}
                   </dd>
                 </div>
+                {timbre.gt(0) ? (
+                  <>
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-muted-foreground">{t('timbre')}</dt>
+                      <dd dir="ltr" className="num">
+                        {formatDA(timbre)}
+                      </dd>
+                    </div>
+                    <div className="flex items-baseline justify-between gap-2">
+                      <dt className="font-medium">{t('netToPay')}</dt>
+                      <dd dir="ltr" className="num text-lg font-semibold">
+                        {formatDA(due)}
+                      </dd>
+                    </div>
+                  </>
+                ) : null}
               </dl>
             </CardContent>
           </Card>
