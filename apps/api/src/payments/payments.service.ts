@@ -30,7 +30,12 @@ const paymentInclude = {
   client: { select: { id: true, code: true, name: true } },
   sale: { select: { id: true, number: true } },
   allocations: {
-    orderBy: { createdAt: 'asc' },
+    // Rows of one versement share createdAt: order by the documents, oldest first.
+    orderBy: [
+      { createdAt: 'asc' },
+      { sale: { documentDate: 'asc' } },
+      { sale: { createdAt: 'asc' } },
+    ],
     include: { sale: { select: { number: true, type: true } } },
   },
 } satisfies Prisma.PaymentInclude;
@@ -426,7 +431,11 @@ export class PaymentsService {
       const m = byMode.get(r.mode) ?? { count: 0, total: money(0) };
       byMode.set(r.mode, { count: m.count + n, total: m.total.plus(amount) });
       const key = r.receivedBy ?? '';
-      const u = byUser.get(key) ?? { count: 0, total: money(0), modes: new Map<PaymentMode, Money>() };
+      const u = byUser.get(key) ?? {
+        count: 0,
+        total: money(0),
+        modes: new Map<PaymentMode, Money>(),
+      };
       u.count += n;
       u.total = u.total.plus(amount);
       u.modes.set(r.mode, (u.modes.get(r.mode) ?? money(0)).plus(amount));
