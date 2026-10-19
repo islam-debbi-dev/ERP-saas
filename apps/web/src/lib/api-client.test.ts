@@ -101,6 +101,18 @@ describe('ApiClient token refresh', () => {
     expect(init.credentials).toBe('include');
   });
 
+  it('sends FormData as multipart, untouched and without a JSON content type', async () => {
+    const fetchFn = vi.fn(() => Promise.resolve(json(200, { ok: true })));
+    const client = new ApiClient({ baseUrl: 'http://api', fetch: fetchFn });
+    client.setAccessToken('t1');
+    const form = new FormData();
+    form.append('file', new Blob(['a;b']), 'clients.csv');
+    await client.request('/imports/CLIENTS/preview', { method: 'POST', body: form });
+    const init = (fetchFn.mock.calls[0] as unknown as [string, RequestInit])[1];
+    expect(init.body).toBe(form);
+    expect((init.headers as Record<string, string>)['Content-Type']).toBeUndefined();
+  });
+
   it('downloads a file as a Blob after refreshing an expired token', async () => {
     const fetchFn = vi
       .fn()

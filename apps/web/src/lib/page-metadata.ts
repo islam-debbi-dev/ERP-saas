@@ -10,6 +10,7 @@ type TitleKey =
   | 'nav.versements'
   | 'nav.stock'
   | 'nav.settings'
+  | 'imports.title'
   | 'products.newTitle'
   | 'products.editTitle'
   | 'categories.title'
