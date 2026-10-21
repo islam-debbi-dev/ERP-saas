@@ -1,9 +1,9 @@
 name: CI
 
+# Pull requests; on main it runs as the first job of deploy.yml.
 on:
-  push:
-    branches: [main]
   pull_request:
+  workflow_call:
 
 concurrency:
   group: ci-${{ github.ref }}

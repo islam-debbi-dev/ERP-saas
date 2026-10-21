@@ -1,0 +1,141 @@
+# One environment (staging or production) on the VPS. The same file runs twice, as the
+# Compose projects erp-staging and erp-production, each with its own env file, volume
+# and network; a shared Caddy (caddy/compose.yml) routes each domain to its stack.
+# Deploys go through scripts/deploy.sh, never `up` by hand (it migrates first).
+#
+# Values come from the environment's env file (deploy.sh passes it as --env-file, plus
+# APP_TAG and STACK_NAME). db and backup get the whole file (they need the bucket); api gets only
+# what it needs.
+
+x-logging: &logging
+  driver: json-file
+  options: { max-size: '20m', max-file: '5' }
+
+x-db-owner-url: &db-owner-url postgresql://erp:${POSTGRES_PASSWORD:?}@db:5432/erp?schema=public
+
+services:
+  db:
+    image: ${IMAGE_PREFIX:?}/postgres:${POSTGRES_TAG:-16-walg-v3.0.8}
+    env_file: ${ENV_FILE:?}
+    environment:
+      POSTGRES_USER: erp
+      POSTGRES_DB: erp
+      PGDATA: /var/lib/postgresql/data
+    command:
+      - postgres
+      - -c
+      - archive_mode=on
+      - -c
+      - archive_command=archive-wal.sh %p
+      # A WAL segment is shipped at least every minute: at most ~1 min of data at risk.
+      - -c
+      - archive_timeout=60
+      - -c
+      - shared_buffers=256MB
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U erp -d erp']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    shm_size: 256mb
+    restart: unless-stopped
+    logging: *logging
+
+  # Daily base backup + retention (WAL itself is pushed by the db's archive_command).
+  backup:
+    image: ${IMAGE_PREFIX:?}/postgres:${POSTGRES_TAG:-16-walg-v3.0.8}
+    env_file: ${ENV_FILE:?}
+    environment:
+      PGHOST: db
+      PGUSER: erp
+      PGDATABASE: erp
+      PGPASSWORD: ${POSTGRES_PASSWORD:?}
+      PGDATA: /var/lib/postgresql/data
+    user: postgres
+    entrypoint: ['backup-loop.sh']
+    volumes:
+      - db_data:/var/lib/postgresql/data:ro
+    depends_on:
+      db: { condition: service_healthy }
+    restart: unless-stopped
+    logging: *logging
+
+  # One-shot, run by deploy.sh before the new api starts. The owner changes the schema.
+  migrate:
+    image: ${IMAGE_PREFIX:?}/api:${APP_TAG:?}
+    environment:
+      DATABASE_URL_MIGRATE: *db-owner-url
+      DATABASE_URL: *db-owner-url
+    command: ['npx', 'prisma', 'migrate', 'deploy']
+    depends_on:
+      db: { condition: service_healthy }
+    profiles: ['migrate']
+    restart: 'no'
+    logging: *logging
+
+  # Only what the API needs: the bucket keys and the backup encryption key stay out.
+  api:
+    image: ${IMAGE_PREFIX:?}/api:${APP_TAG:?}
+    environment:
+      NODE_ENV: production
+      APP_ENV: ${APP_ENV:?}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?}
+      WEB_ORIGIN: ${WEB_ORIGIN:?}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-300}
+      RATE_LIMIT_AUTH_PER_MINUTE: ${RATE_LIMIT_AUTH_PER_MINUTE:-30}
+      PORT: 3001
+      # erp_app: row-level security applies to it (apps/api/prisma/migrations/*_row_level_security).
+      DATABASE_URL: postgresql://erp_app:${APP_DB_PASSWORD:?}@db:5432/erp?schema=public
+      PUBLIC_PATH_PREFIX: /api
+      COOKIE_SECURE: 'true'
+    depends_on:
+      db: { condition: service_healthy }
+    networks:
+      default: {}
+      edge:
+        aliases: ['${STACK_NAME:?}-api']
+    restart: unless-stopped
+    logging: *logging
+
+  web:
+    image: ${IMAGE_PREFIX:?}/web:${APP_TAG:?}
+    environment:
+      NODE_ENV: production
+      APP_ENV: ${APP_ENV:?}
+      # Server-side rendering errors; the browser DSN is baked into the image.
+      SENTRY_DSN: ${WEB_SENTRY_DSN:-}
+    depends_on:
+      api: { condition: service_healthy }
+    networks:
+      default: {}
+      edge:
+        aliases: ['${STACK_NAME:?}-web']
+    restart: unless-stopped
+    logging: *logging
+
+  # Ships every container's logs to Better Stack (searchable), when LOGTAIL_TOKEN is
+  # set: deploy.sh adds the profile. Logs also stay in json-file on the server.
+  vector:
+    image: timberio/vector:0.50.0-alpine
+    environment:
+      STACK_NAME: ${STACK_NAME:?}
+      LOGTAIL_TOKEN: ${LOGTAIL_TOKEN:-}
+      LOGTAIL_HOST: ${LOGTAIL_HOST:-in.logs.betterstack.com}
+    volumes:
+      - ./vector.yaml:/etc/vector/vector.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    profiles: ['logs']
+    restart: unless-stopped
+    logging: *logging
+
+volumes:
+  db_data:
+
+networks:
+  edge:
+    external: true
+    name: erp-edge

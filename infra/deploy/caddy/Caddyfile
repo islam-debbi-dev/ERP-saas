@@ -1,0 +1,33 @@
+# STAGING_HOST / PRODUCTION_HOST / ACME_EMAIL come from caddy/.env (see .env.example).
+{
+	email {$ACME_EMAIL}
+}
+
+(app) {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+	# Same origin for the API: one web image for both environments, no CORS, and
+	# the refresh cookie stays first-party. Caddy strips /api; the API sets the
+	# cookie path with PUBLIC_PATH_PREFIX=/api.
+	handle_path /api/* {
+		reverse_proxy {args[0]}-api:3001
+	}
+	handle {
+		reverse_proxy {args[0]}-web:3000
+	}
+}
+
+{$STAGING_HOST} {
+	import app erp-staging
+	# Keep staging out of search engines.
+	header X-Robots-Tag "noindex, nofollow"
+}
+
+{$PRODUCTION_HOST} {
+	import app erp-production
+}

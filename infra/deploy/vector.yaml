@@ -1,0 +1,27 @@
+# Container logs of this stack → Better Stack Logs (LOGTAIL_TOKEN, LOGTAIL_HOST).
+# The API already logs JSON (pino) with the request id on every line.
+sources:
+  docker:
+    type: docker_logs
+    include_labels:
+      - 'com.docker.compose.project=${STACK_NAME}'
+
+transforms:
+  parsed:
+    type: remap
+    inputs: [docker]
+    source: |
+      .service = .label."com.docker.compose.service"
+      .env = "${STACK_NAME}"
+      parsed, err = parse_json(.message)
+      if err == null && is_object(parsed) { . = merge!(., parsed) }
+      del(.label)
+
+sinks:
+  betterstack:
+    type: http
+    inputs: [parsed]
+    uri: 'https://${LOGTAIL_HOST:-in.logs.betterstack.com}'
+    encoding: { codec: json }
+    auth: { strategy: bearer, token: '${LOGTAIL_TOKEN}' }
+    compression: gzip
