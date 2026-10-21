@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { AuditModule } from './audit/audit.module';
@@ -20,6 +21,7 @@ import { ImportsModule } from './imports/imports.module';
 import { PrintingModule } from './printing/printing.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { PurchasesModule } from './purchases/purchases.module';
+import { ReconcileModule } from './reconcile/reconcile.module';
 import { ReportsModule } from './reports/reports.module';
 import { StockModule } from './stock/stock.module';
 import { TenantsModule } from './tenants/tenants.module';
@@ -65,6 +67,7 @@ import { UsersModule } from './users/users.module';
         ],
       }),
     }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     AuditModule,
     IdempotencyModule,
@@ -81,6 +84,7 @@ import { UsersModule } from './users/users.module';
     ImportsModule,
     ReportsModule,
     UsersModule,
+    ReconcileModule,
   ],
   controllers: [HealthController],
   providers: [

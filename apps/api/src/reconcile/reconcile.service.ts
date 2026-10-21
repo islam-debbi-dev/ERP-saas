@@ -1,0 +1,105 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
+import * as Sentry from '@sentry/nestjs';
+import { AuditService } from '../audit/audit.service';
+import { tenantContext } from '../common/tenant-context';
+import { PrismaService } from '../prisma/prisma.service';
+import { RECONCILE_CHECKS } from './reconcile-sql';
+
+export interface LedgerMismatch {
+  check: string;
+  tenantId: string;
+  entity: string;
+  entityId: string;
+  /** The cached value (null when the cache row is missing) and what the ledger sums to. */
+  cached: string | null;
+  ledger: string;
+}
+
+export interface ReconcileResult {
+  /** False when another instance held the lock: nothing was checked. */
+  ran: boolean;
+  mismatches: LedgerMismatch[];
+}
+
+/** Arbitrary constant: one reconcile at a time across API instances. */
+const LOCK_KEY = 7_120_412;
+
+/**
+ * Nightly check that every cached stock level and client balance equals its ledger.
+ * A difference is never fixed automatically: it's logged, sent to Sentry (which
+ * alerts by e-mail) and written to the tenant's audit log, for a human to look at
+ * (docs/runbook.md, "Ledger reconcile").
+ */
+@Injectable()
+export class ReconcileService {
+  private readonly logger = new Logger('Reconcile');
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly audit: AuditService,
+  ) {}
+
+  @Cron('0 3 * * *', { name: 'ledger-reconcile', timeZone: 'Africa/Algiers' })
+  async nightly(): Promise<void> {
+    try {
+      await this.run();
+    } catch (err) {
+      this.logger.error(err instanceof Error ? err.stack : String(err));
+      Sentry.captureException(err);
+    }
+  }
+
+  run(): Promise<ReconcileResult> {
+    return tenantContext.runAsSystem(() =>
+      this.prisma.db.$transaction(
+        async (tx) => {
+          const [lock] = await tx.$queryRaw<{ locked: boolean }[]>`
+            SELECT pg_try_advisory_xact_lock(${LOCK_KEY}) AS locked`;
+          if (!lock?.locked) return { ran: false, mismatches: [] };
+
+          const mismatches: LedgerMismatch[] = [];
+          for (const check of RECONCILE_CHECKS) {
+            const rows = await tx.$queryRawUnsafe<Omit<LedgerMismatch, 'check' | 'entity'>[]>(
+              check.sql,
+            );
+            mismatches.push(
+              ...rows.map((r) => ({ check: check.name, entity: check.entity, ...r })),
+            );
+          }
+
+          for (const m of mismatches) {
+            await this.audit.log(tx, {
+              tenantId: m.tenantId,
+              userId: null,
+              action: 'LEDGER_MISMATCH',
+              entity: m.entity,
+              entityId: m.entityId,
+              before: { cached: m.cached },
+              after: { ledger: m.ledger, check: m.check },
+            });
+          }
+          this.report(mismatches);
+          return { ran: true, mismatches };
+        },
+        { timeout: 120_000 },
+      ),
+    );
+  }
+
+  private report(mismatches: LedgerMismatch[]): void {
+    if (mismatches.length === 0) {
+      this.logger.log('Ledgers reconciled: no difference');
+      return;
+    }
+    this.logger.error(
+      `Ledger reconcile: ${mismatches.length} difference(s) ${JSON.stringify(mismatches.slice(0, 50))}`,
+    );
+    Sentry.withScope((scope) => {
+      scope.setLevel('error');
+      scope.setTag('job', 'ledger-reconcile');
+      scope.setContext('mismatches', { list: mismatches.slice(0, 50) });
+      Sentry.captureMessage(`Ledger reconcile: ${mismatches.length} difference(s)`);
+    });
+  }
+}
