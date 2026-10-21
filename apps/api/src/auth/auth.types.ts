@@ -1,5 +1,5 @@
 import type { Request } from 'express';
-import type { Role } from '@erp/shared';
+import type { Permission, Role } from '@erp/shared';
 
 /** Claims inside the access token. */
 export interface AccessTokenPayload {
@@ -14,8 +14,12 @@ export interface CurrentUserInfo {
   tenantId: string;
   sessionId: string;
   role: Role;
-  email: string;
+  email: string | null;
+  phone: string | null;
   fullName: string;
+  /** Effective permissions, read from the database on every request. */
+  permissions: Permission[];
+  mustChangePassword: boolean;
 }
 
 export interface AuthenticatedRequest extends Request {

@@ -32,7 +32,8 @@ import { cn } from '@/lib/utils';
 type FormInput = z.input<typeof tenantSettingsSchema>;
 type TextField = 'raisonSociale' | 'adresse' | 'telephone' | 'rc' | 'nif' | 'nis' | 'ai' | 'rib';
 type AmountField = 'timbreMin' | 'timbreMax' | 'timbreThreshold';
-type ValidationKey = 'tooShort' | 'range' | 'invalidAmount' | 'invalidTranches' | 'required';
+type ValidationKey =
+  'tooShort' | 'range' | 'invalidAmount' | 'invalidRate' | 'invalidTranches' | 'required';
 
 const SETTINGS_KEY = ['tenant-settings'] as const;
 const TIMBRE_FIELDS = ['timbreTranches', 'timbreMin', 'timbreMax', 'timbreThreshold'] as const;
@@ -53,6 +54,7 @@ function toForm(s: TenantSettingsResponse): FormInput {
     creditLimitMode: s.creditLimitMode,
     negativeStockMode: s.negativeStockMode,
     priceLevelCount: s.priceLevelCount,
+    maxDiscountPct: s.maxDiscountPct,
     timbreEnabled: s.timbreEnabled,
     timbreTranches: s.timbreTranches.map((tr) => ({
       upTo: tr.upTo === null ? null : formatDA(tr.upTo, { currency: false }),
@@ -73,6 +75,7 @@ const emptyToNull = (v: unknown) => (v === '' ? null : v);
 const ERROR_KEYS: Partial<Record<keyof FormInput, ValidationKey>> = {
   raisonSociale: 'tooShort',
   priceLevelCount: 'range',
+  maxDiscountPct: 'invalidRate',
   timbreTranches: 'invalidTranches',
   tvaMention: 'required',
   timbreMin: 'invalidAmount',
@@ -351,6 +354,20 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
                 </option>
               ))}
             </NativeSelect>
+          </FieldShell>
+          <FieldShell
+            id="maxDiscountPct"
+            label={t('settings.maxDiscountPct')}
+            hint={t('settings.maxDiscountPctHint')}
+            error={errorFor(errors, 'maxDiscountPct')}
+          >
+            <Input
+              {...aria('maxDiscountPct', errorFor(errors, 'maxDiscountPct'), true)}
+              dir="ltr"
+              inputMode="decimal"
+              className="num text-end"
+              {...form.register('maxDiscountPct')}
+            />
           </FieldShell>
         </Section>
 

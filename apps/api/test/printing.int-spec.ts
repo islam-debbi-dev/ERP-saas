@@ -81,7 +81,10 @@ describe('printing', () => {
     sessionId: randomUUID(),
     role: who.auth.user.role,
     email: who.email,
+    phone: null,
     fullName: who.auth.user.fullName,
+    permissions: who.auth.user.permissions,
+    mustChangePassword: false,
   });
 
   /** HTML of a document as the PDF gets it, minus the constant stylesheet. */

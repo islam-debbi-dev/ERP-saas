@@ -45,7 +45,7 @@
   },
   "auth": {
     "loginTitle": "Connexion",
-    "loginDescription": "Entrez l'e-mail et le mot de passe de votre compte.",
+    "loginDescription": "Entrez votre e-mail ou votre téléphone et votre mot de passe.",
     "email": "E-mail",
     "emailPlaceholder": "nom@entreprise.dz",
     "password": "Mot de passe",
@@ -65,7 +65,9 @@
     "registering": "Création…",
     "haveAccount": "Déjà un compte ?",
     "goToLogin": "Se connecter",
-    "sessionExpired": "Votre session a expiré. Reconnectez-vous."
+    "sessionExpired": "Votre session a expiré. Reconnectez-vous.",
+    "identifier": "E-mail ou téléphone",
+    "identifierPlaceholder": "nom@entreprise.dz ou 0550 12 34 56"
   },
   "dashboard": {
     "welcome": "Bonjour {name}",
@@ -203,7 +205,9 @@
     "tvaMentionHint": "Imprimée sur vos documents puisque vous n’êtes pas assujetti à la TVA.",
     "tvaMentionUnused": "Utilisée seulement si vous n'êtes pas assujetti à la TVA.",
     "documentFooter": "Pied de page",
-    "documentFooterHint": "Imprimé en bas de chaque page (conditions, remerciements…)."
+    "documentFooterHint": "Imprimé en bas de chaque page (conditions, remerciements…).",
+    "maxDiscountPct": "Remise maximale sans autorisation (%)",
+    "maxDiscountPctHint": "Au-delà, la remise demande la permission « Remise au-delà du seuil ». 0 = toute remise."
   },
   "validation": {
     "required": "Ce champ est obligatoire.",
@@ -275,7 +279,13 @@
     "IMPORT_FILE_TOO_LARGE": "Le fichier dépasse 10 Mo.",
     "IMPORT_TOO_MANY_ROWS": "Le fichier dépasse 10 000 lignes. Découpez-le en plusieurs imports.",
     "IMPORT_HAS_ERRORS": "Des lignes sont invalides : rien n'a été importé. Corrigez le fichier puis réessayez.",
-    "IMPORT_NOT_PENDING": "Cet import a déjà été traité."
+    "IMPORT_NOT_PENDING": "Cet import a déjà été traité.",
+    "PHONE_ALREADY_USED": "Ce numéro de téléphone est déjà utilisé.",
+    "ACCOUNT_LOCKED": "Trop de mots de passe erronés. Compte bloqué 15 minutes.",
+    "PASSWORD_CHANGE_REQUIRED": "Changez votre mot de passe provisoire pour continuer.",
+    "INVITATION_INVALID": "Ce lien d'invitation est invalide ou a expiré.",
+    "LAST_OWNER": "Il doit rester au moins un propriétaire actif.",
+    "USER_DEACTIVATED": "Cet utilisateur est désactivé."
   },
   "units": {
     "PIECE": "Pièce",

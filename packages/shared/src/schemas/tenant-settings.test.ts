@@ -14,6 +14,7 @@ const valid = {
   creditLimitMode: 'WARN',
   negativeStockMode: 'WARN',
   priceLevelCount: 3,
+  maxDiscountPct: '0',
   timbreEnabled: false,
   timbreTranches: [],
   timbreMin: null,

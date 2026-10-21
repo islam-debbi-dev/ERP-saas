@@ -55,6 +55,8 @@ export const tenantSettingsSchema = z.object({
     NegativeStockMode.BLOCK,
   ]),
   priceLevelCount: z.number().int().min(1).max(5),
+  /** Line discount any seller may give; above it needs DISCOUNT_ABOVE_X. 0 = every discount. */
+  maxDiscountPct: percentString(2),
   // Timbre fiscal rule: off by default; values come from the current loi de finances.
   timbreEnabled: z.boolean(),
   timbreTranches: timbreTranchesSchema,

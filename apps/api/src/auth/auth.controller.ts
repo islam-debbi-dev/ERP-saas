@@ -14,9 +14,14 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import {
+  type AcceptInvitationInput,
+  acceptInvitationSchema,
   type AuthResponse,
   type AuthUser,
+  type ChangePasswordInput,
+  changePasswordSchema,
   CLIENT_TYPE_HEADER,
+  type InvitationInfoDto,
   type LoginInput,
   loginSchema,
   type RefreshInput,
@@ -24,12 +29,13 @@ import {
   type RegisterInput,
   registerSchema,
   type SessionInfo,
+  type TenantSessionDto,
 } from '@erp/shared';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { APP_CONFIG, type AppConfig } from '../config/app-config';
 import { type IssuedTokens, AuthService } from './auth.service';
 import type { ClientMeta, CurrentUserInfo } from './auth.types';
-import { CurrentUser, Public } from './decorators';
+import { AllowPendingPasswordChange, CurrentUser, Public } from './decorators';
 
 export const REFRESH_COOKIE = 'erp_rt';
 const REFRESH_COOKIE_PATH = '/auth';
@@ -80,8 +86,38 @@ export class AuthController {
     }
   }
 
+  @Public()
+  @Get('invitations/:token')
+  invitation(@Param('token') token: string): Promise<InvitationInfoDto> {
+    return this.auth.invitationInfo(token);
+  }
+
+  /** Under /auth so the refresh cookie (path /auth) is set like at login. */
+  @Public()
+  @Post('invitations/:token/accept')
+  @HttpCode(HttpStatus.OK)
+  async acceptInvitation(
+    @Param('token') token: string,
+    @Body(new ZodValidationPipe(acceptInvitationSchema)) body: AcceptInvitationInput,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AuthResponse> {
+    return this.respond(req, res, await this.auth.acceptInvitation(token, body, this.meta(req)));
+  }
+
+  @Post('password')
+  @HttpCode(HttpStatus.OK)
+  @AllowPendingPasswordChange()
+  changePassword(
+    @CurrentUser() user: CurrentUserInfo,
+    @Body(new ZodValidationPipe(changePasswordSchema)) body: ChangePasswordInput,
+  ): Promise<AuthUser> {
+    return this.auth.changePassword(user, body);
+  }
+
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @AllowPendingPasswordChange()
   async logout(
     @CurrentUser() user: CurrentUserInfo,
     @Res({ passthrough: true }) res: Response,
@@ -91,6 +127,7 @@ export class AuthController {
   }
 
   @Get('me')
+  @AllowPendingPasswordChange()
   me(@CurrentUser() user: CurrentUserInfo): Promise<AuthUser> {
     return this.auth.me(user);
   }
@@ -129,5 +166,26 @@ export class AuthController {
 
   private clearCookie(res: Response): void {
     res.clearCookie(REFRESH_COOKIE, { path: REFRESH_COOKIE_PATH });
+  }
+}
+
+/** Sessions of the company (OWNER) or of the user: device, IP, last activity. */
+@Controller('sessions')
+export class SessionsController {
+  constructor(private readonly auth: AuthService) {}
+
+  @Get()
+  list(@CurrentUser() user: CurrentUserInfo): Promise<TenantSessionDto[]> {
+    return this.auth.tenantSessions(user);
+  }
+
+  /** Own session, or any session of the company for the OWNER (lost phone). */
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  revoke(
+    @CurrentUser() user: CurrentUserInfo,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<void> {
+    return this.auth.revokeSession(user, id);
   }
 }

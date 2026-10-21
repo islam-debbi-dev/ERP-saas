@@ -45,7 +45,7 @@
   },
   "auth": {
     "loginTitle": "Log in",
-    "loginDescription": "Enter the email and password of your account.",
+    "loginDescription": "Enter your email or phone number and your password.",
     "email": "Email",
     "emailPlaceholder": "name@company.dz",
     "password": "Password",
@@ -65,7 +65,9 @@
     "registering": "Creating…",
     "haveAccount": "Already have an account?",
     "goToLogin": "Log in",
-    "sessionExpired": "Your session expired. Log in again."
+    "sessionExpired": "Your session expired. Log in again.",
+    "identifier": "Email or phone",
+    "identifierPlaceholder": "name@company.dz or 0550 12 34 56"
   },
   "dashboard": {
     "welcome": "Hello {name}",
@@ -203,7 +205,9 @@
     "tvaMentionHint": "Printed on your documents because you are not subject to TVA.",
     "tvaMentionUnused": "Used only when you are not subject to TVA.",
     "documentFooter": "Footer",
-    "documentFooterHint": "Printed at the bottom of every page (terms, thanks…)."
+    "documentFooterHint": "Printed at the bottom of every page (terms, thanks…).",
+    "maxDiscountPct": "Maximum discount without permission (%)",
+    "maxDiscountPctHint": "Above it, a discount needs the \"Discount above threshold\" permission. 0 = any discount."
   },
   "validation": {
     "required": "This field is required.",
@@ -275,7 +279,13 @@
     "IMPORT_FILE_TOO_LARGE": "The file is larger than 10 MB.",
     "IMPORT_TOO_MANY_ROWS": "The file has more than 10,000 rows. Split it into several imports.",
     "IMPORT_HAS_ERRORS": "Some rows are invalid: nothing was imported. Fix the file and try again.",
-    "IMPORT_NOT_PENDING": "This import was already processed."
+    "IMPORT_NOT_PENDING": "This import was already processed.",
+    "PHONE_ALREADY_USED": "This phone number is already used.",
+    "ACCOUNT_LOCKED": "Too many wrong passwords. Account locked for 15 minutes.",
+    "PASSWORD_CHANGE_REQUIRED": "Change your temporary password to continue.",
+    "INVITATION_INVALID": "This invitation link is invalid or has expired.",
+    "LAST_OWNER": "At least one active owner must remain.",
+    "USER_DEACTIVATED": "This user is deactivated."
   },
   "units": {
     "PIECE": "Piece",

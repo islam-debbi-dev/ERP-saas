@@ -6,6 +6,7 @@ import { Prisma } from '../generated/prisma/client';
 /** Models that carry a tenantId column. Every new business model must be added here. */
 export const TENANT_SCOPED_MODELS = new Set<string>([
   'User',
+  'UserInvitation',
   'Session',
   'AuditLog',
   'DocumentSequence',
