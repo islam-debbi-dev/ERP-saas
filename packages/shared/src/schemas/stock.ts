@@ -98,6 +98,11 @@ export const stockListQuerySchema = z.object({
     .enum(['true', 'false'])
     .optional()
     .transform((v) => v === 'true'),
+  /** Rupture: nothing left (or less than nothing). */
+  outOfStock: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => v === 'true'),
   cursor: id.optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
