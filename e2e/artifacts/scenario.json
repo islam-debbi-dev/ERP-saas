@@ -15,37 +15,37 @@
     },
     {
       "area": "1. Sale on credit",
-      "durationMs": 19,
+      "durationMs": 32,
       "name": "state after the sale is the expected one",
       "status": "PASS"
     },
     {
       "area": "1. Sale on credit",
-      "durationMs": 9,
+      "durationMs": 106,
       "name": "the sale DTO totals match the ledger",
       "status": "PASS"
     },
     {
       "area": "2. Partial payment (versement)",
-      "durationMs": 2,
+      "durationMs": 4,
       "name": "the payment lowers the client balance and allocates the oldest document",
       "status": "PASS"
     },
     {
       "area": "2. Partial payment (versement)",
-      "durationMs": 0,
+      "durationMs": 1,
       "name": "the payment is audited",
       "status": "PASS"
     },
     {
       "area": "3. Return of one unit",
-      "durationMs": 1,
+      "durationMs": 2,
       "name": "the avoir restocks the goods and lowers the balance",
       "status": "PASS"
     },
     {
       "area": "3. Return of one unit",
-      "durationMs": 1,
+      "durationMs": 0,
       "name": "the avoir has its own number and ledger entry",
       "status": "PASS"
     },
@@ -57,7 +57,7 @@
     },
     {
       "area": "4. Cancellation of the sale",
-      "durationMs": 1,
+      "durationMs": 5,
       "name": "the balance is back to zero and the goods are back",
       "status": "PASS"
     },
@@ -69,7 +69,7 @@
     },
     {
       "area": "5. Counter sale (no client)",
-      "durationMs": 1,
+      "durationMs": 3,
       "name": "a counter sale moves the stock but no client account",
       "status": "PASS"
     },
@@ -81,13 +81,13 @@
     },
     {
       "area": "6. Facture grouping BLs",
-      "durationMs": 1,
+      "durationMs": 2,
       "name": "the grouped facture does not charge the client twice",
       "status": "PASS"
     },
     {
       "area": "7. Document numbering",
-      "durationMs": 1,
+      "durationMs": 5,
       "name": "the numbers of a tenant are sequential per type and year",
       "status": "PASS"
     },
@@ -99,7 +99,7 @@
     },
     {
       "area": "8. Audit trail",
-      "durationMs": 1,
+      "durationMs": 2,
       "name": "the audit rows keep who, when and which device",
       "status": "PASS"
     },
@@ -109,7 +109,7 @@
       "name": "scenario completed",
       "status": "PASS",
       "expected": "the whole sale/payment/return/cancel chain holds",
-      "actual": "tenant 0b46202d-e1e4-4141-ac8e-a7ae3adcfa69"
+      "actual": "tenant 752ce3be-38c3-4149-b4a3-c8e7e66fe4f7"
     }
   ]
 }
