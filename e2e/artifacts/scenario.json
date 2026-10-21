@@ -1,0 +1,115 @@
+{
+  "totals": {
+    "total": 17,
+    "passed": 17,
+    "failed": 0,
+    "blocked": 0,
+    "info": 0
+  },
+  "results": [
+    {
+      "area": "1. Sale on credit",
+      "durationMs": 0,
+      "name": "sale is validated and numbered",
+      "status": "PASS"
+    },
+    {
+      "area": "1. Sale on credit",
+      "durationMs": 19,
+      "name": "state after the sale is the expected one",
+      "status": "PASS"
+    },
+    {
+      "area": "1. Sale on credit",
+      "durationMs": 9,
+      "name": "the sale DTO totals match the ledger",
+      "status": "PASS"
+    },
+    {
+      "area": "2. Partial payment (versement)",
+      "durationMs": 2,
+      "name": "the payment lowers the client balance and allocates the oldest document",
+      "status": "PASS"
+    },
+    {
+      "area": "2. Partial payment (versement)",
+      "durationMs": 0,
+      "name": "the payment is audited",
+      "status": "PASS"
+    },
+    {
+      "area": "3. Return of one unit",
+      "durationMs": 1,
+      "name": "the avoir restocks the goods and lowers the balance",
+      "status": "PASS"
+    },
+    {
+      "area": "3. Return of one unit",
+      "durationMs": 1,
+      "name": "the avoir has its own number and ledger entry",
+      "status": "PASS"
+    },
+    {
+      "area": "4. Cancellation of the sale",
+      "durationMs": 0,
+      "name": "the sale is cancelled",
+      "status": "PASS"
+    },
+    {
+      "area": "4. Cancellation of the sale",
+      "durationMs": 1,
+      "name": "the balance is back to zero and the goods are back",
+      "status": "PASS"
+    },
+    {
+      "area": "4. Cancellation of the sale",
+      "durationMs": 1,
+      "name": "the cancellation is audited",
+      "status": "PASS"
+    },
+    {
+      "area": "5. Counter sale (no client)",
+      "durationMs": 1,
+      "name": "a counter sale moves the stock but no client account",
+      "status": "PASS"
+    },
+    {
+      "area": "6. Facture grouping BLs",
+      "durationMs": 0,
+      "name": "the facture is created and numbered",
+      "status": "PASS"
+    },
+    {
+      "area": "6. Facture grouping BLs",
+      "durationMs": 1,
+      "name": "the grouped facture does not charge the client twice",
+      "status": "PASS"
+    },
+    {
+      "area": "7. Document numbering",
+      "durationMs": 1,
+      "name": "the numbers of a tenant are sequential per type and year",
+      "status": "PASS"
+    },
+    {
+      "area": "8. Audit trail",
+      "durationMs": 1,
+      "name": "every business write left an audit row",
+      "status": "PASS"
+    },
+    {
+      "area": "8. Audit trail",
+      "durationMs": 1,
+      "name": "the audit rows keep who, when and which device",
+      "status": "PASS"
+    },
+    {
+      "area": "8. Audit trail",
+      "durationMs": 0,
+      "name": "scenario completed",
+      "status": "PASS",
+      "expected": "the whole sale/payment/return/cancel chain holds",
+      "actual": "tenant 0b46202d-e1e4-4141-ac8e-a7ae3adcfa69"
+    }
+  ]
+}

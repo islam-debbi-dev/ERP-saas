@@ -1,0 +1,306 @@
+{
+  "totals": {
+    "total": 48,
+    "passed": 44,
+    "failed": 2,
+    "blocked": 0,
+    "info": 2
+  },
+  "results": [
+    {
+      "area": "A. Tenant isolation",
+      "durationMs": 5,
+      "name": "A cannot read B's product",
+      "status": "PASS"
+    },
+    {
+      "area": "A. Tenant isolation",
+      "durationMs": 4,
+      "name": "A cannot read B's client",
+      "status": "PASS"
+    },
+    {
+      "area": "A. Tenant isolation",
+      "durationMs": 3,
+      "name": "A cannot read B's sale",
+      "status": "PASS"
+    },
+    {
+      "area": "A. Tenant isolation",
+      "durationMs": 12,
+      "name": "A cannot see B's documents in the lists",
+      "status": "PASS"
+    },
+    {
+      "area": "A. Tenant isolation",
+      "durationMs": 40,
+      "name": "a tenantId in the body is ignored (the JWT decides)",
+      "status": "PASS"
+    },
+    {
+      "area": "A. Tenant isolation",
+      "durationMs": 14,
+      "name": "the stock of a tenant is not shared",
+      "status": "PASS"
+    },
+    {
+      "area": "B. Idempotency",
+      "durationMs": 3,
+      "name": "a POST that creates money needs an Idempotency-Key",
+      "status": "PASS"
+    },
+    {
+      "area": "B. Idempotency",
+      "durationMs": 74,
+      "name": "the same key and the same body replay the same answer",
+      "status": "PASS"
+    },
+    {
+      "area": "B. Idempotency",
+      "durationMs": 64,
+      "name": "the same key with another body is refused",
+      "status": "PASS"
+    },
+    {
+      "area": "B. Idempotency",
+      "durationMs": 85,
+      "name": "a failed request does not consume a document number",
+      "status": "PASS"
+    },
+    {
+      "area": "C. Permissions (phase 11)",
+      "durationMs": 81,
+      "name": "a SELLER cannot cancel a validated sale",
+      "status": "PASS"
+    },
+    {
+      "area": "C. Permissions (phase 11)",
+      "durationMs": 8,
+      "name": "a SELLER cannot adjust the stock",
+      "status": "PASS"
+    },
+    {
+      "area": "C. Permissions (phase 11)",
+      "durationMs": 2,
+      "name": "a MANAGER cannot invite a user (OWNER only)",
+      "status": "PASS"
+    },
+    {
+      "area": "C. Permissions (phase 11)",
+      "durationMs": 30,
+      "name": "a STOREKEEPER can count but not validate an inventory",
+      "status": "PASS"
+    },
+    {
+      "area": "C. Permissions (phase 11)",
+      "durationMs": 31,
+      "name": "a grant is visible at once, a revoke too",
+      "status": "PASS"
+    },
+    {
+      "area": "C. Permissions (phase 11)",
+      "durationMs": 291,
+      "name": "a deactivated user is locked out and his session dies",
+      "status": "PASS"
+    },
+    {
+      "area": "C. Permissions (phase 11)",
+      "durationMs": 182,
+      "name": "a temporary password blocks every route but the password change",
+      "status": "PASS"
+    },
+    {
+      "area": "C. Permissions (phase 11)",
+      "durationMs": 16,
+      "name": "a SELLER cannot change the price of a line",
+      "status": "PASS"
+    },
+    {
+      "area": "C. Permissions (phase 11)",
+      "durationMs": 14,
+      "name": "a SELLER does not see the costs and the margins",
+      "status": "PASS"
+    },
+    {
+      "area": "D. Money precision",
+      "durationMs": 13,
+      "name": "an amount with 3 decimals is refused",
+      "status": "PASS"
+    },
+    {
+      "area": "D. Money precision",
+      "durationMs": 21,
+      "name": "an amount over Decimal(14,2) is refused with a clean error",
+      "status": "FAIL",
+      "evidence": "HTTP 500 INTERNAL_ERROR {\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\"}",
+      "expected": "HTTP 400 VALIDATION_FAILED (the amount does not fit in Decimal(14,2))"
+    },
+    {
+      "area": "D. Money precision",
+      "durationMs": 193,
+      "name": "the totals are exact on a non-round price",
+      "status": "PASS"
+    },
+    {
+      "area": "D. Money precision",
+      "durationMs": 3,
+      "name": "a quantity with more than 3 decimals is refused",
+      "status": "PASS"
+    },
+    {
+      "area": "E. Concurrency",
+      "durationMs": 172,
+      "name": "three concurrent payments do not lose an update",
+      "status": "PASS"
+    },
+    {
+      "area": "E. Concurrency",
+      "durationMs": 163,
+      "name": "two concurrent sales of the last unit: BLOCK mode sells one only",
+      "status": "PASS"
+    },
+    {
+      "area": "E. Concurrency",
+      "durationMs": 201,
+      "name": "two concurrent sales of the last unit: WARN mode announces the negative stock",
+      "status": "PASS"
+    },
+    {
+      "area": "F. Authentication",
+      "durationMs": 436,
+      "name": "five wrong passwords lock the account",
+      "status": "PASS"
+    },
+    {
+      "area": "F. Authentication",
+      "durationMs": 1,
+      "name": "a forged token is refused",
+      "status": "PASS"
+    },
+    {
+      "area": "F. Authentication",
+      "durationMs": 1,
+      "name": "no token at all is refused",
+      "status": "PASS"
+    },
+    {
+      "area": "F. Authentication",
+      "durationMs": 62319,
+      "name": "a refresh token reused after the grace window closes the session",
+      "status": "PASS"
+    },
+    {
+      "area": "F. Authentication",
+      "durationMs": 804,
+      "name": "ten logins from one IP lock out a valid user of another account",
+      "status": "PASS"
+    },
+    {
+      "area": "F. Authentication",
+      "durationMs": 61559,
+      "name": "the login rate limit is bypassed with a forged X-Forwarded-For",
+      "status": "PASS"
+    },
+    {
+      "area": "F. Authentication",
+      "durationMs": 165,
+      "name": "the forged IP is what the audit trail records",
+      "status": "PASS"
+    },
+    {
+      "area": "G. State machine and optimistic locking",
+      "durationMs": 567,
+      "name": "a sale cannot be validated twice",
+      "status": "PASS"
+    },
+    {
+      "area": "G. State machine and optimistic locking",
+      "durationMs": 217,
+      "name": "a stale version is refused",
+      "status": "PASS"
+    },
+    {
+      "area": "G. State machine and optimistic locking",
+      "durationMs": 352,
+      "name": "more than sold cannot be returned",
+      "status": "PASS"
+    },
+    {
+      "area": "G. State machine and optimistic locking",
+      "durationMs": 265,
+      "name": "a payment made with a sale cannot be cancelled alone",
+      "status": "PASS"
+    },
+    {
+      "area": "G. State machine and optimistic locking",
+      "durationMs": 174,
+      "name": "a cash payment cannot bounce",
+      "status": "PASS"
+    },
+    {
+      "area": "G. State machine and optimistic locking",
+      "durationMs": 169,
+      "name": "a bounced cheque gives the money back to the account",
+      "status": "PASS"
+    },
+    {
+      "area": "G. State machine and optimistic locking",
+      "durationMs": 245,
+      "name": "more allocated than paid is refused",
+      "status": "PASS"
+    },
+    {
+      "area": "H. Injection and mass assignment",
+      "durationMs": 11,
+      "name": "a hostile id is refused, not a 500",
+      "status": "PASS"
+    },
+    {
+      "area": "H. Injection and mass assignment",
+      "durationMs": 16,
+      "name": "a hostile search term is harmless",
+      "status": "PASS"
+    },
+    {
+      "area": "H. Injection and mass assignment",
+      "durationMs": 147,
+      "name": "the client balance cannot be written directly",
+      "status": "PASS"
+    },
+    {
+      "area": "H. Injection and mass assignment",
+      "durationMs": 0,
+      "name": "info: the API stores the payload as data, the web must escape it",
+      "status": "INFO",
+      "expected": "the API stores the text; React escapes it on render",
+      "actual": "designation=<script>alert(1)</script>"
+    },
+    {
+      "area": "H. Injection and mass assignment",
+      "durationMs": 138,
+      "name": "a script tag in a designation is stored as data",
+      "status": "PASS"
+    },
+    {
+      "area": "I. Audit trail and timestamps",
+      "durationMs": 208,
+      "name": "the rows of one operation share the same createdAt",
+      "status": "FAIL",
+      "evidence": "5 rows of one transaction carry 5 different createdAt values: 2026-10-21 20:29:04.443+00, 2026-10-21 20:29:04.481+00, 2026-10-21 20:29:04.485+00, 2026-10-21 20:29:04.489+00, 2026-10-21 20:29:04.492+00"
+    },
+    {
+      "area": "I. Audit trail and timestamps",
+      "durationMs": 0,
+      "name": "info: the createdAt of the audit rows of one transaction",
+      "status": "INFO",
+      "expected": "one timestamp for the whole transaction (the schema says so)",
+      "actual": "2 rows, 2 timestamps, xmin=6247/6249"
+    },
+    {
+      "area": "I. Audit trail and timestamps",
+      "durationMs": 233,
+      "name": "the audit rows of one operation keep the transaction order",
+      "status": "PASS"
+    }
+  ]
+}
