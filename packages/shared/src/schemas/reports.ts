@@ -134,7 +134,7 @@ export interface DashboardDto {
     previousMonth: SalesFigure;
     /** One entry per day of the month so far. */
     perDay: { date: string; ttc: string }[];
-    /** Sales HT minus cost at sale; null for a seller (costs are not his to see). */
+    /** Sales HT minus cost at sale; null without VIEW_COST_AND_MARGIN. */
     margin: string | null;
   } | null;
   cash: {
@@ -152,7 +152,7 @@ export interface DashboardDto {
   stock: {
     outOfStock: number;
     lowStock: number;
-    /** At CUMP. */
-    value: string;
+    /** At CUMP; null without VIEW_COST_AND_MARGIN. */
+    value: string | null;
   } | null;
 }

@@ -19,6 +19,9 @@ import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
 import { AdjustDialog, OpeningDialog } from './stock-dialogs';
 
+/** A cost the user may not see comes back null. */
+const cost = (v: string | null) => (v === null ? '—' : formatDA(v));
+
 export function StockCard({ productId }: { productId: string }) {
   const t = useTranslations('stock');
   const tt = useTranslations('movementTypes');
@@ -151,9 +154,10 @@ export function StockCard({ productId }: { productId: string }) {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         {[
           { label: t('currentQty'), value: l ? packagingLabel(l) : null, ltr: false },
-          // Amounts are LTR so "DA" stays after the number in Arabic.
-          { label: t('currentCump'), value: l ? formatDA(l.avgCost) : null, ltr: true },
-          { label: t('currentValue'), value: l ? formatDA(l.value) : null, ltr: true },
+          // Amounts are LTR so "DA" stays after the number in Arabic. Without
+          // VIEW_COST_AND_MARGIN the API sends no costs and the cards show a dash.
+          { label: t('currentCump'), value: l ? cost(l.avgCost) : null, ltr: true },
+          { label: t('currentValue'), value: l ? cost(l.value) : null, ltr: true },
         ].map((card) => (
           // First card (value / quantity) spans the row on phones, the other two share one.
           <Card key={card.label} className="py-4 first:col-span-2 sm:first:col-span-1">

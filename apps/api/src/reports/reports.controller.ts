@@ -3,6 +3,7 @@ import {
   type DashboardDto,
   type DashboardQuery,
   dashboardQuerySchema,
+  Permission,
   type ReportDto,
   type ReportName,
   reportNameSchema,
@@ -11,6 +12,7 @@ import {
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { CurrentUser } from '../auth/decorators';
+import { requirePermission } from '../auth/permissions';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { DashboardService } from './dashboard.service';
 import { buildReportXlsx, reportFileName } from './report-xlsx';
@@ -52,6 +54,7 @@ export class ReportsController {
     @Query(new ZodValidationPipe(reportQuerySchema)) query: ReportQuery,
     @CurrentUser() user: CurrentUserInfo,
   ): Promise<StreamableFile> {
+    requirePermission(user, Permission.EXPORT_DATA, { message: 'You may not export data' });
     const report = await this.reports.run(name, query, user);
     const buffer = await buildReportXlsx(report);
     return new StreamableFile(buffer, {

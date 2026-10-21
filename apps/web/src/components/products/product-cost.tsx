@@ -16,7 +16,7 @@ export function ProductCost({ productId }: { productId: string | null }) {
   if (!productId) return <p className="text-sm text-muted-foreground">{tp('costPending')}</p>;
   if (!level.data) return <Skeleton className="h-12 w-full" />;
   const l = level.data;
-  if (!l.hasOpening && l.qtyBase === '0.000' && l.avgCost === '0.0000') {
+  if (!l.hasOpening && l.qtyBase === '0.000' && (l.avgCost ?? '0.0000') === '0.0000') {
     return <p className="text-sm text-muted-foreground">{t('none')}</p>;
   }
   return (
@@ -24,8 +24,13 @@ export function ProductCost({ productId }: { productId: string | null }) {
       <dl className="grid gap-3 sm:grid-cols-3">
         {[
           { label: t('qty'), value: packagingLabel(l), ltr: false },
-          { label: t('cump'), value: formatDA(l.avgCost), ltr: true },
-          { label: t('value'), value: formatDA(l.value), ltr: true },
+          // Costs are null without VIEW_COST_AND_MARGIN: those cards are left out.
+          ...(l.avgCost !== null && l.value !== null
+            ? [
+                { label: t('cump'), value: formatDA(l.avgCost), ltr: true },
+                { label: t('value'), value: formatDA(l.value), ltr: true },
+              ]
+            : []),
         ].map((item) => (
           <div key={item.label} className="rounded-lg border p-3">
             <dt className="text-xs text-muted-foreground">{item.label}</dt>

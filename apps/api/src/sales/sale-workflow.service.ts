@@ -8,6 +8,7 @@ import {
   type InvoiceFromBlsInput,
   isWholeQuantity,
   money,
+  Permission,
   type QuickSaleInput,
   qty,
   ReturnDisposition,
@@ -25,6 +26,7 @@ import {
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
+import { requirePermission } from '../auth/permissions';
 import { ClientAccountService, type LedgerEntryInput } from '../clients/client-account.service';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
@@ -36,9 +38,7 @@ import { StockService } from '../stock/stock.service';
 import { timbreRuleOf } from '../tenants/timbre-rule';
 import { fromIsoDate } from './sale.mapper';
 import { snapshotSaleLines } from './sale-lines';
-import { canOverride, lockSale, SalesService } from './sales.service';
-
-const MANAGER_ONLY = 'Only a manager can do this on a validated sale';
+import { lockSale, SalesService } from './sales.service';
 
 /**
  * The steps of a sale that have effects. Each runs in one transaction and takes
@@ -163,9 +163,9 @@ export class SaleWorkflowService {
         if (forced && !input.forceCredit) {
           throw new AppException(ErrorCode.CREDIT_LIMIT_EXCEEDED, 'Over the credit limit', check);
         }
-        if (forced && !canOverride(user)) {
-          throw new AppException(ErrorCode.FORBIDDEN, 'Only a manager can sell over the plafond', {
-            permission: 'CREDIT_OVERRIDE',
+        if (forced) {
+          requirePermission(user, Permission.CREDIT_OVERRIDE, {
+            message: 'You may not sell over the plafond',
           });
         }
         creditOverride = forced;
@@ -313,9 +313,9 @@ export class SaleWorkflowService {
         },
       });
       if (current.status === SaleStatus.VALIDATED) {
-        if (!canOverride(user)) {
-          throw new AppException(ErrorCode.FORBIDDEN, MANAGER_ONLY, { permission: 'SALE_CANCEL' });
-        }
+        requirePermission(user, Permission.SALE_CANCEL, {
+          message: 'You may not cancel a validated sale',
+        });
         if (sale.invoiceId) {
           throw new AppException(ErrorCode.SALE_INVOICED, 'Cancel the facture first', {
             invoiceId: sale.invoiceId,

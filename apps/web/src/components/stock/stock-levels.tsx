@@ -101,7 +101,7 @@ export function StockLevels() {
         header: t('colCump'),
         cell: ({ row }) => (
           <span className="num whitespace-nowrap" dir="ltr">
-            {formatDA(row.original.avgCost)}
+            {row.original.avgCost === null ? '—' : formatDA(row.original.avgCost)}
           </span>
         ),
       },
@@ -110,7 +110,7 @@ export function StockLevels() {
         header: t('colValue'),
         cell: ({ row }) => (
           <span className="num whitespace-nowrap font-medium" dir="ltr">
-            {formatDA(row.original.value)}
+            {row.original.value === null ? '—' : formatDA(row.original.value)}
           </span>
         ),
       },
@@ -177,7 +177,14 @@ export function StockLevels() {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         {[
-          { label: t('summaryValue'), value: summary ? formatDA(summary.totalValue) : null },
+          {
+            label: t('summaryValue'),
+            value: summary
+              ? summary.totalValue === null
+                ? '—'
+                : formatDA(summary.totalValue)
+              : null,
+          },
           {
             label: t('summaryLow'),
             value: summary ? formatQty(String(summary.lowStockCount)) : null,

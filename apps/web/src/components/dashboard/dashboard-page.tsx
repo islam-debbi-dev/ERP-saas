@@ -139,7 +139,9 @@ function Sections({ d }: { d: DashboardDto }) {
             tone={d.stock.lowStock > 0 ? 'warn' : undefined}
             href="/stock?filtre=bas"
           />
-          <Stat label={t('stockValue')} value={formatDA(d.stock.value)} />
+          {d.stock.value !== null ? (
+            <Stat label={t('stockValue')} value={formatDA(d.stock.value)} />
+          ) : null}
         </div>
       ) : null}
 

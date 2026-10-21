@@ -30,7 +30,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   [Role.OWNER]: PERMISSIONS,
   [Role.MANAGER]: PERMISSIONS,
   [Role.SELLER]: [],
-  [Role.STOREKEEPER]: [Permission.STOCK_ADJUST],
+  // Counts stock but does not adjust it or validate an inventory (AGENTS: MANAGER+).
+  [Role.STOREKEEPER]: [],
 };
 
 /**

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  Permission,
   type CreateInventoryInput,
   DocType,
   ErrorCode,
@@ -12,6 +13,8 @@ import {
   toQtyString,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
+import type { CurrentUserInfo } from '../auth/auth.types';
+import { requirePermission } from '../auth/permissions';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
@@ -143,7 +146,10 @@ export class InventoriesService {
     return this.get(id);
   }
 
-  async validate(id: string): Promise<InventoryDto> {
+  async validate(id: string, user: CurrentUserInfo): Promise<InventoryDto> {
+    requirePermission(user, Permission.STOCK_ADJUST, {
+      message: 'You may not validate an inventory',
+    });
     await this.prisma.db.$transaction(async (tx) => {
       await this.lockOpen(tx, id);
       const lines = await tx.inventoryLine.findMany({ where: { inventoryId: id } });

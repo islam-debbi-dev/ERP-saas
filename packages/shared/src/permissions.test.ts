@@ -6,7 +6,10 @@ describe('effectivePermissions', () => {
   it('uses the role defaults', () => {
     expect(effectivePermissions(Role.MANAGER)).toEqual(PERMISSIONS);
     expect(effectivePermissions(Role.SELLER)).toEqual([]);
-    expect(effectivePermissions(Role.STOREKEEPER)).toEqual([Permission.STOCK_ADJUST]);
+    expect(effectivePermissions(Role.STOREKEEPER)).toEqual([]);
+    expect(effectivePermissions(Role.STOREKEEPER, [Permission.STOCK_ADJUST])).toEqual([
+      Permission.STOCK_ADJUST,
+    ]);
   });
 
   it('adds grants and removes revokes', () => {

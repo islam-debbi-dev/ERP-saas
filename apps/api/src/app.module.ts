@@ -22,6 +22,7 @@ import { PurchasesModule } from './purchases/purchases.module';
 import { ReportsModule } from './reports/reports.module';
 import { StockModule } from './stock/stock.module';
 import { TenantsModule } from './tenants/tenants.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { TenantsModule } from './tenants/tenants.module';
     PrintingModule,
     ImportsModule,
     ReportsModule,
+    UsersModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],

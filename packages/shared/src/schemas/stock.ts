@@ -131,8 +131,9 @@ export interface StockLevelDto {
   baseUnitId: string;
   minStock: string;
   qtyBase: string;
-  avgCost: string;
-  value: string;
+  /** null without VIEW_COST_AND_MARGIN. */
+  avgCost: string | null;
+  value: string | null;
   lowStock: boolean;
   hasOpening: boolean;
   /** Largest packaging unit, for the "12 cartons + 5 pièces" display. */
@@ -148,7 +149,8 @@ export interface StockLevelDto {
 export interface StockPage {
   items: StockLevelDto[];
   nextCursor: string | null;
-  summary: { totalValue: string; lowStockCount: number; productCount: number };
+  /** totalValue is null without VIEW_COST_AND_MARGIN. */
+  summary: { totalValue: string | null; lowStockCount: number; productCount: number };
 }
 
 export interface StockMovementDto {
@@ -157,7 +159,8 @@ export interface StockMovementDto {
   qtyBase: string;
   unitCost: string | null;
   balanceAfter: string;
-  avgCostAfter: string;
+  /** unitCost and avgCostAfter are null without VIEW_COST_AND_MARGIN. */
+  avgCostAfter: string | null;
   reason: AdjustmentReason | null;
   refType: string | null;
   refId: string | null;

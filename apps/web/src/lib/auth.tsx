@@ -2,7 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import type { AuthResponse, AuthUser, LoginInput, RegisterInput } from '@erp/shared';
+import type { AuthResponse, AuthUser, LoginInput, Permission, RegisterInput } from '@erp/shared';
 import { api, ApiError } from './api-client';
 import { sessionHint } from './session-hint';
 
@@ -16,6 +16,10 @@ interface AuthContextValue {
   login: (input: LoginInput) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
   logout: () => Promise<void>;
+  /** Logged in by another route (invitation link). */
+  acceptAuth: (auth: AuthResponse) => void;
+  /** The user changed (password changed, so no longer a temporary one). */
+  updateUser: (user: AuthUser) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -86,6 +90,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         queryClient.clear();
         setState({ status: 'anonymous', user: null });
       },
+      acceptAuth: accept,
+      updateUser: (user) => setState({ status: 'authenticated', user }),
     }),
     [state, accept, queryClient],
   );
@@ -97,4 +103,13 @@ export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used inside AuthProvider');
   return ctx;
+}
+
+/**
+ * Whether the logged-in user has this permission. Only hides buttons: the API
+ * checks again and stays the guard.
+ */
+export function usePermission(permission: Permission): boolean {
+  const { state } = useAuth();
+  return state.status === 'authenticated' && state.user.permissions.includes(permission);
 }

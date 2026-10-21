@@ -13,12 +13,13 @@ import {
   type PaymentMode,
   type PaymentPage,
   PaymentStatus,
-  Role,
+  Permission,
   toMoneyString,
   type UnpaidDocumentDto,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
+import { can } from '../auth/permissions';
 import { ClientAccountService } from '../clients/client-account.service';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
@@ -40,8 +41,6 @@ const paymentInclude = {
   },
 } satisfies Prisma.PaymentInclude;
 type PaymentWithRelations = Prisma.PaymentGetPayload<{ include: typeof paymentInclude }>;
-
-const MANAGERS = new Set<string>([Role.OWNER, Role.MANAGER]);
 
 /** Algiers has no DST: its midnight is 23:00 UTC the day before. */
 const algiersMidnight = (day: string): Date => new Date(`${day}T00:00:00+01:00`);
@@ -242,11 +241,12 @@ export class PaymentsService {
           saleId: p.saleId,
         });
       }
-      if (!MANAGERS.has(user.role)) {
+      // Without PAYMENT_CANCEL: only your own versement, the same day (a typing mistake).
+      if (!can(user, Permission.PAYMENT_CANCEL)) {
         const sameDay = algiersDay(p.receivedAt) === algiersDay(new Date());
         if (p.receivedBy !== user.id || !sameDay) {
-          throw new AppException(ErrorCode.FORBIDDEN, 'Only a manager can cancel this payment', {
-            permission: 'PAYMENT_CANCEL',
+          throw new AppException(ErrorCode.FORBIDDEN, 'You may not cancel this payment', {
+            permission: Permission.PAYMENT_CANCEL,
             rule: 'same_day_only',
           });
         }
