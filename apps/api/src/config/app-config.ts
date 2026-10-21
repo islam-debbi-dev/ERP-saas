@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  /** Which deployment this is, for Sentry and logs (NODE_ENV is production on both). */
+  APP_ENV: z.enum(['local', 'staging', 'production']).default('local'),
   PORT: z.coerce.number().int().positive().default(3001),
   DATABASE_URL: z.string().min(1),
   WEB_ORIGIN: z.string().default('http://localhost:3000'),
@@ -15,6 +17,19 @@ const envSchema = z.object({
     .transform((v) => v === 'true'),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'silent']).default('info'),
   SENTRY_DSN: z.string().optional(),
+  /** Git sha of the build, baked into the image; tags Sentry events and /health. */
+  SENTRY_RELEASE: z.string().optional(),
+  /** Requests per minute per IP, all routes; and for the auth routes (register, refresh…). */
+  RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(300),
+  RATE_LIMIT_AUTH_PER_MINUTE: z.coerce.number().int().positive().default(30),
+  /**
+   * Path the API is served under by the reverse proxy (`/api` in production, where Caddy
+   * strips it). The refresh cookie's path must include it for the browser to send it.
+   */
+  PUBLIC_PATH_PREFIX: z
+    .string()
+    .regex(/^(\/[\w-]+)*$/, 'PUBLIC_PATH_PREFIX looks like /api, or empty')
+    .default(''),
   /** Chromium used to render PDFs; unset = the browser puppeteer downloaded. */
   CHROMIUM_PATH: z.string().min(1).optional(),
 });

@@ -42,7 +42,7 @@ describe('health, errors, roles and tenant settings', () => {
 
   it('GET /health checks the database', async () => {
     const res = await t.http().get('/health').expect(200);
-    expect(res.body).toEqual({ status: 'ok', db: 'up' });
+    expect(res.body).toEqual({ status: 'ok', db: 'up', version: 'dev' });
   });
 
   it('unknown routes return the standard error shape', async () => {
@@ -51,7 +51,11 @@ describe('health, errors, roles and tenant settings', () => {
       .get('/nope')
       .set(...bearer(owner.auth.accessToken))
       .expect(404);
-    expect(res.body).toEqual({ code: ErrorCode.NOT_FOUND, message: expect.any(String) as string });
+    expect(res.body).toEqual({
+      code: ErrorCode.NOT_FOUND,
+      message: expect.any(String) as string,
+      requestId: expect.any(String) as string,
+    });
   });
 
   it('an expired access token returns TOKEN_EXPIRED', async () => {

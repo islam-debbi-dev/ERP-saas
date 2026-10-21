@@ -38,7 +38,8 @@ import type { ClientMeta, CurrentUserInfo } from './auth.types';
 import { AllowPendingPasswordChange, CurrentUser, Public } from './decorators';
 
 export const REFRESH_COOKIE = 'erp_rt';
-const REFRESH_COOKIE_PATH = '/auth';
+/** The browser sends the refresh cookie to the auth routes only. */
+const refreshCookiePath = (config: AppConfig): string => `${config.PUBLIC_PATH_PREFIX}/auth`;
 
 @Controller('auth')
 export class AuthController {
@@ -158,14 +159,14 @@ export class AuthController {
       httpOnly: true,
       secure: this.config.COOKIE_SECURE,
       sameSite: 'lax',
-      path: REFRESH_COOKIE_PATH,
+      path: refreshCookiePath(this.config),
       maxAge: this.config.REFRESH_TOKEN_TTL_DAYS * 24 * 3600 * 1000,
     });
     return rest;
   }
 
   private clearCookie(res: Response): void {
-    res.clearCookie(REFRESH_COOKIE, { path: REFRESH_COOKIE_PATH });
+    res.clearCookie(REFRESH_COOKIE, { path: refreshCookiePath(this.config) });
   }
 }
 

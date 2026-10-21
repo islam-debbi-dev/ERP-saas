@@ -1,6 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { CLIENT_TYPE_HEADER, IDEMPOTENCY_HEADER } from '@erp/shared';
 import type { AppConfig } from './config/app-config';
@@ -11,6 +12,12 @@ export function setupApp(app: INestApplication, config: AppConfig): void {
   express.useLogger(app.get(Logger));
   // One proxy in front (load balancer) in production; needed for the client IP in audit logs.
   express.set('trust proxy', 1);
+  // A JSON API: no HTML, so the strictest defaults apply (CSP default-src 'none', …).
+  // PDFs open in a new tab from the web origin, hence cross-origin resource policy.
+  express.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+  // Sale and purchase bodies are a few KB; imports are multipart with their own limit.
+  express.useBodyParser('json', { limit: '1mb' });
+  express.useBodyParser('urlencoded', { limit: '100kb', extended: false });
   express.use(cookieParser());
   express.enableCors({
     origin: config.WEB_ORIGIN.split(',').map((o) => o.trim()),

@@ -10,6 +10,7 @@ export const ErrorCode = {
   CONFLICT: 'CONFLICT',
   FORBIDDEN: 'FORBIDDEN',
   TOO_MANY_REQUESTS: 'TOO_MANY_REQUESTS',
+  PAYLOAD_TOO_LARGE: 'PAYLOAD_TOO_LARGE',
   DB_UNAVAILABLE: 'DB_UNAVAILABLE',
   // Auth
   UNAUTHENTICATED: 'UNAUTHENTICATED',
@@ -88,6 +89,8 @@ export interface ApiError {
   code: ErrorCode;
   message: string;
   details?: unknown;
+  /** Same id as the request's log lines (and the X-Request-Id header). */
+  requestId?: string;
 }
 
 /** Header carrying the idempotency key on POSTs with money or stock effects. */

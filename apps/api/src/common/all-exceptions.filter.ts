@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import * as Sentry from '@sentry/nestjs';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { type ApiError, ErrorCode } from '@erp/shared';
 import { Prisma } from '../generated/prisma/client';
 import { AppException } from './app-exception';
@@ -22,19 +22,33 @@ const CODE_BY_STATUS: Record<number, ErrorCode> = {
   429: ErrorCode.TOO_MANY_REQUESTS,
 };
 
+function isClientHttpError(e: unknown): e is { status: number; message: string } {
+  if (typeof e !== 'object' || e === null) return false;
+  const { status, expose } = e as { status?: unknown; expose?: unknown };
+  return expose === true && typeof status === 'number' && status >= 400 && status < 500;
+}
+
 /** Renders every error as `{ code, message, details? }` and reports unexpected ones to Sentry. */
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger('ExceptionFilter');
 
   catch(exception: unknown, host: ArgumentsHost): void {
-    const res = host.switchToHttp().getResponse<Response>();
+    const http = host.switchToHttp();
+    const res = http.getResponse<Response>();
+    // Set by pino-http from X-Request-Id (or generated): the same id as the log lines,
+    // so a user can read it out from an error toast and we find the request.
+    const requestId =
+      (http.getRequest<Request & { id?: unknown }>().id as string | undefined) ?? undefined;
     const [status, body] = this.toResponse(exception);
     if (status >= 500) {
       this.logger.error(exception instanceof Error ? exception.stack : String(exception));
-      Sentry.captureException(exception);
+      Sentry.withScope((scope) => {
+        if (requestId) scope.setTag('request_id', requestId);
+        Sentry.captureException(exception);
+      });
     }
-    res.status(status).json(body);
+    res.status(status).json(requestId ? { ...body, requestId } : body);
   }
 
   private toResponse(exception: unknown): [number, ApiError] {
@@ -47,6 +61,18 @@ export class AllExceptionsFilter implements ExceptionFilter {
         status,
         { code: CODE_BY_STATUS[status] ?? ErrorCode.INTERNAL_ERROR, message: exception.message },
       ];
+    }
+    // body-parser errors (http-errors): malformed JSON, body over the size limit.
+    if (isClientHttpError(exception)) {
+      return exception.status === 413
+        ? [413, { code: ErrorCode.PAYLOAD_TOO_LARGE, message: 'Request body too large' }]
+        : [
+            exception.status,
+            {
+              code: CODE_BY_STATUS[exception.status] ?? ErrorCode.VALIDATION_FAILED,
+              message: exception.message,
+            },
+          ];
     }
     if (exception instanceof Prisma.PrismaClientKnownRequestError && exception.code === 'P2002') {
       return [
