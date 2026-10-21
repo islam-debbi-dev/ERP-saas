@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { type PaymentMode } from '../enums';
+import { type PaymentMode, Role } from '../enums';
 import { rangeLength } from '../periods';
 import { type DebtorDto } from './clients';
 
@@ -17,6 +17,14 @@ export const REPORT_GROUPS = {
 export type ReportName = keyof typeof REPORT_GROUPS;
 export const REPORT_NAMES = Object.keys(REPORT_GROUPS) as ReportName[];
 export type ReportGroupBy = (typeof REPORT_GROUPS)[ReportName][number];
+
+/** Which reports each role may run; a seller's sales report is his own sales only. */
+export const REPORTS_BY_ROLE: Record<Role, readonly ReportName[]> = {
+  [Role.OWNER]: REPORT_NAMES,
+  [Role.MANAGER]: REPORT_NAMES,
+  [Role.SELLER]: ['sales'],
+  [Role.STOREKEEPER]: ['stock-movements'],
+};
 
 /** Longest period a report covers (a year, leap day included). */
 export const MAX_REPORT_DAYS = 366;
@@ -56,8 +64,38 @@ export type DashboardQuery = z.infer<typeof dashboardQuerySchema>;
 export type ReportColumnKind =
   'text' | 'day' | 'month' | 'enum' | 'count' | 'qty' | 'money' | 'percent';
 
+export const REPORT_COLUMN_KEYS = [
+  'day',
+  'month',
+  'code',
+  'name',
+  'user',
+  'reference',
+  'designation',
+  'unit',
+  'category',
+  'supplier',
+  'mode',
+  'type',
+  'count',
+  'products',
+  'qty',
+  'qtyIn',
+  'qtyOut',
+  'qtyNet',
+  'grossHt',
+  'returnsHt',
+  'netHt',
+  'netTtc',
+  'cost',
+  'margin',
+  'marginPct',
+  'total',
+] as const;
+export type ReportColumnKey = (typeof REPORT_COLUMN_KEYS)[number];
+
 export interface ReportColumn {
-  key: string;
+  key: ReportColumnKey;
   kind: ReportColumnKind;
 }
 

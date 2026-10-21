@@ -9,6 +9,7 @@ type TitleKey =
   | 'nav.clients'
   | 'nav.versements'
   | 'nav.stock'
+  | 'nav.reports'
   | 'nav.settings'
   | 'imports.title'
   | 'products.newTitle'

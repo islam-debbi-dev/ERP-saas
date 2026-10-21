@@ -1,8 +1,8 @@
-import { DashboardWelcome } from '@/components/dashboard/dashboard-welcome';
+import { DashboardPage } from '@/components/dashboard/dashboard-page';
 import { titled } from '@/lib/page-metadata';
 
 export const generateMetadata = titled('nav.dashboard');
 
-export default function DashboardPage() {
-  return <DashboardWelcome />;
+export default function TableauDeBordPage() {
+  return <DashboardPage />;
 }

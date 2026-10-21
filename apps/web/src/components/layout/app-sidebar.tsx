@@ -31,7 +31,7 @@ import {
 import { useAuth } from '@/lib/auth';
 import { isActive, NAV_GROUPS, NAV_ITEMS } from './navigation';
 
-/** Alt + 1…8 jumps to a module. Uses `code` so it works with AZERTY and macOS Option. */
+/** Alt + 1…9 jumps to a module. Uses `code` so it works with AZERTY and macOS Option. */
 function useNavShortcuts() {
   const router = useRouter();
   useEffect(() => {

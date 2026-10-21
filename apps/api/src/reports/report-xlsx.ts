@@ -1,5 +1,5 @@
 import ExcelJS from 'exceljs';
-import type { ReportColumn, ReportDto, ReportName } from '@erp/shared';
+import type { ReportColumn, ReportColumnKey, ReportDto, ReportName } from '@erp/shared';
 
 /** French titles, like the printed documents. */
 const REPORT_TITLES: Record<ReportName, string> = {
@@ -10,7 +10,7 @@ const REPORT_TITLES: Record<ReportName, string> = {
   purchases: 'Achats',
 };
 
-const COLUMN_TITLES: Record<string, string> = {
+const COLUMN_TITLES: Record<ReportColumnKey, string> = {
   day: 'Jour',
   month: 'Mois',
   code: 'Code',
@@ -39,7 +39,7 @@ const COLUMN_TITLES: Record<string, string> = {
   total: 'Montant',
 };
 
-const PURCHASE_TITLES: Record<string, string> = {
+const PURCHASE_TITLES: Partial<Record<ReportColumnKey, string>> = {
   grossHt: 'Achats HT',
   returnsHt: 'Retours HT',
 };
@@ -57,16 +57,14 @@ const ENUM_LABELS: Record<string, string> = {
   INVENTORY: 'Inventaire',
 };
 
-const NONE_LABELS: Record<string, string> = {
+const NONE_LABELS: Partial<Record<ReportColumnKey, string>> = {
   name: 'Client comptoir',
   category: 'Sans catégorie',
   user: '—',
 };
 
 function title(report: ReportName, c: ReportColumn): string {
-  return (
-    (report === 'purchases' ? PURCHASE_TITLES[c.key] : undefined) ?? COLUMN_TITLES[c.key] ?? c.key
-  );
+  return (report === 'purchases' ? PURCHASE_TITLES[c.key] : undefined) ?? COLUMN_TITLES[c.key];
 }
 
 function cell(c: ReportColumn, value: string | null): string | number | null {

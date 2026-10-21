@@ -9,6 +9,7 @@ import {
   type ReportName,
   type ReportQuery,
   type ReportRow,
+  REPORTS_BY_ROLE,
   resolveGroupBy,
   Role,
   toMoneyString,
@@ -29,14 +30,6 @@ import {
   within,
 } from './reports-sql';
 
-/** Which reports each role may run; a seller's sales report is his own sales only. */
-const ALLOWED: Record<Role, readonly ReportName[]> = {
-  [Role.OWNER]: ['sales', 'margin', 'stock-movements', 'payments', 'purchases'],
-  [Role.MANAGER]: ['sales', 'margin', 'stock-movements', 'payments', 'purchases'],
-  [Role.SELLER]: ['sales'],
-  [Role.STOREKEEPER]: ['stock-movements'],
-};
-
 type Cell = string | number | bigint | Prisma.Decimal | null;
 type SqlRow = Record<string, Cell>;
 
@@ -46,7 +39,7 @@ interface Spec {
   sql: Prisma.Sql;
 }
 
-const col = (key: string, kind: ReportColumn['kind']): ReportColumn => ({ key, kind });
+const col = (key: ReportColumn['key'], kind: ReportColumn['kind']): ReportColumn => ({ key, kind });
 
 const PRODUCT_COLUMNS = [col('reference', 'text'), col('designation', 'text'), col('unit', 'text')];
 
@@ -62,7 +55,7 @@ export class ReportsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async run(name: ReportName, query: ReportQuery, user: CurrentUserInfo): Promise<ReportDto> {
-    if (!ALLOWED[user.role].includes(name)) {
+    if (!REPORTS_BY_ROLE[user.role].includes(name)) {
       throw new AppException(ErrorCode.FORBIDDEN, 'This report is not available to your role', {
         report: name,
       });

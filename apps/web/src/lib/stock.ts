@@ -16,21 +16,23 @@ import { useUnitLabel } from './catalog';
 
 export const stockKeys = {
   all: ['stock'] as const,
-  list: (search: string, low: boolean) => ['stock', 'list', { search, low }] as const,
+  list: (search: string, low: boolean, out: boolean) =>
+    ['stock', 'list', { search, low, out }] as const,
   level: (productId: string) => ['stock', 'level', productId] as const,
   movements: (productId: string) => ['stock', 'movements', productId] as const,
   inventories: ['inventories'] as const,
   inventory: (id: string) => ['inventories', id] as const,
 };
 
-export function useStockPages(search: string, lowStock: boolean) {
+export function useStockPages(search: string, lowStock: boolean, outOfStock = false) {
   return useInfiniteQuery({
-    queryKey: stockKeys.list(search, lowStock),
+    queryKey: stockKeys.list(search, lowStock, outOfStock),
     initialPageParam: null as string | null,
     queryFn: ({ pageParam, signal }) => {
       const params = new URLSearchParams({ limit: '50' });
       if (search) params.set('search', search);
       if (lowStock) params.set('lowStock', 'true');
+      if (outOfStock) params.set('outOfStock', 'true');
       if (pageParam) params.set('cursor', pageParam);
       return api.request<StockPage>(`/stock?${params.toString()}`, { signal });
     },
