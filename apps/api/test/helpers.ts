@@ -66,6 +66,15 @@ export function asTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> 
   return tenantContext.run({ tenantId }, fn);
 }
 
+/**
+ * Test-only raw SQL that tampers with rows (backdating, corrupting): runs in the
+ * system context, past the RLS policies, like a script run by the owner would.
+ */
+export function tamper(t: TestApp) {
+  return (sql: TemplateStringsArray, ...values: unknown[]): Promise<number> =>
+    tenantContext.runAsSystem(() => t.prisma.db.$executeRaw(sql, ...values));
+}
+
 export function bearer(token: string): [string, string] {
   return ['Authorization', `Bearer ${token}`];
 }

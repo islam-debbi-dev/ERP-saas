@@ -19,6 +19,7 @@ import {
   createProduct,
   createTestApp,
   registerTenant,
+  tamper,
   type RegisteredTenant,
   type TestApp,
   uniqueEmail,
@@ -120,9 +121,9 @@ describe('dashboard and reports', () => {
       })
       .expect(201);
     const sale = (res.body as SaleResultDto).sale;
-    await t.prisma.db.$executeRaw`
+    await tamper(t)`
       UPDATE sales SET "validatedAt" = ${at(validatedAt)} WHERE id = ${sale.id}::uuid`;
-    await t.prisma.db.$executeRaw`
+    await tamper(t)`
       UPDATE payments SET "receivedAt" = ${at(validatedAt)} WHERE "saleId" = ${sale.id}::uuid`;
     return sale;
   };
@@ -135,7 +136,7 @@ describe('dashboard and reports', () => {
         lines: [{ saleLineId: sale.lines[0]!.id, qty: '1' }],
       })
       .expect(201);
-    await t.prisma.db.$executeRaw`
+    await tamper(t)`
       UPDATE sale_returns SET "createdAt" = ${at(createdAt)} WHERE "saleId" = ${sale.id}::uuid`;
   };
 
@@ -145,7 +146,7 @@ describe('dashboard and reports', () => {
         .post('/payments', { clientId, ...body })
         .expect(201)
     ).body as PaymentDto;
-    await t.prisma.db.$executeRaw`
+    await tamper(t)`
       UPDATE payments SET "receivedAt" = ${at(receivedAt)} WHERE id = ${p.id}::uuid`;
     return p;
   };
@@ -238,9 +239,9 @@ describe('dashboard and reports', () => {
         lines: [{ purchaseLineId: purchase.lines[0]!.id, qty: '2' }],
       })
       .expect(201);
-    await t.prisma.db.$executeRaw`
+    await tamper(t)`
       UPDATE purchases SET "validatedAt" = ${at('2026-03-02T09:00:00')} WHERE id = ${purchase.id}::uuid`;
-    await t.prisma.db.$executeRaw`
+    await tamper(t)`
       UPDATE purchase_returns SET "createdAt" = ${at('2026-03-03T09:00:00')} WHERE "purchaseId" = ${purchase.id}::uuid`;
 
     c1 = await newClient(a);
@@ -263,7 +264,7 @@ describe('dashboard and reports', () => {
           .expect(201)
       ).body as SaleResultDto
     ).sale;
-    await t.prisma.db.$executeRaw`
+    await tamper(t)`
       UPDATE sales SET "validatedAt" = ${at('2026-03-07T10:00:00')} WHERE id = ${facture.id}::uuid`;
     const s7 = await sell(a, c1.id, '3', '2026-03-12T10:00:00');
     await avoir(s7, 'RESTOCK', '2026-03-13T10:00:00');
@@ -295,7 +296,7 @@ describe('dashboard and reports', () => {
     await as(a).post(`/payments/${bounced.id}/bounce`, { reason: 'sans provision' }).expect(200);
 
     // Plafond set after the sales so it never blocks them: C1 owes more than 10 000.
-    await t.prisma.db.$executeRaw`
+    await tamper(t)`
       UPDATE clients SET "creditLimit" = 10000 WHERE id = ${c1.id}::uuid`;
   });
   afterAll(() => t.close());

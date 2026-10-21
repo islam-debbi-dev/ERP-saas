@@ -3,9 +3,14 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { APP_CONFIG, type AppConfig } from '../config/app-config';
 import { PrismaClient } from '../generated/prisma/client';
 import { tenantExtension } from './tenant-extension';
+import { TenantAwarePool } from './tenant-pool';
 
 function createClients(databaseUrl: string) {
-  const base = new PrismaClient({ adapter: new PrismaPg({ connectionString: databaseUrl }) });
+  // The pool sets the RLS tenant on every connection (see tenant-pool.ts).
+  const adapter = new PrismaPg(new TenantAwarePool({ connectionString: databaseUrl }), {
+    disposeExternalPool: true,
+  });
+  const base = new PrismaClient({ adapter });
   return { base, db: base.$extends(tenantExtension) };
 }
 
