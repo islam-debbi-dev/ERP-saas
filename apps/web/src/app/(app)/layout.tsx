@@ -15,11 +15,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { state } = useAuth();
   const router = useRouter();
 
+  const mustChange = state.status === 'authenticated' && state.user.mustChangePassword;
   useEffect(() => {
     if (state.status === 'anonymous') router.replace('/login');
-  }, [state.status, router]);
+    // A temporary password: the API refuses everything else until it is changed.
+    else if (mustChange) router.replace('/mot-de-passe');
+  }, [state.status, mustChange, router]);
 
-  if (state.status !== 'authenticated') {
+  if (state.status !== 'authenticated' || mustChange) {
     return (
       <div
         className="flex min-h-svh items-center justify-center gap-2 text-muted-foreground"

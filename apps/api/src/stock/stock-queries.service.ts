@@ -42,7 +42,7 @@ export class StockQueriesService {
    * Live products with their level. Raw SQL because "qty <= minStock" compares two
    * columns; tenantId is passed explicitly (raw SQL bypasses the tenant extension).
    */
-  async list(query: StockListQuery): Promise<StockPage> {
+  async list(query: StockListQuery, showCost: boolean): Promise<StockPage> {
     const tenantId = tenantContext.requireTenantId();
     const search = query.search?.trim();
     const filters: Prisma.Sql[] = [
@@ -86,12 +86,12 @@ export class StockQueriesService {
       WHERE p."tenantId" = ${tenantId}::uuid AND p."deletedAt" IS NULL`;
 
     const page = rows.slice(0, query.limit);
-    const items = await this.withUnits(page);
+    const items = await this.withUnits(page, showCost);
     return {
       items,
       nextCursor: rows.length > query.limit ? (page.at(-1)?.id ?? null) : null,
       summary: {
-        totalValue: toMoneyString((summary?.totalValue ?? 0).toString()),
+        totalValue: showCost ? toMoneyString((summary?.totalValue ?? 0).toString()) : null,
         lowStockCount: Number(summary?.lowStockCount ?? 0),
         productCount: Number(summary?.productCount ?? 0),
       },
@@ -99,7 +99,9 @@ export class StockQueriesService {
   }
 
   /** Dashboard figures, with the stock page's own definitions (stock bas includes rupture). */
-  async dashboardSummary(): Promise<{ outOfStock: number; lowStock: number; value: string }> {
+  async dashboardSummary(
+    showCost: boolean,
+  ): Promise<{ outOfStock: number; lowStock: number; value: string | null }> {
     const tenantId = tenantContext.requireTenantId();
     const [row] = await this.prisma.db.$queryRaw<
       { value: Dec; lowStock: bigint; outOfStock: bigint }[]
@@ -111,36 +113,43 @@ export class StockQueriesService {
       LEFT JOIN product_stocks s ON s."productId" = p.id
       WHERE p."tenantId" = ${tenantId}::uuid AND p."deletedAt" IS NULL`;
     return {
-      value: toMoneyString((row?.value ?? 0).toString()),
+      value: showCost ? toMoneyString((row?.value ?? 0).toString()) : null,
       lowStock: Number(row?.lowStock ?? 0),
       outOfStock: Number(row?.outOfStock ?? 0),
     };
   }
 
-  async level(productId: string): Promise<StockLevelDto> {
+  async level(productId: string, showCost: boolean): Promise<StockLevelDto> {
     const product = await this.prisma.db.product.findUnique({
       where: { id: productId },
       include: { stock: true },
     });
     if (!product) throw new AppException(ErrorCode.PRODUCT_NOT_FOUND, 'Product not found');
-    const [item] = await this.withUnits([
-      {
-        id: product.id,
-        reference: product.reference,
-        designation: product.designation,
-        baseUnitId: product.baseUnitId,
-        minStock: product.minStock,
-        qtyBase: product.stock?.qtyBase ?? 0,
-        avgCost: product.stock?.avgCost ?? 0,
-        hasOpening: product.stock?.hasOpening ?? false,
-      },
-    ]);
+    const [item] = await this.withUnits(
+      [
+        {
+          id: product.id,
+          reference: product.reference,
+          designation: product.designation,
+          baseUnitId: product.baseUnitId,
+          minStock: product.minStock,
+          qtyBase: product.stock?.qtyBase ?? 0,
+          avgCost: product.stock?.avgCost ?? 0,
+          hasOpening: product.stock?.hasOpening ?? false,
+        },
+      ],
+      showCost,
+    );
     if (!item) throw new AppException(ErrorCode.PRODUCT_NOT_FOUND, 'Product not found');
     return item;
   }
 
   /** Stock card: newest first, each row with the balance right after it. */
-  async movements(productId: string, query: CursorQuery): Promise<StockMovementPage> {
+  async movements(
+    productId: string,
+    query: CursorQuery,
+    showCost: boolean,
+  ): Promise<StockMovementPage> {
     const product = await this.prisma.db.product.findUnique({
       where: { id: productId },
       select: { id: true },
@@ -166,9 +175,9 @@ export class StockQueriesService {
         id: m.id,
         type: m.type,
         qtyBase: toQtyString(m.qtyBase.toString()),
-        unitCost: m.unitCost?.toFixed(4) ?? null,
+        unitCost: showCost ? (m.unitCost?.toFixed(4) ?? null) : null,
         balanceAfter: toQtyString(m.balanceAfter.toString()),
-        avgCostAfter: m.avgCostAfter.toFixed(4),
+        avgCostAfter: showCost ? m.avgCostAfter.toFixed(4) : null,
         reason: m.reason,
         refType: m.refType,
         refId: m.refId,
@@ -227,7 +236,7 @@ export class StockQueriesService {
   }
 
   /** Adds the base unit and the largest packaging unit to level rows. */
-  private async withUnits(rows: LevelRow[]): Promise<StockLevelDto[]> {
+  private async withUnits(rows: LevelRow[], showCost: boolean): Promise<StockLevelDto[]> {
     if (rows.length === 0) return [];
     const units = await this.prisma.db.productUnit.findMany({
       where: { productId: { in: rows.map((r) => r.id) }, deletedAt: null },
@@ -248,8 +257,8 @@ export class StockQueriesService {
         baseUnitId: r.baseUnitId,
         minStock: toQtyString(r.minStock.toString()),
         qtyBase: toQtyString(qtyBase),
-        avgCost: qty(avgCost).toFixed(4),
-        value: toMoneyString(stockValue(qtyBase, avgCost)),
+        avgCost: showCost ? qty(avgCost).toFixed(4) : null,
+        value: showCost ? toMoneyString(stockValue(qtyBase, avgCost)) : null,
         lowStock: qty(qtyBase).lte(r.minStock.toString()),
         hasOpening: r.hasOpening,
         packaging: biggest

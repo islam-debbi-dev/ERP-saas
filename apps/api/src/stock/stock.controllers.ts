@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import {
   type AdjustmentInput,
+  Permission,
   adjustmentSchema,
   type CreateInventoryInput,
   createInventorySchema,
@@ -32,7 +33,9 @@ import {
   type StockOperationResult,
   type StockPage,
 } from '@erp/shared';
-import { Roles } from '../auth/decorators';
+import type { CurrentUserInfo } from '../auth/auth.types';
+import { CurrentUser, Roles } from '../auth/decorators';
+import { can } from '../auth/permissions';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { Idempotent } from '../idempotency/idempotent.decorator';
 import { InventoriesService } from './inventories.service';
@@ -52,8 +55,9 @@ export class StockController {
   @Get()
   list(
     @Query(new ZodValidationPipe(stockListQuerySchema)) query: StockListQuery,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<StockPage> {
-    return this.queries.list(query);
+    return this.queries.list(query, can(user, Permission.VIEW_COST_AND_MARGIN));
   }
 
   // Declared before ':productId' so "reconcile" is not parsed as an id.
@@ -64,16 +68,20 @@ export class StockController {
   }
 
   @Get(':productId')
-  level(@Param('productId', ParseUUIDPipe) productId: string): Promise<StockLevelDto> {
-    return this.queries.level(productId);
+  level(
+    @Param('productId', ParseUUIDPipe) productId: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<StockLevelDto> {
+    return this.queries.level(productId, can(user, Permission.VIEW_COST_AND_MARGIN));
   }
 
   @Get(':productId/movements')
   movements(
     @Param('productId', ParseUUIDPipe) productId: string,
     @Query(new ZodValidationPipe(cursorQuerySchema)) query: CursorQuery,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<StockMovementPage> {
-    return this.queries.movements(productId, query);
+    return this.queries.movements(productId, query, can(user, Permission.VIEW_COST_AND_MARGIN));
   }
 
   @Post('opening')
@@ -85,13 +93,14 @@ export class StockController {
     return this.operations.opening(body);
   }
 
+  /** STOCK_ADJUST is checked in the service: it can be granted to any user. */
   @Post('adjustments')
   @Idempotent()
-  @Roles(...STOCK_WRITERS)
   adjust(
     @Body(new ZodValidationPipe(adjustmentSchema)) body: AdjustmentInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<StockOperationResult> {
-    return this.operations.adjust(body);
+    return this.operations.adjust(body, user);
   }
 }
 
@@ -130,10 +139,12 @@ export class InventoriesController {
 
   @Post(':id/validate')
   @Idempotent()
-  @Roles(...STOCK_WRITERS)
   @HttpCode(HttpStatus.OK)
-  validate(@Param('id', ParseUUIDPipe) id: string): Promise<InventoryDto> {
-    return this.inventories.validate(id);
+  validate(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<InventoryDto> {
+    return this.inventories.validate(id, user);
   }
 
   @Post(':id/cancel')

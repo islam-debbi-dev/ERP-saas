@@ -34,6 +34,8 @@ export interface PriceOverride {
   listPriceHt: string | null;
   unitPriceHt: string;
   discountPct: string;
+  /** The unit price itself differs from the list price (PRICE_OVERRIDE). */
+  priceChanged: boolean;
 }
 
 /** The client's price level, or the first level of the tenant (gros). */
@@ -105,13 +107,15 @@ export async function snapshotSaleLines(
       });
     }
     const discount = money(l.discountPct);
-    if (listPrice === null || !money(price).eq(listPrice) || !discount.isZero()) {
+    const priceChanged = listPrice === null || !money(price).eq(listPrice);
+    if (priceChanged || !discount.isZero()) {
       overrides.push({
         position: i + 1,
         productId: l.productId,
         listPriceHt: listPrice === null ? null : toMoneyString(listPrice),
         unitPriceHt: toMoneyString(price),
         discountPct: discount.toString(),
+        priceChanged,
       });
     }
     return {

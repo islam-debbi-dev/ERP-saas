@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import {
   type CreateSaleInput,
   ErrorCode,
+  money,
+  Permission,
   type PricePreviewDto,
   type PricePreviewQuery,
-  Role,
   type SaleDto,
   type SaleListQuery,
   type SalePage,
@@ -15,20 +16,13 @@ import {
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
+import { can } from '../auth/permissions';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { type Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { fromIsoDate, saleInclude, toIsoDate, toSaleDto } from './sale.mapper';
 import { type PriceOverride, resolvePriceLevel, snapshotSaleLines } from './sale-lines';
-
-/**
- * Stand-in for the PRICE_OVERRIDE and CREDIT_OVERRIDE permissions until the
- * permission matrix of phase 11: managers only.
- */
-export function canOverride(user: CurrentUserInfo): boolean {
-  return user.role === Role.OWNER || user.role === Role.MANAGER;
-}
 
 /** Sale drafts and reads. Effects (stock, account, payments) live in SaleWorkflowService. */
 @Injectable()
@@ -55,7 +49,7 @@ export class SalesService {
       priceLevelId,
       assujetti,
     );
-    this.checkOverrides(overrides, user);
+    await this.checkOverrides(tx, overrides, user);
     const sale = await tx.sale.create({
       data: {
         tenantId,
@@ -108,7 +102,7 @@ export class SalesService {
         priceLevelId,
         assujetti,
       );
-      this.checkOverrides(overrides, user);
+      await this.checkOverrides(tx, overrides, user);
       // Draft lines have no effect anywhere, so they are simply replaced.
       await tx.saleLine.deleteMany({ where: { saleId: id } });
       if (lines.length > 0) {
@@ -241,12 +235,39 @@ export class SalesService {
     };
   }
 
-  private checkOverrides(overrides: PriceOverride[], user: CurrentUserInfo): void {
-    if (overrides.length > 0 && !canOverride(user)) {
+  /**
+   * A changed unit price needs PRICE_OVERRIDE. A remise up to the tenant's
+   * `maxDiscountPct` is free; above it needs DISCOUNT_ABOVE_X.
+   */
+  private async checkOverrides(
+    tx: Tx,
+    overrides: PriceOverride[],
+    user: CurrentUserInfo,
+  ): Promise<void> {
+    if (overrides.length === 0) return;
+    const priced = overrides.filter((o) => o.priceChanged);
+    if (priced.length > 0 && !can(user, Permission.PRICE_OVERRIDE)) {
       throw new AppException(
         ErrorCode.PRICE_OVERRIDE_FORBIDDEN,
-        'Only a manager can change a price or give a discount',
-        { lines: overrides },
+        'You may not change the price of a line',
+        { permission: Permission.PRICE_OVERRIDE, lines: priced },
+      );
+    }
+    if (can(user, Permission.DISCOUNT_ABOVE_X)) return;
+    const { maxDiscountPct } = await tx.tenant.findUniqueOrThrow({
+      where: { id: tenantContext.requireTenantId() },
+      select: { maxDiscountPct: true },
+    });
+    const above = overrides.filter((o) => money(o.discountPct).gt(maxDiscountPct.toString()));
+    if (above.length > 0) {
+      throw new AppException(
+        ErrorCode.PRICE_OVERRIDE_FORBIDDEN,
+        'This discount is above what you may give',
+        {
+          permission: Permission.DISCOUNT_ABOVE_X,
+          maxDiscountPct: maxDiscountPct.toString(),
+          lines: above,
+        },
       );
     }
   }

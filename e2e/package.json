@@ -1,0 +1,23 @@
+{
+  "name": "erp-e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:db": "tsx sql/run-invariants.ts",
+    "test:api": "tsx api/scenario.ts && tsx api/attacks.ts",
+    "test:web": "playwright test --config web/playwright.config.ts",
+    "install:browsers": "playwright install chromium"
+  },
+  "dependencies": {
+    "decimal.js": "^10.6.0",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@types/node": "^22.20.5",
+    "@types/pg": "^8.11.10",
+    "pdfjs-dist": "^4.10.38",
+    "tsx": "^4.19.2"
+  }
+}

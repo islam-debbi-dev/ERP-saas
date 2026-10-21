@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import {
+  Permission,
   type AdjustmentInput,
   type OpeningStockInput,
   StockMovementType,
   type StockOperationResult,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
+import type { CurrentUserInfo } from '../auth/auth.types';
+import { requirePermission } from '../auth/permissions';
 import { PrismaService } from '../prisma/prisma.service';
 import { StockService } from './stock.service';
 import { baseUnitCost, toBaseLines } from './unit-conversion';
@@ -43,7 +46,8 @@ export class StockOperationsService {
   }
 
   /** Positive lines add stock at the current CUMP; negative lines remove it. */
-  async adjust(input: AdjustmentInput): Promise<StockOperationResult> {
+  async adjust(input: AdjustmentInput, user: CurrentUserInfo): Promise<StockOperationResult> {
+    requirePermission(user, Permission.STOCK_ADJUST, { message: 'You may not adjust the stock' });
     return this.prisma.db.$transaction(async (tx) => {
       const converted = await toBaseLines(tx, input.lines);
       const result = await this.stock.applyMovements(

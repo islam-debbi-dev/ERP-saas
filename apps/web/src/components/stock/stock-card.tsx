@@ -5,7 +5,7 @@ import { ArrowLeft, History, Loader2, PackagePlus, SlidersHorizontal } from 'luc
 import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-import { formatDA, qty, type StockMovementDto } from '@erp/shared';
+import { formatDA, Permission, qty, type StockMovementDto } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/table/data-table';
@@ -17,7 +17,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatQty, useMovementPages, usePackagingLabel, useStockLevel } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
+import { usePermission } from '@/lib/auth';
 import { AdjustDialog, OpeningDialog } from './stock-dialogs';
+
+/** A cost the user may not see comes back null. */
+const cost = (v: string | null) => (v === null ? '—' : formatDA(v));
 
 export function StockCard({ productId }: { productId: string }) {
   const t = useTranslations('stock');
@@ -29,6 +33,7 @@ export function StockCard({ productId }: { productId: string }) {
   const level = useStockLevel(productId);
   const pages = useMovementPages(productId);
   const [dialog, setDialog] = useState<'adjust' | 'opening' | null>(null);
+  const canAdjust = usePermission(Permission.STOCK_ADJUST);
   const items = useMemo(() => pages.data?.pages.flatMap((p) => p.items) ?? [], [pages.data]);
 
   const columns = useMemo<ColumnDef<StockMovementDto>[]>(
@@ -140,10 +145,12 @@ export function StockCard({ productId }: { productId: string }) {
                 {t('opening')}
               </Button>
             ) : null}
-            <Button onClick={() => setDialog('adjust')} disabled={!l}>
-              <SlidersHorizontal aria-hidden />
-              {t('adjust')}
-            </Button>
+            {canAdjust ? (
+              <Button onClick={() => setDialog('adjust')} disabled={!l}>
+                <SlidersHorizontal aria-hidden />
+                {t('adjust')}
+              </Button>
+            ) : null}
           </>
         }
       />
@@ -151,9 +158,10 @@ export function StockCard({ productId }: { productId: string }) {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         {[
           { label: t('currentQty'), value: l ? packagingLabel(l) : null, ltr: false },
-          // Amounts are LTR so "DA" stays after the number in Arabic.
-          { label: t('currentCump'), value: l ? formatDA(l.avgCost) : null, ltr: true },
-          { label: t('currentValue'), value: l ? formatDA(l.value) : null, ltr: true },
+          // Amounts are LTR so "DA" stays after the number in Arabic. Without
+          // VIEW_COST_AND_MARGIN the API sends no costs and the cards show a dash.
+          { label: t('currentCump'), value: l ? cost(l.avgCost) : null, ltr: true },
+          { label: t('currentValue'), value: l ? cost(l.value) : null, ltr: true },
         ].map((card) => (
           // First card (value / quantity) spans the row on phones, the other two share one.
           <Card key={card.label} className="py-4 first:col-span-2 sm:first:col-span-1">

@@ -1,19 +1,26 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, LockKeyhole, LogIn, Mail } from 'lucide-react';
+import { Loader2, LockKeyhole, LogIn, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { type LoginInput, loginSchema } from '@erp/shared';
+import { z } from 'zod';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { AuthCard } from './auth-card';
 import { IconField, PasswordField } from './form-bits';
+
+/** The API reads `identifier` as an email when it has an @, otherwise as a phone number. */
+const formSchema = z.object({
+  identifier: z.string().trim().min(1),
+  password: z.string().min(1).max(128),
+});
+type FormValues = z.infer<typeof formSchema>;
 
 export function LoginForm({ expired }: { expired: boolean }) {
   const t = useTranslations();
@@ -23,9 +30,9 @@ export function LoginForm({ expired }: { expired: boolean }) {
   const [formError, setFormError] = useState<string | null>(
     expired ? t('auth.sessionExpired') : null,
   );
-  const form = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '' },
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { identifier: '', password: '' },
   });
   const { errors, isSubmitting } = form.formState;
 
@@ -51,17 +58,18 @@ export function LoginForm({ expired }: { expired: boolean }) {
           </Alert>
         ) : null}
         <IconField
-          id="email"
-          label={t('auth.email')}
-          icon={Mail}
-          type="email"
-          inputMode="email"
-          autoComplete="email"
+          id="identifier"
+          label={t('auth.identifier')}
+          icon={UserRound}
+          type="text"
+          autoComplete="username"
+          autoCapitalize="none"
+          spellCheck={false}
           dir="ltr"
           autoFocus
-          placeholder={t('auth.emailPlaceholder')}
-          error={errors.email && t('validation.email')}
-          {...form.register('email')}
+          placeholder={t('auth.identifierPlaceholder')}
+          error={errors.identifier && t('validation.required')}
+          {...form.register('identifier')}
         />
         <PasswordField
           id="password"

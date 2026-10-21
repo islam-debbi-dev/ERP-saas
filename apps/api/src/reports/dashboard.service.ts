@@ -6,12 +6,14 @@ import {
   monthToDate,
   money,
   type Money,
+  Permission,
   previousMonthToDate,
   Role,
   type SalesFigure,
   toMoneyString,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
+import { can } from '../auth/permissions';
 import { ClientsService } from '../clients/clients.service';
 import { algiersRange } from '../common/algiers';
 import { tenantContext } from '../common/tenant-context';
@@ -51,12 +53,13 @@ export class DashboardService {
       tenantId: tenantContext.requireTenantId(),
       sellerId: user.role === Role.SELLER ? user.id : null,
     };
+    const seesCost = can(user, Permission.VIEW_COST_AND_MARGIN);
     const [sales, cash, credit, debtors, stock] = await Promise.all([
-      seesSales ? this.sales(scope, date, manager) : null,
+      seesSales ? this.sales(scope, date, seesCost) : null,
       manager ? this.payments.summary(date) : null,
       manager ? this.clients.creditSummary(TOP_DEBTORS) : null,
       manager ? this.clients.debtors(TOP_DEBTORS) : null,
-      seesStock ? this.stock.dashboardSummary() : null,
+      seesStock ? this.stock.dashboardSummary(seesCost) : null,
     ]);
     return {
       date,

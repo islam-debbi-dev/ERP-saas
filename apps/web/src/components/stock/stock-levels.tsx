@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-import { formatDA, qty, type StockLevelDto } from '@erp/shared';
+import { formatDA, Permission, qty, type StockLevelDto } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/table/data-table';
@@ -26,6 +26,7 @@ import { Switch } from '@/components/ui/switch';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { formatQty, usePackagingLabel, useStockPages } from '@/lib/stock';
 import { useUnitLabel } from '@/lib/catalog';
+import { usePermission } from '@/lib/auth';
 import { AdjustDialog, OpeningDialog } from './stock-dialogs';
 
 type DialogState = { kind: 'adjust' | 'opening'; level: StockLevelDto } | null;
@@ -58,6 +59,7 @@ export function StockLevels() {
   const items = useMemo(() => pages.data?.pages.flatMap((p) => p.items) ?? [], [pages.data]);
   const summary = pages.data?.pages[0]?.summary;
 
+  const canAdjust = usePermission(Permission.STOCK_ADJUST);
   const columns = useMemo<ColumnDef<StockLevelDto>[]>(
     () => [
       {
@@ -101,7 +103,7 @@ export function StockLevels() {
         header: t('colCump'),
         cell: ({ row }) => (
           <span className="num whitespace-nowrap" dir="ltr">
-            {formatDA(row.original.avgCost)}
+            {row.original.avgCost === null ? '—' : formatDA(row.original.avgCost)}
           </span>
         ),
       },
@@ -110,7 +112,7 @@ export function StockLevels() {
         header: t('colValue'),
         cell: ({ row }) => (
           <span className="num whitespace-nowrap font-medium" dir="ltr">
-            {formatDA(row.original.value)}
+            {row.original.value === null ? '—' : formatDA(row.original.value)}
           </span>
         ),
       },
@@ -140,9 +142,13 @@ export function StockLevels() {
               <DropdownMenuItem asChild>
                 <Link href={`/stock/${row.original.productId}`}>{t('card')}</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setDialog({ kind: 'adjust', level: row.original })}>
-                {t('adjust')}
-              </DropdownMenuItem>
+              {canAdjust ? (
+                <DropdownMenuItem
+                  onSelect={() => setDialog({ kind: 'adjust', level: row.original })}
+                >
+                  {t('adjust')}
+                </DropdownMenuItem>
+              ) : null}
               {!row.original.hasOpening ? (
                 <DropdownMenuItem
                   onSelect={() => setDialog({ kind: 'opening', level: row.original })}
@@ -155,7 +161,7 @@ export function StockLevels() {
         ),
       },
     ],
-    [t, packagingLabel, unitLabel],
+    [t, packagingLabel, unitLabel, canAdjust],
   );
 
   const table = useReactTable({ data: items, columns, getCoreRowModel: getCoreRowModel() });
@@ -177,7 +183,14 @@ export function StockLevels() {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         {[
-          { label: t('summaryValue'), value: summary ? formatDA(summary.totalValue) : null },
+          {
+            label: t('summaryValue'),
+            value: summary
+              ? summary.totalValue === null
+                ? '—'
+                : formatDA(summary.totalValue)
+              : null,
+          },
           {
             label: t('summaryLow'),
             value: summary ? formatQty(String(summary.lowStockCount)) : null,

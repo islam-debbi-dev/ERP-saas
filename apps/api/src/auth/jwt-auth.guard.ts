@@ -1,12 +1,12 @@
 import { type CanActivate, type ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { TokenExpiredError } from '@nestjs/jwt';
-import { ErrorCode } from '@erp/shared';
+import { effectivePermissions, ErrorCode } from '@erp/shared';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { PrismaService } from '../prisma/prisma.service';
 import type { AccessTokenPayload, AuthenticatedRequest } from './auth.types';
-import { IS_PUBLIC_KEY } from './decorators';
+import { ALLOW_PASSWORD_CHANGE_KEY, IS_PUBLIC_KEY } from './decorators';
 import { TokenService } from './token.service';
 
 /** Refresh `lastUsedAt` at most this often, to avoid a write on every request. */
@@ -15,7 +15,8 @@ const LAST_USED_THROTTLE_MS = 5 * 60 * 1000;
 /**
  * Global guard: verifies the access token, then checks the session is still active
  * (so revoking a lost phone takes effect immediately) and fills the tenant context.
- * The role is read from the database, so a role change applies on the next request.
+ * The role and permissions are read from the database, so a change applies on the
+ * next request; so does a temporary password (only the password change is allowed).
  */
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -26,10 +27,8 @@ export class JwtAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const targets = [context.getHandler(), context.getClass()];
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, targets);
     if (isPublic) return true;
 
     const req = context.switchToHttp().getRequest<AuthenticatedRequest>();
@@ -66,14 +65,27 @@ export class JwtAuthGuard implements CanActivate {
       throw new AppException(ErrorCode.SESSION_EXPIRED, 'Session expired');
 
     ctx.deviceName = session.deviceName;
+    const user = session.user;
     req.user = {
-      id: session.user.id,
+      id: user.id,
       tenantId: session.tenantId,
       sessionId: session.id,
-      role: session.user.role,
-      email: session.user.email,
-      fullName: session.user.fullName,
+      role: user.role,
+      email: user.email,
+      phone: user.phone,
+      fullName: user.fullName,
+      permissions: effectivePermissions(user.role, user.permissionGrants, user.permissionRevokes),
+      mustChangePassword: user.mustChangePassword,
     };
+    if (
+      user.mustChangePassword &&
+      !this.reflector.getAllAndOverride<boolean>(ALLOW_PASSWORD_CHANGE_KEY, targets)
+    ) {
+      throw new AppException(
+        ErrorCode.PASSWORD_CHANGE_REQUIRED,
+        'Change your temporary password first',
+      );
+    }
 
     if (now.getTime() - session.lastUsedAt.getTime() > LAST_USED_THROTTLE_MS) {
       await this.prisma.db.session.update({ where: { id: session.id }, data: { lastUsedAt: now } });

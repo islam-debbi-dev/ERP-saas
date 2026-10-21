@@ -30,6 +30,7 @@ function toResponse(t: Tenant): TenantSettingsResponse {
     creditLimitMode: t.creditLimitMode,
     negativeStockMode: t.negativeStockMode,
     priceLevelCount: t.priceLevelCount,
+    maxDiscountPct: toMoneyString(t.maxDiscountPct.toString()),
     timbreEnabled: t.timbreEnabled,
     timbreTranches: readTranches(t.timbreTranches),
     timbreMin: t.timbreMin ? toMoneyString(t.timbreMin) : null,
@@ -77,6 +78,8 @@ export class TenantsService {
             upTo: tr.upTo === null ? null : toMoneyString(normalizeDecimal(tr.upTo)),
             rate: normalizeDecimal(tr.rate),
           })),
+          maxDiscountPct:
+            input.maxDiscountPct === undefined ? undefined : normalizeDecimal(input.maxDiscountPct),
           timbreMin: normalizeAmount(input.timbreMin),
           timbreMax: normalizeAmount(input.timbreMax),
           timbreThreshold: normalizeAmount(input.timbreThreshold),

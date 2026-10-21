@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { formatDA, parseDA, type PaymentDto } from '@erp/shared';
+import { formatDA, parseDA, type PaymentDto, Permission } from '@erp/shared';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api-client';
-import { useAuth } from '@/lib/auth';
+import { useAuth, usePermission } from '@/lib/auth';
 import { clientKeys, useCanManageCredit } from '@/lib/clients';
 import { paymentKeys, usePayment } from '@/lib/payments';
 import { saleKeys } from '@/lib/sales';
@@ -29,12 +29,12 @@ import { useIdempotencyKey } from '@/lib/use-idempotency-key';
 import { PrintButton } from '@/components/shared/print-button';
 import { PaymentStatusBadge } from './payment-status-badge';
 
-/** Mirrors the API: sellers cancel their own versement of the day; managers any. */
+/** Mirrors the API: with PAYMENT_CANCEL any versement; without it, your own of the day. */
 function useCanCancel(p: PaymentDto | undefined): boolean {
   const { state } = useAuth();
-  const manager = useCanManageCredit();
+  const any = usePermission(Permission.PAYMENT_CANCEL);
   if (!p || p.status !== 'VALID' || p.sale) return false;
-  if (manager) return true;
+  if (any) return true;
   const day = (d: Date) =>
     new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Algiers' }).format(d);
   return p.receivedBy?.id === state.user?.id && day(new Date(p.receivedAt)) === day(new Date());

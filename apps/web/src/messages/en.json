@@ -45,7 +45,7 @@
   },
   "auth": {
     "loginTitle": "Log in",
-    "loginDescription": "Enter the email and password of your account.",
+    "loginDescription": "Enter your email or phone number and your password.",
     "email": "Email",
     "emailPlaceholder": "name@company.dz",
     "password": "Password",
@@ -65,7 +65,9 @@
     "registering": "Creating…",
     "haveAccount": "Already have an account?",
     "goToLogin": "Log in",
-    "sessionExpired": "Your session expired. Log in again."
+    "sessionExpired": "Your session expired. Log in again.",
+    "identifier": "Email or phone",
+    "identifierPlaceholder": "name@company.dz or 0550 12 34 56"
   },
   "dashboard": {
     "welcome": "Hello {name}",
@@ -203,7 +205,15 @@
     "tvaMentionHint": "Printed on your documents because you are not subject to TVA.",
     "tvaMentionUnused": "Used only when you are not subject to TVA.",
     "documentFooter": "Footer",
-    "documentFooterHint": "Printed at the bottom of every page (terms, thanks…)."
+    "documentFooterHint": "Printed at the bottom of every page (terms, thanks…).",
+    "maxDiscountPct": "Maximum discount without permission (%)",
+    "maxDiscountPctHint": "Above it, a discount needs the \"Discount above threshold\" permission. 0 = any discount.",
+    "usersLink": "Users",
+    "usersLinkHelp": "Invite your staff, roles and permissions.",
+    "sessionsLink": "Sessions",
+    "sessionsLinkHelp": "Logged-in devices, remote logout.",
+    "auditLink": "Audit log",
+    "auditLinkHelp": "Who did what, when, from which device."
   },
   "validation": {
     "required": "This field is required.",
@@ -275,7 +285,13 @@
     "IMPORT_FILE_TOO_LARGE": "The file is larger than 10 MB.",
     "IMPORT_TOO_MANY_ROWS": "The file has more than 10,000 rows. Split it into several imports.",
     "IMPORT_HAS_ERRORS": "Some rows are invalid: nothing was imported. Fix the file and try again.",
-    "IMPORT_NOT_PENDING": "This import was already processed."
+    "IMPORT_NOT_PENDING": "This import was already processed.",
+    "PHONE_ALREADY_USED": "This phone number is already used.",
+    "ACCOUNT_LOCKED": "Too many wrong passwords. Account locked for 15 minutes.",
+    "PASSWORD_CHANGE_REQUIRED": "Change your temporary password to continue.",
+    "INVITATION_INVALID": "This invitation link is invalid or has expired.",
+    "LAST_OWNER": "At least one active owner must remain.",
+    "USER_DEACTIVATED": "This user is deactivated."
   },
   "units": {
     "PIECE": "Piece",
@@ -507,7 +523,8 @@
     "cancelled": "Stock count cancelled",
     "readOnly": "This stock count is closed.",
     "keep": "Keep counting",
-    "back": "Back to stock counts"
+    "back": "Back to stock counts",
+    "validateNeedsPermission": "Validating needs the \"Adjust stock\" permission."
   },
   "productCost": {
     "qty": "In stock",
@@ -1077,5 +1094,152 @@
       "stock_not_empty": "the product already has {qty} in stock; the opening stock will add to it",
       "zero_cost": "zero cost: this product's margin will be wrong"
     }
+  },
+  "users": {
+    "title": "Users",
+    "subtitle": "Your staff. A user is never deleted: once deactivated, their name stays on the history.",
+    "invite": "Invite",
+    "inviteTitle": "Invite a user",
+    "inviteHelp": "They will log in with their phone or email.",
+    "fullName": "Full name",
+    "phone": "Phone",
+    "email": "Email",
+    "loginHint": "Phone or email: at least one.",
+    "role": "Role",
+    "mode": "Password",
+    "mode_LINK": "Invitation link",
+    "mode_LINK_help": "A link valid 72 h to send (WhatsApp, SMS). The employee chooses a password.",
+    "mode_PASSWORD": "Temporary password",
+    "mode_PASSWORD_help": "You give them a password; they must change it at first login.",
+    "tempPassword": "Temporary password",
+    "tempPasswordHint": "At least 8 characters.",
+    "linkOnce": "Copy this link now: it will not be shown again. It works only once.",
+    "copy": "Copy",
+    "linkCopied": "Link copied",
+    "done": "Done",
+    "invited": "{name} is invited.",
+    "editTitle": "Edit user",
+    "save": "Save",
+    "saved": "Saved",
+    "permissionsTitle": "Permissions of {name}",
+    "permissionsHelp": "Each role has default permissions. You can add or remove some for this user.",
+    "fromRole": "default for this role",
+    "resetTitle": "New password for {name}",
+    "resetHelp": "Their other sessions are closed and the account unlocked.",
+    "reset": "Reset",
+    "resetDone": "Temporary password set.",
+    "colName": "Name",
+    "colLogin": "Login",
+    "colRole": "Role",
+    "colStatus": "Status",
+    "colLastActivity": "Last activity",
+    "you": "you",
+    "customized": "(customized)",
+    "statusActive": "Active",
+    "statusInactive": "Deactivated",
+    "statusLocked": "Locked",
+    "statusInvited": "Invitation pending",
+    "statusTempPassword": "Temporary password",
+    "actions": "Actions for {name}",
+    "edit": "Edit",
+    "permissions": "Permissions",
+    "resetPassword": "Reset password",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "deactivated": "User deactivated",
+    "reactivated": "User reactivated",
+    "deactivateTitle": "Deactivate {name}?",
+    "deactivateHelp": "All their sessions are closed at once and they can no longer log in. Their name stays on documents.",
+    "cancel": "Cancel",
+    "empty": "No users"
+  },
+  "permissions": {
+    "PRICE_OVERRIDE": {
+      "label": "Change the price",
+      "help": "Sell at a price other than the client's price level."
+    },
+    "DISCOUNT_ABOVE_X": {
+      "label": "Discount above threshold",
+      "help": "Give a discount above the maximum set in Settings."
+    },
+    "CREDIT_OVERRIDE": {
+      "label": "Exceed the credit limit",
+      "help": "Validate a sale over the client's credit limit."
+    },
+    "SALE_CANCEL": {
+      "label": "Cancel a sale",
+      "help": "Cancel a validated delivery note or invoice."
+    },
+    "PAYMENT_CANCEL": {
+      "label": "Cancel a payment",
+      "help": "Without it: only their own payments of the day."
+    },
+    "STOCK_ADJUST": {
+      "label": "Adjust stock",
+      "help": "Adjustments and inventory validation."
+    },
+    "VIEW_COST_AND_MARGIN": {
+      "label": "See costs and margins",
+      "help": "WAC, stock value, margins."
+    },
+    "EXPORT_DATA": {
+      "label": "Export",
+      "help": "Export reports to Excel."
+    }
+  },
+  "sessions": {
+    "title": "Sessions",
+    "subtitle": "Your logged-in devices.",
+    "subtitleOwner": "Every logged-in device of the company. Close the session of a lost phone.",
+    "colUser": "User",
+    "colDevice": "Device",
+    "colIp": "IP address",
+    "colLastActivity": "Last activity",
+    "colSince": "Logged in since",
+    "current": "this device",
+    "revoke": "Log out",
+    "revokeTitle": "Log out this device of {name}?",
+    "revokeHelp": "The session is closed now; they will have to log in again on that device.",
+    "revoked": "Session closed",
+    "cancel": "Cancel",
+    "empty": "No active session"
+  },
+  "audit": {
+    "title": "Audit log",
+    "subtitle": "Every change, with its author and device. Read-only.",
+    "user": "User",
+    "entity": "Object",
+    "action": "Action",
+    "from": "From",
+    "to": "To",
+    "all": "All",
+    "reset": "Clear filters",
+    "empty": "No entries",
+    "colWhen": "Date",
+    "colUser": "User",
+    "colAction": "Action",
+    "colEntity": "Object",
+    "colDevice": "Device",
+    "system": "System",
+    "more": "Show more",
+    "noDetails": "No details for this action.",
+    "field": "Field",
+    "before": "Before",
+    "after": "After"
+  },
+  "password": {
+    "title": "Choose your password",
+    "description": "Your current password is temporary. Choose a new one to continue.",
+    "current": "Current password",
+    "new": "New password",
+    "confirm": "Confirm password",
+    "submit": "Save and continue",
+    "mismatch": "The two passwords do not match."
+  },
+  "invitation": {
+    "title": "Invitation",
+    "welcome": "Welcome {name}",
+    "description": "{company} invites you. Choose your password.",
+    "submit": "Create my access"
   }
 }

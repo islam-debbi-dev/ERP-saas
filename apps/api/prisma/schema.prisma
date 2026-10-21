@@ -70,6 +70,8 @@ model Tenant {
   creditLimitMode   CreditLimitMode   @default(WARN)
   negativeStockMode NegativeStockMode @default(WARN)
   priceLevelCount   Int               @default(3) @db.SmallInt
+  /// Line discount any seller may give; above it needs DISCOUNT_ABOVE_X (phase 11).
+  maxDiscountPct    Decimal           @default(0) @db.Decimal(5, 2)
 
   // Timbre fiscal rule (cash-paid factures). Off until the tenant sets current law values.
   timbreEnabled   Boolean  @default(false)
@@ -92,6 +94,7 @@ model Tenant {
   users               User[]
   sessions            Session[]
   auditLogs           AuditLog[]
+  userInvitations     UserInvitation[]
   documentSequences   DocumentSequence[]
   idempotencyKeys     IdempotencyKey[]
   categories          Category[]
@@ -125,22 +128,55 @@ model Tenant {
 }
 
 model User {
-  id           String    @id @default(uuid()) @db.Uuid
-  tenantId     String    @db.Uuid
-  /// Globally unique (lowercased) so login needs no company code.
-  email        String    @unique @db.VarChar(254)
-  passwordHash String    @db.VarChar(255)
-  fullName     String    @db.VarChar(120)
-  role         Role
-  deletedAt    DateTime? @db.Timestamptz(3)
-  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime  @updatedAt @db.Timestamptz(3)
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @db.Uuid
+  /// Globally unique (lowercased) so login needs no company code. A user has an
+  /// email, a phone, or both (CHECK in the migration).
+  email              String?   @unique @db.VarChar(254)
+  /// `+213…` (normalizePhone), globally unique like the email.
+  phone              String?   @unique @db.VarChar(20)
+  passwordHash       String    @db.VarChar(255)
+  fullName           String    @db.VarChar(120)
+  role               Role
+  /// Exceptions to the role's default permissions (packages/shared/permissions.ts).
+  permissionGrants   String[]  @default([])
+  permissionRevokes  String[]  @default([])
+  /// Temporary password set by the owner: every route but the password change refuses.
+  mustChangePassword Boolean   @default(false)
+  passwordChangedAt  DateTime? @db.Timestamptz(3)
+  /// Consecutive wrong passwords; 5 lock the account for 15 minutes.
+  failedLoginCount   Int       @default(0) @db.SmallInt
+  lockedUntil        DateTime? @db.Timestamptz(3)
+  createdBy          String?   @db.Uuid
+  /// Deactivated: sessions revoked, cannot log in. Never deleted (history keeps the name).
+  deletedAt          DateTime? @db.Timestamptz(3)
+  createdAt          DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime  @updatedAt @db.Timestamptz(3)
 
-  tenant   Tenant    @relation(fields: [tenantId], references: [id])
-  sessions Session[]
+  tenant      Tenant           @relation(fields: [tenantId], references: [id])
+  sessions    Session[]
+  invitations UserInvitation[]
 
   @@index([tenantId, role])
   @@map("users")
+}
+
+/// One-time link to set a password (72 h). Only sha256(token) is stored.
+model UserInvitation {
+  id        String    @id @default(uuid()) @db.Uuid
+  tenantId  String    @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique @db.Char(64)
+  expiresAt DateTime  @db.Timestamptz(3)
+  usedAt    DateTime? @db.Timestamptz(3)
+  createdBy String?   @db.Uuid
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([tenantId, userId])
+  @@map("user_invitations")
 }
 
 /// One logged-in device. The refresh token is `<sessionId>.<secret>`; only sha256(secret) is stored.
@@ -189,6 +225,7 @@ model AuditLog {
 
   @@index([tenantId, createdAt])
   @@index([tenantId, entity, entityId])
+  @@index([tenantId, userId, createdAt])
   @@map("audit_logs")
 }
 

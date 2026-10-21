@@ -3,6 +3,7 @@ import {
   ErrorCode,
   money,
   type Money,
+  Permission,
   type ReportColumn,
   type ReportDto,
   type ReportGroupBy,
@@ -16,6 +17,7 @@ import {
   toQtyString,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
+import { requirePermission } from '../auth/permissions';
 import { algiersRange } from '../common/algiers';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
@@ -58,6 +60,11 @@ export class ReportsService {
     if (!REPORTS_BY_ROLE[user.role].includes(name)) {
       throw new AppException(ErrorCode.FORBIDDEN, 'This report is not available to your role', {
         report: name,
+      });
+    }
+    if (name === 'margin') {
+      requirePermission(user, Permission.VIEW_COST_AND_MARGIN, {
+        message: 'You may not see costs and margins',
       });
     }
     const groupBy = resolveGroupBy(name, query.groupBy);

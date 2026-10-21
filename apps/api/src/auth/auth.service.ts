@@ -1,21 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import {
+  type AcceptInvitationInput,
   type AuthResponse,
   type AuthUser,
+  type ChangePasswordInput,
+  effectivePermissions,
   ErrorCode,
+  type InvitationInfoDto,
+  isEmailIdentifier,
   type LoginInput,
+  normalizePhone,
   type RegisterInput,
   Role,
   type SessionInfo,
+  type TenantSessionDto,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import { CatalogService } from '../catalog/catalog.service';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
+import { APP_CONFIG, type AppConfig } from '../config/app-config';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import type { ClientMeta, CurrentUserInfo } from './auth.types';
+import { LoginLimiter } from './login-limiter';
 import { TokenService } from './token.service';
 
 /** Tokens issued by login/register/refresh. The controller decides where the refresh token goes. */
@@ -26,10 +35,24 @@ export interface IssuedTokens extends Omit<AuthResponse, 'refreshToken'> {
 interface UserForToken {
   id: string;
   tenantId: string;
-  email: string;
+  email: string | null;
+  phone: string | null;
   fullName: string;
   role: Role;
+  permissionGrants: string[];
+  permissionRevokes: string[];
+  mustChangePassword: boolean;
   tenant: { name: string };
+}
+
+/** Wrong passwords in a row before the account is locked, and for how long. */
+export const MAX_FAILED_LOGINS = 5;
+export const LOCK_MINUTES = 15;
+/** How long an invitation link stays valid. */
+export const INVITATION_HOURS = 72;
+
+export function hashPassword(password: string): Promise<string> {
+  return argon2.hash(password, { type: argon2.argon2id });
 }
 
 // Verified against when the email is unknown, so response time doesn't reveal which emails exist.
@@ -37,16 +60,20 @@ const DUMMY_HASH_PROMISE = argon2.hash('not-a-real-password-just-for-timing');
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly tokens: TokenService,
     private readonly audit: AuditService,
     private readonly catalog: CatalogService,
+    private readonly limiter: LoginLimiter,
+    @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
   /** Creates the company (tenant) and its OWNER in one transaction, then logs them in. */
   async register(input: RegisterInput, meta: ClientMeta): Promise<IssuedTokens> {
-    const passwordHash = await argon2.hash(input.password, { type: argon2.argon2id });
+    const passwordHash = await hashPassword(input.password);
     return tenantContext.runAsSystem(async () => {
       try {
         return await this.prisma.db.$transaction(async (tx) => {
@@ -88,21 +115,50 @@ export class AuthService {
     });
   }
 
+  /**
+   * Email or phone + password. Rate limited per IP and per identifier; 5 wrong
+   * passwords in a row lock the account for 15 minutes. Failures on a known
+   * account are audited in its company; unknown identifiers only go to the logs.
+   */
   async login(input: LoginInput, meta: ClientMeta): Promise<IssuedTokens> {
+    const keys = [`ip:${meta.ip ?? 'unknown'}`, `id:${input.identifier}`];
+    if (!this.limiter.hit(keys)) {
+      throw new AppException(ErrorCode.TOO_MANY_REQUESTS, 'Too many login attempts', {
+        retryAfterSeconds: this.limiter.retryAfter(keys),
+      });
+    }
     return tenantContext.runAsSystem(async () => {
-      const user = await this.prisma.db.user.findUnique({
-        where: { email: input.email },
+      const where = isEmailIdentifier(input.identifier)
+        ? { email: input.identifier }
+        : { phone: normalizePhone(input.identifier) ?? '' };
+      const user = await this.prisma.db.user.findFirst({
+        where,
         include: { tenant: { select: { name: true } } },
       });
-      const valid =
-        user && !user.deletedAt
-          ? await argon2.verify(user.passwordHash, input.password)
-          : await argon2.verify(await DUMMY_HASH_PROMISE, input.password).then(() => false);
-      if (!user || !valid) {
+      const now = new Date();
+      if (!user || user.deletedAt) {
+        await argon2.verify(await DUMMY_HASH_PROMISE, input.password);
+        this.logger.warn({ ip: meta.ip }, 'Login failed for an unknown or deactivated account');
+        throw new AppException(ErrorCode.INVALID_CREDENTIALS, 'Invalid email or password');
+      }
+      if (user.lockedUntil && user.lockedUntil > now) {
+        await argon2.verify(await DUMMY_HASH_PROMISE, input.password);
+        throw new AppException(ErrorCode.ACCOUNT_LOCKED, 'Too many wrong passwords', {
+          lockedUntil: user.lockedUntil.toISOString(),
+        });
+      }
+      if (!(await argon2.verify(user.passwordHash, input.password))) {
+        await this.recordFailure(user, meta, now);
         throw new AppException(ErrorCode.INVALID_CREDENTIALS, 'Invalid email or password');
       }
 
       return this.prisma.db.$transaction(async (tx) => {
+        if (user.failedLoginCount > 0 || user.lockedUntil) {
+          await tx.user.update({
+            where: { id: user.id },
+            data: { failedLoginCount: 0, lockedUntil: null },
+          });
+        }
         const issued = await this.openSession(tx, user, { ...meta, deviceName: input.deviceName });
         await this.audit.log(tx, {
           tenantId: user.tenantId,
@@ -114,6 +170,166 @@ export class AuthService {
         });
         return issued.tokens;
       });
+    });
+  }
+
+  /** One more wrong password: counted atomically, the fifth locks the account. */
+  private async recordFailure(
+    user: { id: string; tenantId: string },
+    meta: ClientMeta,
+    now: Date,
+  ): Promise<void> {
+    await this.prisma.db.$transaction(async (tx) => {
+      const [row] = await tx.$queryRaw<{ failedLoginCount: number }[]>`
+        UPDATE users SET "failedLoginCount" = "failedLoginCount" + 1
+        WHERE id = ${user.id}::uuid RETURNING "failedLoginCount"`;
+      const failures = row?.failedLoginCount ?? 1;
+      const locks = failures >= MAX_FAILED_LOGINS;
+      const lockedUntil = new Date(now.getTime() + LOCK_MINUTES * 60_000);
+      if (locks) {
+        await tx.user.update({
+          where: { id: user.id },
+          data: { failedLoginCount: 0, lockedUntil },
+        });
+      }
+      await this.audit.log(tx, {
+        tenantId: user.tenantId,
+        userId: user.id,
+        action: 'LOGIN_FAILED',
+        entity: 'User',
+        entityId: user.id,
+        after: { failures, ip: meta.ip ?? null },
+      });
+      if (locks) {
+        await this.audit.log(tx, {
+          tenantId: user.tenantId,
+          userId: user.id,
+          action: 'ACCOUNT_LOCKED',
+          entity: 'User',
+          entityId: user.id,
+          after: { lockedUntil: lockedUntil.toISOString() },
+        });
+      }
+    });
+  }
+
+  /**
+   * Changes the user's own password. Clears a temporary password and closes the
+   * user's other sessions (whoever knew the old password is logged out).
+   */
+  async changePassword(user: CurrentUserInfo, input: ChangePasswordInput): Promise<AuthUser> {
+    const row = await this.prisma.db.user.findUniqueOrThrow({ where: { id: user.id } });
+    if (!(await argon2.verify(row.passwordHash, input.currentPassword))) {
+      throw new AppException(ErrorCode.INVALID_CREDENTIALS, 'Current password is wrong');
+    }
+    if (input.currentPassword === input.newPassword) {
+      throw new AppException(ErrorCode.VALIDATION_FAILED, 'Choose a new password', {
+        field: 'newPassword',
+        rule: 'same_as_current',
+      });
+    }
+    const passwordHash = await hashPassword(input.newPassword);
+    await this.prisma.db.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: user.id },
+        data: { passwordHash, mustChangePassword: false, passwordChangedAt: new Date() },
+      });
+      await tx.session.updateMany({
+        where: { userId: user.id, revokedAt: null, id: { not: user.sessionId } },
+        data: { revokedAt: new Date(), revokedReason: 'PASSWORD_CHANGED' },
+      });
+      await this.audit.log(tx, { action: 'PASSWORD_CHANGED', entity: 'User', entityId: user.id });
+    });
+    return this.me({ ...user, mustChangePassword: false });
+  }
+
+  /**
+   * A one-time link for `userId` to set his password, valid 72 h. Earlier links
+   * of the same user stop working. Returns the URL to send (shown once).
+   */
+  async createInvitation(tx: Tx, userId: string): Promise<{ url: string; expiresAt: Date }> {
+    const token = this.tokens.newRefreshSecret();
+    const expiresAt = new Date(Date.now() + INVITATION_HOURS * 3_600_000);
+    const now = new Date();
+    await tx.userInvitation.updateMany({
+      where: { userId, usedAt: null },
+      data: { usedAt: now },
+    });
+    await tx.userInvitation.create({
+      data: {
+        tenantId: tenantContext.requireTenantId(),
+        userId,
+        tokenHash: token.hash,
+        expiresAt,
+        createdBy: tenantContext.get()?.userId ?? null,
+      },
+    });
+    const origin = this.config.WEB_ORIGIN.split(',')[0]?.trim() ?? '';
+    return { url: `${origin}/invitation/${token.secret}`, expiresAt };
+  }
+
+  async invitationInfo(token: string): Promise<InvitationInfoDto> {
+    const inv = await this.validInvitation(token);
+    return {
+      fullName: inv.user.fullName,
+      tenantName: inv.user.tenant.name,
+      expiresAt: inv.expiresAt.toISOString(),
+    };
+  }
+
+  /** The user picks his password through the link, then is logged in. */
+  async acceptInvitation(
+    token: string,
+    input: AcceptInvitationInput,
+    meta: ClientMeta,
+  ): Promise<IssuedTokens> {
+    const passwordHash = await hashPassword(input.password);
+    return tenantContext.runAsSystem(async () => {
+      const inv = await this.validInvitation(token);
+      return this.prisma.db.$transaction(async (tx) => {
+        // Compare-and-swap: two clicks on the same link cannot both use it.
+        const { count } = await tx.userInvitation.updateMany({
+          where: { id: inv.id, usedAt: null },
+          data: { usedAt: new Date() },
+        });
+        if (count === 0) {
+          throw new AppException(ErrorCode.INVITATION_INVALID, 'This link was already used');
+        }
+        const user = await tx.user.update({
+          where: { id: inv.userId },
+          data: {
+            passwordHash,
+            mustChangePassword: false,
+            passwordChangedAt: new Date(),
+            failedLoginCount: 0,
+            lockedUntil: null,
+          },
+          include: { tenant: { select: { name: true } } },
+        });
+        const issued = await this.openSession(tx, user, { ...meta, deviceName: input.deviceName });
+        await this.audit.log(tx, {
+          tenantId: user.tenantId,
+          userId: user.id,
+          sessionId: issued.sessionId,
+          action: 'INVITATION_ACCEPTED',
+          entity: 'User',
+          entityId: user.id,
+        });
+        return issued.tokens;
+      });
+    });
+  }
+
+  private validInvitation(token: string) {
+    return tenantContext.runAsSystem(async () => {
+      const inv = await this.prisma.db.userInvitation.findUnique({
+        where: { tokenHash: TokenService.hash(token) },
+        include: { user: { include: { tenant: { select: { name: true } } } } },
+      });
+      if (!inv || inv.usedAt || inv.expiresAt <= new Date() || inv.user.deletedAt) {
+        throw new AppException(ErrorCode.INVITATION_INVALID, 'This link is invalid or expired');
+      }
+      return inv;
     });
   }
 
@@ -188,6 +404,29 @@ export class AuthService {
     await this.revokeSession(user, user.sessionId, 'LOGOUT');
   }
 
+  /** The OWNER sees every active session of the company; anyone else only his own. */
+  async tenantSessions(user: CurrentUserInfo): Promise<TenantSessionDto[]> {
+    const sessions = await this.prisma.db.session.findMany({
+      where: {
+        revokedAt: null,
+        expiresAt: { gt: new Date() },
+        ...(user.role === Role.OWNER ? {} : { userId: user.id }),
+      },
+      include: { user: { select: { id: true, fullName: true, role: true } } },
+      orderBy: { lastUsedAt: 'desc' },
+    });
+    return sessions.map((s) => ({
+      id: s.id,
+      user: s.user,
+      deviceName: s.deviceName,
+      userAgent: s.userAgent,
+      ip: s.ip,
+      createdAt: s.createdAt.toISOString(),
+      lastUsedAt: s.lastUsedAt.toISOString(),
+      current: s.id === user.sessionId,
+    }));
+  }
+
   async listSessions(user: CurrentUserInfo): Promise<SessionInfo[]> {
     const sessions = await this.prisma.db.session.findMany({
       where: { userId: user.id, revokedAt: null, expiresAt: { gt: new Date() } },
@@ -241,10 +480,13 @@ export class AuthService {
     return {
       id: user.id,
       email: user.email,
+      phone: user.phone,
       fullName: user.fullName,
       role: user.role,
       tenantId: user.tenantId,
       tenantName: tenant.name,
+      permissions: user.permissions,
+      mustChangePassword: user.mustChangePassword,
     };
   }
 
@@ -308,10 +550,13 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
+        phone: user.phone,
         fullName: user.fullName,
         role: user.role,
         tenantId: user.tenantId,
         tenantName: user.tenant.name,
+        permissions: effectivePermissions(user.role, user.permissionGrants, user.permissionRevokes),
+        mustChangePassword: user.mustChangePassword,
       },
     };
   }
