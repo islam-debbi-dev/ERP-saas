@@ -441,6 +441,7 @@ model StockMovement {
 
   @@index([tenantId, productId, seq])
   @@index([tenantId, refType, refId])
+  @@index([tenantId, createdAt])
   @@map("stock_movements")
 }
 
@@ -571,6 +572,7 @@ model Purchase {
   @@unique([tenantId, number])
   @@index([tenantId, createdAt])
   @@index([tenantId, supplierId])
+  @@index([tenantId, status, validatedAt])
   @@map("purchases")
 }
 
@@ -829,6 +831,8 @@ model Sale {
   @@index([tenantId, clientId])
   @@index([tenantId, type, status])
   @@index([tenantId, invoiceId])
+  /// Dashboard and reports: validated sales by validation time.
+  @@index([tenantId, status, validatedAt])
   @@map("sales")
 }
 
@@ -890,6 +894,7 @@ model SaleReturn {
 
   @@unique([tenantId, number])
   @@index([tenantId, saleId])
+  @@index([tenantId, createdAt])
   @@map("sale_returns")
 }
 

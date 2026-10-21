@@ -3,7 +3,7 @@
 import { type ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { ClipboardList, Loader2, MoreHorizontal, PackageSearch, ScanBarcode } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { formatDA, qty, type StockLevelDto } from '@erp/shared';
@@ -48,10 +48,13 @@ export function StockLevels() {
   const unitLabel = useUnitLabel();
   const packagingLabel = usePackagingLabel();
   const [search, setSearch] = useState('');
-  const [lowOnly, setLowOnly] = useState(false);
+  // The dashboard links here with ?filtre=bas or ?filtre=rupture.
+  const filtre = useSearchParams().get('filtre');
+  const [lowOnly, setLowOnly] = useState(filtre === 'bas');
+  const [outOnly, setOutOnly] = useState(filtre === 'rupture');
   const [dialog, setDialog] = useState<DialogState>(null);
   const debounced = useDebouncedValue(search.trim(), 300);
-  const pages = useStockPages(debounced, lowOnly);
+  const pages = useStockPages(debounced, lowOnly, outOnly);
   const items = useMemo(() => pages.data?.pages.flatMap((p) => p.items) ?? [], [pages.data]);
   const summary = pages.data?.pages[0]?.summary;
 
@@ -216,11 +219,19 @@ export function StockLevels() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-2">
-          <Switch id="low-only" checked={lowOnly} onCheckedChange={setLowOnly} />
-          <Label htmlFor="low-only" className="font-normal">
-            {t('lowStockOnly')}
-          </Label>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Switch id="low-only" checked={lowOnly} onCheckedChange={setLowOnly} />
+            <Label htmlFor="low-only" className="font-normal">
+              {t('lowStockOnly')}
+            </Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <Switch id="out-only" checked={outOnly} onCheckedChange={setOutOnly} />
+            <Label htmlFor="out-only" className="font-normal">
+              {t('outOfStockOnly')}
+            </Label>
+          </div>
         </div>
       </div>
 

@@ -57,6 +57,7 @@ export class StockQueriesService {
                    WHERE pu."productId" = p.id AND pu.barcode = ${search} AND pu."deletedAt" IS NULL))`);
     }
     if (query.lowStock) filters.push(Prisma.sql`COALESCE(s."qtyBase", 0) <= p."minStock"`);
+    if (query.outOfStock) filters.push(Prisma.sql`COALESCE(s."qtyBase", 0) <= 0`);
     const where = Prisma.join(filters, ' AND ');
     const cursor = query.cursor
       ? Prisma.sql`AND (p.designation, p.id) > (
@@ -94,6 +95,25 @@ export class StockQueriesService {
         lowStockCount: Number(summary?.lowStockCount ?? 0),
         productCount: Number(summary?.productCount ?? 0),
       },
+    };
+  }
+
+  /** Dashboard figures, with the stock page's own definitions (stock bas includes rupture). */
+  async dashboardSummary(): Promise<{ outOfStock: number; lowStock: number; value: string }> {
+    const tenantId = tenantContext.requireTenantId();
+    const [row] = await this.prisma.db.$queryRaw<
+      { value: Dec; lowStock: bigint; outOfStock: bigint }[]
+    >`
+      SELECT COALESCE(SUM(CASE WHEN s."qtyBase" > 0 THEN ROUND(s."qtyBase" * s."avgCost", 2) ELSE 0 END), 0) AS value,
+             COUNT(*) FILTER (WHERE COALESCE(s."qtyBase", 0) <= p."minStock") AS "lowStock",
+             COUNT(*) FILTER (WHERE COALESCE(s."qtyBase", 0) <= 0) AS "outOfStock"
+      FROM products p
+      LEFT JOIN product_stocks s ON s."productId" = p.id
+      WHERE p."tenantId" = ${tenantId}::uuid AND p."deletedAt" IS NULL`;
+    return {
+      value: toMoneyString((row?.value ?? 0).toString()),
+      lowStock: Number(row?.lowStock ?? 0),
+      outOfStock: Number(row?.outOfStock ?? 0),
     };
   }
 

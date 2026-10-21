@@ -1,5 +1,6 @@
 import {
   Banknote,
+  ChartColumn,
   LayoutDashboard,
   type LucideIcon,
   Package,
@@ -18,6 +19,7 @@ export type NavKey =
   | 'products'
   | 'purchases'
   | 'stock'
+  | 'reports'
   | 'settings';
 
 export interface NavItem {
@@ -52,11 +54,14 @@ export const NAV_GROUPS: readonly NavGroup[] = [
   },
   {
     key: 'groupManagement',
-    items: [{ key: 'settings', url: '/parametres', icon: Settings }],
+    items: [
+      { key: 'reports', url: '/rapports', icon: ChartColumn },
+      { key: 'settings', url: '/parametres', icon: Settings },
+    ],
   },
 ];
 
-/** Flat list in menu order: Alt+1 … Alt+8 follow it. */
+/** Flat list in menu order: Alt+1 … Alt+9 follow it. */
 export const NAV_ITEMS: readonly NavItem[] = NAV_GROUPS.flatMap((g) => g.items);
 
 export function isActive(pathname: string, url: string): boolean {

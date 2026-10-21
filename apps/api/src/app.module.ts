@@ -19,6 +19,7 @@ import { ImportsModule } from './imports/imports.module';
 import { PrintingModule } from './printing/printing.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { PurchasesModule } from './purchases/purchases.module';
+import { ReportsModule } from './reports/reports.module';
 import { StockModule } from './stock/stock.module';
 import { TenantsModule } from './tenants/tenants.module';
 
@@ -58,6 +59,7 @@ import { TenantsModule } from './tenants/tenants.module';
     PaymentsModule,
     PrintingModule,
     ImportsModule,
+    ReportsModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],
