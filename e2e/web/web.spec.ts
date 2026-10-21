@@ -18,6 +18,7 @@ import { call, idemKey } from '../lib/http.ts';
 const WEB = process.env['WEB'] ?? 'http://localhost:3005';
 const PASSWORD = 'Audit1234!';
 const FIXTURE_FILE = fileURLToPath(new URL('../.auth/fixture.json', import.meta.url));
+const STATE_FILE = fileURLToPath(new URL('../.auth/state.json', import.meta.url));
 
 let cached: Fixture | null = null;
 /** The tenant prepared by the global setup (written after the test files load). */
@@ -61,6 +62,15 @@ async function clientWithDebt(name: string): Promise<string> {
   await makeSale(f, { qty: '1', clientId: client.id });
   return client.id;
 }
+
+// The refresh cookie rotates on every call: the shared state must follow, or
+// the next test replays an old token (the API answers 401 on a replay).
+test.afterEach(async ({ page }) => {
+  const cookies = await page.context().cookies();
+  if (cookies.some((c) => c.name === 'erp_rt')) {
+    await page.context().storageState({ path: STATE_FILE });
+  }
+});
 
 test.describe('the login itself', () => {
   // These checks start from nothing: no cookie, no session.
@@ -123,16 +133,6 @@ test('the token stays out of the browser storage and the cookie is httpOnly', as
   expect(refresh?.path).toBe('/auth');
 });
 
-test('logging out ends the session for good', async ({ page }) => {
-  await useEnglish(page);
-  await open(page, '/tableau-de-bord');
-  await page.getByRole('button', { name: /Owner/ }).first().click();
-  await page.getByRole('menuitem', { name: 'Log out' }).click();
-  await expect(page).toHaveURL(/\/login/);
-  await open(page, '/clients');
-  await expect(page).toHaveURL(/\/login/);
-});
-
 test('the balance of a client is shown exactly, in DA', async ({ page }) => {
   await useEnglish(page);
   await clientWithDebt('Web money');
@@ -181,3 +181,15 @@ test('a payment made from the screen carries an idempotency key', async ({ page 
   expect(response.request().headers()['idempotency-key']).toBeTruthy();
   await expect(page.locator('#pay-amount')).toBeHidden();
 });
+
+// The log out ends the shared session: it stays the last check.
+test('logging out ends the session for good', async ({ page }) => {
+  await useEnglish(page);
+  await open(page, '/tableau-de-bord');
+  await page.getByRole('button', { name: /Owner/ }).first().click();
+  await page.getByRole('menuitem', { name: 'Log out' }).click();
+  await expect(page).toHaveURL(/\/login/);
+  await open(page, '/clients');
+  await expect(page).toHaveURL(/\/login/);
+});
+

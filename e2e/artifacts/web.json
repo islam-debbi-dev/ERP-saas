@@ -12,7 +12,7 @@
     "failOnFlakyTests": false,
     "forbidOnly": false,
     "fullyParallel": false,
-    "globalSetup": null,
+    "globalSetup": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/global-setup.ts",
     "globalTeardown": null,
     "globalTimeout": 0,
     "grep": {},
@@ -60,7 +60,8 @@
           "baseURL": "http://localhost:3005",
           "actionTimeout": 20000,
           "navigationTimeout": 30000,
-          "trace": "retain-on-failure"
+          "trace": "retain-on-failure",
+          "storageState": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/.auth/state.json"
         },
         "dependencies": [],
         "ignoreSnapshots": false,
@@ -100,143 +101,6 @@
       "line": 0,
       "specs": [
         {
-          "title": "an anonymous visitor is sent to the login page",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1158,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T21:39:33.770Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "2948388c6448a8e5345d-976e2a1b6308dcabad93",
-          "file": "web.spec.ts",
-          "line": 36,
-          "column": 1
-        },
-        {
-          "title": "a wrong password is refused and says nothing about the secret",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 572,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T21:39:35.379Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "2948388c6448a8e5345d-53e34fda18fb67eb57dc",
-          "file": "web.spec.ts",
-          "line": 43,
-          "column": 1
-        },
-        {
-          "title": "the right credentials open the dashboard",
-          "ok": false,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "failed",
-                  "duration": 30569,
-                  "error": {
-                    "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
-                    "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n    at login (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/web.spec.ts:30:14)\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/web.spec.ts:59:3",
-                    "location": {
-                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/web.spec.ts",
-                      "column": 14,
-                      "line": 30
-                    },
-                    "snippet": "  28 |   await page.locator('#password').fill(password);\n  29 |   await page.getByRole('button', { name: 'Log in' }).click();\n> 30 |   await page.waitForURL(/\\/tableau-de-bord/);\n     |              ^\n  31 |   // The login page redirects on its own: wait for it, or the next navigation\n  32 |   // is thrown back to the dashboard.\n  33 |   await page.waitForLoadState('networkidle');"
-                  },
-                  "errors": [
-                    {
-                      "location": {
-                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/web.spec.ts",
-                        "column": 14,
-                        "line": 30
-                      },
-                      "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n  28 |   await page.locator('#password').fill(password);\n  29 |   await page.getByRole('button', { name: 'Log in' }).click();\n> 30 |   await page.waitForURL(/\\/tableau-de-bord/);\n     |              ^\n  31 |   // The login page redirects on its own: wait for it, or the next navigation\n  32 |   // is thrown back to the dashboard.\n  33 |   await page.waitForLoadState('networkidle');\n    at login (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/web.spec.ts:30:14)\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/web.spec.ts:59:3"
-                    }
-                  ],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T21:39:35.960Z",
-                  "annotations": [],
-                  "attachments": [
-                    {
-                      "name": "error-context",
-                      "contentType": "text/markdown",
-                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/web-the-right-credentials-open-the-dashboard/error-context.md"
-                    },
-                    {
-                      "name": "trace",
-                      "contentType": "application/zip",
-                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/web-the-right-credentials-open-the-dashboard/trace.zip"
-                    }
-                  ],
-                  "errorLocation": {
-                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/web.spec.ts",
-                    "column": 14,
-                    "line": 30
-                  }
-                }
-              ],
-              "status": "unexpected"
-            }
-          ],
-          "id": "2948388c6448a8e5345d-8a9e248be838292265a6",
-          "file": "web.spec.ts",
-          "line": 56,
-          "column": 1
-        },
-        {
           "title": "the session survives a reload (the refresh cookie is used)",
           "ok": true,
           "tags": [],
@@ -249,15 +113,15 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2064,
+                  "duration": 1609,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T21:40:07.159Z",
+                  "startTime": "2026-10-21T21:47:19.408Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -267,7 +131,7 @@
           ],
           "id": "2948388c6448a8e5345d-27a33f108494a05c915d",
           "file": "web.spec.ts",
-          "line": 66,
+          "line": 110,
           "column": 1
         },
         {
@@ -283,15 +147,15 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1093,
+                  "duration": 849,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T21:40:09.530Z",
+                  "startTime": "2026-10-21T21:47:21.025Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -301,41 +165,7 @@
           ],
           "id": "2948388c6448a8e5345d-f36ccda0dc6b28c062b2",
           "file": "web.spec.ts",
-          "line": 77,
-          "column": 1
-        },
-        {
-          "title": "logging out ends the session for good",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 1,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 2029,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T21:40:10.632Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "2948388c6448a8e5345d-2bcba406483fcc2c11a3",
-          "file": "web.spec.ts",
-          "line": 94,
+          "line": 120,
           "column": 1
         },
         {
@@ -351,15 +181,15 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1928,
+                  "duration": 1001,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T21:40:12.670Z",
+                  "startTime": "2026-10-21T21:47:21.881Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -369,7 +199,7 @@
           ],
           "id": "2948388c6448a8e5345d-b40ba2870bf9ddd880e8",
           "file": "web.spec.ts",
-          "line": 106,
+          "line": 136,
           "column": 1
         },
         {
@@ -385,15 +215,15 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1830,
+                  "duration": 875,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T21:40:14.607Z",
+                  "startTime": "2026-10-21T21:47:22.889Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -403,7 +233,7 @@
           ],
           "id": "2948388c6448a8e5345d-ff8e3c1d2a883bd2de74",
           "file": "web.spec.ts",
-          "line": 118,
+          "line": 145,
           "column": 1
         },
         {
@@ -419,15 +249,15 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1814,
+                  "duration": 849,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T21:40:16.446Z",
+                  "startTime": "2026-10-21T21:47:23.774Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -437,7 +267,7 @@
           ],
           "id": "2948388c6448a8e5345d-3eb2e4193bddbca4290a",
           "file": "web.spec.ts",
-          "line": 135,
+          "line": 161,
           "column": 1
         },
         {
@@ -453,15 +283,15 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2444,
+                  "duration": 1480,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T21:40:18.270Z",
+                  "startTime": "2026-10-21T21:47:24.632Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -471,19 +301,165 @@
           ],
           "id": "2948388c6448a8e5345d-5b3c4f75dbec1252c343",
           "file": "web.spec.ts",
-          "line": 146,
+          "line": 170,
           "column": 1
+        },
+        {
+          "title": "logging out ends the session for good",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1852,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-21T21:47:26.120Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2948388c6448a8e5345d-2bcba406483fcc2c11a3",
+          "file": "web.spec.ts",
+          "line": 186,
+          "column": 1
+        }
+      ],
+      "suites": [
+        {
+          "title": "the login itself",
+          "file": "web.spec.ts",
+          "line": 75,
+          "column": 6,
+          "specs": [
+            {
+              "title": "an anonymous visitor is sent to the login page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 776,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-21T21:47:17.222Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-8a3ce47a3c5f91a8ebae",
+              "file": "web.spec.ts",
+              "line": 79,
+              "column": 3
+            },
+            {
+              "title": "a wrong password is refused and says nothing about the secret",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 326,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-21T21:47:18.113Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-eb1279bec8946f8d17f8",
+              "file": "web.spec.ts",
+              "line": 86,
+              "column": 3
+            },
+            {
+              "title": "the right credentials open the dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 951,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-21T21:47:18.449Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-b437241ccae3175f8eea",
+              "file": "web.spec.ts",
+              "line": 99,
+              "column": 3
+            }
+          ]
         }
       ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-21T21:39:33.355Z",
-    "duration": 47625.07,
-    "expected": 9,
+    "startTime": "2026-10-21T21:47:15.014Z",
+    "duration": 13026.311,
+    "expected": 10,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 0,
     "flaky": 0
   }
 }

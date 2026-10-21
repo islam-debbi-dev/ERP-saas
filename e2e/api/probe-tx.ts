@@ -72,20 +72,21 @@ async function main(): Promise<void> {
     body: { paidAmount: '0', paymentMode: 'ESPECES', forceCredit: false },
   });
 
-  const rows = await query<{ k: string; detail: string; ts: string }>(
-    `select 'SALE' as k, status::text as detail, "createdAt"::text as ts from sales where id = $1::uuid
-     union all select 'SALE_LINE', qty::text, "createdAt"::text from sale_lines where "saleId" = $1::uuid
-     union all select 'STOCKMOV', type::text || ' ' || "qtyBase"::text, "createdAt"::text from stock_movements where "refId" = $1::uuid
-     union all select 'LEDGER', type::text || ' ' || amount::text, "createdAt"::text from client_ledger_entries where "refId" = $1::uuid
-     union all select 'AUDIT', action, "createdAt"::text from audit_logs where "entityId" = $1::text
+  const rows = await query<{ k: string; detail: string; ts: string; xmin: string }>(
+    `select 'SALE' as k, status::text as detail, "createdAt"::text as ts, xmin::text as xmin from sales where id = $1::uuid
+     union all select 'SALE_LINE', qty::text, "createdAt"::text, xmin::text from sale_lines where "saleId" = $1::uuid
+     union all select 'STOCKMOV', type::text || ' ' || "qtyBase"::text, "createdAt"::text, xmin::text from stock_movements where "refId" = $1::uuid
+     union all select 'LEDGER', type::text || ' ' || amount::text, "createdAt"::text, xmin::text from client_ledger_entries where "refId" = $1::uuid
+     union all select 'AUDIT', action, "createdAt"::text, xmin::text from audit_logs where "entityId" = $1::text
      order by 3`,
     [sale.body.id],
   );
   console.log('tenant', tenantId, 'sale', sale.body.id);
-  for (const r of rows) console.log(r.ts, r.k, r.detail);
+  for (const r of rows) console.log(r.ts, 'xmin=' + r.xmin, r.k, r.detail);
 
   const distinct = new Set(rows.map((r) => r.ts));
   console.log('\ndistinct createdAt values:', distinct.size, [...distinct]);
+  console.log('distinct xmin values:', new Set(rows.map((r) => r.xmin)).size);
 }
 
 main().catch((e) => {
