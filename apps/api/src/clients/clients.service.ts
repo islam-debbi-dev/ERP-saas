@@ -378,6 +378,52 @@ export class ClientsService {
     }));
   }
 
+  /** Crédit clients for the dashboard: what is owed, and who is over the plafond. */
+  async creditSummary(limit: number): Promise<{
+    total: string;
+    debtorCount: number;
+    overLimitCount: number;
+    overLimit: DebtorDto[];
+  }> {
+    const tenantId = tenantContext.requireTenantId();
+    const [totals] = await this.prisma.db.$queryRaw<
+      { total: Prisma.Decimal | null; debtors: bigint; overLimit: bigint }[]
+    >`
+      SELECT SUM(b.balance) AS total, COUNT(*) AS debtors,
+             COUNT(*) FILTER (WHERE c."creditLimit" IS NOT NULL AND b.balance > c."creditLimit") AS "overLimit"
+      FROM client_balances b JOIN clients c ON c.id = b."clientId"
+      WHERE b."tenantId" = ${tenantId}::uuid AND b.balance > 0 AND c."deletedAt" IS NULL`;
+    const over = await this.prisma.db.$queryRaw<
+      {
+        id: string;
+        code: string;
+        name: string;
+        phone: string | null;
+        balance: Prisma.Decimal;
+        creditLimit: Prisma.Decimal;
+      }[]
+    >`
+      SELECT c.id, c.code, c.name, c.phone, b.balance, c."creditLimit"
+      FROM client_balances b JOIN clients c ON c.id = b."clientId"
+      WHERE b."tenantId" = ${tenantId}::uuid AND c."deletedAt" IS NULL
+        AND c."creditLimit" IS NOT NULL AND b.balance > c."creditLimit"
+      ORDER BY b.balance - c."creditLimit" DESC, c.id
+      LIMIT ${limit}`;
+    return {
+      total: toMoneyString(totals?.total?.toString() ?? '0'),
+      debtorCount: Number(totals?.debtors ?? 0),
+      overLimitCount: Number(totals?.overLimit ?? 0),
+      overLimit: over.map((r) => ({
+        id: r.id,
+        code: r.code,
+        name: r.name,
+        phone: r.phone,
+        balance: toMoneyString(r.balance.toString()),
+        creditLimit: toMoneyString(r.creditLimit.toString()),
+      })),
+    };
+  }
+
   /** Cache vs ledger. An empty `differences` list means they agree. */
   async reconcile(): Promise<ClientReconcileReport> {
     const tenantId = tenantContext.requireTenantId();
