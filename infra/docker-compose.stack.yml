@@ -4,6 +4,7 @@
 #
 #   cp infra/.env.stack.example infra/.env.stack   # then set JWT_ACCESS_SECRET
 #   docker compose -f infra/docker-compose.stack.yml --env-file infra/.env.stack up -d --build
+#   (migrate runs first on every up, as the owner; the api then connects as erp_app)
 #   docker compose -f infra/docker-compose.stack.yml --env-file infra/.env.stack run --rm seed
 #
 # Web http://localhost:3010 · API http://localhost:3011 · Postgres localhost:5434
@@ -33,6 +34,21 @@ services:
       retries: 10
     restart: unless-stopped
 
+  # One-shot before the api: applies pending migrations as the database owner.
+  migrate:
+    image: erp-saas/api:local
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    command: ['npx', 'prisma', 'migrate', 'deploy']
+    environment:
+      DATABASE_URL: *db-url
+      DATABASE_URL_MIGRATE: *db-url
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: 'no'
+
   api:
     image: erp-saas/api:local
     build:
@@ -40,7 +56,6 @@ services:
       dockerfile: apps/api/Dockerfile
     environment:
       DATABASE_URL: *app-db-url
-      DATABASE_URL_MIGRATE: *db-url
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?set JWT_ACCESS_SECRET in infra/.env.stack}
       WEB_ORIGIN: http://localhost:${WEB_PORT:-3010}
       PORT: 3001
@@ -48,8 +63,8 @@ services:
     ports:
       - '${API_PORT:-3011}:3001'
     depends_on:
-      db:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     healthcheck:
       test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:3001/health || exit 1']
       interval: 10s

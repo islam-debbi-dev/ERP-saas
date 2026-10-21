@@ -47,3 +47,17 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+
+  # Backups end to end: WAL-G Postgres → S3 bucket → restore drill on a throwaway copy,
+  # including rows written after the base backup (replayed from the WAL archive).
+  restore-drill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: infra/ci/backup-drill-test.sh

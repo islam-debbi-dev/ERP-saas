@@ -1,0 +1,45 @@
+# Backup + restore drill test (CI job "restore-drill", or locally with
+# infra/ci/backup-drill-test.sh): Postgres with WAL-G archiving to a local S3 bucket.
+name: erp-backup-test
+
+services:
+  # S3-compatible bucket (MinIO no longer publishes images). No identities are
+  # configured, so any access key is accepted: test only.
+  s3:
+    image: chrislusf/seaweedfs:3.97
+    command: server -dir=/data -s3 -s3.port=8333 -master.volumeSizeLimitMB=64 -ip.bind=0.0.0.0
+
+  bucket:
+    image: erp-saas/postgres:local
+    build: ../postgres
+    depends_on: [s3]
+    entrypoint: ['sh', '-c']
+    command:
+      - for i in $$(seq 1 60); do curl -fsS -X PUT http://s3:8333/erp-backups && exit 0; sleep 1; done; exit 1
+
+  db:
+    image: erp-saas/postgres:local
+    build: ../postgres
+    env_file: backup.env
+    environment:
+      POSTGRES_USER: erp
+      POSTGRES_PASSWORD: erp
+      POSTGRES_DB: erp
+    command:
+      - postgres
+      - -c
+      - archive_mode=on
+      - -c
+      - archive_command=archive-wal.sh %p
+      - -c
+      - archive_timeout=60
+    ports:
+      - '5435:5432'
+    depends_on:
+      bucket:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U erp -d erp']
+      interval: 3s
+      timeout: 3s
+      retries: 30

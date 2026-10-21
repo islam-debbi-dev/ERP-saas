@@ -32,8 +32,16 @@ RUN --mount=type=cache,id=apk-cache,target=/var/cache/apk \
     done; exit 1
 ENV NODE_ENV=production
 ENV CHROMIUM_PATH=/usr/bin/chromium-browser
+# Git sha of this build: /health reports it and Sentry tags events with it.
+ARG SENTRY_RELEASE=dev
+ENV SENTRY_RELEASE=$SENTRY_RELEASE
 WORKDIR /app
 COPY --from=build /out .
+# Root owns the code; the server runs as the unprivileged node user.
+USER node
 EXPOSE 3001
-# Apply pending migrations, then start. Migrations are backward compatible (AGENTS.md §7).
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
+HEALTHCHECK --interval=15s --timeout=3s --start-period=30s --retries=5 \
+  CMD wget -qO- http://127.0.0.1:3001/health >/dev/null || exit 1
+# Migrations are a separate step before the deploy (the migrate service, run as the DB
+# owner): this server connects as erp_app, which can't change the schema.
+CMD ["node", "dist/main.js"]
