@@ -5,7 +5,7 @@ import { ArrowLeft, History, Loader2, PackagePlus, SlidersHorizontal } from 'luc
 import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-import { formatDA, qty, type StockMovementDto } from '@erp/shared';
+import { formatDA, Permission, qty, type StockMovementDto } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/table/data-table';
@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatQty, useMovementPages, usePackagingLabel, useStockLevel } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
+import { usePermission } from '@/lib/auth';
 import { AdjustDialog, OpeningDialog } from './stock-dialogs';
 
 /** A cost the user may not see comes back null. */
@@ -32,6 +33,7 @@ export function StockCard({ productId }: { productId: string }) {
   const level = useStockLevel(productId);
   const pages = useMovementPages(productId);
   const [dialog, setDialog] = useState<'adjust' | 'opening' | null>(null);
+  const canAdjust = usePermission(Permission.STOCK_ADJUST);
   const items = useMemo(() => pages.data?.pages.flatMap((p) => p.items) ?? [], [pages.data]);
 
   const columns = useMemo<ColumnDef<StockMovementDto>[]>(
@@ -143,10 +145,12 @@ export function StockCard({ productId }: { productId: string }) {
                 {t('opening')}
               </Button>
             ) : null}
-            <Button onClick={() => setDialog('adjust')} disabled={!l}>
-              <SlidersHorizontal aria-hidden />
-              {t('adjust')}
-            </Button>
+            {canAdjust ? (
+              <Button onClick={() => setDialog('adjust')} disabled={!l}>
+                <SlidersHorizontal aria-hidden />
+                {t('adjust')}
+              </Button>
+            ) : null}
           </>
         }
       />

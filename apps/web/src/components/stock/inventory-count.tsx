@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { type InventoryDto, parseDA, type ProductDto, qty } from '@erp/shared';
+import { type InventoryDto, parseDA, Permission, type ProductDto, qty } from '@erp/shared';
 import { PageHeader } from '@/components/shared/page-header';
 import {
   AlertDialog,
@@ -27,6 +27,7 @@ import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api-client';
+import { usePermission } from '@/lib/auth';
 import { findProductByCode, useUnitLabel } from '@/lib/catalog';
 import { formatQty, stockKeys, useInventory } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
@@ -41,6 +42,7 @@ interface Entry {
 
 export function InventoryCount({ id }: { id: string }) {
   const t = useTranslations('inventory');
+  const canValidate = usePermission(Permission.STOCK_ADJUST);
   const tc = useTranslations('common');
   const errorMessage = useErrorMessage();
   const unitLabel = useUnitLabel();
@@ -383,7 +385,10 @@ export function InventoryCount({ id }: { id: string }) {
           </AlertDialog>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button disabled={close.isPending || !inv || inv.lines.length === 0}>
+              <Button
+                disabled={close.isPending || !inv || inv.lines.length === 0 || !canValidate}
+                title={canValidate ? undefined : t('validateNeedsPermission')}
+              >
                 {close.isPending ? (
                   <Loader2 className="animate-spin" aria-hidden />
                 ) : (

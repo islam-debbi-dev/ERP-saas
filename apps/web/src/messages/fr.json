@@ -207,7 +207,13 @@
     "documentFooter": "Pied de page",
     "documentFooterHint": "Imprimé en bas de chaque page (conditions, remerciements…).",
     "maxDiscountPct": "Remise maximale sans autorisation (%)",
-    "maxDiscountPctHint": "Au-delà, la remise demande la permission « Remise au-delà du seuil ». 0 = toute remise."
+    "maxDiscountPctHint": "Au-delà, la remise demande la permission « Remise au-delà du seuil ». 0 = toute remise.",
+    "usersLink": "Utilisateurs",
+    "usersLinkHelp": "Inviter vos employés, rôles et permissions.",
+    "sessionsLink": "Sessions",
+    "sessionsLinkHelp": "Appareils connectés, déconnexion à distance.",
+    "auditLink": "Journal d'audit",
+    "auditLinkHelp": "Qui a fait quoi, quand, depuis quel appareil."
   },
   "validation": {
     "required": "Ce champ est obligatoire.",
@@ -517,7 +523,8 @@
     "cancelled": "Inventaire annulé",
     "readOnly": "Cet inventaire est clôturé.",
     "keep": "Continuer le comptage",
-    "back": "Retour aux inventaires"
+    "back": "Retour aux inventaires",
+    "validateNeedsPermission": "La validation demande la permission « Ajuster le stock »."
   },
   "productCost": {
     "qty": "En stock",
@@ -1087,5 +1094,152 @@
       "stock_not_empty": "le produit a déjà {qty} en stock ; le stock initial s'y ajoutera",
       "zero_cost": "coût à zéro : la marge de ce produit sera faussée"
     }
+  },
+  "users": {
+    "title": "Utilisateurs",
+    "subtitle": "Vos employés. Un utilisateur n'est jamais supprimé : désactivé, son nom reste sur l'historique.",
+    "invite": "Inviter",
+    "inviteTitle": "Inviter un utilisateur",
+    "inviteHelp": "Il se connectera avec son téléphone ou son e-mail.",
+    "fullName": "Nom complet",
+    "phone": "Téléphone",
+    "email": "E-mail",
+    "loginHint": "Téléphone ou e-mail : au moins un des deux.",
+    "role": "Rôle",
+    "mode": "Mot de passe",
+    "mode_LINK": "Lien d'invitation",
+    "mode_LINK_help": "Un lien valable 72 h à envoyer (WhatsApp, SMS). L'employé choisit son mot de passe.",
+    "mode_PASSWORD": "Mot de passe provisoire",
+    "mode_PASSWORD_help": "Vous lui donnez un mot de passe ; il devra le changer à sa première connexion.",
+    "tempPassword": "Mot de passe provisoire",
+    "tempPasswordHint": "8 caractères minimum.",
+    "linkOnce": "Copiez ce lien maintenant : il ne sera plus affiché. Il ne sert qu'une fois.",
+    "copy": "Copier",
+    "linkCopied": "Lien copié",
+    "done": "Terminé",
+    "invited": "{name} est invité.",
+    "editTitle": "Modifier l'utilisateur",
+    "save": "Enregistrer",
+    "saved": "Enregistré",
+    "permissionsTitle": "Permissions de {name}",
+    "permissionsHelp": "Par défaut, chaque rôle a ses permissions. Vous pouvez en ajouter ou en retirer pour cet utilisateur.",
+    "fromRole": "par défaut pour ce rôle",
+    "resetTitle": "Nouveau mot de passe pour {name}",
+    "resetHelp": "Ses autres sessions seront fermées et son compte débloqué.",
+    "reset": "Réinitialiser",
+    "resetDone": "Mot de passe provisoire défini.",
+    "colName": "Nom",
+    "colLogin": "Connexion",
+    "colRole": "Rôle",
+    "colStatus": "Statut",
+    "colLastActivity": "Dernière activité",
+    "you": "vous",
+    "customized": "(personnalisé)",
+    "statusActive": "Actif",
+    "statusInactive": "Désactivé",
+    "statusLocked": "Bloqué",
+    "statusInvited": "Invitation en attente",
+    "statusTempPassword": "Mot de passe provisoire",
+    "actions": "Actions pour {name}",
+    "edit": "Modifier",
+    "permissions": "Permissions",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "deactivate": "Désactiver",
+    "reactivate": "Réactiver",
+    "deactivated": "Utilisateur désactivé",
+    "reactivated": "Utilisateur réactivé",
+    "deactivateTitle": "Désactiver {name} ?",
+    "deactivateHelp": "Toutes ses sessions sont fermées immédiatement et il ne peut plus se connecter. Son nom reste sur les documents.",
+    "cancel": "Annuler",
+    "empty": "Aucun utilisateur"
+  },
+  "permissions": {
+    "PRICE_OVERRIDE": {
+      "label": "Modifier le prix",
+      "help": "Vendre à un autre prix que celui du niveau du client."
+    },
+    "DISCOUNT_ABOVE_X": {
+      "label": "Remise au-delà du seuil",
+      "help": "Accorder une remise supérieure au maximum fixé dans Paramètres."
+    },
+    "CREDIT_OVERRIDE": {
+      "label": "Dépasser le plafond",
+      "help": "Valider une vente au-delà du plafond de crédit du client."
+    },
+    "SALE_CANCEL": {
+      "label": "Annuler une vente",
+      "help": "Annuler un bon ou une facture validé."
+    },
+    "PAYMENT_CANCEL": {
+      "label": "Annuler un versement",
+      "help": "Sans elle : seulement ses propres versements du jour."
+    },
+    "STOCK_ADJUST": {
+      "label": "Ajuster le stock",
+      "help": "Ajustements et validation d'inventaire."
+    },
+    "VIEW_COST_AND_MARGIN": {
+      "label": "Voir coûts et marges",
+      "help": "CUMP, valeur du stock, marges."
+    },
+    "EXPORT_DATA": {
+      "label": "Exporter",
+      "help": "Exporter les rapports vers Excel."
+    }
+  },
+  "sessions": {
+    "title": "Sessions",
+    "subtitle": "Vos appareils connectés.",
+    "subtitleOwner": "Tous les appareils connectés de l'entreprise. Fermez la session d'un téléphone perdu.",
+    "colUser": "Utilisateur",
+    "colDevice": "Appareil",
+    "colIp": "Adresse IP",
+    "colLastActivity": "Dernière activité",
+    "colSince": "Connecté depuis",
+    "current": "cet appareil",
+    "revoke": "Déconnecter",
+    "revokeTitle": "Déconnecter cet appareil de {name} ?",
+    "revokeHelp": "La session est fermée tout de suite ; il faudra se reconnecter sur cet appareil.",
+    "revoked": "Session fermée",
+    "cancel": "Annuler",
+    "empty": "Aucune session active"
+  },
+  "audit": {
+    "title": "Journal d'audit",
+    "subtitle": "Chaque modification, avec son auteur et son appareil. Lecture seule.",
+    "user": "Utilisateur",
+    "entity": "Objet",
+    "action": "Action",
+    "from": "Du",
+    "to": "Au",
+    "all": "Tous",
+    "reset": "Effacer les filtres",
+    "empty": "Aucune entrée",
+    "colWhen": "Date",
+    "colUser": "Utilisateur",
+    "colAction": "Action",
+    "colEntity": "Objet",
+    "colDevice": "Appareil",
+    "system": "Système",
+    "more": "Afficher plus",
+    "noDetails": "Pas de détail pour cette action.",
+    "field": "Champ",
+    "before": "Avant",
+    "after": "Après"
+  },
+  "password": {
+    "title": "Choisissez votre mot de passe",
+    "description": "Votre mot de passe actuel est provisoire. Choisissez-en un nouveau pour continuer.",
+    "current": "Mot de passe actuel",
+    "new": "Nouveau mot de passe",
+    "confirm": "Confirmez le mot de passe",
+    "submit": "Enregistrer et continuer",
+    "mismatch": "Les deux mots de passe ne correspondent pas."
+  },
+  "invitation": {
+    "title": "Invitation",
+    "welcome": "Bienvenue {name}",
+    "description": "{company} vous invite. Choisissez votre mot de passe.",
+    "submit": "Créer mon accès"
   }
 }

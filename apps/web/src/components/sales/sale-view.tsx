@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { formatDA, money, qty, type SaleResultDto } from '@erp/shared';
+import { formatDA, money, Permission, qty, type SaleResultDto } from '@erp/shared';
 import { PageHeader } from '@/components/shared/page-header';
 import { PrintButton } from '@/components/shared/print-button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -24,6 +24,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { api } from '@/lib/api-client';
+import { usePermission } from '@/lib/auth';
 import { useUnitLabel } from '@/lib/catalog';
 import { useCanManageCredit } from '@/lib/clients';
 import { todayInAlgiers } from '@/lib/purchases';
@@ -51,6 +52,7 @@ export function SaleView({ id }: { id: string }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const canManage = useCanManageCredit();
+  const canCancel = usePermission(Permission.SALE_CANCEL);
   const sale = useSale(id);
   const [dialog, setDialog] = useState<'cancel' | 'return' | null>(null);
   const [paymentId, setPaymentId] = useState<string | null>(null);
@@ -133,7 +135,7 @@ export function SaleView({ id }: { id: string }) {
                 {t('return')}
               </Button>
             ) : null}
-            {s.status === 'DRAFT' || (validated && canManage && !s.invoice) ? (
+            {s.status === 'DRAFT' || (validated && canCancel && !s.invoice) ? (
               <Button
                 variant="ghost"
                 className="text-destructive"

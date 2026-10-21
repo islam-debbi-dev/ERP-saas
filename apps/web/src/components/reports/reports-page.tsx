@@ -14,6 +14,7 @@ import {
   type ReportGroupBy,
   type ReportName,
   type PaymentMode,
+  Permission,
   type ReportRow,
   REPORTS_BY_ROLE,
   type StockMovementType,
@@ -34,7 +35,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useAuth } from '@/lib/auth';
+import { useAuth, usePermission } from '@/lib/auth';
 import { useUnitLabel } from '@/lib/catalog';
 import { todayInAlgiers } from '@/lib/purchases';
 import { downloadReport, type ReportParams, useReport } from '@/lib/reports';
@@ -48,7 +49,7 @@ export function ReportsPage() {
   const t = useTranslations('reports');
   const errorMessage = useErrorMessage();
   const { state } = useAuth();
-  const allowed = state.status === 'authenticated' ? REPORTS_BY_ROLE[state.user.role] : [];
+  const byRole = state.status === 'authenticated' ? REPORTS_BY_ROLE[state.user.role] : [];
   const month = monthToDate(todayInAlgiers());
   const [params, setParams] = useState<ReportParams>({
     name: 'sales',
@@ -57,6 +58,9 @@ export function ReportsPage() {
     to: month.to,
   });
   const [exporting, setExporting] = useState(false);
+  const canExport = usePermission(Permission.EXPORT_DATA);
+  const canSeeMargin = usePermission(Permission.VIEW_COST_AND_MARGIN);
+  const allowed = byRole.filter((n) => n !== 'margin' || canSeeMargin);
   // A storekeeper has no sales report: start on the first one he has.
   const effective: ReportParams =
     allowed.length > 0 && !allowed.includes(params.name)
@@ -83,17 +87,19 @@ export function ReportsPage() {
         title={t('title')}
         description={t('subtitle')}
         actions={
-          <Button
-            onClick={() => void exportXlsx()}
-            disabled={exporting || invalidRange || !report.data}
-          >
-            {exporting ? (
-              <Loader2 className="animate-spin" aria-hidden />
-            ) : (
-              <Download aria-hidden />
-            )}
-            {t('export')}
-          </Button>
+          canExport ? (
+            <Button
+              onClick={() => void exportXlsx()}
+              disabled={exporting || invalidRange || !report.data}
+            >
+              {exporting ? (
+                <Loader2 className="animate-spin" aria-hidden />
+              ) : (
+                <Download aria-hidden />
+              )}
+              {t('export')}
+            </Button>
+          ) : undefined
         }
       />
       <div className="flex flex-wrap items-end gap-3">

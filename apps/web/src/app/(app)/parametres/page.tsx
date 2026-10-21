@@ -1,5 +1,6 @@
 import { titled } from '@/lib/page-metadata';
 import { getTranslations } from 'next-intl/server';
+import { AdminLinksCard } from '@/components/settings/admin-links-card';
 import { ImportLinkCard } from '@/components/settings/import-link-card';
 import { PriceLevelsCard } from '@/components/settings/price-levels-card';
 import { SettingsForm } from '@/components/settings/settings-form';
@@ -12,6 +13,7 @@ export default async function SettingsPage() {
   return (
     <>
       <PageHeader title={t('title')} description={t('subtitle')} />
+      <AdminLinksCard />
       <ImportLinkCard />
       <PriceLevelsCard />
       <SettingsForm />
