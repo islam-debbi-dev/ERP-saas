@@ -41,6 +41,10 @@ docker compose -f infra/docker-compose.yml exec -T db psql -U erp -d erp < apps/
 
 The integration tests create the role on their own and run the whole suite as `erp_app`.
 
+## Production
+
+Staging and production run on one VPS with Docker Compose and Caddy, with Postgres backed up by WAL-G to an S3 bucket. See [`docs/runbook.md`](docs/runbook.md) for first server setup, deploy, rollback, backups, restore, the monthly restore drill and incidents.
+
 ## Everyday commands
 
 ```bash
