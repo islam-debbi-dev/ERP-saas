@@ -1,8 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  type OnApplicationBootstrap,
+  type OnApplicationShutdown,
+} from '@nestjs/common';
 import * as Sentry from '@sentry/nestjs';
 import { AuditService } from '../audit/audit.service';
+import { nextAlgiersTime } from '../common/algiers';
 import { tenantContext } from '../common/tenant-context';
+import { APP_CONFIG, type AppConfig } from '../config/app-config';
 import { PrismaService } from '../prisma/prisma.service';
 import { RECONCILE_CHECKS } from './reconcile-sql';
 
@@ -32,15 +39,34 @@ const LOCK_KEY = 7_120_412;
  * (docs/runbook.md, "Ledger reconcile").
  */
 @Injectable()
-export class ReconcileService {
+export class ReconcileService implements OnApplicationBootstrap, OnApplicationShutdown {
   private readonly logger = new Logger('Reconcile');
+  private timer: NodeJS.Timeout | undefined;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
-  @Cron('0 3 * * *', { name: 'ledger-reconcile', timeZone: 'Africa/Algiers' })
+  // A plain timer to the next 03:00 Algiers, not a cron library: one daily job doesn't
+  // need one. Not in tests (they call run()), nor in the one-off CLI context.
+  onApplicationBootstrap(): void {
+    if (this.config.NODE_ENV !== 'test' && process.env['RECONCILE_CLI'] !== '1') this.schedule();
+  }
+
+  onApplicationShutdown(): void {
+    clearTimeout(this.timer);
+  }
+
+  private schedule(): void {
+    const at = nextAlgiersTime(3, 0);
+    this.timer = setTimeout(() => {
+      void this.nightly().finally(() => this.schedule());
+    }, at.getTime() - Date.now());
+    this.timer.unref();
+  }
+
   async nightly(): Promise<void> {
     try {
       await this.run();

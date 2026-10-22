@@ -1,6 +1,8 @@
 // By hand: `pnpm --filter @erp/api reconcile` (after a build), or in the container
 // `node dist/reconcile/reconcile.cli.js`. Exit code 1 when a ledger disagrees.
 import 'dotenv/config';
+// This process runs once and exits: no nightly timer.
+process.env['RECONCILE_CLI'] = '1';
 import '../instrument';
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
