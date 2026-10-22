@@ -2,11 +2,11 @@
 FROM node:22-alpine AS base
 RUN corepack enable
 # Shared download cache (BuildKit) and patient fetches, so a slow or flaky network
-# doesn't restart the whole install.
-ENV npm_config_store_dir=/pnpm/store \
-    npm_config_fetch_retries=5 \
-    npm_config_fetch_timeout=120000 \
-    npm_config_network_concurrency=8
+# doesn't restart the whole install. pnpm 11 reads pnpm_config_*, not npm_config_*.
+ENV pnpm_config_store_dir=/pnpm/store \
+    pnpm_config_fetch_retries=5 \
+    pnpm_config_fetch_timeout=120000 \
+    pnpm_config_network_concurrency=8
 WORKDIR /repo
 
 FROM base AS build
