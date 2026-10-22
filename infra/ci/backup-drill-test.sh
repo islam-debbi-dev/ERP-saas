@@ -18,6 +18,8 @@ trap cleanup EXIT
 "${COMPOSE[@]}" up -d --build --wait db
 
 echo "== migrate + seed"
+# The seed imports @erp/shared, which runs from its build output.
+pnpm --dir "$ROOT" --filter @erp/shared build >/dev/null
 (cd "$ROOT/apps/api" &&
   DATABASE_URL="$OWNER_URL" DATABASE_URL_MIGRATE="$OWNER_URL" pnpm exec prisma migrate deploy &&
   DATABASE_URL_MIGRATE="$OWNER_URL" pnpm exec tsx prisma/seed.ts)

@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
-import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { AuditModule } from './audit/audit.module';
@@ -67,7 +66,6 @@ import { UsersModule } from './users/users.module';
         ],
       }),
     }),
-    ScheduleModule.forRoot(),
     PrismaModule,
     AuditModule,
     IdempotencyModule,
