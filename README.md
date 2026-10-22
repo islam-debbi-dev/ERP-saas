@@ -28,6 +28,23 @@ Requirements: Node 22+ (24 or 26 also work), Docker (Docker Desktop or OrbStack)
 
 Change the password with `SEED_OWNER_PASSWORD` in `apps/api/.env` before seeding a shared environment. Running the seed again changes nothing.
 
+### Database roles (row-level security)
+
+Every business table has a Postgres row-level security policy on top of the Prisma tenant filter. The policies bind `erp_app`, the role the API connects as (`DATABASE_URL`). They don't bind the owner `erp`, which runs migrations and the seed (`DATABASE_URL_MIGRATE`). The dev database creates `erp_app` on its first start.
+
+A dev database created before phase 12 doesn't have the role. Create it once, then re-apply the grants:
+
+```bash
+docker compose -f infra/docker-compose.yml exec db psql -U erp -d erp -c "CREATE ROLE erp_app LOGIN PASSWORD 'erp_app'"
+docker compose -f infra/docker-compose.yml exec -T db psql -U erp -d erp < apps/api/prisma/app-role.sql
+```
+
+The integration tests create the role on their own and run the whole suite as `erp_app`.
+
+## Production
+
+Staging and production run on one VPS with Docker Compose and Caddy, with Postgres backed up by WAL-G to an S3 bucket. See [`docs/runbook.md`](docs/runbook.md) for first server setup, deploy, rollback, backups, restore, the monthly restore drill and incidents.
+
 ## Everyday commands
 
 ```bash

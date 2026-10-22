@@ -52,6 +52,7 @@ const STATUS_BY_CODE: Record<ErrorCode, HttpStatus> = {
   [ErrorCode.ALLOCATION_INVALID]: HttpStatus.CONFLICT,
   [ErrorCode.FORBIDDEN]: HttpStatus.FORBIDDEN,
   [ErrorCode.TOO_MANY_REQUESTS]: HttpStatus.TOO_MANY_REQUESTS,
+  [ErrorCode.PAYLOAD_TOO_LARGE]: HttpStatus.PAYLOAD_TOO_LARGE,
   [ErrorCode.UNAUTHENTICATED]: HttpStatus.UNAUTHORIZED,
   [ErrorCode.INVALID_CREDENTIALS]: HttpStatus.UNAUTHORIZED,
   [ErrorCode.TOKEN_EXPIRED]: HttpStatus.UNAUTHORIZED,

@@ -2,11 +2,11 @@
 FROM node:22-alpine AS base
 RUN corepack enable
 # Shared download cache (BuildKit) and patient fetches, so a slow or flaky network
-# doesn't restart the whole install.
-ENV npm_config_store_dir=/pnpm/store \
-    npm_config_fetch_retries=5 \
-    npm_config_fetch_timeout=120000 \
-    npm_config_network_concurrency=8
+# doesn't restart the whole install. pnpm 11 reads pnpm_config_*, not npm_config_*.
+ENV pnpm_config_store_dir=/pnpm/store \
+    pnpm_config_fetch_retries=5 \
+    pnpm_config_fetch_timeout=120000 \
+    pnpm_config_network_concurrency=8
 WORKDIR /repo
 
 FROM base AS build
@@ -32,8 +32,16 @@ RUN --mount=type=cache,id=apk-cache,target=/var/cache/apk \
     done; exit 1
 ENV NODE_ENV=production
 ENV CHROMIUM_PATH=/usr/bin/chromium-browser
+# Git sha of this build: /health reports it and Sentry tags events with it.
+ARG SENTRY_RELEASE=dev
+ENV SENTRY_RELEASE=$SENTRY_RELEASE
 WORKDIR /app
 COPY --from=build /out .
+# Root owns the code; the server runs as the unprivileged node user.
+USER node
 EXPOSE 3001
-# Apply pending migrations, then start. Migrations are backward compatible (AGENTS.md §7).
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
+HEALTHCHECK --interval=15s --timeout=3s --start-period=30s --retries=5 \
+  CMD wget -qO- http://127.0.0.1:3001/health >/dev/null || exit 1
+# Migrations are a separate step before the deploy (the migrate service, run as the DB
+# owner): this server connects as erp_app, which can't change the schema.
+CMD ["node", "dist/main.js"]

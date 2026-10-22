@@ -232,6 +232,7 @@
     "CONFLICT": "Cet élément existe déjà.",
     "FORBIDDEN": "Votre rôle ne permet pas cette action.",
     "TOO_MANY_REQUESTS": "Trop de tentatives. Patientez une minute.",
+    "PAYLOAD_TOO_LARGE": "La requête est trop volumineuse.",
     "DB_UNAVAILABLE": "Service momentanément indisponible.",
     "UNAUTHENTICATED": "Connectez-vous pour continuer.",
     "INVALID_CREDENTIALS": "E-mail ou mot de passe incorrect.",

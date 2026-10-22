@@ -1,9 +1,9 @@
 name: CI
 
+# Pull requests; on main it runs as the first job of deploy.yml.
 on:
-  push:
-    branches: [main]
   pull_request:
+  workflow_call:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -39,7 +39,25 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Known high/critical advisories in production dependencies fail the build.
+      - run: pnpm audit --prod --audit-level high
+      # Migrations must stay backward compatible with the running version (AGENTS.md §7).
+      - run: pnpm --filter @erp/api db:check-migrations
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+
+  # Backups end to end: WAL-G Postgres → S3 bucket → restore drill on a throwaway copy,
+  # including rows written after the base backup (replayed from the WAL archive).
+  restore-drill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: infra/ci/backup-drill-test.sh

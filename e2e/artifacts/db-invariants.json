@@ -9,7 +9,7 @@
   "results": [
     {
       "area": "database invariants",
-      "durationMs": 97,
+      "durationMs": 63,
       "name": "stock_equals_ledger",
       "status": "PASS"
     },
@@ -33,31 +33,31 @@
     },
     {
       "area": "database invariants",
-      "durationMs": 0,
+      "durationMs": 1,
       "name": "clients_missing_balance",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 13,
+      "durationMs": 35,
       "name": "document_numbers_contiguous",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 1,
+      "durationMs": 5,
       "name": "document_numbers_bad_format",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 5,
+      "durationMs": 11,
       "name": "document_sequence_matches_usage",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 17,
+      "durationMs": 34,
       "name": "ledger_tables_have_no_updated_at",
       "status": "PASS"
     },
@@ -69,19 +69,19 @@
     },
     {
       "area": "database invariants",
-      "durationMs": 5,
+      "durationMs": 10,
       "name": "money_columns_wrong_scale",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 7,
+      "durationMs": 6,
       "name": "business_tables_without_tenant",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 4,
+      "durationMs": 5,
       "name": "composite_indexes_start_with_tenant",
       "status": "PASS"
     },
@@ -93,16 +93,16 @@
     },
     {
       "area": "database invariants",
-      "durationMs": 2,
+      "durationMs": 8,
       "name": "validated_sale_has_ledger_and_audit",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 5,
+      "durationMs": 9,
       "name": "sale_operation_rows_share_created_at",
       "status": "FAIL",
-      "evidence": "17 violation(s): [{\"id\":\"9f4926c5-b0f7-4a84-9cbb-2fcbabff0203\",\"number\":\"BL-2026-000001\",\"tenantId\":\"00000000-0000-4000-8000-00000000d3e0\",\"movement_at\":\"2026-10-18T23:24:12.828Z\",\"ledger_at\":\"2026-10-18T23:24:12.842Z\",\"audit_at\":\"2026-10-18T23:24:12.857Z\"},{\"id\":\"9f4926c5-b0f7-4a84-9cbb-2fcbabff0203\",\"number\":\"BL-2026-000001\",\"tenantId\":\"00000000-0000-4000-8000-00000000d3e0\",\"movement_at\":\"2026-10-18T23:24:12.828Z\",\"ledger_at\":\"2026-10-18T23:24:12.844Z\",\"audit_at\":\"2026-10-18T23:24:12.857Z\"},{\"id\":\"89675c56-523f-4503-973d-8c6560305a22\",\"number\":\"BL-2026-000005\",\"tenantId\":\"00000000-0000-4000-8000-00000000d3e0\",\"movement_at\":\"2026-10-19T18:11:37.048Z\",\"ledger_at\":\"2026-10-19T18:11:37.054Z\",\"audit_at\":\"2026-10-19T18:11:37.083Z\"},{\"id\":\"89675c56-523f-4503-973d-8c6560305a22\",\"number\":\"BL-2026-000005\",\"tenantId\":\"00000000-0000-4000-8000-00000000d3e0\",\"movement_at\":\"2026-10-19T18:11:37.048Z\",\"ledger_at\":\"2026-10-19T18:11:37.059Z\",\"audit_at\":\"2026-10-19T18:11:37.083Z\"},{\"id\":\"38a69062-148f-4f4f-bcc6-fafcbd711f48\",\"number\":\"BL-2026-000006\",\"tenantId\":\"00000000-0000-4000-8000-00000000d3e0\",\"movement_at\":\"2026-10-21T12:51:02.105Z\",\"ledger_at\":\"2026-10-21T12:51:02.125Z\",\"audit_at\":\"2026-10-21T12:51:02.148Z\"}]"
+      "evidence": "105 violation(s): [{\"id\":\"9f4926c5-b0f7-4a84-9cbb-2fcbabff0203\",\"number\":\"BL-2026-000001\",\"tenantId\":\"00000000-0000-4000-8000-00000000d3e0\",\"movement_at\":\"2026-10-18T23:24:12.828Z\",\"ledger_at\":\"2026-10-18T23:24:12.842Z\",\"audit_at\":\"2026-10-18T23:24:12.857Z\"},{\"id\":\"9f4926c5-b0f7-4a84-9cbb-2fcbabff0203\",\"number\":\"BL-2026-000001\",\"tenantId\":\"00000000-0000-4000-8000-00000000d3e0\",\"movement_at\":\"2026-10-18T23:24:12.828Z\",\"ledger_at\":\"2026-10-18T23:24:12.844Z\",\"audit_at\":\"2026-10-18T23:24:12.857Z\"},{\"id\":\"89675c56-523f-4503-973d-8c6560305a22\",\"number\":\"BL-2026-000005\",\"tenantId\":\"00000000-0000-4000-8000-00000000d3e0\",\"movement_at\":\"2026-10-19T18:11:37.048Z\",\"ledger_at\":\"2026-10-19T18:11:37.054Z\",\"audit_at\":\"2026-10-19T18:11:37.083Z\"},{\"id\":\"89675c56-523f-4503-973d-8c6560305a22\",\"number\":\"BL-2026-000005\",\"tenantId\":\"00000000-0000-4000-8000-00000000d3e0\",\"movement_at\":\"2026-10-19T18:11:37.048Z\",\"ledger_at\":\"2026-10-19T18:11:37.059Z\",\"audit_at\":\"2026-10-19T18:11:37.083Z\"},{\"id\":\"38a69062-148f-4f4f-bcc6-fafcbd711f48\",\"number\":\"BL-2026-000006\",\"tenantId\":\"00000000-0000-4000-8000-00000000d3e0\",\"movement_at\":\"2026-10-21T12:51:02.105Z\",\"ledger_at\":\"2026-10-21T12:51:02.125Z\",\"audit_at\":\"2026-10-21T12:51:02.148Z\"}]"
     },
     {
       "area": "database invariants",
@@ -112,13 +112,13 @@
     },
     {
       "area": "database invariants",
-      "durationMs": 1,
+      "durationMs": 2,
       "name": "validated_payment_has_ledger_and_audit",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 2,
+      "durationMs": 1,
       "name": "cancelled_sale_has_reversing_entries",
       "status": "PASS"
     },

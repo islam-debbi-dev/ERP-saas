@@ -49,6 +49,6 @@ Total 48 · PASS 44 · FAIL 2 · BLOCKED 0
 | H. Injection and mass assignment | the client balance cannot be written directly | PASS |  |  |
 | H. Injection and mass assignment | info: the API stores the payload as data, the web must escape it | INFO | the API stores the text; React escapes it on render | designation=<script>alert(1)</script> |
 | H. Injection and mass assignment | a script tag in a designation is stored as data | PASS |  |  |
-| I. Audit trail and timestamps | the rows of one operation share the same createdAt | FAIL |  | 5 rows of one transaction carry 5 different createdAt values: 2026-10-21 20:29:04.443+00, 2026-10-21 20:29:04.481+00, 2026-10-21 20:29:04.485+00, 2026-10-21 20:29:04.489+00, 2026-10-21 20:29:04.492+00 |
-| I. Audit trail and timestamps | info: the createdAt of the audit rows of one transaction | INFO | one timestamp for the whole transaction (the schema says so) | 2 rows, 2 timestamps, xmin=6247/6249 |
+| I. Audit trail and timestamps | the rows of one operation share the same createdAt | FAIL |  | 5 rows of one transaction carry 5 different createdAt values: 2026-10-21 21:56:26.894+00, 2026-10-21 21:56:26.939+00, 2026-10-21 21:56:26.949+00, 2026-10-21 21:56:26.958+00, 2026-10-21 21:56:26.966+00 |
+| I. Audit trail and timestamps | info: the createdAt of the audit rows of one transaction | INFO | one timestamp for the whole transaction (the schema says so) | 2 rows, 2 timestamps, xmin=7189/7191 |
 | I. Audit trail and timestamps | the audit rows of one operation keep the transaction order | PASS |  |  |

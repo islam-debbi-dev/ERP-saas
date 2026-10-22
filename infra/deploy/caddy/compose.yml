@@ -1,0 +1,32 @@
+# The one reverse proxy of the VPS, shared by staging and production: TLS certificates
+# from Let's Encrypt (automatic), /api/* → the api of that environment, the rest → web.
+#   docker network create erp-edge
+#   docker compose -f caddy/compose.yml --env-file caddy/.env up -d
+name: erp-caddy
+
+services:
+  caddy:
+    image: caddy:2.10-alpine
+    env_file: .env
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [edge]
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options: { max-size: '20m', max-file: '5' }
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  edge:
+    external: true
+    name: erp-edge

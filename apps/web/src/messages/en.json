@@ -232,6 +232,7 @@
     "CONFLICT": "This item already exists.",
     "FORBIDDEN": "Your role does not allow this action.",
     "TOO_MANY_REQUESTS": "Too many attempts. Wait a minute.",
+    "PAYLOAD_TOO_LARGE": "The request is too large.",
     "DB_UNAVAILABLE": "Service temporarily unavailable.",
     "UNAUTHENTICATED": "Log in to continue.",
     "INVALID_CREDENTIALS": "Wrong email or password.",

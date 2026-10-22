@@ -20,4 +20,4 @@ Total 17 · PASS 17 · FAIL 0 · BLOCKED 0
 | 7. Document numbering | the numbers of a tenant are sequential per type and year | PASS |  |  |
 | 8. Audit trail | every business write left an audit row | PASS |  |  |
 | 8. Audit trail | the audit rows keep who, when and which device | PASS |  |  |
-| 8. Audit trail | scenario completed | PASS | the whole sale/payment/return/cancel chain holds | tenant 0b46202d-e1e4-4141-ac8e-a7ae3adcfa69 |
+| 8. Audit trail | scenario completed | PASS | the whole sale/payment/return/cancel chain holds | tenant 752ce3be-38c3-4149-b4a3-c8e7e66fe4f7 |

@@ -13,8 +13,9 @@ export const DEMO_OWNER_EMAIL = 'demo@grossiste.dz';
 const DEMO_OWNER_PASSWORD = process.env['SEED_OWNER_PASSWORD'] ?? 'Demo1234!';
 
 async function main(): Promise<void> {
-  const url = process.env['DATABASE_URL'];
-  if (!url) throw new Error('DATABASE_URL is not set');
+  // The owner connection: the seed writes across tenants, outside the RLS policies.
+  const url = process.env['DATABASE_URL_MIGRATE'] ?? process.env['DATABASE_URL'];
+  if (!url) throw new Error('DATABASE_URL_MIGRATE (or DATABASE_URL) is not set');
   const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: url }) });
 
   try {

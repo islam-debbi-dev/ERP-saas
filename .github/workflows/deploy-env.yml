@@ -1,0 +1,63 @@
+name: Deploy one environment
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      host_var:
+        description: Repository variable holding the public host name of this environment.
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+      url: https://${{ vars[inputs.host_var] }}
+    permissions:
+      contents: read
+      packages: read
+    env:
+      HOST: ${{ vars[inputs.host_var] }}
+      SSH_HOST: ${{ vars.DEPLOY_SSH_HOST }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: SSH key
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Copy the deploy files
+        run: |
+          rsync -az --delete --exclude caddy/.env infra/deploy/ "deploy@$SSH_HOST:/srv/erp/deploy/"
+          rsync -az --delete infra/scripts/ "deploy@$SSH_HOST:/srv/erp/scripts/"
+      - name: Migrate and deploy
+        env:
+          # Short-lived, read-only on packages: lets the server pull this run's images.
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ENV_NAME: ${{ inputs.environment }}
+        run: |
+          printf '%s\n' "$GHCR_TOKEN" | ssh "deploy@$SSH_HOST" \
+            "docker login ghcr.io -u '$GITHUB_ACTOR' --password-stdin"
+          ssh "deploy@$SSH_HOST" "/srv/erp/deploy/scripts/deploy.sh '$ENV_NAME' '$GITHUB_SHA'"
+      - name: Smoke test
+        run: |
+          for i in $(seq 1 30); do
+            body=$(curl -fsS "https://$HOST/api/health" || true)
+            echo "$body"
+            if echo "$body" | jq -e --arg v "$GITHUB_SHA" '.status == "ok" and .db == "up" and .version == $v' >/dev/null; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::https://$HOST/api/health is not serving $GITHUB_SHA"
+          exit 1
+      - name: Web answers
+        run: curl -fsS -o /dev/null -w '%{http_code}\n' "https://$HOST/login"
