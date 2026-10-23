@@ -45,6 +45,10 @@ The integration tests create the role on their own and run the whole suite as `e
 
 Staging and production run on one VPS with Docker Compose and Caddy, with Postgres backed up by WAL-G to an S3 bucket. See [`docs/runbook.md`](docs/runbook.md) for first server setup, deploy, rollback, backups, restore, the monthly restore drill and incidents.
 
+### Vercel (demo)
+
+The API and the web app can also run as two Vercel projects (root directories `apps/api` and `apps/web`) on a Neon Postgres. The web project proxies `/api/*` to the API through [`apps/web/vercel.json`](apps/web/vercel.json), so the refresh cookie stays first-party: set `NEXT_PUBLIC_API_URL=/api` on the web project, and `PUBLIC_PATH_PREFIX=/api`, `COOKIE_SECURE=true` and `WEB_ORIGIN` on the API. `DATABASE_URL` must be Neon's direct (non `-pooler`) string, because the RLS settings are session-level. PDF printing does not work there (no Chromium).
+
 ## Everyday commands
 
 ```bash
