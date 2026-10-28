@@ -98,4 +98,21 @@ export class TenantsService {
       return toResponse(after);
     });
   }
+
+  /** The owner hid the onboarding checklist (phase 13). Idempotent. */
+  async dismissOnboarding(): Promise<void> {
+    await this.prisma.db.$transaction(async (tx) => {
+      const { count } = await tx.tenant.updateMany({
+        where: { onboardingDismissedAt: null },
+        data: { onboardingDismissedAt: new Date() },
+      });
+      if (count > 0) {
+        await this.audit.log(tx, {
+          action: 'ONBOARDING_DISMISSED',
+          entity: 'Tenant',
+          entityId: tenantContext.requireTenantId(),
+        });
+      }
+    });
+  }
 }
