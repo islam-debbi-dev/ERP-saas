@@ -5,7 +5,7 @@
 2. `git clone https://github.com/islam-debbi-dev/ERP-saas && cd ERP-saas`
 3. Run `claude` in the repo root. `CLAUDE.md` imports `AGENTS.md`, so the rules load automatically in every session. You never need to paste them.
 
-## For each phase (repeat 13 times)
+## For each phase (repeat for every phase, in the order given in `docs/ROADMAP.md`)
 1. `git checkout main && git pull` then `git checkout -b phase-NN-name`.
 2. In Claude Code: `/clear` (fresh context = fewer tokens and no confusion from the previous phase).
 3. Press **Shift+Tab** to switch to **plan mode**, then send:
@@ -35,6 +35,11 @@
 - Phase 9: test with a real Excel file from your pilot grossiste before calling it done.
 - Phase 12: you choose and pay for hosting and the backup bucket, and create the Sentry / uptime accounts.
 - Phase 13: decide the prices in DZD.
+- Phase 13b: decide which modules each plan includes (the prompt has a starting list).
+- Phase 15: run the backfill script on staging first and compare stock totals before touching production.
+- Phase 18: collect the real bonus rules (Excel files) of your pilot distributor and check that the five rule types cover them before starting.
+- Phase 19: install Flutter and Android Studio, test on a real cheap Android phone and a real Bluetooth thermal printer.
+- Phase 22: get a real dossier d'importation (invoices, douane, transitaire) from an importer to test the allocation.
 
 ## If something goes wrong
 - Tests red and it keeps going in circles: `/clear`, then "Read AGENTS.md. On branch phase-NN, `pnpm test` fails with: <paste the error>. Find the cause and fix it."

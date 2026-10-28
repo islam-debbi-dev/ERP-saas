@@ -13,3 +13,9 @@ allowBuilds:
   '@parcel/watcher': false
   unrs-resolver: false
   '@swc/core': false
+
+# Security patches for transitive deps of @nestjs/platform-express (pnpm audit, high):
+# body-parser < 2.4.0 (GHSA-27r3-jxmh-p828), multer < 2.5.0 (GHSA-q7qp-rjg7-q26m).
+overrides:
+  body-parser@2: ^2.4.0
+  multer@2: ^2.5.0
