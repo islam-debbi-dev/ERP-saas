@@ -50,6 +50,36 @@
 - New products: base unit is the default sale and purchase unit; empty TVA means 0 % (shown as a warning). Unknown categories are created.
 - The original file is kept 30 days, then dropped; the job row stays for audit.
 
+## Editions (phase 13b)
+- One codebase for three kinds of customers. The plan switches modules on (`packages/shared/features.ts`), the API enforces it.
+- **Essentiel**: grossiste who buys from distributors and sells en gros (core: everything in phases 1–13 and 21).
+- **Import**: importer (e.g. from China) who sells en gros: + dossiers d'importation, devises, coût de revient (phase 22), multi-dépôts.
+- **Distribution**: brand distributor with sellers and trucks: + sales force, vehicles, tournées, GPS check, objectifs & primes, mobile app, promotions, emballages.
+- Turning a module off never deletes its data.
+
+## Sales force & distribution (phases 14–20)
+- **Vendeur** (SELLER) sells in the shop or on the road; **superviseur** (SUPERVISOR) and **chef des ventes** manage a team through `User.managerId`; **livreur** (LIVREUR) delivers pre-sale orders.
+- Every sale has a `sellerId` and every versement a `collectedBy`, frozen like prices. Objectives and bonuses are computed from them.
+- **Secteur**: a zone (wilaya + communes); clients belong to a sector and can be assigned to a seller.
+- **Tournée**: the ordered list of clients a seller visits on given weekdays. **Visite**: one stop, with an outcome (sale, order, payment only, no sale + reason).
+- **Vente directe**: the seller sells from his truck and prints the BL on the spot. **Pré-vente**: he takes a bon de commande; a livreur delivers it later and the BL is created at delivery.
+- **Camion = dépôt** (`Warehouse` type VEHICLE). Chargement / déchargement are stock transfers. CUMP stays per product for the whole company.
+- **Clôture de tournée**: at the end of the day the API computes the cash the seller must hand over; the manager enters what he handed; the écart is stored and audited.
+
+### Géolocalisation
+- Each client has a reference GPS point. Sellers cannot move it without approval.
+- Sales, versements and visits carry the phone's position at the time of the operation (never continuous tracking, law 18-07). The API computes the distance and stores a `GeoCheck`: OK, FAR, MOCKED, LOW_ACCURACY, NO_CLIENT_GPS, NO_SIGNAL.
+- Default is to **flag, not block**: a far operation needs a note and is reviewed by a manager (justified / not justified). Blocking is a tenant setting.
+
+### Objectifs & primes
+- Companies set monthly targets per seller or team (CA HT, quantity by brand/product, encaissements, margin, new clients, visits) and bonus rules from five types: fixed on target, tiers (highest reached or progressive), commission %, amount per unit, manager override on the team; with gates (e.g. recouvrement ≥ 70 %) and a cap.
+- An avoir counts in the month it is validated, so a return after an approved month lowers the next month.
+- Month end: preview → owner approves → frozen → Excel export for payroll. The software computes bonuses; it does not do payroll.
+
+### Promotions & emballages
+- **UG (unités gratuites)**: "10+1" free units are separate lines at price 0 that leave stock; their cost lowers the margin.
+- **Emballages consignés** (casiers, palettes, bouteilles): a per-client count ledger, + when delivered, − when returned.
+
 ## Typical edge cases to always consider
 - Selling the last carton from two devices at the same time.
 - Negative stock (allow with warning? tenant setting) – common in real shops because entries are late.
@@ -81,5 +111,15 @@
 - **Prix de gros / demi-gros / détail**: price levels.
 - **CUMP** (coût unitaire moyen pondéré): weighted average cost.
 - **Inventaire**: physical stock count producing adjustments.
-- **Dépôt**: warehouse (multi-dépôts is later; MVP has one implicit dépôt).
+- **Dépôt**: warehouse (MVP has one implicit dépôt; multi-dépôts and trucks come in phase 15).
 - **Timbre fiscal**: stamp duty on cash-paid invoices, rule set by the loi de finances.
+- **Vendeur / superviseur / livreur**: SELLER / SUPERVISOR / LIVREUR roles.
+- **Tournée**: sales route (`Route`). **Visite**: `Visit`. **Secteur**: `Sector`. **Marque**: `Brand`.
+- **Bon de commande (BC)**: pre-sale order, prefix `BC`, no stock or ledger effect until delivered.
+- **Chargement / déchargement**: LOAD / UNLOAD stock transfer to / from a truck, prefix `TR`.
+- **Clôture de tournée**: `SellerSession` closing with the cash écart.
+- **Objectif / prime / commission**: `SalesTarget` / `IncentiveRule` / `IncentiveRun`.
+- **UG**: unités gratuites, free units of a promotion.
+- **Emballage consigné**: returnable packaging tracked per client.
+- **Règlement fournisseur**: payment to a supplier, prefix `RGF`.
+- **Dossier d'importation (DI)**: one import shipment grouping BRs and their costs. **Coût de revient**: landed unit cost.

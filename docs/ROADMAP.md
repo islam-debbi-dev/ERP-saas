@@ -18,6 +18,16 @@ Each phase is one branch, one PR and one Claude Code session. Prompts live in [`
 | 11 | [Users, permissions, audit](prompts/phase-11-users-audit.md) | Invite users, roles, sensitive-action permissions, audit log viewer, sessions screen | 1 | MVP |
 | 12 | [Production readiness](prompts/phase-12-production.md) | Deploy staging + prod, backups + PITR, restore drill, monitoring, rate limits, RLS, security pass | all | MVP |
 | 13 | [Pilot & billing](prompts/phase-13-pilot-billing.md) | Subscription plans, trial, tenant suspension, onboarding checklist, support links | 12 | v1.1 |
+| 13b | [Plans & feature flags](prompts/phase-13b-feature-flags.md) | Editions Essentiel / Import / Distribution / Entreprise, `@RequireFeature` guard, per-tenant grants | 13 | v1.1 |
+| 14 | [Sales force foundation](prompts/phase-14-sales-force.md) | `Sale.sellerId`, `Payment.collectedBy`, teams (`managerId`), SUPERVISOR / LIVREUR, brands, sectors, client assignment, seller scoping | 13b, 21 | v2 |
+| 15 | [Multi-dépôts & véhicules](prompts/phase-15-warehouses-vehicles.md) | Warehouses (main / truck), stock per warehouse, chargement / déchargement, expand → backfill → contract | 14 | v2 |
+| 16 | [Tournées, visites, commandes](prompts/phase-16-tournees-orders.md) | Routes, visits with outcome, bon de commande → BL, livreur, clôture de tournée with cash écart | 15 | v2 |
+| 17 | [Géolocalisation](prompts/phase-17-geolocation.md) | Client GPS + change approval, GeoCheck on sale / versement / visit, flag or block, review map | 14 | v2 |
+| 18 | [Objectifs & primes](prompts/phase-18-incentives.md) | Targets, configurable bonus rules (5 types + gates + cap), live progress, monthly run → approve → export | 14 | v2 |
+| 19 | [Mobile vendeur (Flutter)](prompts/phase-19-mobile-vendeur.md) | Offline-first Android app: sync, outbox, sale / order / versement / visit, GPS, Bluetooth BL print, objectives | 16, 17, 18 | v2 |
+| 20 | [Mode distributeur](prompts/phase-20-distribution-mode.md) | Promotions & UG, emballages consignés ledger, sell-out report par marque | 14, 15, 16 | v2 |
+| 21 | [Crédit avancé](prompts/phase-21-credit-advanced.md) | Supplier ledger + règlements, client aging, relances WhatsApp, share links, cheques à échéance | 13b | v1.1 |
+| 22 | [Importateur](prompts/phase-22-import-landed-cost.md) | Dossiers d'importation, devises + taux, coût de revient (landed cost) into CUMP, late costs | 13b, 21 | v2 |
 
 **MVP = phases 1 to 12.** Put the pilot grossiste on it after phase 12; phase 13 can follow during the free pilot month.
 
@@ -27,18 +37,21 @@ Each phase is one branch, one PR and one Claude Code session. Prompts live in [`
 - Excel import (9) comes after the data models it fills are stable, but before the pilot: no grossiste switches without importing his credit book.
 - Printing (8) is its own phase because the A4/A5 layouts and Algerian legal fields take real iteration.
 
-## v1.1 (after the pilot is live)
-- Supplier accounts (supplier ledger, payments to suppliers).
-- Client aging (0–30, 31–60, 61–90, 90+ days) and reminders.
-- WhatsApp share of relevé and facture (link to PDF).
+## After the MVP: recommended order
+**13 → 13b → 21 → 14 → 17 → 18 → 15 → 16 → 19 → 20**, and **22** right after 21 if the first paying client is an importer.
+- 13b first: every later phase declares its feature flag.
+- 21 is core (supplier debts and aging are wanted by every plan), so it comes before the distributor phases despite its number.
+- 17 and 18 only need 14 and work from the web; do them early if a distributor wants bonuses or GPS before the mobile app.
+- 19 (Flutter) waits until the API it needs (14–18) is stable and tested from the web.
+
+## v1.1 backlog not covered by a phase yet
 - Price history and bulk price update (by % or by category).
 - Multiple caisses / sessions de caisse (cash register open/close).
-- Phase 13 billing if not done yet.
 
 ## Later
-- Flutter mobile app (owner dashboard + vendeur on the road, order taking).
+- Flutter owner dashboard app (the vendeur app is phase 19).
 - Flutter desktop caisse with offline mode (SQLite/drift, operation queue, idempotent resync).
-- Multi-dépôts (stock per warehouse, transfers).
-- CRM (visits, tasks, notes per client).
+- CRM (tasks, notes per client; visits are phase 16).
+- Lots and dates de péremption (DLC), stock reservation on orders, route optimisation, payroll / CNAS, B2B ordering portal for retailers.
 - Thermal 80mm tickets.
 - E-invoicing / tax exports if the law requires it.
