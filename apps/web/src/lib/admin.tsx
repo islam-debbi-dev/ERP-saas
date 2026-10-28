@@ -32,6 +32,17 @@ export const adminApi = new ApiClient({
   },
 });
 
+/** Like `sessionHint`: only ask for an admin refresh when this browser has signed in. */
+const ADMIN_HINT = 'erp_admin_hint';
+function adminHint(value?: boolean): boolean {
+  try {
+    if (value !== undefined) window.localStorage.setItem(ADMIN_HINT, value ? '1' : '0');
+    return window.localStorage.getItem(ADMIN_HINT) === '1';
+  } catch {
+    return true;
+  }
+}
+
 type AdminState =
   | { status: 'loading'; admin: null }
   | { status: 'authenticated'; admin: AdminInfo }
@@ -51,18 +62,24 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
   const accept = useCallback((auth: AdminAuthResponse) => {
     adminApi.setAccessToken(auth.accessToken);
+    adminHint(true);
     setState({ status: 'authenticated', admin: auth.admin });
   }, []);
 
   useEffect(() => {
     let cancelled = false;
+    if (!adminHint()) {
+      queueMicrotask(() => setState({ status: 'anonymous', admin: null }));
+      return;
+    }
     adminApi
       .refresh()
       .then((auth) => {
         // The admin refresh answers an AdminAuthResponse.
         if (!cancelled) accept(auth as unknown as AdminAuthResponse);
       })
-      .catch(() => {
+      .catch((err: unknown) => {
+        if (err instanceof ApiError && err.status === 401) adminHint(false);
         if (!cancelled) setState({ status: 'anonymous', admin: null });
       });
     return () => {
@@ -88,6 +105,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
           if (!(err instanceof ApiError)) throw err;
         }
         adminApi.setAccessToken(null);
+        adminHint(false);
         queryClient.removeQueries({ queryKey: adminKeys.all });
         setState({ status: 'anonymous', admin: null });
       },
