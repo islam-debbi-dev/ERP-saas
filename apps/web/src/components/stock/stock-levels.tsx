@@ -65,6 +65,7 @@ export function StockLevels() {
     () => [
       {
         id: 'product',
+        meta: { card: 'title' },
         header: t('colProduct'),
         cell: ({ row }) => (
           <div className="min-w-0">
@@ -83,6 +84,7 @@ export function StockLevels() {
       },
       {
         id: 'qty',
+        meta: { card: 'end' },
         header: t('colQty'),
         cell: ({ row }) => (
           <div className="num whitespace-nowrap">
@@ -119,12 +121,14 @@ export function StockLevels() {
       },
       {
         id: 'status',
+        meta: { card: 'badge' },
         header: t('colStatus'),
         cell: ({ row }) => <StatusBadge level={row.original} />,
         size: 110,
       },
       {
         id: 'actions',
+        meta: { card: 'actions' },
         header: () => <span className="sr-only">{t('colActions')}</span>,
         size: 56,
         cell: ({ row }) => (

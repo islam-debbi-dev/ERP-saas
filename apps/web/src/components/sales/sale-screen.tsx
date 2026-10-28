@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Check, Loader2, Save, ScanBarcode, Trash2, UserRound } from 'lucide-react';
+import { Check, Loader2, Minus, Plus, Save, ScanBarcode, Trash2, UserRound } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
@@ -53,6 +53,8 @@ import { usePrint } from '@/components/shared/print-button';
 import { ClientPicker } from './client-picker';
 import { Kbd } from './kbd';
 import { Amount } from '@/components/shared/amount';
+import { StickyActions } from '@/components/shared/sticky-actions';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export interface ScreenLine {
   key: string;
@@ -401,6 +403,92 @@ export function SaleScreen({
     }
   };
 
+  const isMobile = useIsMobile();
+
+  /** The editors of one line, shared by the desktop table and the phone cards. */
+  function lineEditors(l: ScreenLine, i: number) {
+    const price = unitPrice(l);
+    return {
+      unit: (
+        <NativeSelect
+          aria-label={t('unitOf', { product: l.product.designation })}
+          value={l.unitId}
+          onChange={(e) => patchLine(i, { unitId: e.target.value, price: null })}
+        >
+          {l.product.units.map((u) => (
+            <option key={u.unitId} value={u.unitId}>
+              {unitLabel({ code: u.unitCode, name: u.unitName })}
+              {u.unitId !== l.product.baseUnitId ? ` ×${formatQty(u.factorToBase)}` : ''}
+            </option>
+          ))}
+        </NativeSelect>
+      ),
+      qty: (
+        <Input
+          aria-label={t('qtyOf', { product: l.product.designation })}
+          dir="ltr"
+          inputMode="decimal"
+          className="num text-center md:text-start"
+          aria-invalid={!parseDA(l.qty)?.gt(0)}
+          value={l.qty}
+          onChange={(e) => patchLine(i, { qty: e.target.value })}
+          onFocus={() => setSelected(i)}
+          onKeyDown={backToScan}
+        />
+      ),
+      price: canOverride ? (
+        <Input
+          aria-label={t('priceOf', { product: l.product.designation })}
+          dir="ltr"
+          inputMode="decimal"
+          className="num"
+          placeholder={t('noPrice')}
+          value={l.price ?? (price ? formatDA(price, { currency: false }) : '')}
+          onChange={(e) => patchLine(i, { price: e.target.value })}
+          onFocus={() => setSelected(i)}
+          onKeyDown={backToScan}
+        />
+      ) : price ? (
+        <Amount value={price} currency={false} />
+      ) : (
+        <Badge variant="destructive">{t('noPrice')}</Badge>
+      ),
+      discount: canOverride ? (
+        <Input
+          aria-label={t('discountOf', { product: l.product.designation })}
+          dir="ltr"
+          inputMode="decimal"
+          className="num"
+          value={l.discount}
+          onChange={(e) => patchLine(i, { discount: e.target.value })}
+          onFocus={() => setSelected(i)}
+          onKeyDown={backToScan}
+        />
+      ) : (
+        <span dir="ltr" className="num text-muted-foreground">
+          {l.discount} %
+        </span>
+      ),
+      total: (
+        <Amount value={totals.lines[i]?.lineHt ?? '0'} currency={false} className="font-medium" />
+      ),
+      remove: (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={t('remove', { product: l.product.designation })}
+          onClick={(e) => {
+            e.stopPropagation();
+            removeLine(i);
+          }}
+        >
+          <Trash2 aria-hidden />
+        </Button>
+      ),
+    };
+  }
+
   return (
     <>
       <PageHeader
@@ -410,7 +498,7 @@ export function SaleScreen({
           <div
             role="radiogroup"
             aria-label={t('docType')}
-            className="inline-flex rounded-md border p-0.5"
+            className="flex rounded-md border p-0.5 md:inline-flex"
           >
             {[SaleType.BL, SaleType.FACTURE].map((v) => (
               <button
@@ -420,7 +508,7 @@ export function SaleScreen({
                 aria-checked={type === v}
                 onClick={() => setType(v)}
                 className={cn(
-                  'rounded px-3 py-1.5 text-sm font-medium transition-colors',
+                  'min-h-10 flex-1 rounded px-4 py-1.5 text-sm font-medium transition-colors md:min-h-0 md:flex-none md:px-3',
                   type === v
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:text-foreground',
@@ -474,7 +562,8 @@ export function SaleScreen({
               </div>
               <p
                 id="scan-hint"
-                className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground"
+                // Shortcuts need a keyboard: hidden on a phone (still read by screen readers).
+                className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground max-md:sr-only"
               >
                 <span>
                   <Kbd>{t('keyEnter')}</Kbd> {t('hintAdd')}
@@ -520,7 +609,7 @@ export function SaleScreen({
                       role="option"
                       aria-selected={i === resultIndex}
                       className={cn(
-                        'flex cursor-pointer items-center justify-between gap-3 border-b px-3 py-2 text-sm last:border-b-0',
+                        'flex min-h-11 cursor-pointer items-center justify-between gap-3 border-b px-3 py-2 text-sm last:border-b-0',
                         i === resultIndex && 'bg-accent text-accent-foreground',
                       )}
                       onMouseEnter={() => setResultIndex(i)}
@@ -536,146 +625,132 @@ export function SaleScreen({
               ) : null}
             </div>
 
-            <div className="w-full overflow-x-auto rounded-lg border">
-              <Table className="min-w-[44rem]">
-                <caption className="sr-only">{t('linesCaption')}</caption>
-                <TableHeader>
-                  <TableRow className="bg-muted/50 hover:bg-muted/50">
-                    <TableHead>{t('colProduct')}</TableHead>
-                    <TableHead>{t('colUnit')}</TableHead>
-                    <TableHead className="w-24">{t('colQty')}</TableHead>
-                    <TableHead className="w-32">{t('colPrice')}</TableHead>
-                    <TableHead className="w-20">{t('colDiscount')}</TableHead>
-                    <TableHead className="text-end">{t('colLineHt')}</TableHead>
-                    <TableHead className="w-10">
-                      <span className="sr-only">{t('colActions')}</span>
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {lines.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
-                        {t('noLines')}
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    lines.map((l, i) => {
-                      const price = unitPrice(l);
-                      return (
-                        <TableRow
-                          key={l.key}
-                          data-state={i === selected ? 'selected' : undefined}
-                          className="data-[state=selected]:bg-primary/10 data-[state=selected]:shadow-[inset_3px_0_0_var(--primary)] rtl:data-[state=selected]:shadow-[inset_-3px_0_0_var(--primary)]"
-                          onClick={() => setSelected(i)}
-                        >
-                          <TableCell className="max-w-56 whitespace-normal">
-                            <p className="font-medium">{l.product.designation}</p>
+            {isMobile ? (
+              <ul aria-label={t('linesCaption')} className="divide-y rounded-lg border">
+                {lines.length === 0 ? (
+                  <li className="py-10 text-center text-sm text-muted-foreground">
+                    {t('noLines')}
+                  </li>
+                ) : (
+                  lines.map((l, i) => {
+                    const ed = lineEditors(l, i);
+                    return (
+                      <li
+                        key={l.key}
+                        data-state={i === selected ? 'selected' : undefined}
+                        className="space-y-3 p-3 data-[state=selected]:bg-primary/5"
+                        onClick={() => setSelected(i)}
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-medium">{l.product.designation}</p>
                             <p
                               dir="ltr"
-                              className="text-start text-xs text-muted-foreground rtl:text-end"
+                              className="truncate text-xs text-muted-foreground rtl:text-end"
                             >
                               {l.product.reference}
                             </p>
-                          </TableCell>
-                          <TableCell>
-                            <NativeSelect
-                              aria-label={t('unitOf', { product: l.product.designation })}
-                              value={l.unitId}
-                              onChange={(e) =>
-                                patchLine(i, { unitId: e.target.value, price: null })
-                              }
-                            >
-                              {l.product.units.map((u) => (
-                                <option key={u.unitId} value={u.unitId}>
-                                  {unitLabel({ code: u.unitCode, name: u.unitName })}
-                                  {u.unitId !== l.product.baseUnitId
-                                    ? ` ×${formatQty(u.factorToBase)}`
-                                    : ''}
-                                </option>
-                              ))}
-                            </NativeSelect>
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              aria-label={t('qtyOf', { product: l.product.designation })}
-                              dir="ltr"
-                              inputMode="decimal"
-                              className="num"
-                              aria-invalid={!parseDA(l.qty)?.gt(0)}
-                              value={l.qty}
-                              onChange={(e) => patchLine(i, { qty: e.target.value })}
-                              onFocus={() => setSelected(i)}
-                              onKeyDown={backToScan}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            {canOverride ? (
-                              <Input
-                                aria-label={t('priceOf', { product: l.product.designation })}
-                                dir="ltr"
-                                inputMode="decimal"
-                                className="num"
-                                placeholder={t('noPrice')}
-                                value={
-                                  l.price ?? (price ? formatDA(price, { currency: false }) : '')
-                                }
-                                onChange={(e) => patchLine(i, { price: e.target.value })}
-                                onFocus={() => setSelected(i)}
-                                onKeyDown={backToScan}
-                              />
-                            ) : price ? (
-                              <span dir="ltr" className="num">
-                                <Amount value={price} currency={false} />
-                              </span>
-                            ) : (
-                              <Badge variant="destructive">{t('noPrice')}</Badge>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {canOverride ? (
-                              <Input
-                                aria-label={t('discountOf', { product: l.product.designation })}
-                                dir="ltr"
-                                inputMode="decimal"
-                                className="num"
-                                value={l.discount}
-                                onChange={(e) => patchLine(i, { discount: e.target.value })}
-                                onFocus={() => setSelected(i)}
-                                onKeyDown={backToScan}
-                              />
-                            ) : (
-                              <span dir="ltr" className="num text-muted-foreground">
-                                {l.discount} %
-                              </span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-end">
-                            <span dir="ltr" className="num font-medium">
-                              <Amount value={totals.lines[i]?.lineHt ?? '0'} currency={false} />
-                            </span>
-                          </TableCell>
-                          <TableCell>
+                          </div>
+                          {ed.remove}
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="col-span-2 flex items-center gap-2">
                             <Button
                               type="button"
-                              variant="ghost"
+                              variant="outline"
                               size="icon"
-                              aria-label={t('remove', { product: l.product.designation })}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeLine(i);
-                              }}
+                              aria-label={t('qtyLess', { product: l.product.designation })}
+                              onClick={() => changeQty(i, -1)}
                             >
-                              <Trash2 aria-hidden />
+                              <Minus aria-hidden />
                             </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                            <div className="flex-1">{ed.qty}</div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              aria-label={t('qtyMore', { product: l.product.designation })}
+                              onClick={() => changeQty(i, 1)}
+                            >
+                              <Plus aria-hidden />
+                            </Button>
+                          </div>
+                          <div className="col-span-2">{ed.unit}</div>
+                          <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground">{t('colPrice')}</p>
+                            {ed.price}
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground">{t('colDiscount')}</p>
+                            {ed.discount}
+                          </div>
+                        </div>
+                        <div className="flex items-baseline justify-between gap-2 text-sm">
+                          <span className="text-muted-foreground">{t('colLineHt')}</span>
+                          {ed.total}
+                        </div>
+                      </li>
+                    );
+                  })
+                )}
+              </ul>
+            ) : (
+              <div className="w-full overflow-x-auto rounded-lg border">
+                <Table className="min-w-[44rem]">
+                  <caption className="sr-only">{t('linesCaption')}</caption>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50 hover:bg-muted/50">
+                      <TableHead>{t('colProduct')}</TableHead>
+                      <TableHead>{t('colUnit')}</TableHead>
+                      <TableHead className="w-24">{t('colQty')}</TableHead>
+                      <TableHead className="w-32">{t('colPrice')}</TableHead>
+                      <TableHead className="w-20">{t('colDiscount')}</TableHead>
+                      <TableHead className="text-end">{t('colLineHt')}</TableHead>
+                      <TableHead className="w-10">
+                        <span className="sr-only">{t('colActions')}</span>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {lines.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
+                          {t('noLines')}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      lines.map((l, i) => {
+                        const ed = lineEditors(l, i);
+                        return (
+                          <TableRow
+                            key={l.key}
+                            data-state={i === selected ? 'selected' : undefined}
+                            className="data-[state=selected]:bg-primary/10 data-[state=selected]:shadow-[inset_3px_0_0_var(--primary)] rtl:data-[state=selected]:shadow-[inset_-3px_0_0_var(--primary)]"
+                            onClick={() => setSelected(i)}
+                          >
+                            <TableCell className="max-w-56 whitespace-normal">
+                              <p className="font-medium">{l.product.designation}</p>
+                              <p
+                                dir="ltr"
+                                className="text-start text-xs text-muted-foreground rtl:text-end"
+                              >
+                                {l.product.reference}
+                              </p>
+                            </TableCell>
+                            <TableCell>{ed.unit}</TableCell>
+                            <TableCell>{ed.qty}</TableCell>
+                            <TableCell>{ed.price}</TableCell>
+                            <TableCell>{ed.discount}</TableCell>
+                            <TableCell className="text-end">{ed.total}</TableCell>
+                            <TableCell>{ed.remove}</TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -868,7 +943,13 @@ export function SaleScreen({
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-2 gap-2">
+          <StickyActions className="grid grid-cols-2 gap-2 md:grid">
+            <p className="col-span-2 flex items-baseline justify-between gap-2 md:hidden">
+              <span className="text-sm text-muted-foreground">
+                {timbre.gt(0) ? t('netToPay') : t('totalTtc')}
+              </span>
+              <Amount value={timbre.gt(0) ? due : ttc} className="text-xl font-semibold" />
+            </p>
             <Button
               type="button"
               variant="outline"
@@ -893,7 +974,7 @@ export function SaleScreen({
                 F9
               </Kbd>
             </Button>
-          </div>
+          </StickyActions>
         </div>
       </div>
 

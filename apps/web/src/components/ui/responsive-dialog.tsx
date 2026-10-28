@@ -112,7 +112,7 @@ function ResponsiveDialogFooter({ className, ...props }: React.ComponentProps<'d
     <div
       data-slot="dialog-footer"
       className={cn(
-        'flex flex-col-reverse gap-2 md:flex-row md:justify-end',
+        'flex flex-row gap-2 md:justify-end max-md:[&>*]:flex-1',
         'max-md:sticky max-md:-bottom-[max(1rem,env(safe-area-inset-bottom))] max-md:-mx-4 max-md:mt-auto max-md:border-t max-md:bg-background max-md:px-4 max-md:pt-3 max-md:pb-[max(1rem,env(safe-area-inset-bottom))]',
         className,
       )}

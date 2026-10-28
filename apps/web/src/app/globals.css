@@ -139,6 +139,80 @@
   }
 }
 
+/*
+ * Small tables written by hand (document lines, users, sessions, inventory):
+ * below md each row becomes a card (docs/ui.md rule 2). The header is kept for
+ * screen readers; each cell shows its column name from `data-label`.
+ * `data-cell="main"` spans the card (product, name), `data-cell="actions"`
+ * puts the buttons at the end, `data-cell="end"` aligns an amount on the end side.
+ */
+@media (width < 48rem) {
+  .stack-table {
+    display: block;
+    min-width: 0 !important;
+  }
+  .stack-table > thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .stack-table > tbody,
+  .stack-table > tfoot {
+    display: block;
+  }
+  .stack-table > tbody > tr,
+  .stack-table > tfoot > tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border);
+  }
+  .stack-table > tbody > tr:first-child {
+    border-top: 0;
+  }
+  .stack-table > tbody > tr > *,
+  .stack-table > tfoot > tr > * {
+    display: block;
+    min-width: 0;
+    padding: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    text-align: start;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .stack-table [data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--muted-foreground);
+  }
+  .stack-table [data-cell='main'],
+  .stack-table [data-cell='actions'],
+  .stack-table [colspan] {
+    grid-column: 1 / -1;
+  }
+  .stack-table [data-cell='actions'] {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+  .stack-table [data-cell='end'] {
+    text-align: end;
+  }
+  .stack-table [data-cell='end'][data-label]::before {
+    text-align: end;
+  }
+  .stack-table td:empty {
+    display: none;
+  }
+}
+
 @layer base {
   /* Amounts and quantities line up in columns. */
   .num {

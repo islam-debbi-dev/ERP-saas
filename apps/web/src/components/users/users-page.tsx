@@ -97,7 +97,7 @@ export function UsersPage() {
         <EmptyState icon={Users} title={t('empty')} />
       ) : (
         <div className="w-full overflow-x-auto rounded-lg border bg-card">
-          <Table className="min-w-[44rem]">
+          <Table className="stack-table min-w-[44rem]">
             <TableHeader>
               <TableRow className="bg-muted/50 hover:bg-muted/50">
                 <TableHead>{t('colName')}</TableHead>
@@ -111,13 +111,13 @@ export function UsersPage() {
             <TableBody>
               {users.data.map((u) => (
                 <TableRow key={u.id} className={u.active ? undefined : 'opacity-60'}>
-                  <TableCell className="font-medium">
+                  <TableCell data-cell="main" className="font-medium">
                     {u.fullName}
                     {u.id === me?.id ? (
                       <span className="ms-2 text-xs text-muted-foreground">({t('you')})</span>
                     ) : null}
                   </TableCell>
-                  <TableCell>
+                  <TableCell data-label={t('colLogin')}>
                     <div className="flex flex-col text-sm" dir="ltr">
                       {u.phone ? (
                         <span className="text-start rtl:text-end">{formatPhone(u.phone)}</span>
@@ -129,13 +129,13 @@ export function UsersPage() {
                       ) : null}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell data-label={t('colRole')}>
                     {tr(u.role)}
                     {u.grants.length + u.revokes.length > 0 ? (
                       <span className="ms-1 text-xs text-muted-foreground">{t('customized')}</span>
                     ) : null}
                   </TableCell>
-                  <TableCell>
+                  <TableCell data-label={t('colStatus')}>
                     <div className="flex flex-wrap gap-1">
                       {!u.active ? (
                         <Badge variant="secondary">{t('statusInactive')}</Badge>
@@ -152,13 +152,16 @@ export function UsersPage() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell
+                    data-label={t('colLastActivity')}
+                    className="text-sm text-muted-foreground"
+                  >
                     {u.lastActivityAt
                       ? format.relativeTime(new Date(u.lastActivityAt), new Date())
                       : '—'}
                   </TableCell>
                   {owner ? (
-                    <TableCell>
+                    <TableCell data-cell="actions">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button

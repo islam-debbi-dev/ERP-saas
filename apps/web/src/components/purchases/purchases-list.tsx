@@ -37,6 +37,7 @@ export function PurchasesList() {
     () => [
       {
         id: 'number',
+        meta: { card: 'title' },
         header: t('colNumber'),
         cell: ({ row }) => (
           <Link
@@ -57,7 +58,12 @@ export function PurchasesList() {
             dateStyle: 'medium',
           }),
       },
-      { id: 'supplier', header: t('colSupplier'), cell: ({ row }) => row.original.supplier.name },
+      {
+        id: 'supplier',
+        meta: { card: 'subtitle' },
+        header: t('colSupplier'),
+        cell: ({ row }) => row.original.supplier.name,
+      },
       {
         id: 'lines',
         header: t('colLines'),
@@ -65,6 +71,7 @@ export function PurchasesList() {
       },
       {
         id: 'total',
+        meta: { card: 'end' },
         header: t('colTotal'),
         cell: ({ row }) => (
           <span className="num whitespace-nowrap font-medium" dir="ltr">
@@ -74,6 +81,7 @@ export function PurchasesList() {
       },
       {
         id: 'status',
+        meta: { card: 'badge' },
         header: t('colStatus'),
         cell: ({ row }) => <PurchaseStatusBadge status={row.original.status} />,
       },

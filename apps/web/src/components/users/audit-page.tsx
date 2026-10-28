@@ -48,12 +48,12 @@ export function AuditPage() {
   return (
     <>
       <PageHeader title={t('title')} description={t('subtitle')} />
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="space-y-1">
+      <div className="grid grid-cols-2 items-end gap-3 md:flex md:flex-wrap">
+        <div className="min-w-0 space-y-1">
           <Label htmlFor="audit-user">{t('user')}</Label>
           <NativeSelect
             id="audit-user"
-            className="w-48"
+            className="w-48 max-md:w-full"
             value={filters.userId}
             onChange={(e) => set({ userId: e.target.value })}
           >
@@ -65,11 +65,11 @@ export function AuditPage() {
             ))}
           </NativeSelect>
         </div>
-        <div className="space-y-1">
+        <div className="min-w-0 space-y-1">
           <Label htmlFor="audit-entity">{t('entity')}</Label>
           <NativeSelect
             id="audit-entity"
-            className="w-44"
+            className="w-44 max-md:w-full"
             value={filters.entity}
             onChange={(e) => set({ entity: e.target.value })}
           >
@@ -81,11 +81,11 @@ export function AuditPage() {
             ))}
           </NativeSelect>
         </div>
-        <div className="space-y-1">
+        <div className="col-span-2 space-y-1">
           <Label htmlFor="audit-action">{t('action')}</Label>
           <NativeSelect
             id="audit-action"
-            className="w-56"
+            className="w-56 max-md:w-full"
             value={filters.action}
             onChange={(e) => set({ action: e.target.value })}
           >
@@ -103,7 +103,7 @@ export function AuditPage() {
             id="audit-from"
             type="date"
             dir="ltr"
-            className="w-40"
+            className="w-40 max-md:w-full"
             value={filters.from}
             onChange={(e) => set({ from: e.target.value })}
           />
@@ -114,7 +114,7 @@ export function AuditPage() {
             id="audit-to"
             type="date"
             dir="ltr"
-            className="w-40"
+            className="w-40 max-md:w-full"
             value={filters.to}
             onChange={(e) => set({ to: e.target.value })}
           />
@@ -137,7 +137,7 @@ export function AuditPage() {
       ) : (
         <>
           <div className="w-full overflow-x-auto rounded-lg border bg-card">
-            <Table className="min-w-[44rem]">
+            <Table className="stack-table min-w-[44rem]">
               <TableHeader>
                 <TableRow className="bg-muted/50 hover:bg-muted/50">
                   <TableHead>{t('colWhen')}</TableHead>
@@ -158,20 +158,27 @@ export function AuditPage() {
                       if (e.key === 'Enter') setOpenRow(l);
                     }}
                   >
-                    <TableCell className="whitespace-nowrap text-sm">
+                    <TableCell data-label={t('colWhen')} className="whitespace-nowrap text-sm">
                       {format.dateTime(new Date(l.createdAt), {
                         dateStyle: 'short',
                         timeStyle: 'medium',
                       })}
                     </TableCell>
-                    <TableCell>{l.user?.fullName ?? t('system')}</TableCell>
-                    <TableCell>
+                    <TableCell data-label={t('colUser')}>
+                      {l.user?.fullName ?? t('system')}
+                    </TableCell>
+                    <TableCell data-label={t('colAction')}>
                       <code dir="ltr" className="text-xs">
                         {l.action}
                       </code>
                     </TableCell>
-                    <TableCell className="text-sm">{l.entity}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell data-label={t('colEntity')} className="text-sm">
+                      {l.entity}
+                    </TableCell>
+                    <TableCell
+                      data-label={t('colDevice')}
+                      className="text-sm text-muted-foreground"
+                    >
                       <span className="flex flex-wrap items-baseline gap-x-2">
                         <span>{l.deviceName ?? '—'}</span>
                         {l.ip ? (

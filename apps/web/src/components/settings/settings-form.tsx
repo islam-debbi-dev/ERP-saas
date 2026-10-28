@@ -504,7 +504,7 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
       </fieldset>
 
       {canEdit ? (
-        <div className="sticky bottom-0 -mx-4 flex justify-end border-t bg-background/95 px-4 py-3 backdrop-blur lg:-mx-6 lg:px-6">
+        <div className="sticky bottom-0 z-20 -mx-4 flex justify-end border-t bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:py-3 backdrop-blur lg:-mx-6 lg:px-6">
           <Button type="submit" disabled={!isDirty || mutation.isPending} className="gap-2">
             {mutation.isPending ? (
               <Loader2 className="animate-spin" aria-hidden />

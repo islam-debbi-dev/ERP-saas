@@ -22,6 +22,25 @@ const APP_DIR = fileURLToPath(new URL('../../apps/web/src/app/', import.meta.url
 const FIXTURE_FILE = fileURLToPath(new URL('../.auth/fixture.json', import.meta.url));
 const SHOTS_DIR = fileURLToPath(new URL('../artifacts/mobile/', import.meta.url));
 const LOCALES = ['ar', 'fr'] as const;
+const MESSAGES_DIR = fileURLToPath(new URL('../../apps/web/src/messages/', import.meta.url));
+
+/** The UI labels of a locale, so the checks click what a user reads. */
+function messages(locale: string): Record<string, Record<string, string>> {
+  return JSON.parse(readFileSync(join(MESSAGES_DIR, `${locale}.json`), 'utf8')) as Record<
+    string,
+    Record<string, string>
+  >;
+}
+
+/** The element is fully on screen, without scrolling sideways (docs/ui.md: main action visible). */
+async function expectOnScreen(page: Page, selector: string): Promise<void> {
+  const box = await page.locator(selector).first().boundingBox();
+  const vp = page.viewportSize();
+  expect.soft(box, `${selector} is rendered`).not.toBeNull();
+  if (!box || !vp) return;
+  expect.soft(box.x >= 0 && box.x + box.width <= vp.width, `${selector} fits the width`).toBe(true);
+  expect.soft(box.y >= 0 && box.y + box.height <= vp.height, `${selector} is above the fold`).toBe(true);
+}
 
 /** Route groups whose pages need a session; the others are opened anonymous. */
 const AUTH_GROUP = '(auth)';
@@ -65,6 +84,7 @@ interface Ids {
   saleId: string;
   purchaseId: string;
   inventoryId: string;
+  productReference: string;
 }
 
 let ids: Ids | null = null;
@@ -113,7 +133,9 @@ async function prepareIds(f: Fixture): Promise<Ids> {
       body: { note: 'mobile count' },
     })
   ).body;
+  const product = (await call<{ reference: string }>(`/products/${f.productId}`, { token })).body;
   return {
+    productReference: product.reference,
     clientId: client.id,
     productId: f.productId,
     saleId: sale.id,
@@ -151,6 +173,7 @@ test.beforeAll(async () => {
 
 async function settle(page: Page): Promise<void> {
   await page.waitForLoadState('networkidle');
+  await page.locator('h1').first().waitFor();
   await page.evaluate(() => document.fonts.ready);
   // The first paint of the client components after their data arrived.
   await page.waitForTimeout(150);
@@ -177,10 +200,16 @@ function saveResults(project: string, name: string, results: Result[]): void {
 }
 
 /** Screenshot + overflow check, soft so one broken screen does not hide the next ones. */
-async function check(page: Page, pattern: string, locale: string, results: Result[]): Promise<void> {
+async function check(
+  page: Page,
+  pattern: string,
+  locale: string,
+  results: Result[],
+  opts: { fullPage?: boolean } = {},
+): Promise<void> {
   await expect.soft(page.locator('html')).toHaveAttribute('lang', locale);
   const width = page.viewportSize()?.width ?? 0;
-  await page.screenshot({ path: join(SHOTS_DIR, shotName(pattern, locale, width)), fullPage: true });
+  await page.screenshot({ path: join(SHOTS_DIR, shotName(pattern, locale, width)), fullPage: opts.fullPage ?? true });
   const problems = await expectNoHorizontalOverflow(page, { soft: true });
   results.push({ route: pattern, locale, width, problems });
 }
@@ -213,6 +242,39 @@ for (const locale of LOCALES) {
           await check(page, route.pattern, locale, results);
         });
       }
+
+      const m = messages(locale);
+      await test.step('new versement opens as a sheet with its save button on screen', async () => {
+        const path = resolve('/clients/[id]', v);
+        await page.evaluate((to) => {
+          (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push(to);
+        }, path);
+        await page.waitForURL((url) => url.pathname === path);
+        await settle(page);
+        await page.getByRole('button', { name: m['clients']?.['newPayment'] }).click();
+        await page.locator('#pay-amount').waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
+        await check(page, '/clients/[id]/versement', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+      });
+
+      await test.step('fast sale: a line, then the total and the validate button on screen', async () => {
+        const path = '/ventes/nouvelle';
+        await page.evaluate((to) => {
+          (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push(to);
+        }, path);
+        await page.waitForURL((url) => url.pathname === path);
+        await settle(page);
+        await page.locator('#scan').fill(v.productReference);
+        await page.locator('#scan').press('Enter');
+        // The line of the fixture product, as a card on a phone.
+        await page.getByText('Audit product').first().waitFor();
+        await page.locator('#scan').blur();
+        await settle(page);
+        await expectOnScreen(page, '[data-slot="sticky-actions"] button:not([disabled])');
+        await check(page, '/ventes/nouvelle/ligne', locale, results, { fullPage: false });
+      });
     } finally {
       saveResults(info.project.name, `signed-in-${locale}`, results);
       await context.close();

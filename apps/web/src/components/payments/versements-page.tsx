@@ -125,6 +125,7 @@ function PaymentsTable({ cheques, onOpen }: { cheques: boolean; onOpen: (id: str
     () => [
       {
         id: 'number',
+        meta: { card: 'title' },
         header: t('colNumber'),
         cell: ({ row }) => (
           <button
@@ -162,6 +163,7 @@ function PaymentsTable({ cheques, onOpen }: { cheques: boolean; onOpen: (id: str
       },
       {
         id: 'client',
+        meta: { card: 'subtitle' },
         header: t('client'),
         cell: ({ row }) =>
           row.original.client?.name ?? (
@@ -184,6 +186,7 @@ function PaymentsTable({ cheques, onOpen }: { cheques: boolean; onOpen: (id: str
       },
       {
         id: 'amount',
+        meta: { card: 'end' },
         header: t('amount'),
         cell: ({ row }) => (
           <span dir="ltr" className="num whitespace-nowrap font-medium">
@@ -198,6 +201,7 @@ function PaymentsTable({ cheques, onOpen }: { cheques: boolean; onOpen: (id: str
       },
       {
         id: 'status',
+        meta: { card: 'badge' },
         header: t('status'),
         cell: ({ row }) => <PaymentStatusBadge status={row.original.status} />,
       },
@@ -322,7 +326,7 @@ function CashJournal() {
             dir="ltr"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-44"
+            className="w-44 max-md:w-full"
           />
         </div>
         <p className="text-sm text-muted-foreground">{t('journalHelp')}</p>

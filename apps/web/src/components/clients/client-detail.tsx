@@ -2,7 +2,6 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Archive, ArrowLeft, Banknote, FileText, Pencil, Scale, Wallet } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -48,6 +47,7 @@ import {
   useStatement,
 } from '@/lib/clients';
 import { todayInAlgiers } from '@/lib/purchases';
+import { cn } from '@/lib/utils';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { PaymentDialog } from '@/components/payments/payment-dialog';
 import { UnpaidDocuments } from '@/components/payments/unpaid-documents';
@@ -55,6 +55,7 @@ import { useUnpaidDocuments } from '@/lib/payments';
 import { BalanceAmount, PlafondBar } from './balance-amount';
 import { AdjustmentDialog, OpeningBalanceDialog } from './client-dialogs';
 import { Amount } from '@/components/shared/amount';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function ClientDetail({ clientId }: { clientId: string }) {
   const t = useTranslations('clients');
@@ -92,41 +93,26 @@ export function ClientDetail({ clientId }: { clientId: string }) {
       <PageHeader
         title={c?.name ?? t('detailTitle')}
         description={c ? `${t('code')} ${c.code}` : undefined}
+        more={[
+          { label: t('back'), icon: ArrowLeft, flipIcon: true, href: '/clients' },
+          live && { label: t('edit'), icon: Pencil, href: `/clients/${clientId}/modifier` },
+          live &&
+            canManage &&
+            !c.hasOpening && {
+              label: t('opening'),
+              icon: Wallet,
+              onSelect: () => setDialog('opening'),
+            },
+          live &&
+            canManage && { label: t('adjust'), icon: Scale, onSelect: () => setDialog('adjust') },
+        ]}
         actions={
-          <>
-            <Button asChild variant="ghost">
-              <Link href="/clients">
-                <ArrowLeft className="rtl-flip" aria-hidden />
-                {t('back')}
-              </Link>
+          live ? (
+            <Button onClick={() => setDialog('payment')}>
+              <Banknote aria-hidden />
+              {t('newPayment')}
             </Button>
-            {live ? (
-              <Button asChild variant="outline">
-                <Link href={`/clients/${clientId}/modifier`}>
-                  <Pencil aria-hidden />
-                  {t('edit')}
-                </Link>
-              </Button>
-            ) : null}
-            {live && canManage && !c.hasOpening ? (
-              <Button variant="outline" onClick={() => setDialog('opening')}>
-                <Wallet aria-hidden />
-                {t('opening')}
-              </Button>
-            ) : null}
-            {live && canManage ? (
-              <Button variant="outline" onClick={() => setDialog('adjust')}>
-                <Scale aria-hidden />
-                {t('adjust')}
-              </Button>
-            ) : null}
-            {live ? (
-              <Button onClick={() => setDialog('payment')}>
-                <Banknote aria-hidden />
-                {t('newPayment')}
-              </Button>
-            ) : null}
-          </>
+          ) : null
         }
       />
 
@@ -361,6 +347,72 @@ function StatementTable({ statement }: { statement: ClientStatementDto }) {
   const format = useFormatter();
   const day = (iso: string) =>
     format.dateTime(new Date(`${iso}T12:00:00Z`), { dateStyle: 'medium' });
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    // Phone: one card per entry, the movement and the balance after it on the end side.
+    const edge = (label: string, date: string, balance: string) => (
+      <li className="flex items-baseline justify-between gap-3 bg-muted/30 p-3 text-sm font-medium">
+        <span className="min-w-0">
+          <span className="block">{label}</span>
+          <span className="text-xs font-normal text-muted-foreground">{day(date)}</span>
+        </span>
+        <Signed value={balance} />
+      </li>
+    );
+    return (
+      <ul aria-label={t('statementTitle')} className="divide-y rounded-lg border bg-card">
+        {edge(t('openingLine'), statement.from, statement.openingBalance)}
+        {statement.entries.length === 0 ? (
+          <li>
+            <EmptyState icon={FileText} title={t('noEntries')} />
+          </li>
+        ) : (
+          statement.entries.map((e) => {
+            const amount = money(e.amount);
+            return (
+              <li key={e.id} className="flex items-start justify-between gap-3 p-3">
+                <div className="min-w-0 space-y-1">
+                  <Badge variant="secondary" className="font-normal">
+                    {tl(e.type)}
+                  </Badge>
+                  {e.label ? <p className="truncate text-sm">{e.label}</p> : null}
+                  {e.reason && e.reason !== e.label ? (
+                    <p className="text-xs text-muted-foreground">{e.reason}</p>
+                  ) : null}
+                  <p className="text-xs text-muted-foreground">
+                    {format.dateTime(new Date(e.createdAt), {
+                      dateStyle: 'short',
+                      timeStyle: 'short',
+                    })}
+                    {e.createdBy ? ` · ${e.createdBy.fullName}` : ''}
+                  </p>
+                </div>
+                <div className="shrink-0 space-y-1 text-end">
+                  <p
+                    className={cn(
+                      'font-medium',
+                      amount.gt(0) ? 'text-destructive' : 'text-primary',
+                    )}
+                  >
+                    <span className="sr-only">
+                      {amount.gt(0) ? t('colDebit') : t('colCredit')}{' '}
+                    </span>
+                    <span aria-hidden>{amount.gt(0) ? '+' : '−'}</span>
+                    <Amount value={amount.abs()} />
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t('colBalance')} <Signed value={e.runningBalance} />
+                  </p>
+                </div>
+              </li>
+            );
+          })
+        )}
+        {edge(t('closingLine'), statement.to, statement.closingBalance)}
+      </ul>
+    );
+  }
 
   return (
     <div className="w-full overflow-x-auto rounded-lg border bg-card">

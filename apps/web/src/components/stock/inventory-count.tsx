@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { type InventoryDto, parseDA, Permission, type ProductDto, qty } from '@erp/shared';
 import { PageHeader } from '@/components/shared/page-header';
+import { StickyActions } from '@/components/shared/sticky-actions';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -293,7 +294,7 @@ export function InventoryCount({ id }: { id: string }) {
       ) : null}
 
       <div className="overflow-x-auto rounded-lg border bg-card">
-        <table className="w-full min-w-[34rem] text-sm">
+        <table className="stack-table w-full min-w-[34rem] text-sm">
           <caption className="sr-only">{t('listTitle')}</caption>
           <thead className="bg-muted/50 text-muted-foreground">
             <tr>
@@ -322,17 +323,20 @@ export function InventoryCount({ id }: { id: string }) {
                 const diff = qty(l.diffQtyBase);
                 return (
                   <tr key={l.productId} className="border-t">
-                    <td className="p-3">
+                    <td className="p-3" data-cell="main">
                       <p className="font-medium">{l.designation}</p>
                       <p className="text-xs text-muted-foreground" dir="ltr">
                         {l.reference}
                       </p>
                     </td>
-                    <td className="num p-3 text-end" dir="ltr">
-                      {formatQty(l.countedQtyBase)}
+                    <td className="num p-3 text-end" data-label={t('colCounted')}>
+                      <bdi dir="ltr">{formatQty(l.countedQtyBase)}</bdi>
                     </td>
-                    <td className="num p-3 text-end text-muted-foreground" dir="ltr">
-                      {formatQty(l.expectedQtyBase)}
+                    <td
+                      className="num p-3 text-end text-muted-foreground"
+                      data-label={t('colExpected')}
+                    >
+                      <bdi dir="ltr">{formatQty(l.expectedQtyBase)}</bdi>
                     </td>
                     <td
                       className={cn(
@@ -340,12 +344,12 @@ export function InventoryCount({ id }: { id: string }) {
                         diff.gt(0) && 'text-primary',
                         diff.lt(0) && 'text-destructive',
                       )}
-                      dir="ltr"
+                      data-label={t('colDiff')}
                     >
-                      {formatQty(l.diffQtyBase, { signed: true })}
+                      <bdi dir="ltr">{formatQty(l.diffQtyBase, { signed: true })}</bdi>
                     </td>
                     {open ? (
-                      <td className="p-3">
+                      <td className="p-3" data-cell="actions">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -365,7 +369,7 @@ export function InventoryCount({ id }: { id: string }) {
       </div>
 
       {open ? (
-        <div className="sticky bottom-0 -mx-4 flex flex-wrap justify-between gap-2 border-t bg-background/95 px-4 py-3 backdrop-blur lg:-mx-6 lg:px-6">
+        <StickyActions className="justify-between md:sticky md:bottom-0 md:z-20 md:-mx-4 md:border-t md:bg-background/95 md:px-4 md:py-3 md:backdrop-blur lg:-mx-6 lg:px-6">
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="outline" disabled={close.isPending}>
@@ -412,7 +416,7 @@ export function InventoryCount({ id }: { id: string }) {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-        </div>
+        </StickyActions>
       ) : null}
     </>
   );

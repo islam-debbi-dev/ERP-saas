@@ -356,7 +356,7 @@ export function PurchaseEditor({
           </form>
 
           <div className="overflow-x-auto rounded-lg border">
-            <table className="w-full min-w-[46rem] text-sm">
+            <table className="stack-table w-full min-w-[46rem] text-sm">
               <caption className="sr-only">{t('linesSection')}</caption>
               <thead className="bg-muted/50 text-muted-foreground">
                 <tr>
@@ -379,16 +379,16 @@ export function PurchaseEditor({
                 ) : (
                   lines.map((l, i) => (
                     <tr key={l.key} className="border-t align-middle">
-                      <td className="p-2">
+                      <td data-cell="main" className="p-2">
                         <p className="font-medium">{l.product.designation}</p>
                         <p className="text-xs text-muted-foreground" dir="ltr">
                           {l.product.reference}
                         </p>
                       </td>
-                      <td className="p-2">
+                      <td data-label={t('colUnit')} className="p-2">
                         <NativeSelect
                           aria-label={`${t('colUnit')} — ${l.product.designation}`}
-                          className="w-36"
+                          className="w-36 max-md:w-full"
                           value={l.unitId}
                           onChange={(e) => update(l.key, { unitId: e.target.value })}
                         >
@@ -402,7 +402,7 @@ export function PurchaseEditor({
                           ))}
                         </NativeSelect>
                       </td>
-                      <td className="p-2">
+                      <td data-label={t('colQty')} className="p-2">
                         <Input
                           ref={(el) => {
                             if (el) {
@@ -417,7 +417,7 @@ export function PurchaseEditor({
                           aria-label={`${t('colQty')} — ${l.product.designation}`}
                           dir="ltr"
                           inputMode="decimal"
-                          className="num w-24"
+                          className="num w-24 max-md:w-full"
                           aria-invalid={(parseDA(l.qty)?.gt(0) ?? false) ? undefined : true}
                           value={l.qty}
                           onChange={(e) => update(l.key, { qty: e.target.value })}
@@ -429,7 +429,7 @@ export function PurchaseEditor({
                           }}
                         />
                       </td>
-                      <td className="p-2">
+                      <td data-label={t('colCost')} className="p-2">
                         <Input
                           ref={(el) => {
                             if (el) costRefs.current.set(l.key, el);
@@ -438,7 +438,7 @@ export function PurchaseEditor({
                           aria-label={`${t('colCost')} — ${l.product.designation}`}
                           dir="ltr"
                           inputMode="decimal"
-                          className="num w-32"
+                          className="num w-32 max-md:w-full"
                           aria-invalid={
                             l.unitCost !== '' && parseDA(l.unitCost) === null ? true : undefined
                           }
@@ -452,13 +452,19 @@ export function PurchaseEditor({
                           }}
                         />
                       </td>
-                      <td className="num p-2 text-end text-muted-foreground" dir="ltr">
+                      <td
+                        data-label={t('colTva')}
+                        className="num p-2 text-end text-muted-foreground"
+                      >
                         {`${qty(l.product.tvaRate).toString()} %`}
                       </td>
-                      <td className="num p-2 text-end font-medium whitespace-nowrap" dir="ltr">
+                      <td
+                        data-label={t('colLineHt')}
+                        className="num p-2 text-end font-medium whitespace-nowrap"
+                      >
                         <Amount value={totals.lines[i]?.lineHt ?? '0'} />
                       </td>
-                      <td className="p-2">
+                      <td data-cell="actions" className="p-2">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -534,7 +540,7 @@ export function PurchaseEditor({
         </CardContent>
       </Card>
 
-      <div className="sticky bottom-0 -mx-4 flex flex-wrap items-center justify-between gap-2 border-t bg-background/95 px-4 py-3 backdrop-blur lg:-mx-6 lg:px-6">
+      <div className="sticky bottom-0 z-20 -mx-4 flex flex-wrap items-center justify-between gap-2 border-t bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:py-3 backdrop-blur lg:-mx-6 lg:px-6">
         <div>
           {purchase ? (
             <AlertDialog>
@@ -589,7 +595,7 @@ export function PurchaseEditor({
             <p className="text-sm font-medium">{t('updatePrices')}</p>
             <p className="text-xs text-muted-foreground">{t('updatePricesHint')}</p>
             <div className="overflow-x-auto rounded-lg border">
-              <table className="w-full min-w-[30rem] text-sm">
+              <table className="stack-table w-full min-w-[30rem] text-sm">
                 <thead className="bg-muted/50 text-muted-foreground">
                   <tr>
                     <th className="p-2 text-start font-medium">{t('colProduct')}</th>
@@ -606,7 +612,7 @@ export function PurchaseEditor({
                     const cost = parseDA(l.unitCost);
                     return (
                       <tr key={`${l.product.id}:${l.unitId}`} className="border-t">
-                        <td className="p-2">
+                        <td className="p-2" data-cell="main">
                           <p className="font-medium">{l.product.designation}</p>
                           <p className="text-xs text-muted-foreground">
                             {unit ? unitLabel({ code: unit.unitCode, name: unit.unitName }) : ''}
@@ -619,12 +625,12 @@ export function PurchaseEditor({
                             (p) => p.unitId === l.unitId && p.priceLevelId === lv.id,
                           );
                           return (
-                            <td key={lv.id} className="p-2">
+                            <td key={lv.id} className="p-2" data-label={lv.name}>
                               <Input
                                 aria-label={`${lv.name} — ${l.product.designation}`}
                                 dir="ltr"
                                 inputMode="decimal"
-                                className="num w-28"
+                                className="num w-28 max-md:w-full"
                                 placeholder={
                                   current ? formatDA(current.priceHt, { currency: false }) : '—'
                                 }

@@ -93,52 +93,40 @@ export function SaleView({ id }: { id: string }) {
       <PageHeader
         title={`${t(`type${s.type}`)} ${s.number ?? t('draft')}`}
         description={s.client ? s.client.name : t('counterClient')}
+        more={[
+          { label: t('back'), icon: ArrowLeft, flipIcon: true, tone: 'ghost', href: '/ventes' },
+          validated &&
+            s.type === 'BL' &&
+            !s.invoice && {
+              label: t('makeInvoice'),
+              icon: FileText,
+              disabled: invoice.isPending,
+              onSelect: () => invoice.mutate(),
+            },
+          validated &&
+            canManage &&
+            !grouped && { label: t('return'), icon: Undo2, onSelect: () => setDialog('return') },
+          (s.status === 'DRAFT' || (validated && canCancel && !s.invoice)) && {
+            label: s.status === 'DRAFT' ? t('abandon') : t('cancel'),
+            icon: Ban,
+            tone: 'destructive',
+            onSelect: () => setDialog('cancel'),
+          },
+        ]}
         actions={
-          <>
-            <Button asChild variant="ghost">
-              <Link href="/ventes">
-                <ArrowLeft className="rtl-flip" aria-hidden />
-                {t('back')}
+          s.status === 'DRAFT' ? (
+            <Button asChild>
+              <Link href={`/ventes/nouvelle?brouillon=${s.id}`}>
+                <Pencil aria-hidden />
+                {t('resume')}
               </Link>
             </Button>
-            {s.status !== 'DRAFT' ? (
-              <PrintButton path={`/documents/${s.type === 'FACTURE' ? 'FAC' : 'BL'}/${s.id}/pdf`} />
-            ) : null}
-            {s.status === 'DRAFT' ? (
-              <Button asChild>
-                <Link href={`/ventes/nouvelle?brouillon=${s.id}`}>
-                  <Pencil aria-hidden />
-                  {t('resume')}
-                </Link>
-              </Button>
-            ) : null}
-            {validated && s.type === 'BL' && !s.invoice ? (
-              <Button
-                variant="outline"
-                disabled={invoice.isPending}
-                onClick={() => invoice.mutate()}
-              >
-                <FileText aria-hidden />
-                {t('makeInvoice')}
-              </Button>
-            ) : null}
-            {validated && canManage && !grouped ? (
-              <Button variant="outline" onClick={() => setDialog('return')}>
-                <Undo2 aria-hidden />
-                {t('return')}
-              </Button>
-            ) : null}
-            {s.status === 'DRAFT' || (validated && canCancel && !s.invoice) ? (
-              <Button
-                variant="ghost"
-                className="text-destructive"
-                onClick={() => setDialog('cancel')}
-              >
-                <Ban aria-hidden />
-                {s.status === 'DRAFT' ? t('abandon') : t('cancel')}
-              </Button>
-            ) : null}
-          </>
+          ) : (
+            <PrintButton
+              path={`/documents/${s.type === 'FACTURE' ? 'FAC' : 'BL'}/${s.id}/pdf`}
+              fileName={s.number ?? undefined}
+            />
+          )
         }
       />
 
@@ -304,7 +292,7 @@ export function SaleView({ id }: { id: string }) {
       </div>
 
       <div className="w-full overflow-x-auto rounded-lg border bg-card">
-        <Table className="min-w-[44rem]">
+        <Table className="stack-table min-w-[44rem]">
           <caption className="sr-only">{t('linesCaption')}</caption>
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">
@@ -322,30 +310,32 @@ export function SaleView({ id }: { id: string }) {
               const returned = qty(l.returnedQtyBase).div(l.factorToBase);
               return (
                 <TableRow key={l.id}>
-                  <TableCell className="whitespace-normal font-medium">{l.designation}</TableCell>
-                  <TableCell className="text-end">
+                  <TableCell data-cell="main" className="whitespace-normal font-medium">
+                    {l.designation}
+                  </TableCell>
+                  <TableCell data-label={t('colQty')} className="text-end">
                     <span className="num">{formatQty(l.qty)}</span>{' '}
                     {unitLabel({ code: l.unitCode, name: l.unitName })}
                   </TableCell>
-                  <TableCell className="text-end">
+                  <TableCell data-label={t('colPrice')} className="text-end">
                     <Amount value={l.unitPriceHt} />
                   </TableCell>
-                  <TableCell className="text-end">
+                  <TableCell data-label={t('colDiscount')} className="text-end">
                     <span dir="ltr" className="num">
                       {money(l.discountPct).isZero() ? '—' : `${money(l.discountPct).toString()} %`}
                     </span>
                   </TableCell>
                   {s.assujettiTva ? (
-                    <TableCell className="text-end">
+                    <TableCell data-label={t('colTva')} className="text-end">
                       <span dir="ltr" className="num">
                         {money(l.tvaRate).toString()} %
                       </span>
                     </TableCell>
                   ) : null}
-                  <TableCell className="text-end">
+                  <TableCell data-label={t('colLineHt')} className="text-end">
                     <Amount value={l.lineHt} className="font-medium" />
                   </TableCell>
-                  <TableCell className="text-end">
+                  <TableCell data-label={t('colReturned')} className="text-end">
                     <span className="num">
                       {returned.isZero() ? '—' : formatQty(returned.toString())}
                     </span>
@@ -422,7 +412,12 @@ export function SaleView({ id }: { id: string }) {
                       </span>
                       <span className="flex items-center gap-2">
                         <Amount value={r.totalTtc} />
-                        <PrintButton path={`/documents/AV/${r.id}/pdf`} variant="ghost" size="sm" />
+                        <PrintButton
+                          path={`/documents/AV/${r.id}/pdf`}
+                          fileName={r.number}
+                          variant="ghost"
+                          size="sm"
+                        />
                       </span>
                     </li>
                   ))}

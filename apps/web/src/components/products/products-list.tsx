@@ -56,6 +56,7 @@ export function ProductsList() {
     () => [
       {
         id: 'reference',
+        meta: { card: 'subtitle' },
         header: t('colReference'),
         cell: ({ row }) => (
           <span className="font-medium tabular-nums" dir="ltr">
@@ -66,6 +67,7 @@ export function ProductsList() {
       },
       {
         id: 'designation',
+        meta: { card: 'title' },
         header: t('colDesignation'),
         // A real link: keyboard and screen-reader users open the product without the row click.
         cell: ({ row }) => (
@@ -106,6 +108,7 @@ export function ProductsList() {
       },
       {
         id: 'price',
+        meta: { card: 'end' },
         header: t('colPrice'),
         cell: ({ row }) => {
           const sale = row.original.units.find((u) => u.isDefaultSale);
@@ -123,6 +126,7 @@ export function ProductsList() {
       },
       {
         id: 'status',
+        meta: { card: 'badge' },
         header: t('colStatus'),
         cell: ({ row }) =>
           row.original.archivedAt ? (

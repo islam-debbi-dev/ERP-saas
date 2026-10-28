@@ -69,6 +69,7 @@ export function SalesList() {
     () => [
       {
         id: 'select',
+        meta: { card: 'leading' },
         header: () => <span className="sr-only">{t('selectForInvoice')}</span>,
         cell: ({ row }) =>
           invoiceable(row.original) ? (
@@ -91,6 +92,7 @@ export function SalesList() {
       },
       {
         id: 'number',
+        meta: { card: 'title' },
         header: t('colNumber'),
         cell: ({ row }) => (
           <div className="space-y-1">
@@ -129,6 +131,7 @@ export function SalesList() {
       },
       {
         id: 'client',
+        meta: { card: 'subtitle' },
         header: t('client'),
         cell: ({ row }) =>
           row.original.client?.name ?? (
@@ -137,6 +140,7 @@ export function SalesList() {
       },
       {
         id: 'total',
+        meta: { card: 'end' },
         header: t('totalTtc'),
         cell: ({ row }) => (
           <span className="num whitespace-nowrap font-medium" dir="ltr">
@@ -155,6 +159,7 @@ export function SalesList() {
       },
       {
         id: 'status',
+        meta: { card: 'badge' },
         header: t('status'),
         cell: ({ row }) => <SaleStatusBadge status={row.original.status} />,
       },

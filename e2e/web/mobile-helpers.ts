@@ -13,7 +13,9 @@ import { expect, type Page } from '@playwright/test';
  */
 export async function overflowProblems(page: Page): Promise<string[]> {
   const result = await page.evaluate(() => {
-    const viewport = window.innerWidth;
+    // The device width, not innerWidth: when the content is too wide, a phone
+    // browser zooms the page out and innerWidth grows with it.
+    const viewport = Math.min(window.innerWidth, window.screen.width);
     const scrollWidth = document.documentElement.scrollWidth;
     const describe = (el: Element): string => {
       const id = el.id ? `#${el.id}` : '';
@@ -62,10 +64,12 @@ export async function overflowProblems(page: Page): Promise<string[]> {
       hidden.push(`${describe(el)} (${el.scrollWidth}px in ${el.clientWidth}px)`);
       if (hidden.length >= 5) break;
     }
-    return { viewport, scrollWidth, sticking, hidden };
+    const layoutWidth = window.innerWidth;
+    return { viewport, scrollWidth, sticking, hidden, layoutWidth, zoomedOut: layoutWidth > window.screen.width };
   });
 
   const problems: string[] = [];
+  if (result.zoomedOut) problems.push(`the browser zoomed the page out to ${result.layoutWidth}px`);
   if (result.scrollWidth > result.viewport) {
     problems.push(
       `page is ${result.scrollWidth}px wide for a ${result.viewport}px screen; sticking out: ${result.sticking.join(' | ')}`,

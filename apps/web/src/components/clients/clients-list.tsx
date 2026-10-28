@@ -36,6 +36,7 @@ export function ClientsList() {
       {
         id: 'code',
         header: t('code'),
+        meta: { card: 'subtitle' },
         cell: ({ row }) => (
           <span dir="ltr" className="num text-muted-foreground">
             {row.original.code}
@@ -45,10 +46,13 @@ export function ClientsList() {
       {
         id: 'name',
         header: t('name'),
+        meta: { card: 'title' },
         cell: ({ row }) => (
           <div className="min-w-0">
             <Link
               href={`/clients/${row.original.id}`}
+              // A Latin name inside Arabic: truncate at its own end, not its start.
+              dir="auto"
               className="font-medium underline-offset-4 hover:underline"
               onClick={(e) => e.stopPropagation()}
             >
@@ -77,6 +81,7 @@ export function ClientsList() {
       {
         id: 'balance',
         header: t('balance'),
+        meta: { card: 'end' },
         cell: ({ row }) => <BalanceAmount value={row.original.balance} />,
       },
       {

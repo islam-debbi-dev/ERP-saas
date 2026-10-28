@@ -179,6 +179,7 @@ export function StockCard({ productId }: { productId: string }) {
       </div>
 
       <DataTable
+        mobile="scroll"
         table={table}
         caption={t('cardTitle')}
         isLoading={pages.isPending}

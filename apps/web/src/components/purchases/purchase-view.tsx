@@ -146,7 +146,7 @@ export function PurchaseView({ purchase }: { purchase: PurchaseDto }) {
       </Card>
 
       <div className="overflow-x-auto rounded-lg border bg-card">
-        <table className="w-full min-w-[40rem] text-sm">
+        <table className="stack-table w-full min-w-[40rem] text-sm">
           <caption className="sr-only">{t('linesSection')}</caption>
           <thead className="bg-muted/50 text-muted-foreground">
             <tr>
@@ -160,17 +160,25 @@ export function PurchaseView({ purchase }: { purchase: PurchaseDto }) {
           <tbody>
             {purchase.lines.map((l) => (
               <tr key={l.id} className="border-t">
-                <td className="p-3 font-medium">{l.designation}</td>
-                <td className="num p-3 text-end whitespace-nowrap">
+                <td data-cell="main" className="p-3 font-medium">
+                  {l.designation}
+                </td>
+                <td data-label={t('colQty')} className="num p-3 text-end whitespace-nowrap">
                   {formatQty(l.qty)} {unitLabel({ code: l.unitCode, name: l.unitName })}
                 </td>
-                <td className="num p-3 text-end whitespace-nowrap" dir="ltr">
+                <td data-label={t('colCost')} className="num p-3 text-end whitespace-nowrap">
                   <Amount value={l.unitCost} />
                 </td>
-                <td className="num p-3 text-end whitespace-nowrap font-medium" dir="ltr">
+                <td
+                  data-label={t('colLineHt')}
+                  className="num p-3 text-end whitespace-nowrap font-medium"
+                >
                   <Amount value={l.lineHt} />
                 </td>
-                <td className="num p-3 text-end text-muted-foreground" dir="ltr">
+                <td
+                  data-label={t('colReturned')}
+                  className="num p-3 text-end text-muted-foreground"
+                >
                   {qty(l.returnedQtyBase).isZero()
                     ? '—'
                     : formatQty(qty(l.returnedQtyBase).div(l.factorToBase).toString())}
@@ -232,7 +240,7 @@ export function PurchaseView({ purchase }: { purchase: PurchaseDto }) {
       ) : null}
 
       {validated ? (
-        <div className="sticky bottom-0 -mx-4 flex flex-wrap justify-between gap-2 border-t bg-background/95 px-4 py-3 backdrop-blur lg:-mx-6 lg:px-6">
+        <div className="sticky bottom-0 z-20 -mx-4 flex flex-wrap justify-between gap-2 border-t bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:py-3 backdrop-blur lg:-mx-6 lg:px-6">
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="ghost" disabled={cancel.isPending}>

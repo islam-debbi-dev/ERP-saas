@@ -20,9 +20,23 @@ import { cn } from '@/lib/utils';
 /** The object URL lives long enough for the viewer to load it, then is freed. */
 const URL_LIFETIME_MS = 60_000;
 
+/** A phone or a tablet: no PDF viewer in a tab, so the PDF is shared or saved instead. */
+const isTouchDevice = () => window.matchMedia('(pointer: coarse)').matches;
+
+function download(url: string, fileName: string) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.append(a);
+  a.click();
+  a.remove();
+}
+
 /**
  * Opens a document PDF rendered by the API (same output on every machine) in a new
- * tab, where the user prints or saves it. Call it from a click handler.
+ * tab, where the user prints or saves it. On a phone (docs/ui.md rule 11) the PDF
+ * goes to the share sheet (WhatsApp, Bluetooth printer app…) or, when the phone
+ * cannot share files, to the downloads. Call it from a click handler.
  * `path` is the API path without the format, e.g. `/documents/FAC/<id>/pdf`;
  * no format = the tenant's default.
  */
@@ -33,9 +47,14 @@ export function usePrint() {
   const [busy, setBusy] = useState(false);
   const defaultFormat = settings.data?.defaultPrintFormat ?? PrintFormat.A4;
 
-  const print = async (path: string, format: PrintFormat = defaultFormat) => {
+  const print = async (
+    path: string,
+    format: PrintFormat = defaultFormat,
+    fileName = 'document.pdf',
+  ) => {
+    const phone = isTouchDevice();
     // Open the tab now, inside the click: a tab opened after an await is blocked.
-    const tab = window.open('', '_blank');
+    const tab = phone ? null : window.open('', '_blank');
     if (tab) {
       tab.opener = null;
       tab.document.title = t('preparing');
@@ -47,6 +66,21 @@ export function usePrint() {
       const blob = await api.download(`${path}${separator}format=${format}`);
       const url = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
       window.setTimeout(() => URL.revokeObjectURL(url), URL_LIFETIME_MS);
+      if (phone) {
+        const file = new File([blob], fileName, { type: 'application/pdf' });
+        if (navigator.canShare?.({ files: [file] })) {
+          try {
+            await navigator.share({ files: [file], title: fileName });
+            return;
+          } catch (err) {
+            // Closed by the user: nothing to do. Anything else: save it instead.
+            if (err instanceof DOMException && err.name === 'AbortError') return;
+          }
+        }
+        download(url, fileName);
+        toast.success(t('downloaded'));
+        return;
+      }
       if (tab) tab.location.href = url;
       else if (!window.open(url, '_blank')) toast.error(t('popupBlocked'));
     } catch (err) {
@@ -65,18 +99,21 @@ export function usePrint() {
  */
 export function PrintButton({
   path,
+  fileName,
   variant = 'outline',
   size,
   className,
 }: {
   path: string;
+  /** Name of the file shared or saved on a phone, e.g. the document number. */
+  fileName?: string;
   variant?: 'outline' | 'ghost' | 'default';
   size?: 'sm' | 'default';
   className?: string;
 }) {
   const t = useTranslations('print');
   const { print, busy, defaultFormat } = usePrint();
-  const open = (format: PrintFormat) => print(path, format);
+  const open = (format: PrintFormat) => print(path, format, fileName && `${fileName}.pdf`);
 
   return (
     <div className={cn('inline-flex', className)} role="group" aria-label={t('print')}>
