@@ -16,6 +16,7 @@ import {
   updateClientSchema,
 } from '@erp/shared';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { StickyActions } from '@/components/shared/sticky-actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -150,6 +151,8 @@ export function ClientForm({
       </Label>
       <Input
         id={k}
+        type={k === 'phone' || k === 'phone2' ? 'tel' : undefined}
+        inputMode={k === 'phone' || k === 'phone2' ? 'tel' : undefined}
         dir={opts.ltr ? 'ltr' : undefined}
         autoComplete="off"
         autoFocus={k === 'code' && !isEdit}
@@ -237,12 +240,12 @@ export function ClientForm({
           {field('notes', { wide: true })}
         </Section>
       </fieldset>
-      <div className="flex justify-end">
+      <StickyActions>
         <Button type="submit" disabled={save.isPending}>
           {save.isPending ? <Loader2 className="animate-spin" aria-hidden /> : <Save aria-hidden />}
           {save.isPending ? tc('saving') : tc('save')}
         </Button>
-      </div>
+      </StickyActions>
     </form>
   );
 }

@@ -21,6 +21,7 @@ import { useDashboard } from '@/lib/reports';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
 import { SalesChart } from './sales-chart';
+import { Amount } from '@/components/shared/amount';
 
 export function DashboardPage() {
   const t = useTranslations('dashboard');
@@ -98,7 +99,7 @@ function Sections({ d }: { d: DashboardDto }) {
                       <span key={m.mode}>
                         {ts(`mode${m.mode}`)}{' '}
                         <span dir="ltr" className="num">
-                          {formatDA(m.total)}
+                          <Amount value={m.total} />
                         </span>
                       </span>
                     ))}
@@ -126,7 +127,7 @@ function Sections({ d }: { d: DashboardDto }) {
       ) : null}
 
       {d.stock ? (
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <Stat
             label={t('outOfStock')}
             value={String(d.stock.outOfStock)}
@@ -140,7 +141,9 @@ function Sections({ d }: { d: DashboardDto }) {
             href="/stock?filtre=bas"
           />
           {d.stock.value !== null ? (
-            <Stat label={t('stockValue')} value={formatDA(d.stock.value)} />
+            <div className="col-span-2 sm:col-span-1">
+              <Stat label={t('stockValue')} value={formatDA(d.stock.value)} />
+            </div>
           ) : null}
         </div>
       ) : null}
@@ -159,7 +162,7 @@ function Sections({ d }: { d: DashboardDto }) {
       ) : null}
 
       {d.credit ? (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
           <DebtorsCard title={t('topDebtors')} rows={d.credit.topDebtors} />
           <DebtorsCard title={t('overLimitList')} rows={d.credit.overLimit} />
         </div>
@@ -255,27 +258,28 @@ function DebtorsCard({ title, rows }: { title: string; rows: DebtorDto[] }) {
             <TableBody>
               {rows.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell>
-                    <div className="flex flex-wrap items-baseline gap-x-2">
-                      <Link
-                        href={`/clients/${r.id}`}
-                        className="font-medium underline-offset-4 hover:underline"
-                      >
-                        {r.name}
-                      </Link>
-                      <span className="text-xs text-muted-foreground" dir="ltr">
-                        {r.code}
-                      </span>
-                    </div>
+                  {/* max-w-0 + w-full: the name takes the room left and truncates, the amounts never move. */}
+                  <TableCell className="w-full max-w-0">
+                    <Link
+                      href={`/clients/${r.id}`}
+                      dir="auto"
+                      title={r.name}
+                      className="block truncate font-medium underline-offset-4 hover:underline"
+                    >
+                      {r.name}
+                    </Link>
+                    <span className="block truncate text-xs text-muted-foreground" dir="ltr">
+                      {r.code}
+                    </span>
                   </TableCell>
                   <TableCell className="text-end">
                     <span dir="ltr" className="num font-medium">
-                      {formatDA(r.balance)}
+                      <Amount value={r.balance} />
                     </span>
                   </TableCell>
                   <TableCell className="text-end text-muted-foreground">
                     <span dir="ltr" className="num">
-                      {r.creditLimit ? formatDA(r.creditLimit) : '—'}
+                      {r.creditLimit ? <Amount value={r.creditLimit} /> : '—'}
                     </span>
                   </TableCell>
                 </TableRow>

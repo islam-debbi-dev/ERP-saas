@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { formatDA, type SaleResultDto, type SaleSummaryDto } from '@erp/shared';
+import { type SaleResultDto, type SaleSummaryDto } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/table/data-table';
@@ -23,6 +23,7 @@ import { todayInAlgiers } from '@/lib/purchases';
 import { type SaleFilters, saleKeys, useSalePages } from '@/lib/sales';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { SaleStatusBadge } from './sale-status-badge';
+import { Amount } from '@/components/shared/amount';
 
 /** Only validated BLs of a known client, not yet grouped, can go in a facture. */
 const invoiceable = (s: SaleSummaryDto) =>
@@ -68,12 +69,13 @@ export function SalesList() {
     () => [
       {
         id: 'select',
+        meta: { card: 'leading' },
         header: () => <span className="sr-only">{t('selectForInvoice')}</span>,
         cell: ({ row }) =>
           invoiceable(row.original) ? (
             <input
               type="checkbox"
-              className="size-4 accent-primary"
+              className="size-6 accent-primary md:size-4"
               aria-label={t('selectBl', { number: row.original.number ?? '' })}
               checked={selected.has(row.original.id)}
               onClick={(e) => e.stopPropagation()}
@@ -90,6 +92,7 @@ export function SalesList() {
       },
       {
         id: 'number',
+        meta: { card: 'title' },
         header: t('colNumber'),
         cell: ({ row }) => (
           <div className="space-y-1">
@@ -128,6 +131,7 @@ export function SalesList() {
       },
       {
         id: 'client',
+        meta: { card: 'subtitle' },
         header: t('client'),
         cell: ({ row }) =>
           row.original.client?.name ?? (
@@ -136,10 +140,11 @@ export function SalesList() {
       },
       {
         id: 'total',
+        meta: { card: 'end' },
         header: t('totalTtc'),
         cell: ({ row }) => (
           <span className="num whitespace-nowrap font-medium" dir="ltr">
-            {formatDA(row.original.totalTtc)}
+            <Amount value={row.original.totalTtc} />
           </span>
         ),
       },
@@ -148,12 +153,13 @@ export function SalesList() {
         header: t('paid'),
         cell: ({ row }) => (
           <span className="num whitespace-nowrap" dir="ltr">
-            {formatDA(row.original.paidAmount)}
+            <Amount value={row.original.paidAmount} />
           </span>
         ),
       },
       {
         id: 'status',
+        meta: { card: 'badge' },
         header: t('status'),
         cell: ({ row }) => <SaleStatusBadge status={row.original.status} />,
       },

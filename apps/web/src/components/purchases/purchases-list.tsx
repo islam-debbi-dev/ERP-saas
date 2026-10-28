@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-import { formatDA, type PurchaseSummaryDto } from '@erp/shared';
+import { type PurchaseSummaryDto } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/table/data-table';
@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import { type PurchaseFilters, usePurchasePages, useSuppliers } from '@/lib/purchases';
 import { PurchaseStatusBadge } from './purchase-status-badge';
+import { Amount } from '@/components/shared/amount';
 
 export function PurchasesList() {
   const t = useTranslations('purchases');
@@ -36,6 +37,7 @@ export function PurchasesList() {
     () => [
       {
         id: 'number',
+        meta: { card: 'title' },
         header: t('colNumber'),
         cell: ({ row }) => (
           <Link
@@ -56,7 +58,12 @@ export function PurchasesList() {
             dateStyle: 'medium',
           }),
       },
-      { id: 'supplier', header: t('colSupplier'), cell: ({ row }) => row.original.supplier.name },
+      {
+        id: 'supplier',
+        meta: { card: 'subtitle' },
+        header: t('colSupplier'),
+        cell: ({ row }) => row.original.supplier.name,
+      },
       {
         id: 'lines',
         header: t('colLines'),
@@ -64,15 +71,17 @@ export function PurchasesList() {
       },
       {
         id: 'total',
+        meta: { card: 'end' },
         header: t('colTotal'),
         cell: ({ row }) => (
           <span className="num whitespace-nowrap font-medium" dir="ltr">
-            {formatDA(row.original.totalTtc)}
+            <Amount value={row.original.totalTtc} />
           </span>
         ),
       },
       {
         id: 'status',
+        meta: { card: 'badge' },
         header: t('colStatus'),
         cell: ({ row }) => <PurchaseStatusBadge status={row.original.status} />,
       },

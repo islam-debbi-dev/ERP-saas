@@ -13,7 +13,8 @@
     "close": "Close",
     "comingSoon": "This module is coming in a later version.",
     "comingSoonTitle": "Coming soon",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "actions": "Actions"
   },
   "nav": {
     "groupMain": "Activity",
@@ -35,7 +36,8 @@
     "themeDark": "Dark",
     "themeSystem": "System",
     "language": "Language",
-    "mainNavigation": "Main menu"
+    "mainNavigation": "Main menu",
+    "moreOptions": "More options"
   },
   "roles": {
     "OWNER": "Owner",
@@ -67,7 +69,7 @@
     "goToLogin": "Log in",
     "sessionExpired": "Your session expired. Log in again.",
     "identifier": "Email or phone",
-    "identifierPlaceholder": "name@company.dz or 0550 12 34 56"
+    "identifierHint": "Your email, or your phone number such as 0550 12 34 56."
   },
   "dashboard": {
     "welcome": "Hello {name}",
@@ -875,7 +877,9 @@
     "cancelInvoiceBody": "The delivery notes can be invoiced again. Stock and the client account do not change.",
     "timbre": "Stamp duty (timbre)",
     "netToPay": "Net to pay",
-    "print": "Print"
+    "print": "Print",
+    "qtyLess": "One less {product}",
+    "qtyMore": "One more {product}"
   },
   "payments": {
     "title": "Payments",
@@ -953,7 +957,8 @@
     "formatA4": "A4 (full page)",
     "formatA5": "A5 (half page)",
     "preparing": "Preparing the document…",
-    "popupBlocked": "The browser blocked the document. Allow pop-ups for this site."
+    "popupBlocked": "The browser blocked the document. Allow pop-ups for this site.",
+    "downloaded": "The PDF is in your downloads."
   },
   "imports": {
     "title": "Excel import",

@@ -13,13 +13,13 @@ import {
 } from '@erp/shared';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
@@ -109,8 +109,8 @@ export function AdjustDialog({ productId, productName, open, onOpenChange }: Dia
   const valid = parsed !== null && parsed.gt(0);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent>
         <form
           className="grid gap-4"
           onSubmit={(e) => {
@@ -133,12 +133,12 @@ export function AdjustDialog({ productId, productName, open, onOpenChange }: Dia
             });
           }}
         >
-          <DialogHeader>
-            <DialogTitle>{t('adjustTitle')}</DialogTitle>
-            <DialogDescription>
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>{t('adjustTitle')}</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
               {productName}. {t('adjustHelp')}
-            </DialogDescription>
-          </DialogHeader>
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="adj-direction">{t('direction')}</Label>
@@ -196,7 +196,7 @@ export function AdjustDialog({ productId, productName, open, onOpenChange }: Dia
               />
             </div>
           </div>
-          <DialogFooter>
+          <ResponsiveDialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               {t('cancel')}
             </Button>
@@ -204,10 +204,10 @@ export function AdjustDialog({ productId, productName, open, onOpenChange }: Dia
               {mutation.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
               {mutation.isPending ? t('saving') : t('adjustSubmit')}
             </Button>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
 
@@ -227,8 +227,8 @@ export function OpeningDialog({ productId, productName, open, onOpenChange }: Di
   const valid = q !== null && q.gt(0) && c !== null && !c.isNegative();
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent>
         <form
           className="grid gap-4"
           onSubmit={(e) => {
@@ -250,12 +250,12 @@ export function OpeningDialog({ productId, productName, open, onOpenChange }: Di
             });
           }}
         >
-          <DialogHeader>
-            <DialogTitle>{t('openingTitle')}</DialogTitle>
-            <DialogDescription>
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>{t('openingTitle')}</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
               {productName}. {t('openingHelp')}
-            </DialogDescription>
-          </DialogHeader>
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="open-qty">{t('qty')}</Label>
@@ -290,7 +290,7 @@ export function OpeningDialog({ productId, productName, open, onOpenChange }: Di
               />
             </div>
           </div>
-          <DialogFooter>
+          <ResponsiveDialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               {t('cancel')}
             </Button>
@@ -298,9 +298,9 @@ export function OpeningDialog({ productId, productName, open, onOpenChange }: Di
               {mutation.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
               {mutation.isPending ? t('saving') : t('openingSubmit')}
             </Button>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

@@ -15,13 +15,13 @@ import {
 } from '@erp/shared';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
@@ -67,8 +67,8 @@ export function CancelSaleDialog({ sale, open, onOpenChange }: DialogProps) {
   });
   const valid = reason.trim().length >= 3;
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent>
         <form
           className="grid gap-4"
           onSubmit={(e) => {
@@ -82,18 +82,18 @@ export function CancelSaleDialog({ sale, open, onOpenChange }: DialogProps) {
             }
           }}
         >
-          <DialogHeader>
-            <DialogTitle>
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>
               {sale.status === 'DRAFT' ? t('cancelDraftTitle') : t('cancelTitle')}
-            </DialogTitle>
-            <DialogDescription>
+            </ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
               {sale.status === 'DRAFT'
                 ? t('cancelDraftBody')
                 : sale.sourceBls.length > 0
                   ? t('cancelInvoiceBody')
                   : t('cancelBody')}
-            </DialogDescription>
-          </DialogHeader>
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
           <div className="space-y-2">
             <Label htmlFor="cancel-reason">{t('reason')}</Label>
             <Input
@@ -106,7 +106,7 @@ export function CancelSaleDialog({ sale, open, onOpenChange }: DialogProps) {
               onChange={(e) => setReason(e.target.value)}
             />
           </div>
-          <DialogFooter>
+          <ResponsiveDialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               {t('keep')}
             </Button>
@@ -114,10 +114,10 @@ export function CancelSaleDialog({ sale, open, onOpenChange }: DialogProps) {
               {action.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
               {t('confirmCancel')}
             </Button>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
 
@@ -146,8 +146,8 @@ export function ReturnDialog({ sale, open, onOpenChange }: DialogProps) {
   const valid = picked.length > 0 && !tooMuch && reason.trim().length >= 3;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="md:max-w-2xl">
         <form
           className="grid gap-4"
           onSubmit={(e) => {
@@ -164,10 +164,10 @@ export function ReturnDialog({ sale, open, onOpenChange }: DialogProps) {
             });
           }}
         >
-          <DialogHeader>
-            <DialogTitle>{t('returnTitle')}</DialogTitle>
-            <DialogDescription>{t('returnHelp')}</DialogDescription>
-          </DialogHeader>
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>{t('returnTitle')}</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>{t('returnHelp')}</ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
           <ul className="max-h-72 divide-y overflow-y-auto rounded-md border">
             {sale.lines.map((l) => {
               const left = available(l);
@@ -230,7 +230,7 @@ export function ReturnDialog({ sale, open, onOpenChange }: DialogProps) {
               {t('returnTooMuch')}
             </p>
           ) : null}
-          <DialogFooter>
+          <ResponsiveDialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               {t('keep')}
             </Button>
@@ -238,9 +238,9 @@ export function ReturnDialog({ sale, open, onOpenChange }: DialogProps) {
               {action.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
               {t('confirmReturn')}
             </Button>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

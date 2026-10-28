@@ -19,10 +19,11 @@ const buttonVariants = cva(
         link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {
-        default: 'h-10 px-4 py-2 has-[>svg]:px-3',
-        sm: 'h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5',
+        // 44 px on a phone (docs/ui.md rule 5), the denser desktop size from md up.
+        default: 'h-11 px-4 py-2 has-[>svg]:px-3 md:h-10',
+        sm: 'h-11 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5 md:h-8',
         lg: 'h-11 rounded-md px-6 has-[>svg]:px-4',
-        icon: 'size-10',
+        icon: 'size-11 md:size-10',
       },
     },
     defaultVariants: {

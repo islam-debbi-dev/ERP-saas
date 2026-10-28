@@ -81,7 +81,7 @@ export function SessionsPage() {
         <EmptyState icon={Laptop} title={t('empty')} />
       ) : (
         <div className="w-full overflow-x-auto rounded-lg border bg-card">
-          <Table className="min-w-[44rem]">
+          <Table className="stack-table min-w-[44rem]">
             <TableHeader>
               <TableRow className="bg-muted/50 hover:bg-muted/50">
                 <TableHead>{t('colUser')}</TableHead>
@@ -95,11 +95,11 @@ export function SessionsPage() {
             <TableBody>
               {sessions.data.map((s) => (
                 <TableRow key={s.id}>
-                  <TableCell>
+                  <TableCell data-cell="main">
                     <span className="font-medium">{s.user.fullName}</span>
                     <span className="ms-2 text-xs text-muted-foreground">{tr(s.user.role)}</span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell data-label={t('colDevice')}>
                     {deviceOf(s)}
                     {s.current ? (
                       <Badge variant="outline" className="ms-2">
@@ -107,21 +107,24 @@ export function SessionsPage() {
                       </Badge>
                     ) : null}
                   </TableCell>
-                  <TableCell>
+                  <TableCell data-label={t('colIp')}>
                     <span dir="ltr" className="num text-sm">
                       {s.ip ?? '—'}
                     </span>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell
+                    data-label={t('colLastActivity')}
+                    className="text-sm text-muted-foreground"
+                  >
                     {format.relativeTime(new Date(s.lastUsedAt), new Date())}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell data-label={t('colSince')} className="text-sm text-muted-foreground">
                     {format.dateTime(new Date(s.createdAt), {
                       dateStyle: 'medium',
                       timeStyle: 'short',
                     })}
                   </TableCell>
-                  <TableCell className="text-end">
+                  <TableCell data-cell="actions" className="text-end">
                     {s.current ? null : (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>

@@ -30,13 +30,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
@@ -45,6 +45,7 @@ import { findProductByCode, useUnitLabel } from '@/lib/catalog';
 import { purchaseKeys, useSuppliers } from '@/lib/purchases';
 import { stockKeys, formatQty } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
+import { Amount } from '@/components/shared/amount';
 
 export interface EditorLine {
   key: string;
@@ -336,6 +337,8 @@ export function PurchaseEditor({
               )}
               <Input
                 id="br-scan"
+                type="search"
+                enterKeyHint="search"
                 ref={scanRef}
                 autoFocus={purchase !== null}
                 autoComplete="off"
@@ -353,7 +356,7 @@ export function PurchaseEditor({
           </form>
 
           <div className="overflow-x-auto rounded-lg border">
-            <table className="w-full min-w-[46rem] text-sm">
+            <table className="stack-table w-full min-w-[46rem] text-sm">
               <caption className="sr-only">{t('linesSection')}</caption>
               <thead className="bg-muted/50 text-muted-foreground">
                 <tr>
@@ -376,16 +379,16 @@ export function PurchaseEditor({
                 ) : (
                   lines.map((l, i) => (
                     <tr key={l.key} className="border-t align-middle">
-                      <td className="p-2">
+                      <td data-cell="main" className="p-2">
                         <p className="font-medium">{l.product.designation}</p>
                         <p className="text-xs text-muted-foreground" dir="ltr">
                           {l.product.reference}
                         </p>
                       </td>
-                      <td className="p-2">
+                      <td data-label={t('colUnit')} className="p-2">
                         <NativeSelect
                           aria-label={`${t('colUnit')} — ${l.product.designation}`}
-                          className="w-36"
+                          className="w-36 max-md:w-full"
                           value={l.unitId}
                           onChange={(e) => update(l.key, { unitId: e.target.value })}
                         >
@@ -399,7 +402,7 @@ export function PurchaseEditor({
                           ))}
                         </NativeSelect>
                       </td>
-                      <td className="p-2">
+                      <td data-label={t('colQty')} className="p-2">
                         <Input
                           ref={(el) => {
                             if (el) {
@@ -414,7 +417,7 @@ export function PurchaseEditor({
                           aria-label={`${t('colQty')} — ${l.product.designation}`}
                           dir="ltr"
                           inputMode="decimal"
-                          className="num w-24"
+                          className="num w-24 max-md:w-full"
                           aria-invalid={(parseDA(l.qty)?.gt(0) ?? false) ? undefined : true}
                           value={l.qty}
                           onChange={(e) => update(l.key, { qty: e.target.value })}
@@ -426,7 +429,7 @@ export function PurchaseEditor({
                           }}
                         />
                       </td>
-                      <td className="p-2">
+                      <td data-label={t('colCost')} className="p-2">
                         <Input
                           ref={(el) => {
                             if (el) costRefs.current.set(l.key, el);
@@ -435,7 +438,7 @@ export function PurchaseEditor({
                           aria-label={`${t('colCost')} — ${l.product.designation}`}
                           dir="ltr"
                           inputMode="decimal"
-                          className="num w-32"
+                          className="num w-32 max-md:w-full"
                           aria-invalid={
                             l.unitCost !== '' && parseDA(l.unitCost) === null ? true : undefined
                           }
@@ -449,13 +452,19 @@ export function PurchaseEditor({
                           }}
                         />
                       </td>
-                      <td className="num p-2 text-end text-muted-foreground" dir="ltr">
+                      <td
+                        data-label={t('colTva')}
+                        className="num p-2 text-end text-muted-foreground"
+                      >
                         {`${qty(l.product.tvaRate).toString()} %`}
                       </td>
-                      <td className="num p-2 text-end font-medium whitespace-nowrap" dir="ltr">
-                        {formatDA(totals.lines[i]?.lineHt ?? '0')}
+                      <td
+                        data-label={t('colLineHt')}
+                        className="num p-2 text-end font-medium whitespace-nowrap"
+                      >
+                        <Amount value={totals.lines[i]?.lineHt ?? '0'} />
                       </td>
-                      <td className="p-2">
+                      <td data-cell="actions" className="p-2">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -484,7 +493,9 @@ export function PurchaseEditor({
           <dl className="num space-y-1 text-sm sm:order-2">
             <div className="flex justify-between gap-4">
               <dt>{t('totalHt')}</dt>
-              <dd dir="ltr">{formatDA(totals.totalHt)}</dd>
+              <dd dir="ltr">
+                <Amount value={totals.totalHt} />
+              </dd>
             </div>
             {totals.tvaByRate.map((r) => (
               <div
@@ -492,19 +503,25 @@ export function PurchaseEditor({
                 className="flex justify-between gap-4 text-muted-foreground"
               >
                 <dt>{t('tvaAt', { rate: r.rate.toString() })}</dt>
-                <dd dir="ltr">{formatDA(r.tva)}</dd>
+                <dd dir="ltr">
+                  <Amount value={r.tva} />
+                </dd>
               </div>
             ))}
             <div className="flex justify-between gap-4 border-t pt-1 text-base font-semibold">
               <dt>{t('totalTtc')}</dt>
-              <dd dir="ltr">{formatDA(totals.totalTtc)}</dd>
+              <dd dir="ltr">
+                <Amount value={totals.totalTtc} />
+              </dd>
             </div>
             <div className="flex justify-between gap-4 text-muted-foreground">
               <dt>{t('rest')}</dt>
               <dd dir="ltr">
-                {formatDA(
-                  totals.totalTtc.minus(paid).isNegative() ? '0' : totals.totalTtc.minus(paid),
-                )}
+                <Amount
+                  value={
+                    totals.totalTtc.minus(paid).isNegative() ? '0' : totals.totalTtc.minus(paid)
+                  }
+                />
               </dd>
             </div>
           </dl>
@@ -523,7 +540,7 @@ export function PurchaseEditor({
         </CardContent>
       </Card>
 
-      <div className="sticky bottom-0 -mx-4 flex flex-wrap items-center justify-between gap-2 border-t bg-background/95 px-4 py-3 backdrop-blur lg:-mx-6 lg:px-6">
+      <div className="sticky bottom-0 z-20 -mx-4 flex flex-wrap items-center justify-between gap-2 border-t bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:py-3 backdrop-blur lg:-mx-6 lg:px-6">
         <div>
           {purchase ? (
             <AlertDialog>
@@ -568,17 +585,17 @@ export function PurchaseEditor({
         </div>
       </div>
 
-      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{t('validateTitle')}</DialogTitle>
-            <DialogDescription>{t('validateBody')}</DialogDescription>
-          </DialogHeader>
+      <ResponsiveDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <ResponsiveDialogContent className="md:max-w-2xl">
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>{t('validateTitle')}</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>{t('validateBody')}</ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
           <div className="space-y-3">
             <p className="text-sm font-medium">{t('updatePrices')}</p>
             <p className="text-xs text-muted-foreground">{t('updatePricesHint')}</p>
             <div className="overflow-x-auto rounded-lg border">
-              <table className="w-full min-w-[30rem] text-sm">
+              <table className="stack-table w-full min-w-[30rem] text-sm">
                 <thead className="bg-muted/50 text-muted-foreground">
                   <tr>
                     <th className="p-2 text-start font-medium">{t('colProduct')}</th>
@@ -595,7 +612,7 @@ export function PurchaseEditor({
                     const cost = parseDA(l.unitCost);
                     return (
                       <tr key={`${l.product.id}:${l.unitId}`} className="border-t">
-                        <td className="p-2">
+                        <td className="p-2" data-cell="main">
                           <p className="font-medium">{l.product.designation}</p>
                           <p className="text-xs text-muted-foreground">
                             {unit ? unitLabel({ code: unit.unitCode, name: unit.unitName }) : ''}
@@ -608,12 +625,12 @@ export function PurchaseEditor({
                             (p) => p.unitId === l.unitId && p.priceLevelId === lv.id,
                           );
                           return (
-                            <td key={lv.id} className="p-2">
+                            <td key={lv.id} className="p-2" data-label={lv.name}>
                               <Input
                                 aria-label={`${lv.name} — ${l.product.designation}`}
                                 dir="ltr"
                                 inputMode="decimal"
-                                className="num w-28"
+                                className="num w-28 max-md:w-full"
                                 placeholder={
                                   current ? formatDA(current.priceHt, { currency: false }) : '—'
                                 }
@@ -635,7 +652,7 @@ export function PurchaseEditor({
               <AlertDescription>{errorMessage(validate.error)}</AlertDescription>
             </Alert>
           ) : null}
-          <DialogFooter>
+          <ResponsiveDialogFooter>
             <Button variant="ghost" onClick={() => setConfirmOpen(false)}>
               {t('keep')}
             </Button>
@@ -647,9 +664,9 @@ export function PurchaseEditor({
               )}
               {t('validate')}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </ResponsiveDialogFooter>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     </div>
   );
 }

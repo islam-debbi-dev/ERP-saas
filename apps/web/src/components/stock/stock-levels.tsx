@@ -9,6 +9,7 @@ import { useMemo, useState } from 'react';
 import { formatDA, Permission, qty, type StockLevelDto } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
+import { Amount } from '@/components/shared/amount';
 import { DataTable } from '@/components/table/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -64,6 +65,7 @@ export function StockLevels() {
     () => [
       {
         id: 'product',
+        meta: { card: 'title' },
         header: t('colProduct'),
         cell: ({ row }) => (
           <div className="min-w-0">
@@ -82,6 +84,7 @@ export function StockLevels() {
       },
       {
         id: 'qty',
+        meta: { card: 'end' },
         header: t('colQty'),
         cell: ({ row }) => (
           <div className="num whitespace-nowrap">
@@ -103,7 +106,7 @@ export function StockLevels() {
         header: t('colCump'),
         cell: ({ row }) => (
           <span className="num whitespace-nowrap" dir="ltr">
-            {row.original.avgCost === null ? '—' : formatDA(row.original.avgCost)}
+            {row.original.avgCost === null ? '—' : <Amount value={row.original.avgCost} />}
           </span>
         ),
       },
@@ -112,18 +115,20 @@ export function StockLevels() {
         header: t('colValue'),
         cell: ({ row }) => (
           <span className="num whitespace-nowrap font-medium" dir="ltr">
-            {row.original.value === null ? '—' : formatDA(row.original.value)}
+            {row.original.value === null ? '—' : <Amount value={row.original.value} />}
           </span>
         ),
       },
       {
         id: 'status',
+        meta: { card: 'badge' },
         header: t('colStatus'),
         cell: ({ row }) => <StatusBadge level={row.original} />,
         size: 110,
       },
       {
         id: 'actions',
+        meta: { card: 'actions' },
         header: () => <span className="sr-only">{t('colActions')}</span>,
         size: 56,
         cell: ({ row }) => (

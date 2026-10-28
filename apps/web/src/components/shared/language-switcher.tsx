@@ -29,6 +29,19 @@ function persistLocale(next: AppLocale) {
   document.documentElement.dir = dirFor(next);
 }
 
+/** The current locale and a setter that saves it and re-renders the server components. */
+export function useLocaleSwitch() {
+  const locale = useLocale();
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const setLocale = (next: AppLocale) => {
+    if (next === locale) return;
+    persistLocale(next);
+    startTransition(() => router.refresh());
+  };
+  return { locale, setLocale, pending };
+}
+
 /** Writes the NEXT_LOCALE cookie and re-renders the server components in the new language. */
 export function LanguageSwitcher({
   className,
@@ -40,15 +53,7 @@ export function LanguageSwitcher({
   showLabel?: boolean;
 }) {
   const t = useTranslations('nav');
-  const locale = useLocale();
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
-
-  const setLocale = (next: AppLocale) => {
-    if (next === locale) return;
-    persistLocale(next);
-    startTransition(() => router.refresh());
-  };
+  const { locale, setLocale, pending } = useLocaleSwitch();
 
   return (
     <DropdownMenu>

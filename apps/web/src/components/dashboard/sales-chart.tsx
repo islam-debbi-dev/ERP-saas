@@ -2,6 +2,7 @@
 
 import { useFormatter, useTranslations } from 'next-intl';
 import { formatDA, money } from '@erp/shared';
+import { Amount } from '@/components/shared/amount';
 
 /**
  * Sales per day of the month as plain bars. A flex row, so it runs right-to-left
@@ -20,7 +21,7 @@ export function SalesChart({ days }: { days: { date: string; ttc: string }[] }) 
       <div className="flex items-baseline justify-between gap-2 text-xs text-muted-foreground">
         <span>{t('chartMax')}</span>
         <span dir="ltr" className="num">
-          {formatDA(max)}
+          <Amount value={max} />
         </span>
       </div>
       <div className="flex h-40 items-end gap-0.5 border-b sm:gap-1" aria-hidden>
@@ -52,7 +53,9 @@ export function SalesChart({ days }: { days: { date: string; ttc: string }[] }) 
           {days.map((d) => (
             <tr key={d.date}>
               <th scope="row">{label(d.date)}</th>
-              <td>{formatDA(d.ttc)}</td>
+              <td>
+                <Amount value={d.ttc} />
+              </td>
             </tr>
           ))}
         </tbody>

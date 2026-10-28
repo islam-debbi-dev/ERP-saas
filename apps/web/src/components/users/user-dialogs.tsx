@@ -16,13 +16,13 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
@@ -175,12 +175,12 @@ export function InviteDialog({ open, onOpenChange }: DialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{t('inviteTitle')}</DialogTitle>
-          <DialogDescription>{t('inviteHelp')}</DialogDescription>
-        </DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="md:max-w-lg">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>{t('inviteTitle')}</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>{t('inviteHelp')}</ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         {result ? (
           <InviteLink result={result} />
         ) : (
@@ -242,7 +242,7 @@ export function InviteDialog({ open, onOpenChange }: DialogProps) {
             <ModePicker mode={mode} onMode={setMode} password={password} onPassword={setPassword} />
           </form>
         )}
-        <DialogFooter>
+        <ResponsiveDialogFooter>
           {result ? (
             <Button onClick={() => onOpenChange(false)}>{t('done')}</Button>
           ) : (
@@ -251,9 +251,9 @@ export function InviteDialog({ open, onOpenChange }: DialogProps) {
               {t('invite')}
             </Button>
           )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
 
@@ -269,12 +269,12 @@ export function EditUserDialog({ user, open, onOpenChange }: DialogProps & { use
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{t('editTitle')}</DialogTitle>
-          <DialogDescription>{user.fullName}</DialogDescription>
-        </DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="md:max-w-lg">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>{t('editTitle')}</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>{user.fullName}</ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         <form
           id="edit-user-form"
           className="space-y-4"
@@ -335,14 +335,14 @@ export function EditUserDialog({ user, open, onOpenChange }: DialogProps & { use
             </NativeSelect>
           </Field>
         </form>
-        <DialogFooter>
+        <ResponsiveDialogFooter>
           <Button type="submit" form="edit-user-form" disabled={update.isPending}>
             {update.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
             {t('save')}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
 
@@ -374,12 +374,14 @@ export function PermissionsDialog({ user, open, onOpenChange }: DialogProps & { 
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{t('permissionsTitle', { name: user.fullName })}</DialogTitle>
-          <DialogDescription>{t('permissionsHelp')}</DialogDescription>
-        </DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="md:max-w-lg">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>
+            {t('permissionsTitle', { name: user.fullName })}
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>{t('permissionsHelp')}</ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         <ul className="divide-y rounded-md border">
           {PERMISSIONS.map((p) => (
             <li key={p} className="flex items-start justify-between gap-4 p-3">
@@ -407,14 +409,14 @@ export function PermissionsDialog({ user, open, onOpenChange }: DialogProps & { 
             </li>
           ))}
         </ul>
-        <DialogFooter>
+        <ResponsiveDialogFooter>
           <Button onClick={submit} disabled={save.isPending}>
             {save.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
             {t('save')}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
 
@@ -427,18 +429,18 @@ export function ResetPasswordDialog({ user, open, onOpenChange }: DialogProps & 
   const [result, setResult] = useState<InviteResultDto | null>(null);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{t('resetTitle', { name: user.fullName })}</DialogTitle>
-          <DialogDescription>{t('resetHelp')}</DialogDescription>
-        </DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="md:max-w-lg">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>{t('resetTitle', { name: user.fullName })}</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>{t('resetHelp')}</ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         {result ? (
           <InviteLink result={result} />
         ) : (
           <ModePicker mode={mode} onMode={setMode} password={password} onPassword={setPassword} />
         )}
-        <DialogFooter>
+        <ResponsiveDialogFooter>
           {result ? (
             <Button onClick={() => onOpenChange(false)}>{t('done')}</Button>
           ) : (
@@ -464,8 +466,8 @@ export function ResetPasswordDialog({ user, open, onOpenChange }: DialogProps & 
               {t('reset')}
             </Button>
           )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

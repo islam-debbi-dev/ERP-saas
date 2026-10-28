@@ -47,10 +47,12 @@ export function IconField({
           dir={dir}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
-          className={cn('ps-9', end ? 'pe-10' : undefined, className)}
+          className={cn('ps-9', end ? 'pe-12 md:pe-10' : undefined, className)}
           {...input}
         />
-        {end ? <div className="absolute end-1.5 top-1/2 -translate-y-1/2">{end}</div> : null}
+        {end ? (
+          <div className="absolute end-0 top-1/2 -translate-y-1/2 md:end-1.5">{end}</div>
+        ) : null}
       </div>
       {error ? (
         <p id={`${id}-error`} role="alert" className="text-xs text-destructive">
@@ -80,7 +82,7 @@ export function PasswordField(props: Omit<IconFieldProps, 'type' | 'end' | 'dir'
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? t('hidePassword') : t('showPassword')}
           aria-pressed={visible}
-          className="flex size-8 items-center justify-center rounded text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex size-11 items-center justify-center rounded md:size-8 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {visible ? (
             <EyeOff className="size-4" aria-hidden />

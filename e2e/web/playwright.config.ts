@@ -1,9 +1,14 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
 
 /**
  * The web audit runs against a real browser (chromium) and a real API.
  * Override the targets with WEB and API when the ports differ.
+ *
+ * Three projects:
+ * - `desktop`: the behaviour checks of web.spec.ts at 1280 px;
+ * - `mobile`: the phone checks of mobile.spec.ts on a Pixel 5 (393 × 851);
+ * - `mobile-360`: the same phone checks on the smallest phone we support.
  */
 const stateFile = fileURLToPath(new URL('../.auth/state.json', import.meta.url));
 
@@ -26,4 +31,25 @@ export default defineConfig({
     // The tenant and the session are prepared once by the global setup.
     storageState: stateFile,
   },
+  projects: [
+    {
+      name: 'desktop',
+      testMatch: /web\.spec\.ts/,
+      use: { viewport: { width: 1280, height: 800 } },
+    },
+    {
+      name: 'mobile',
+      testMatch: /mobile\.spec\.ts/,
+      use: { ...devices['Pixel 5'] },
+    },
+    {
+      name: 'mobile-360',
+      testMatch: /mobile\.spec\.ts/,
+      use: {
+        ...devices['Pixel 5'],
+        viewport: { width: 360, height: 640 },
+        screen: { width: 360, height: 640 },
+      },
+    },
+  ],
 });

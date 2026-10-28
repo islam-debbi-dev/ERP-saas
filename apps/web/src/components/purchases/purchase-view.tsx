@@ -5,7 +5,7 @@ import { Loader2, Undo2, XCircle } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { formatDA, parseDA, type PurchaseDto, qty } from '@erp/shared';
+import { parseDA, type PurchaseDto, qty } from '@erp/shared';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,19 +21,20 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Input } from '@/components/ui/input';
 import { api } from '@/lib/api-client';
 import { useUnitLabel } from '@/lib/catalog';
 import { purchaseKeys } from '@/lib/purchases';
 import { formatQty, stockKeys } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
+import { Amount } from '@/components/shared/amount';
 
 /** Quantity still returnable, in the line's own unit. */
 function remainingInUnit(line: PurchaseDto['lines'][number]) {
@@ -145,7 +146,7 @@ export function PurchaseView({ purchase }: { purchase: PurchaseDto }) {
       </Card>
 
       <div className="overflow-x-auto rounded-lg border bg-card">
-        <table className="w-full min-w-[40rem] text-sm">
+        <table className="stack-table w-full min-w-[40rem] text-sm">
           <caption className="sr-only">{t('linesSection')}</caption>
           <thead className="bg-muted/50 text-muted-foreground">
             <tr>
@@ -159,17 +160,25 @@ export function PurchaseView({ purchase }: { purchase: PurchaseDto }) {
           <tbody>
             {purchase.lines.map((l) => (
               <tr key={l.id} className="border-t">
-                <td className="p-3 font-medium">{l.designation}</td>
-                <td className="num p-3 text-end whitespace-nowrap">
+                <td data-cell="main" className="p-3 font-medium">
+                  {l.designation}
+                </td>
+                <td data-label={t('colQty')} className="num p-3 text-end whitespace-nowrap">
                   {formatQty(l.qty)} {unitLabel({ code: l.unitCode, name: l.unitName })}
                 </td>
-                <td className="num p-3 text-end whitespace-nowrap" dir="ltr">
-                  {formatDA(l.unitCost)}
+                <td data-label={t('colCost')} className="num p-3 text-end whitespace-nowrap">
+                  <Amount value={l.unitCost} />
                 </td>
-                <td className="num p-3 text-end whitespace-nowrap font-medium" dir="ltr">
-                  {formatDA(l.lineHt)}
+                <td
+                  data-label={t('colLineHt')}
+                  className="num p-3 text-end whitespace-nowrap font-medium"
+                >
+                  <Amount value={l.lineHt} />
                 </td>
-                <td className="num p-3 text-end text-muted-foreground" dir="ltr">
+                <td
+                  data-label={t('colReturned')}
+                  className="num p-3 text-end text-muted-foreground"
+                >
                   {qty(l.returnedQtyBase).isZero()
                     ? '—'
                     : formatQty(qty(l.returnedQtyBase).div(l.factorToBase).toString())}
@@ -184,21 +193,21 @@ export function PurchaseView({ purchase }: { purchase: PurchaseDto }) {
         <CardContent className="num grid gap-1 text-sm sm:ms-auto sm:w-80">
           <div className="flex justify-between">
             <span>{t('totalHt')}</span>
-            <span dir="ltr">{formatDA(purchase.totalHt)}</span>
+            <Amount value={purchase.totalHt} />
           </div>
           {purchase.tvaByRate.map((r) => (
             <div key={r.rate} className="flex justify-between text-muted-foreground">
               <span>{t('tvaAt', { rate: qty(r.rate).toString() })}</span>
-              <span dir="ltr">{formatDA(r.tva)}</span>
+              <Amount value={r.tva} />
             </div>
           ))}
           <div className="flex justify-between border-t pt-1 text-base font-semibold">
             <span>{t('totalTtc')}</span>
-            <span dir="ltr">{formatDA(purchase.totalTtc)}</span>
+            <Amount value={purchase.totalTtc} />
           </div>
           <div className="flex justify-between text-muted-foreground">
             <span>{t('paid')}</span>
-            <span dir="ltr">{formatDA(purchase.paidAmount)}</span>
+            <Amount value={purchase.paidAmount} />
           </div>
         </CardContent>
       </Card>
@@ -221,7 +230,7 @@ export function PurchaseView({ purchase }: { purchase: PurchaseDto }) {
                     {format.dateTime(new Date(r.createdAt), { dateStyle: 'medium' })}
                   </span>
                   <span className="num font-medium" dir="ltr">
-                    {formatDA(r.totalTtc)}
+                    <Amount value={r.totalTtc} />
                   </span>
                 </li>
               ))}
@@ -231,7 +240,7 @@ export function PurchaseView({ purchase }: { purchase: PurchaseDto }) {
       ) : null}
 
       {validated ? (
-        <div className="sticky bottom-0 -mx-4 flex flex-wrap justify-between gap-2 border-t bg-background/95 px-4 py-3 backdrop-blur lg:-mx-6 lg:px-6">
+        <div className="sticky bottom-0 z-20 -mx-4 flex flex-wrap justify-between gap-2 border-t bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:py-3 backdrop-blur lg:-mx-6 lg:px-6">
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="ghost" disabled={cancel.isPending}>
@@ -259,8 +268,8 @@ export function PurchaseView({ purchase }: { purchase: PurchaseDto }) {
         </div>
       ) : null}
 
-      <Dialog open={returnOpen} onOpenChange={setReturnOpen}>
-        <DialogContent className="sm:max-w-lg">
+      <ResponsiveDialog open={returnOpen} onOpenChange={setReturnOpen}>
+        <ResponsiveDialogContent className="md:max-w-lg">
           <form
             className="grid gap-4"
             onSubmit={(e) => {
@@ -268,10 +277,10 @@ export function PurchaseView({ purchase }: { purchase: PurchaseDto }) {
               if (returnLines.length > 0 && !returnInvalid) createReturn.mutate(returnLines);
             }}
           >
-            <DialogHeader>
-              <DialogTitle>{t('returnTitle')}</DialogTitle>
-              <DialogDescription>{t('returnHelp')}</DialogDescription>
-            </DialogHeader>
+            <ResponsiveDialogHeader>
+              <ResponsiveDialogTitle>{t('returnTitle')}</ResponsiveDialogTitle>
+              <ResponsiveDialogDescription>{t('returnHelp')}</ResponsiveDialogDescription>
+            </ResponsiveDialogHeader>
             <div className="grid gap-3">
               {purchase.lines.map((l, i) => {
                 const max = remainingInUnit(l);
@@ -304,7 +313,7 @@ export function PurchaseView({ purchase }: { purchase: PurchaseDto }) {
                 );
               })}
             </div>
-            <DialogFooter>
+            <ResponsiveDialogFooter>
               <Button type="button" variant="ghost" onClick={() => setReturnOpen(false)}>
                 {t('cancel')}
               </Button>
@@ -315,10 +324,10 @@ export function PurchaseView({ purchase }: { purchase: PurchaseDto }) {
                 {createReturn.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
                 {t('returnSubmit')}
               </Button>
-            </DialogFooter>
+            </ResponsiveDialogFooter>
           </form>
-        </DialogContent>
-      </Dialog>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     </div>
   );
 }

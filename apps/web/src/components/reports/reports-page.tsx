@@ -6,7 +6,6 @@ import { useFormatter, useTranslations } from 'next-intl';
 import { type ReactNode, useState } from 'react';
 import { toast } from 'sonner';
 import {
-  formatDA,
   monthToDate,
   REPORT_GROUPS,
   type ReportColumn,
@@ -42,6 +41,7 @@ import { downloadReport, type ReportParams, useReport } from '@/lib/reports';
 import { formatQty } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
+import { Amount } from '@/components/shared/amount';
 
 const NUMERIC: ReadonlySet<ReportColumn['kind']> = new Set(['count', 'qty', 'money', 'percent']);
 
@@ -102,12 +102,12 @@ export function ReportsPage() {
           ) : undefined
         }
       />
-      <div className="flex flex-wrap items-end gap-3">
+      <div className="flex flex-wrap items-end gap-3 max-md:[&>*]:w-full">
         <div className="space-y-1">
           <Label htmlFor="report-name">{t('report')}</Label>
           <NativeSelect
             id="report-name"
-            className="w-56"
+            className="w-56 max-md:w-full"
             value={effective.name}
             onChange={(e) => {
               const name = e.target.value as ReportName;
@@ -125,7 +125,7 @@ export function ReportsPage() {
           <Label htmlFor="report-group">{t('groupBy')}</Label>
           <NativeSelect
             id="report-group"
-            className="w-44"
+            className="w-44 max-md:w-full"
             value={effective.groupBy}
             onChange={(e) => set({ groupBy: e.target.value as ReportGroupBy })}
           >
@@ -142,7 +142,7 @@ export function ReportsPage() {
             id="report-from"
             type="date"
             dir="ltr"
-            className="w-44"
+            className="w-44 max-md:w-full"
             value={effective.from}
             max={effective.to}
             onChange={(e) => set({ from: e.target.value })}
@@ -154,7 +154,7 @@ export function ReportsPage() {
             id="report-to"
             type="date"
             dir="ltr"
-            className="w-44"
+            className="w-44 max-md:w-full"
             value={effective.to}
             min={effective.from}
             onChange={(e) => set({ to: e.target.value })}
@@ -186,8 +186,11 @@ function ReportTable({ report, loading }: { report: ReportDto; loading: boolean 
   const firstText = report.columns.findIndex((c) => !NUMERIC.has(c.kind));
   return (
     <div
+      // An office report: on a phone it scrolls in its own box, first column pinned (docs/ui.md rule 2).
+      data-scroll-x=""
       className={cn(
         'w-full overflow-x-auto rounded-lg border bg-card transition-opacity',
+        'max-md:[&_tr>*:first-child]:sticky max-md:[&_tr>*:first-child]:start-0 max-md:[&_tr>*:first-child]:z-10 max-md:[&_td:first-child]:bg-card max-md:[&_th:first-child]:bg-muted',
         loading && 'opacity-60',
       )}
     >
@@ -270,7 +273,7 @@ function useCellFormatter() {
       case 'money':
         return (
           <span dir="ltr" className="num">
-            {formatDA(value, { currency: false })}
+            <Amount value={value} currency={false} />
           </span>
         );
       case 'qty':

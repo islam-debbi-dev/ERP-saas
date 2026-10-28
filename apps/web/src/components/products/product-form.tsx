@@ -399,7 +399,7 @@ export function ProductForm({
 
         <Section title={t('unitsSection')} description={t('unitsHelp')} className="space-y-3">
           <div className="overflow-x-auto rounded-lg border">
-            <table className="w-full min-w-[40rem] text-sm">
+            <table className="stack-table w-full min-w-[40rem] text-sm">
               <thead className="bg-muted/50 text-muted-foreground">
                 <tr className="text-start">
                   <th className="p-2 text-start font-medium">{t('unit')}</th>
@@ -420,7 +420,7 @@ export function ProductForm({
                   const isBase = i === 0;
                   return (
                     <tr key={field.id} className="border-t">
-                      <td className="p-2">
+                      <td data-cell="main" className="p-2">
                         {isBase ? (
                           <span className="flex items-center gap-2">
                             {unitLabel(unitById.get(unitId))}
@@ -439,7 +439,7 @@ export function ProductForm({
                           </NativeSelect>
                         )}
                       </td>
-                      <td className="p-2">
+                      <td data-label={t('factor')} className="p-2">
                         {isBase ? (
                           <span className="num text-muted-foreground">1</span>
                         ) : (
@@ -448,7 +448,7 @@ export function ProductForm({
                               aria-label={t('factor')}
                               dir="ltr"
                               inputMode="decimal"
-                              className="num w-24"
+                              className="num w-24 max-md:flex-1"
                               {...form.register(`units.${i}.factorToBase`)}
                             />
                             <span className="whitespace-nowrap text-muted-foreground">
@@ -457,7 +457,7 @@ export function ProductForm({
                           </div>
                         )}
                       </td>
-                      <td className="p-2">
+                      <td data-label={t('barcode')} className="p-2">
                         <Input
                           aria-label={t('barcode')}
                           dir="ltr"
@@ -466,25 +466,25 @@ export function ProductForm({
                           {...form.register(`units.${i}.barcode`)}
                         />
                       </td>
-                      <td className="p-2 text-center">
+                      <td data-label={t('defaultSale')} className="p-2 text-center">
                         <input
                           type="radio"
                           aria-label={`${t('defaultSaleHint')} — ${unitLabel(unitById.get(unitId))}`}
-                          className="size-4 accent-[var(--primary)]"
+                          className="size-6 accent-[var(--primary)] md:size-4"
                           value={unitId}
                           {...form.register('defaultSale')}
                         />
                       </td>
-                      <td className="p-2 text-center">
+                      <td data-label={t('defaultPurchase')} className="p-2 text-center">
                         <input
                           type="radio"
                           aria-label={`${t('defaultPurchaseHint')} — ${unitLabel(unitById.get(unitId))}`}
-                          className="size-4 accent-[var(--primary)]"
+                          className="size-6 accent-[var(--primary)] md:size-4"
                           value={unitId}
                           {...form.register('defaultPurchase')}
                         />
                       </td>
-                      <td className="p-2">
+                      <td data-cell="actions" className="p-2">
                         {isBase ? null : (
                           <Button
                             type="button"
@@ -526,7 +526,7 @@ export function ProductForm({
 
         <Section title={t('pricesSection')} description={t('pricesHelp')}>
           <div className="overflow-x-auto rounded-lg border">
-            <table className="w-full min-w-[32rem] text-sm">
+            <table className="stack-table w-full min-w-[32rem] text-sm">
               <thead className="bg-muted/50 text-muted-foreground">
                 <tr>
                   <th className="p-2 text-start font-medium">{t('unit')}</th>
@@ -544,7 +544,9 @@ export function ProductForm({
                   const isBase = i === 0;
                   return (
                     <tr key={unitId} className="border-t">
-                      <td className="p-2 whitespace-nowrap">{unitLabel(unitById.get(unitId))}</td>
+                      <td data-cell="main" className="p-2 whitespace-nowrap">
+                        {unitLabel(unitById.get(unitId))}
+                      </td>
                       {levels.map((l) => {
                         const basePrice = parseDA(
                           watched.prices?.[priceKey(watched.baseUnitId ?? '', l.id)] ?? '',
@@ -555,12 +557,12 @@ export function ProductForm({
                             ? display(suggestedPackagingPrice(basePrice, factor).toString())
                             : undefined;
                         return (
-                          <td key={l.id} className="p-2">
+                          <td data-label={l.name} key={l.id} className="p-2">
                             <Input
                               aria-label={`${l.name} — ${unitLabel(unitById.get(unitId))}`}
                               dir="ltr"
                               inputMode="decimal"
-                              className={cn('num w-32 text-end')}
+                              className={cn('num w-32 text-end max-md:w-full')}
                               placeholder={suggestion}
                               title={suggestion ? t('suggested', { price: suggestion }) : undefined}
                               {...form.register(`prices.${priceKey(unitId, l.id)}`)}
@@ -581,7 +583,7 @@ export function ProductForm({
         </Section>
       </fieldset>
 
-      <div className="sticky bottom-0 -mx-4 flex flex-wrap items-center justify-between gap-2 border-t bg-background/95 px-4 py-3 backdrop-blur lg:-mx-6 lg:px-6">
+      <div className="sticky bottom-0 z-20 -mx-4 flex flex-wrap items-center justify-between gap-2 border-t bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:py-3 backdrop-blur lg:-mx-6 lg:px-6">
         <div className="flex gap-2">
           <Button asChild variant="ghost">
             <Link href="/produits">{t('cancel')}</Link>

@@ -5,12 +5,12 @@ import { useState } from 'react';
 import type { ClientDto } from '@erp/shared';
 import { BalanceAmount } from '@/components/clients/balance-amount';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Input } from '@/components/ui/input';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useClientPages } from '@/lib/clients';
@@ -52,12 +52,12 @@ export function ClientPicker({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{t('pickClient')}</DialogTitle>
-          <DialogDescription>{t('pickClientHelp')}</DialogDescription>
-        </DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="md:max-w-lg">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>{t('pickClient')}</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>{t('pickClientHelp')}</ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         <Input
           type="search"
           autoFocus
@@ -119,7 +119,7 @@ export function ClientPicker({
             </li>
           ))}
         </ul>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

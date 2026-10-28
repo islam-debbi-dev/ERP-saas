@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { type BarcodeMatchDto, formatDA, type ProductDto, qty } from '@erp/shared';
+import { type BarcodeMatchDto, type ProductDto, qty } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/table/data-table';
@@ -26,6 +26,7 @@ import {
   useUnitLabel,
 } from '@/lib/catalog';
 import { useErrorMessage } from '@/lib/use-error-message';
+import { Amount } from '@/components/shared/amount';
 
 /** Scanners type a long run of digits then Enter. */
 const looksLikeBarcode = (value: string) => /^[\w\-.]{6,}$/.test(value) && /\d{6,}/.test(value);
@@ -55,6 +56,7 @@ export function ProductsList() {
     () => [
       {
         id: 'reference',
+        meta: { card: 'subtitle' },
         header: t('colReference'),
         cell: ({ row }) => (
           <span className="font-medium tabular-nums" dir="ltr">
@@ -65,6 +67,7 @@ export function ProductsList() {
       },
       {
         id: 'designation',
+        meta: { card: 'title' },
         header: t('colDesignation'),
         // A real link: keyboard and screen-reader users open the product without the row click.
         cell: ({ row }) => (
@@ -105,6 +108,7 @@ export function ProductsList() {
       },
       {
         id: 'price',
+        meta: { card: 'end' },
         header: t('colPrice'),
         cell: ({ row }) => {
           const sale = row.original.units.find((u) => u.isDefaultSale);
@@ -113,7 +117,7 @@ export function ProductsList() {
           );
           return price ? (
             <span className="num whitespace-nowrap" dir="ltr">
-              {formatDA(price.priceHt)}
+              <Amount value={price.priceHt} />
             </span>
           ) : (
             <span className="text-muted-foreground">—</span>
@@ -122,6 +126,7 @@ export function ProductsList() {
       },
       {
         id: 'status',
+        meta: { card: 'badge' },
         header: t('colStatus'),
         cell: ({ row }) =>
           row.original.archivedAt ? (

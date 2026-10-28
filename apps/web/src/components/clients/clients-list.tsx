@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-import { type ClientDto, formatDA } from '@erp/shared';
+import { type ClientDto } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/table/data-table';
@@ -18,6 +18,7 @@ import { Switch } from '@/components/ui/switch';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useClientPages } from '@/lib/clients';
 import { BalanceAmount } from './balance-amount';
+import { Amount } from '@/components/shared/amount';
 
 export function ClientsList() {
   const t = useTranslations('clients');
@@ -35,6 +36,7 @@ export function ClientsList() {
       {
         id: 'code',
         header: t('code'),
+        meta: { card: 'subtitle' },
         cell: ({ row }) => (
           <span dir="ltr" className="num text-muted-foreground">
             {row.original.code}
@@ -44,10 +46,13 @@ export function ClientsList() {
       {
         id: 'name',
         header: t('name'),
+        meta: { card: 'title' },
         cell: ({ row }) => (
           <div className="min-w-0">
             <Link
               href={`/clients/${row.original.id}`}
+              // A Latin name inside Arabic: truncate at its own end, not its start.
+              dir="auto"
               className="font-medium underline-offset-4 hover:underline"
               onClick={(e) => e.stopPropagation()}
             >
@@ -76,6 +81,7 @@ export function ClientsList() {
       {
         id: 'balance',
         header: t('balance'),
+        meta: { card: 'end' },
         cell: ({ row }) => <BalanceAmount value={row.original.balance} />,
       },
       {
@@ -86,9 +92,7 @@ export function ClientsList() {
             {row.original.creditLimit === null ? (
               <span className="text-muted-foreground">{t('noLimit')}</span>
             ) : (
-              <span dir="ltr" className="num whitespace-nowrap">
-                {formatDA(row.original.creditLimit)}
-              </span>
+              <Amount value={row.original.creditLimit} />
             )}
             {row.original.overLimit ? <Badge variant="destructive">{t('overLimit')}</Badge> : null}
           </div>

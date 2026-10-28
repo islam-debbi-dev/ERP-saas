@@ -13,7 +13,8 @@
     "close": "إغلاق",
     "comingSoon": "هذه الوحدة ستتوفر في إصدار قادم.",
     "comingSoonTitle": "قريبًا",
-    "notifications": "الإشعارات"
+    "notifications": "الإشعارات",
+    "actions": "إجراءات"
   },
   "nav": {
     "groupMain": "النشاط",
@@ -35,7 +36,8 @@
     "themeDark": "داكن",
     "themeSystem": "حسب النظام",
     "language": "اللغة",
-    "mainNavigation": "القائمة الرئيسية"
+    "mainNavigation": "القائمة الرئيسية",
+    "moreOptions": "خيارات أخرى"
   },
   "roles": {
     "OWNER": "المالك",
@@ -67,7 +69,7 @@
     "goToLogin": "تسجيل الدخول",
     "sessionExpired": "انتهت صلاحية الجلسة. سجّل الدخول من جديد.",
     "identifier": "البريد الإلكتروني أو الهاتف",
-    "identifierPlaceholder": "name@company.dz أو 0550 12 34 56"
+    "identifierHint": "بريدك الإلكتروني، أو رقم هاتفك مثل 0550 12 34 56."
   },
   "dashboard": {
     "welcome": "مرحبًا {name}",
@@ -875,7 +877,9 @@
     "cancelInvoiceBody": "تصبح وصولات التسليم قابلة للفوترة من جديد. لا يتغير المخزون ولا حساب الزبون.",
     "timbre": "الطابع الجبائي",
     "netToPay": "الصافي للدفع",
-    "print": "طباعة"
+    "print": "طباعة",
+    "qtyLess": "إنقاص {product} بواحد",
+    "qtyMore": "زيادة {product} بواحد"
   },
   "payments": {
     "title": "الدفعات",
@@ -953,7 +957,8 @@
     "formatA4": "A4 (صفحة كاملة)",
     "formatA5": "A5 (نصف صفحة)",
     "preparing": "جارٍ تحضير المستند…",
-    "popupBlocked": "منع المتصفح فتح المستند. اسمح بالنوافذ المنبثقة لهذا الموقع."
+    "popupBlocked": "منع المتصفح فتح المستند. اسمح بالنوافذ المنبثقة لهذا الموقع.",
+    "downloaded": "ملف PDF موجود في التنزيلات."
   },
   "imports": {
     "title": "استيراد Excel",

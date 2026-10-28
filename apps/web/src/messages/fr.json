@@ -13,7 +13,8 @@
     "close": "Fermer",
     "comingSoon": "Ce module arrive dans une prochaine version.",
     "comingSoonTitle": "Bientôt disponible",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "actions": "Actions"
   },
   "nav": {
     "groupMain": "Activité",
@@ -35,7 +36,8 @@
     "themeDark": "Sombre",
     "themeSystem": "Système",
     "language": "Langue",
-    "mainNavigation": "Menu principal"
+    "mainNavigation": "Menu principal",
+    "moreOptions": "Plus d’options"
   },
   "roles": {
     "OWNER": "Propriétaire",
@@ -67,7 +69,7 @@
     "goToLogin": "Se connecter",
     "sessionExpired": "Votre session a expiré. Reconnectez-vous.",
     "identifier": "E-mail ou téléphone",
-    "identifierPlaceholder": "nom@entreprise.dz ou 0550 12 34 56"
+    "identifierHint": "Votre e-mail, ou votre numéro de téléphone comme 0550 12 34 56."
   },
   "dashboard": {
     "welcome": "Bonjour {name}",
@@ -875,7 +877,9 @@
     "cancelInvoiceBody": "Les bons de livraison redeviennent facturables. Le stock et le compte du client ne changent pas.",
     "timbre": "Timbre fiscal",
     "netToPay": "Net à payer",
-    "print": "Imprimer"
+    "print": "Imprimer",
+    "qtyLess": "Un {product} de moins",
+    "qtyMore": "Un {product} de plus"
   },
   "payments": {
     "title": "Versements",
@@ -953,7 +957,8 @@
     "formatA4": "A4 (page entière)",
     "formatA5": "A5 (demi-page)",
     "preparing": "Préparation du document…",
-    "popupBlocked": "Le navigateur a bloqué l'ouverture du document. Autorisez les fenêtres pour ce site."
+    "popupBlocked": "Le navigateur a bloqué l'ouverture du document. Autorisez les fenêtres pour ce site.",
+    "downloaded": "Le PDF est dans vos téléchargements."
   },
   "imports": {
     "title": "Import Excel",

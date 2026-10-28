@@ -67,7 +67,8 @@ export function LoginForm({ expired }: { expired: boolean }) {
           spellCheck={false}
           dir="ltr"
           autoFocus
-          placeholder={t('auth.identifierPlaceholder')}
+          placeholder={t('auth.emailPlaceholder')}
+          hint={t('auth.identifierHint')}
           error={errors.identifier && t('validation.required')}
           {...form.register('identifier')}
         />
