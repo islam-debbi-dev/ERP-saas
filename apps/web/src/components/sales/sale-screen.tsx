@@ -52,6 +52,7 @@ import { cn, isolateLtr } from '@/lib/utils';
 import { usePrint } from '@/components/shared/print-button';
 import { ClientPicker } from './client-picker';
 import { Kbd } from './kbd';
+import { Amount } from '@/components/shared/amount';
 
 export interface ScreenLine {
   key: string;
@@ -445,6 +446,8 @@ export function SaleScreen({
                 />
                 <Input
                   id="scan"
+                  type="search"
+                  enterKeyHint="search"
                   ref={scanRef}
                   autoFocus
                   autoComplete="off"
@@ -623,7 +626,7 @@ export function SaleScreen({
                               />
                             ) : price ? (
                               <span dir="ltr" className="num">
-                                {formatDA(price, { currency: false })}
+                                <Amount value={price} currency={false} />
                               </span>
                             ) : (
                               <Badge variant="destructive">{t('noPrice')}</Badge>
@@ -649,7 +652,7 @@ export function SaleScreen({
                           </TableCell>
                           <TableCell className="text-end">
                             <span dir="ltr" className="num font-medium">
-                              {formatDA(totals.lines[i]?.lineHt ?? '0', { currency: false })}
+                              <Amount value={totals.lines[i]?.lineHt ?? '0'} currency={false} />
                             </span>
                           </TableCell>
                           <TableCell>
@@ -703,7 +706,7 @@ export function SaleScreen({
                           dir="ltr"
                           className={cn('num font-medium', overLimit && 'text-destructive')}
                         >
-                          {formatDA(projected)}
+                          <Amount value={projected} />
                         </span>
                       </div>
                       <PlafondBar
@@ -754,7 +757,7 @@ export function SaleScreen({
                 <div className="flex justify-between gap-2">
                   <dt className="text-muted-foreground">{t('totalHt')}</dt>
                   <dd dir="ltr" className="num">
-                    {formatDA(totals.totalHt)}
+                    <Amount value={totals.totalHt} />
                   </dd>
                 </div>
                 {totals.tvaByRate.map((r) => (
@@ -763,14 +766,14 @@ export function SaleScreen({
                       {t('tvaAt', { rate: r.rate.toString() })}
                     </dt>
                     <dd dir="ltr" className="num">
-                      {formatDA(r.tva)}
+                      <Amount value={r.tva} />
                     </dd>
                   </div>
                 ))}
                 <div className="flex items-baseline justify-between gap-2 border-t pt-2">
                   <dt className="font-medium">{t('totalTtc')}</dt>
                   <dd dir="ltr" className="num text-2xl font-semibold">
-                    {formatDA(ttc)}
+                    <Amount value={ttc} />
                   </dd>
                 </div>
                 {timbre.gt(0) ? (
@@ -778,13 +781,13 @@ export function SaleScreen({
                     <div className="flex justify-between gap-2">
                       <dt className="text-muted-foreground">{t('timbre')}</dt>
                       <dd dir="ltr" className="num">
-                        {formatDA(timbre)}
+                        <Amount value={timbre} />
                       </dd>
                     </div>
                     <div className="flex items-baseline justify-between gap-2">
                       <dt className="font-medium">{t('netToPay')}</dt>
                       <dd dir="ltr" className="num text-lg font-semibold">
-                        {formatDA(due)}
+                        <Amount value={due} />
                       </dd>
                     </div>
                   </>
@@ -840,14 +843,14 @@ export function SaleScreen({
                     dir="ltr"
                     className={cn('num font-medium', credit.gt(0) && 'text-destructive')}
                   >
-                    {formatDA(credit)}
+                    <Amount value={credit} />
                   </dd>
                 </div>
                 {change.gt(0) ? (
                   <div className="flex justify-between gap-2">
                     <dt className="text-muted-foreground">{t('change')}</dt>
                     <dd dir="ltr" className="num font-semibold text-primary">
-                      {formatDA(change)}
+                      <Amount value={change} />
                     </dd>
                   </div>
                 ) : null}

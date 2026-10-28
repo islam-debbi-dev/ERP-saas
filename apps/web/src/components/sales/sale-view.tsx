@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { formatDA, money, Permission, qty, type SaleResultDto } from '@erp/shared';
+import { money, Permission, qty, type SaleResultDto } from '@erp/shared';
 import { PageHeader } from '@/components/shared/page-header';
 import { PrintButton } from '@/components/shared/print-button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -35,14 +35,7 @@ import { useIdempotencyKey } from '@/lib/use-idempotency-key';
 import { PaymentDetailDialog } from '@/components/payments/payment-detail-dialog';
 import { CancelSaleDialog, ReturnDialog } from './sale-dialogs';
 import { SaleStatusBadge } from './sale-status-badge';
-
-function Amount({ value, className }: { value: string; className?: string }) {
-  return (
-    <span dir="ltr" className={`num whitespace-nowrap ${className ?? ''}`}>
-      {formatDA(value)}
-    </span>
-  );
-}
+import { Amount } from '@/components/shared/amount';
 
 export function SaleView({ id }: { id: string }) {
   const t = useTranslations('sales');

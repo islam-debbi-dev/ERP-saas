@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-import { type ClientDto, formatDA } from '@erp/shared';
+import { type ClientDto } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/table/data-table';
@@ -18,6 +18,7 @@ import { Switch } from '@/components/ui/switch';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useClientPages } from '@/lib/clients';
 import { BalanceAmount } from './balance-amount';
+import { Amount } from '@/components/shared/amount';
 
 export function ClientsList() {
   const t = useTranslations('clients');
@@ -86,9 +87,7 @@ export function ClientsList() {
             {row.original.creditLimit === null ? (
               <span className="text-muted-foreground">{t('noLimit')}</span>
             ) : (
-              <span dir="ltr" className="num whitespace-nowrap">
-                {formatDA(row.original.creditLimit)}
-              </span>
+              <Amount value={row.original.creditLimit} />
             )}
             {row.original.overLimit ? <Badge variant="destructive">{t('overLimit')}</Badge> : null}
           </div>

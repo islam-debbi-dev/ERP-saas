@@ -8,12 +8,12 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
@@ -218,13 +218,13 @@ function AuditDetail({ row, onClose }: { row: AuditLogDto; onClose: () => void }
   const after = (row.after ?? {}) as Record<string, unknown>;
   const keys = [...new Set([...Object.keys(before), ...Object.keys(after)])];
   return (
-    <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>
+    <ResponsiveDialog open onOpenChange={(o) => !o && onClose()}>
+      <ResponsiveDialogContent className="md:max-w-2xl">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>
             <code dir="ltr">{row.action}</code>
-          </DialogTitle>
-          <DialogDescription>
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             {row.user?.fullName ?? t('system')} ·{' '}
             {format.dateTime(new Date(row.createdAt), { dateStyle: 'medium', timeStyle: 'medium' })}
             {row.entityId ? (
@@ -236,8 +236,8 @@ function AuditDetail({ row, onClose }: { row: AuditLogDto; onClose: () => void }
                 </code>
               </>
             ) : null}
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         {keys.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t('noDetails')}</p>
         ) : (
@@ -282,7 +282,7 @@ function AuditDetail({ row, onClose }: { row: AuditLogDto; onClose: () => void }
             </Table>
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

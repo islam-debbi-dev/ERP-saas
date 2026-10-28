@@ -1,8 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { formatDA, money } from '@erp/shared';
+import { money } from '@erp/shared';
 import { cn } from '@/lib/utils';
+import { Amount } from '@/components/shared/amount';
 
 /**
  * A client balance: red when the client owes us, green when the balance is in
@@ -31,7 +32,7 @@ export function BalanceAmount({
           tone === 'zero' && 'text-muted-foreground',
         )}
       >
-        {formatDA(amount.abs())}
+        <Amount value={amount.abs()} />
       </span>
       {showHint && tone !== 'zero' ? (
         <span className="text-xs font-normal text-muted-foreground">

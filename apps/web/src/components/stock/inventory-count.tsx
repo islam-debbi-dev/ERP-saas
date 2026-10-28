@@ -194,6 +194,8 @@ export function InventoryCount({ id }: { id: string }) {
                 )}
                 <Input
                   id="scan"
+                  type="search"
+                  enterKeyHint="search"
                   ref={scanRef}
                   autoFocus
                   autoComplete="off"

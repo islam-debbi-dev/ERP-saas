@@ -23,12 +23,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
@@ -176,8 +176,8 @@ export function CategoriesManager() {
         )}
       </Card>
 
-      <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
-        <DialogContent>
+      <ResponsiveDialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
+        <ResponsiveDialogContent>
           <form
             className="grid gap-4"
             onSubmit={(e) => {
@@ -186,9 +186,9 @@ export function CategoriesManager() {
                 save.mutate({ ...editing, name: editing.name.trim() });
             }}
           >
-            <DialogHeader>
-              <DialogTitle>{editing?.id ? t('edit') : t('new')}</DialogTitle>
-            </DialogHeader>
+            <ResponsiveDialogHeader>
+              <ResponsiveDialogTitle>{editing?.id ? t('edit') : t('new')}</ResponsiveDialogTitle>
+            </ResponsiveDialogHeader>
             <div className="space-y-2">
               <Label htmlFor="category-name">{t('name')}</Label>
               <Input
@@ -221,7 +221,7 @@ export function CategoriesManager() {
                   ))}
               </NativeSelect>
             </div>
-            <DialogFooter>
+            <ResponsiveDialogFooter>
               <Button type="button" variant="ghost" onClick={() => setEditing(null)}>
                 {tp('cancel')}
               </Button>
@@ -229,10 +229,10 @@ export function CategoriesManager() {
                 {save.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
                 {tc('save')}
               </Button>
-            </DialogFooter>
+            </ResponsiveDialogFooter>
           </form>
-        </DialogContent>
-      </Dialog>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     </>
   );
 }

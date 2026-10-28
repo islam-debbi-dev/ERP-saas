@@ -13,7 +13,8 @@
     "close": "Close",
     "comingSoon": "This module is coming in a later version.",
     "comingSoonTitle": "Coming soon",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "actions": "Actions"
   },
   "nav": {
     "groupMain": "Activity",
@@ -35,7 +36,8 @@
     "themeDark": "Dark",
     "themeSystem": "System",
     "language": "Language",
-    "mainNavigation": "Main menu"
+    "mainNavigation": "Main menu",
+    "moreOptions": "More options"
   },
   "roles": {
     "OWNER": "Owner",

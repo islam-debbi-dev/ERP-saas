@@ -30,13 +30,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
@@ -45,6 +45,7 @@ import { findProductByCode, useUnitLabel } from '@/lib/catalog';
 import { purchaseKeys, useSuppliers } from '@/lib/purchases';
 import { stockKeys, formatQty } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
+import { Amount } from '@/components/shared/amount';
 
 export interface EditorLine {
   key: string;
@@ -336,6 +337,8 @@ export function PurchaseEditor({
               )}
               <Input
                 id="br-scan"
+                type="search"
+                enterKeyHint="search"
                 ref={scanRef}
                 autoFocus={purchase !== null}
                 autoComplete="off"
@@ -453,7 +456,7 @@ export function PurchaseEditor({
                         {`${qty(l.product.tvaRate).toString()} %`}
                       </td>
                       <td className="num p-2 text-end font-medium whitespace-nowrap" dir="ltr">
-                        {formatDA(totals.lines[i]?.lineHt ?? '0')}
+                        <Amount value={totals.lines[i]?.lineHt ?? '0'} />
                       </td>
                       <td className="p-2">
                         <Button
@@ -484,7 +487,9 @@ export function PurchaseEditor({
           <dl className="num space-y-1 text-sm sm:order-2">
             <div className="flex justify-between gap-4">
               <dt>{t('totalHt')}</dt>
-              <dd dir="ltr">{formatDA(totals.totalHt)}</dd>
+              <dd dir="ltr">
+                <Amount value={totals.totalHt} />
+              </dd>
             </div>
             {totals.tvaByRate.map((r) => (
               <div
@@ -492,19 +497,25 @@ export function PurchaseEditor({
                 className="flex justify-between gap-4 text-muted-foreground"
               >
                 <dt>{t('tvaAt', { rate: r.rate.toString() })}</dt>
-                <dd dir="ltr">{formatDA(r.tva)}</dd>
+                <dd dir="ltr">
+                  <Amount value={r.tva} />
+                </dd>
               </div>
             ))}
             <div className="flex justify-between gap-4 border-t pt-1 text-base font-semibold">
               <dt>{t('totalTtc')}</dt>
-              <dd dir="ltr">{formatDA(totals.totalTtc)}</dd>
+              <dd dir="ltr">
+                <Amount value={totals.totalTtc} />
+              </dd>
             </div>
             <div className="flex justify-between gap-4 text-muted-foreground">
               <dt>{t('rest')}</dt>
               <dd dir="ltr">
-                {formatDA(
-                  totals.totalTtc.minus(paid).isNegative() ? '0' : totals.totalTtc.minus(paid),
-                )}
+                <Amount
+                  value={
+                    totals.totalTtc.minus(paid).isNegative() ? '0' : totals.totalTtc.minus(paid)
+                  }
+                />
               </dd>
             </div>
           </dl>
@@ -568,12 +579,12 @@ export function PurchaseEditor({
         </div>
       </div>
 
-      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{t('validateTitle')}</DialogTitle>
-            <DialogDescription>{t('validateBody')}</DialogDescription>
-          </DialogHeader>
+      <ResponsiveDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <ResponsiveDialogContent className="md:max-w-2xl">
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>{t('validateTitle')}</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>{t('validateBody')}</ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
           <div className="space-y-3">
             <p className="text-sm font-medium">{t('updatePrices')}</p>
             <p className="text-xs text-muted-foreground">{t('updatePricesHint')}</p>
@@ -635,7 +646,7 @@ export function PurchaseEditor({
               <AlertDescription>{errorMessage(validate.error)}</AlertDescription>
             </Alert>
           ) : null}
-          <DialogFooter>
+          <ResponsiveDialogFooter>
             <Button variant="ghost" onClick={() => setConfirmOpen(false)}>
               {t('keep')}
             </Button>
@@ -647,9 +658,9 @@ export function PurchaseEditor({
               )}
               {t('validate')}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </ResponsiveDialogFooter>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     </div>
   );
 }

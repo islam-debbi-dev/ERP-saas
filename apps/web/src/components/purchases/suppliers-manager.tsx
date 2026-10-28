@@ -23,12 +23,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -172,8 +172,8 @@ export function SuppliersManager() {
         )}
       </Card>
 
-      <Dialog open={editing !== null} onOpenChange={(o) => !o && setEditing(null)}>
-        <DialogContent className="sm:max-w-xl">
+      <ResponsiveDialog open={editing !== null} onOpenChange={(o) => !o && setEditing(null)}>
+        <ResponsiveDialogContent className="md:max-w-xl">
           <form
             className="grid gap-4"
             onSubmit={(e) => {
@@ -181,9 +181,9 @@ export function SuppliersManager() {
               if (editing?.fields.name.trim()) save.mutate(editing);
             }}
           >
-            <DialogHeader>
-              <DialogTitle>{editing?.id ? t('edit') : t('new')}</DialogTitle>
-            </DialogHeader>
+            <ResponsiveDialogHeader>
+              <ResponsiveDialogTitle>{editing?.id ? t('edit') : t('new')}</ResponsiveDialogTitle>
+            </ResponsiveDialogHeader>
             <div className="grid gap-3 sm:grid-cols-2">
               {(Object.keys(EMPTY) as (keyof Fields)[]).map((k) => (
                 <div
@@ -197,6 +197,8 @@ export function SuppliersManager() {
                   <Label htmlFor={`supplier-${k}`}>{t(k)}</Label>
                   <Input
                     id={`supplier-${k}`}
+                    type={k === 'phone' ? 'tel' : undefined}
+                    inputMode={k === 'phone' ? 'tel' : undefined}
                     dir={LTR_FIELDS.has(k) ? 'ltr' : undefined}
                     autoFocus={k === 'name'}
                     required={k === 'name'}
@@ -210,7 +212,7 @@ export function SuppliersManager() {
                 </div>
               ))}
             </div>
-            <DialogFooter>
+            <ResponsiveDialogFooter>
               <Button type="button" variant="ghost" onClick={() => setEditing(null)}>
                 {tp('cancel')}
               </Button>
@@ -218,10 +220,10 @@ export function SuppliersManager() {
                 {save.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
                 {tc('save')}
               </Button>
-            </DialogFooter>
+            </ResponsiveDialogFooter>
           </form>
-        </DialogContent>
-      </Dialog>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     </>
   );
 }

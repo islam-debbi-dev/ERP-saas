@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { type ClientDto, type ClientStatementDto, formatDA, money } from '@erp/shared';
+import { type ClientDto, type ClientStatementDto, money } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { PrintButton } from '@/components/shared/print-button';
@@ -54,6 +54,7 @@ import { UnpaidDocuments } from '@/components/payments/unpaid-documents';
 import { useUnpaidDocuments } from '@/lib/payments';
 import { BalanceAmount, PlafondBar } from './balance-amount';
 import { AdjustmentDialog, OpeningBalanceDialog } from './client-dialogs';
+import { Amount } from '@/components/shared/amount';
 
 export function ClientDetail({ clientId }: { clientId: string }) {
   const t = useTranslations('clients');
@@ -217,7 +218,7 @@ function Summary({ client }: { client: ClientDto }) {
             <>
               <p className="flex flex-wrap items-baseline gap-x-2">
                 <span dir="ltr" className="num text-lg font-semibold">
-                  {formatDA(client.creditLimit)}
+                  <Amount value={client.creditLimit} />
                 </span>
                 <span className="text-sm text-muted-foreground">{t('usage', { pct: usage })}</span>
               </p>
@@ -225,7 +226,7 @@ function Summary({ client }: { client: ClientDto }) {
               <p className="text-xs text-muted-foreground">
                 {remaining.gte(0) ? t('remaining') : t('exceededBy')}{' '}
                 <span dir="ltr" className="num">
-                  {formatDA(remaining.abs())}
+                  <Amount value={remaining.abs()} />
                 </span>
               </p>
             </>
@@ -351,11 +352,7 @@ function StatementSection({ clientId }: { clientId: string }) {
 }
 
 function Signed({ value }: { value: string }) {
-  return (
-    <span dir="ltr" className="num whitespace-nowrap">
-      {formatDA(value)}
-    </span>
-  );
+  return <Amount value={value} />;
 }
 
 function StatementTable({ statement }: { statement: ClientStatementDto }) {

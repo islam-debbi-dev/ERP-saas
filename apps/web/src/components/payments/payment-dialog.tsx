@@ -19,13 +19,13 @@ import { ClientPicker } from '@/components/sales/client-picker';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
@@ -36,6 +36,7 @@ import { saleKeys } from '@/lib/sales';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { useIdempotencyKey } from '@/lib/use-idempotency-key';
 import { isolateLtr } from '@/lib/utils';
+import { Amount } from '@/components/shared/amount';
 
 /** Nouveau versement. `client` pre-selects the client (from the client page). */
 export function PaymentDialog({
@@ -116,8 +117,8 @@ export function PaymentDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-xl">
+      <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+        <ResponsiveDialogContent className="md:max-w-xl">
           <form
             className="grid gap-4"
             onSubmit={(e) => {
@@ -125,10 +126,10 @@ export function PaymentDialog({
               if (canSave) save.mutate();
             }}
           >
-            <DialogHeader>
-              <DialogTitle>{t('newTitle')}</DialogTitle>
-              <DialogDescription>{t('newHelp')}</DialogDescription>
-            </DialogHeader>
+            <ResponsiveDialogHeader>
+              <ResponsiveDialogTitle>{t('newTitle')}</ResponsiveDialogTitle>
+              <ResponsiveDialogDescription>{t('newHelp')}</ResponsiveDialogDescription>
+            </ResponsiveDialogHeader>
 
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border p-3">
               {client ? (
@@ -253,7 +254,7 @@ export function PaymentDialog({
                           <span className="text-xs text-primary">{t('settled')}</span>
                         ) : null}
                         <span dir="ltr" className="num">
-                          {formatDA(p.amount)}
+                          <Amount value={p.amount} />
                         </span>
                       </span>
                     </li>
@@ -279,7 +280,7 @@ export function PaymentDialog({
               </Alert>
             ) : null}
 
-            <DialogFooter>
+            <ResponsiveDialogFooter>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
                 {t('cancelButton')}
               </Button>
@@ -287,10 +288,10 @@ export function PaymentDialog({
                 {save.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
                 {t('save')}
               </Button>
-            </DialogFooter>
+            </ResponsiveDialogFooter>
           </form>
-        </DialogContent>
-      </Dialog>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
       {fixedClient ? null : (
         <ClientPicker
           open={open && pickerOpen}

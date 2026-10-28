@@ -21,6 +21,7 @@ import { useDashboard } from '@/lib/reports';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
 import { SalesChart } from './sales-chart';
+import { Amount } from '@/components/shared/amount';
 
 export function DashboardPage() {
   const t = useTranslations('dashboard');
@@ -98,7 +99,7 @@ function Sections({ d }: { d: DashboardDto }) {
                       <span key={m.mode}>
                         {ts(`mode${m.mode}`)}{' '}
                         <span dir="ltr" className="num">
-                          {formatDA(m.total)}
+                          <Amount value={m.total} />
                         </span>
                       </span>
                     ))}
@@ -270,12 +271,12 @@ function DebtorsCard({ title, rows }: { title: string; rows: DebtorDto[] }) {
                   </TableCell>
                   <TableCell className="text-end">
                     <span dir="ltr" className="num font-medium">
-                      {formatDA(r.balance)}
+                      <Amount value={r.balance} />
                     </span>
                   </TableCell>
                   <TableCell className="text-end text-muted-foreground">
                     <span dir="ltr" className="num">
-                      {r.creditLimit ? formatDA(r.creditLimit) : '—'}
+                      {r.creditLimit ? <Amount value={r.creditLimit} /> : '—'}
                     </span>
                   </TableCell>
                 </TableRow>

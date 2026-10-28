@@ -6,7 +6,6 @@ import { useFormatter, useTranslations } from 'next-intl';
 import { type ReactNode, useState } from 'react';
 import { toast } from 'sonner';
 import {
-  formatDA,
   monthToDate,
   REPORT_GROUPS,
   type ReportColumn,
@@ -42,6 +41,7 @@ import { downloadReport, type ReportParams, useReport } from '@/lib/reports';
 import { formatQty } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
+import { Amount } from '@/components/shared/amount';
 
 const NUMERIC: ReadonlySet<ReportColumn['kind']> = new Set(['count', 'qty', 'money', 'percent']);
 
@@ -270,7 +270,7 @@ function useCellFormatter() {
       case 'money':
         return (
           <span dir="ltr" className="num">
-            {formatDA(value, { currency: false })}
+            <Amount value={value} currency={false} />
           </span>
         );
       case 'qty':

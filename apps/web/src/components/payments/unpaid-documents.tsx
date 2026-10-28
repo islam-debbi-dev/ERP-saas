@@ -3,11 +3,12 @@
 import { FileCheck } from 'lucide-react';
 import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
-import { formatDA, money } from '@erp/shared';
+import { money } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUnpaidDocuments } from '@/lib/payments';
+import { Amount } from '@/components/shared/amount';
 
 /** Documents of a client still to be paid, oldest first (from versement allocations). */
 export function UnpaidDocuments({ clientId }: { clientId: string }) {
@@ -27,7 +28,7 @@ export function UnpaidDocuments({ clientId }: { clientId: string }) {
           <span className="text-sm text-muted-foreground">
             {t('unpaidTotal')}{' '}
             <span dir="ltr" className="num font-medium text-destructive">
-              {formatDA(total)}
+              <Amount value={total} />
             </span>
           </span>
         ) : null}
@@ -58,12 +59,12 @@ export function UnpaidDocuments({ clientId }: { clientId: string }) {
                 </div>
                 <div className="text-end">
                   <p dir="ltr" className="num font-medium">
-                    {formatDA(d.remaining)}
+                    <Amount value={d.remaining} />
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {t('ofTotal')}{' '}
                     <span dir="ltr" className="num">
-                      {formatDA(d.totalTtc)}
+                      <Amount value={d.totalTtc} />
                     </span>
                   </p>
                 </div>

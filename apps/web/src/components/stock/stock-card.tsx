@@ -5,7 +5,7 @@ import { ArrowLeft, History, Loader2, PackagePlus, SlidersHorizontal } from 'luc
 import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-import { formatDA, Permission, qty, type StockMovementDto } from '@erp/shared';
+import { Permission, qty, type StockMovementDto } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/table/data-table';
@@ -19,9 +19,10 @@ import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
 import { usePermission } from '@/lib/auth';
 import { AdjustDialog, OpeningDialog } from './stock-dialogs';
+import { Amount } from '@/components/shared/amount';
 
 /** A cost the user may not see comes back null. */
-const cost = (v: string | null) => (v === null ? '—' : formatDA(v));
+const cost = (v: string | null) => (v === null ? '—' : <Amount value={v} />);
 
 export function StockCard({ productId }: { productId: string }) {
   const t = useTranslations('stock');
@@ -93,9 +94,7 @@ export function StockCard({ productId }: { productId: string }) {
         header: t('colCost'),
         cell: ({ row }) =>
           row.original.unitCost ? (
-            <span dir="ltr" className="num whitespace-nowrap">
-              {formatDA(row.original.unitCost)}
-            </span>
+            <Amount value={row.original.unitCost} />
           ) : (
             <span className="text-muted-foreground">—</span>
           ),

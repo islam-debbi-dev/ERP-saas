@@ -8,13 +8,13 @@ import { toast } from 'sonner';
 import { type ClientDto, parseDA } from '@erp/shared';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
@@ -114,8 +114,8 @@ export function OpeningBalanceDialog({ client, open, onOpenChange }: DialogProps
   const value = signed(amount, direction);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent>
         <form
           className="grid gap-4"
           onSubmit={(e) => {
@@ -128,12 +128,12 @@ export function OpeningBalanceDialog({ client, open, onOpenChange }: DialogProps
             });
           }}
         >
-          <DialogHeader>
-            <DialogTitle>{t('openingTitle')}</DialogTitle>
-            <DialogDescription>
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>{t('openingTitle')}</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
               {client.name}. {t('openingHelp')}
-            </DialogDescription>
-          </DialogHeader>
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
           <div className="grid gap-4 sm:grid-cols-2">
             <AmountFields
               prefix="opening"
@@ -154,7 +154,7 @@ export function OpeningBalanceDialog({ client, open, onOpenChange }: DialogProps
               />
             </div>
           </div>
-          <DialogFooter>
+          <ResponsiveDialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               {t('cancel')}
             </Button>
@@ -162,10 +162,10 @@ export function OpeningBalanceDialog({ client, open, onOpenChange }: DialogProps
               {mutation.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
               {t('openingSubmit')}
             </Button>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
 
@@ -185,8 +185,8 @@ export function AdjustmentDialog({ client, open, onOpenChange }: DialogProps) {
   const valid = value !== null && reason.trim().length >= 3;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent>
         <form
           className="grid gap-4"
           onSubmit={(e) => {
@@ -199,12 +199,12 @@ export function AdjustmentDialog({ client, open, onOpenChange }: DialogProps) {
             });
           }}
         >
-          <DialogHeader>
-            <DialogTitle>{t('adjustTitle')}</DialogTitle>
-            <DialogDescription>
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>{t('adjustTitle')}</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
               {client.name}. {t('adjustHelp')}
-            </DialogDescription>
-          </DialogHeader>
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
           <div className="grid gap-4 sm:grid-cols-2">
             <AmountFields
               prefix="adjust"
@@ -231,7 +231,7 @@ export function AdjustmentDialog({ client, open, onOpenChange }: DialogProps) {
               </p>
             </div>
           </div>
-          <DialogFooter>
+          <ResponsiveDialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               {t('cancel')}
             </Button>
@@ -239,9 +239,9 @@ export function AdjustmentDialog({ client, open, onOpenChange }: DialogProps) {
               {mutation.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
               {t('adjustSubmit')}
             </Button>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

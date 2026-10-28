@@ -255,6 +255,8 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
       >
         <Input
           {...aria(name, error)}
+          type={name === 'telephone' ? 'tel' : undefined}
+          inputMode={name === 'telephone' ? 'tel' : undefined}
           dir={opts.ltr ? 'ltr' : undefined}
           autoComplete="off"
           {...form.register(name)}

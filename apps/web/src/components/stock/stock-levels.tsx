@@ -9,6 +9,7 @@ import { useMemo, useState } from 'react';
 import { formatDA, Permission, qty, type StockLevelDto } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
+import { Amount } from '@/components/shared/amount';
 import { DataTable } from '@/components/table/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -103,7 +104,7 @@ export function StockLevels() {
         header: t('colCump'),
         cell: ({ row }) => (
           <span className="num whitespace-nowrap" dir="ltr">
-            {row.original.avgCost === null ? '—' : formatDA(row.original.avgCost)}
+            {row.original.avgCost === null ? '—' : <Amount value={row.original.avgCost} />}
           </span>
         ),
       },
@@ -112,7 +113,7 @@ export function StockLevels() {
         header: t('colValue'),
         cell: ({ row }) => (
           <span className="num whitespace-nowrap font-medium" dir="ltr">
-            {row.original.value === null ? '—' : formatDA(row.original.value)}
+            {row.original.value === null ? '—' : <Amount value={row.original.value} />}
           </span>
         ),
       },

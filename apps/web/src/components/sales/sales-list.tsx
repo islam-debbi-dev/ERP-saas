@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { formatDA, type SaleResultDto, type SaleSummaryDto } from '@erp/shared';
+import { type SaleResultDto, type SaleSummaryDto } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/table/data-table';
@@ -23,6 +23,7 @@ import { todayInAlgiers } from '@/lib/purchases';
 import { type SaleFilters, saleKeys, useSalePages } from '@/lib/sales';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { SaleStatusBadge } from './sale-status-badge';
+import { Amount } from '@/components/shared/amount';
 
 /** Only validated BLs of a known client, not yet grouped, can go in a facture. */
 const invoiceable = (s: SaleSummaryDto) =>
@@ -139,7 +140,7 @@ export function SalesList() {
         header: t('totalTtc'),
         cell: ({ row }) => (
           <span className="num whitespace-nowrap font-medium" dir="ltr">
-            {formatDA(row.original.totalTtc)}
+            <Amount value={row.original.totalTtc} />
           </span>
         ),
       },
@@ -148,7 +149,7 @@ export function SalesList() {
         header: t('paid'),
         cell: ({ row }) => (
           <span className="num whitespace-nowrap" dir="ltr">
-            {formatDA(row.original.paidAmount)}
+            <Amount value={row.original.paidAmount} />
           </span>
         ),
       },

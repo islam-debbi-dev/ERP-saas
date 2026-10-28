@@ -150,6 +150,8 @@ export function ClientForm({
       </Label>
       <Input
         id={k}
+        type={k === 'phone' || k === 'phone2' ? 'tel' : undefined}
+        inputMode={k === 'phone' || k === 'phone2' ? 'tel' : undefined}
         dir={opts.ltr ? 'ltr' : undefined}
         autoComplete="off"
         autoFocus={k === 'code' && !isEdit}

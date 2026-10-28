@@ -4,7 +4,7 @@ import { type ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-
 import { Banknote, Loader2, Plus } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-import { formatDA, type PaymentDto } from '@erp/shared';
+import { type PaymentDto } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/table/data-table';
@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { PaymentDetailDialog } from './payment-detail-dialog';
 import { PaymentDialog } from './payment-dialog';
 import { PaymentStatusBadge } from './payment-status-badge';
+import { Amount } from '@/components/shared/amount';
 
 type Tab = 'list' | 'cheques' | 'journal';
 const TABS: Tab[] = ['list', 'cheques', 'journal'];
@@ -186,7 +187,7 @@ function PaymentsTable({ cheques, onOpen }: { cheques: boolean; onOpen: (id: str
         header: t('amount'),
         cell: ({ row }) => (
           <span dir="ltr" className="num whitespace-nowrap font-medium">
-            {formatDA(row.original.amount)}
+            <Amount value={row.original.amount} />
           </span>
         ),
       },
@@ -338,7 +339,7 @@ function CashJournal() {
             </CardHeader>
             <CardContent className="space-y-3">
               <p dir="ltr" className="num text-start text-3xl font-semibold rtl:text-end">
-                {formatDA(s.total)}
+                <Amount value={s.total} />
               </p>
               <p className="text-sm text-muted-foreground">
                 {t('journalCount', { count: s.count })}
@@ -353,7 +354,7 @@ function CashJournal() {
                       {ts(`mode${m.mode}`)} ({m.count})
                     </dt>
                     <dd dir="ltr" className="num font-medium">
-                      {formatDA(m.total)}
+                      <Amount value={m.total} />
                     </dd>
                   </div>
                 ))}
@@ -384,7 +385,7 @@ function CashJournal() {
                         </p>
                       </div>
                       <span dir="ltr" className="num font-semibold">
-                        {formatDA(u.total)}
+                        <Amount value={u.total} />
                       </span>
                     </li>
                   ))}

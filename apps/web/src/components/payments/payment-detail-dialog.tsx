@@ -6,16 +6,16 @@ import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { formatDA, parseDA, type PaymentDto, Permission } from '@erp/shared';
+import { parseDA, type PaymentDto, Permission } from '@erp/shared';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -28,6 +28,7 @@ import { useErrorMessage } from '@/lib/use-error-message';
 import { useIdempotencyKey } from '@/lib/use-idempotency-key';
 import { PrintButton } from '@/components/shared/print-button';
 import { PaymentStatusBadge } from './payment-status-badge';
+import { Amount } from '@/components/shared/amount';
 
 /** Mirrors the API: with PAYMENT_CANCEL any versement; without it, your own of the day. */
 function useCanCancel(p: PaymentDto | undefined): boolean {
@@ -152,21 +153,21 @@ export function PaymentDetailDialog({
     : [];
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="flex flex-wrap items-center gap-2">
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="md:max-w-lg">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle className="flex flex-wrap items-center gap-2">
             <span dir="ltr">{p?.number ?? t('title')}</span>
             {p ? <PaymentStatusBadge status={p.status} /> : null}
-          </DialogTitle>
-          <DialogDescription>
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             {p ? (
               <span dir="ltr" className="num text-lg font-semibold text-foreground">
-                {formatDA(p.amount)}
+                <Amount value={p.amount} />
               </span>
             ) : null}
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         {!p ? (
           <Skeleton className="h-48 w-full" aria-busy />
         ) : (
@@ -196,7 +197,7 @@ export function PaymentDetailDialog({
                         {a.saleNumber}
                       </Link>
                       <span dir="ltr" className="num">
-                        {formatDA(a.amount)}
+                        <Amount value={a.amount} />
                       </span>
                     </li>
                   ))}
@@ -250,7 +251,7 @@ export function PaymentDetailDialog({
                 </div>
               </form>
             ) : (
-              <DialogFooter>
+              <ResponsiveDialogFooter>
                 {p.sale && p.status === 'VALID' ? (
                   <p className="me-auto text-xs text-muted-foreground">{t('linkedToSale')}</p>
                 ) : null}
@@ -271,11 +272,11 @@ export function PaymentDetailDialog({
                     {t('cancel')}
                   </Button>
                 ) : null}
-              </DialogFooter>
+              </ResponsiveDialogFooter>
             )}
           </>
         )}
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
