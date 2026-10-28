@@ -4,21 +4,24 @@ import {
   daysUntil,
   effectiveSubscriptionStatus,
   ErrorCode,
+  extendPeriod,
   graceEndsAt,
   monthToDate,
   type PlanInfo,
   type PlanUsage,
+  type RecordSubscriptionPaymentInput,
   type StoredSubscriptionStatus,
   type SubscriptionPaymentInfo,
   SubscriptionStatus,
   type SubscriptionSummary,
   TRIAL_DAYS,
+  type UpdateSubscriptionInput,
 } from '@erp/shared';
 import { algiersMidnight } from '../common/algiers';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { ClockService } from '../clock/clock.service';
-import type { Plan } from '../generated/prisma/client';
+import type { Plan, SubscriptionPayment } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { TRIAL_PLAN_CODE } from './plans';
 
@@ -36,6 +39,21 @@ export interface LoadedSubscription {
 }
 
 type Db = Pick<Tx, 'subscription' | 'plan' | 'tenant' | '$queryRaw'>;
+
+/** Plain values for the audit log's before/after. */
+function snapshot(sub: LoadedSubscription) {
+  return {
+    plan: sub.plan.code,
+    status: sub.status,
+    isFree: sub.isFree,
+    currentPeriodEnd: sub.currentPeriodEnd.toISOString(),
+  };
+}
+
+export interface SubscriptionChange {
+  before: ReturnType<typeof snapshot>;
+  after: ReturnType<typeof snapshot>;
+}
 
 export function toPlanInfo(plan: Plan): PlanInfo {
   return {
@@ -165,6 +183,43 @@ export class BillingService {
     };
   }
 
+  /** Usage of every tenant in one query, for the super-admin list. */
+  async usageOfAll(): Promise<
+    Map<string, PlanUsage & { lastActivityAt: Date | null; name: string; createdAt: Date }>
+  > {
+    const monthStart = algiersMidnight(monthToDate(algiersDay(this.now())).from);
+    const rows = await this.prisma.db.$queryRaw<
+      {
+        id: string;
+        name: string;
+        createdAt: Date;
+        users: bigint;
+        products: bigint;
+        documents: bigint;
+        lastActivityAt: Date | null;
+      }[]
+    >`
+      SELECT t.id, t.name, t."createdAt",
+        (SELECT count(*) FROM users u WHERE u."tenantId" = t.id AND u."deletedAt" IS NULL) AS users,
+        (SELECT count(*) FROM products p WHERE p."tenantId" = t.id AND p."deletedAt" IS NULL) AS products,
+        (SELECT count(*) FROM sales s WHERE s."tenantId" = t.id AND s."createdAt" >= ${monthStart}) AS documents,
+        (SELECT max(se."lastUsedAt") FROM sessions se WHERE se."tenantId" = t.id) AS "lastActivityAt"
+      FROM tenants t`;
+    return new Map(
+      rows.map((r) => [
+        r.id,
+        {
+          name: r.name,
+          createdAt: r.createdAt,
+          users: Number(r.users),
+          products: Number(r.products),
+          documentsThisMonth: Number(r.documents),
+          lastActivityAt: r.lastActivityAt,
+        },
+      ]),
+    );
+  }
+
   /** Status, plan, usage and payments. Used by the tenant and by the super-admin. */
   async summary(tenantId: string): Promise<SubscriptionSummary> {
     const now = this.now();
@@ -204,5 +259,108 @@ export class BillingService {
         createdAt: p.createdAt.toISOString(),
       })),
     };
+  }
+
+  /**
+   * Makes sure the row exists (a tenant from the deploy window has none), then locks it.
+   * Every change of a subscription goes through here, inside the caller's transaction.
+   */
+  private async lockForUpdate(tx: Tx, tenantId: string): Promise<LoadedSubscription> {
+    const virtual = await this.load(tx, tenantId);
+    await tx.subscription.upsert({
+      where: { tenantId },
+      update: {},
+      create: {
+        tenantId,
+        planId: virtual.plan.id,
+        status: virtual.status,
+        isFree: virtual.isFree,
+        trialEndsAt: virtual.trialEndsAt,
+        currentPeriodEnd: virtual.currentPeriodEnd,
+      },
+    });
+    await tx.$queryRaw`SELECT id FROM subscriptions WHERE "tenantId" = ${tenantId}::uuid FOR UPDATE`;
+    return this.load(tx, tenantId);
+  }
+
+  /**
+   * A payment recorded by the super-admin (BaridiMob, virement, espèces): the period is
+   * extended by `months` from its end, or from now when it already ended, and the
+   * subscription becomes ACTIVE. Replays of the same key are handled by the caller.
+   */
+  async recordPayment(
+    tx: Tx,
+    tenantId: string,
+    adminId: string,
+    input: RecordSubscriptionPaymentInput,
+    idempotencyKey: string,
+  ): Promise<SubscriptionChange & { payment: SubscriptionPayment }> {
+    const before = await this.lockForUpdate(tx, tenantId);
+    const period = extendPeriod(before.currentPeriodEnd, input.months, this.now());
+    await tx.subscription.update({
+      where: { tenantId },
+      data: { status: 'ACTIVE', currentPeriodEnd: period.to },
+    });
+    const payment = await tx.subscriptionPayment.create({
+      data: {
+        tenantId,
+        amount: input.amount,
+        method: input.method,
+        reference: input.reference,
+        months: input.months,
+        periodFrom: period.from,
+        periodTo: period.to,
+        planId: before.plan.id,
+        adminId,
+        idempotencyKey,
+      },
+    });
+    const after = await this.load(tx, tenantId);
+    return { before: snapshot(before), after: snapshot(after), payment };
+  }
+
+  /** Change plan, switch free (pilot) on or off, or give more trial days. */
+  async update(
+    tx: Tx,
+    tenantId: string,
+    input: UpdateSubscriptionInput,
+  ): Promise<SubscriptionChange> {
+    const before = await this.lockForUpdate(tx, tenantId);
+    const data: {
+      planId?: string;
+      isFree?: boolean;
+      trialEndsAt?: Date;
+      currentPeriodEnd?: Date;
+    } = {};
+    if (input.planId !== undefined) {
+      const plan = await tx.plan.findUnique({ where: { id: input.planId } });
+      if (!plan || !plan.active) throw new AppException(ErrorCode.NOT_FOUND, 'Plan not found');
+      data.planId = plan.id;
+    }
+    if (input.isFree !== undefined) data.isFree = input.isFree;
+    if (input.extendTrialDays !== undefined) {
+      if (before.status !== 'TRIAL') {
+        throw new AppException(ErrorCode.VALIDATION_FAILED, 'Only a trial can be extended', {
+          field: 'extendTrialDays',
+          rule: 'not_trial',
+        });
+      }
+      const from = Math.max(before.currentPeriodEnd.getTime(), this.now().getTime());
+      const end = new Date(from + input.extendTrialDays * DAY_MS);
+      data.trialEndsAt = end;
+      data.currentPeriodEnd = end;
+    }
+    await tx.subscription.update({ where: { tenantId }, data });
+    const after = await this.load(tx, tenantId);
+    return { before: snapshot(before), after: snapshot(after) };
+  }
+
+  /** Active plans, cheapest first. */
+  async plans(): Promise<PlanInfo[]> {
+    const plans = await this.prisma.db.plan.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: 'asc' },
+    });
+    return plans.map(toPlanInfo);
   }
 }

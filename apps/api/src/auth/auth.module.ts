@@ -33,6 +33,6 @@ import { TokenService } from './token.service';
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],
-  exports: [AuthService],
+  exports: [AuthService, LoginLimiter, TokenService],
 })
 export class AuthModule {}

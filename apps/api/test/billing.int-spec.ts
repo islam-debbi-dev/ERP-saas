@@ -67,8 +67,8 @@ describe('subscriptions: trial, grace, suspension and plan limits', () => {
   const tinyPlan = async (limits: { users: number; products: number; docs: number }) => {
     const code = `T${randomUUID().slice(0, 8)}`;
     await tamper(t)`
-      INSERT INTO plans (id, code, name, "monthlyPrice", "maxUsers", "maxProducts", "maxDocumentsPerMonth", "updatedAt")
-      VALUES (gen_random_uuid(), ${code}, 'Tiny', 1000, ${limits.users}, ${limits.products}, ${limits.docs}, now())`;
+      INSERT INTO plans (id, code, name, "monthlyPrice", "maxUsers", "maxProducts", "maxDocumentsPerMonth", active, "updatedAt")
+      VALUES (gen_random_uuid(), ${code}, 'Tiny', 1000, ${limits.users}, ${limits.products}, ${limits.docs}, false, now())`;
     return code;
   };
   const putOnPlan = (who: RegisteredTenant, code: string) =>

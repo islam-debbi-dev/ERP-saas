@@ -106,6 +106,28 @@ describe('row-level security', () => {
     }
   });
 
+  it('subscriptions follow the tenant; super-admin tables stay hidden from tenants', async () => {
+    await app.query("SELECT set_config('app.tenant_id', $1, false)", [a.tenantId]);
+    try {
+      expect(await count(app, 'subscriptions')).toBe(1);
+      const other = await app.query('SELECT id FROM subscriptions WHERE "tenantId" = $1', [
+        b.tenantId,
+      ]);
+      expect(other.rowCount).toBe(0);
+      for (const table of ['platform_admins', 'platform_admin_sessions', 'platform_audit_logs']) {
+        expect(await count(app, table)).toBe(0);
+      }
+      await expect(
+        app.query(
+          `INSERT INTO platform_admins (id, email, "fullName", "passwordHash", "totpSecret", "updatedAt")
+           VALUES (gen_random_uuid(), 'intrus@x.dz', 'Intrus', 'x', 'x', now())`,
+        ),
+      ).rejects.toThrow(/row-level security/);
+    } finally {
+      await app.query("SELECT set_config('app.tenant_id', '', false)");
+    }
+  });
+
   it("limits raw SQL from the API to the request's tenant", async () => {
     // No tenantId filter on purpose: RLS is what keeps B's client out.
     const rows = await asTenant(

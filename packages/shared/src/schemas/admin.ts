@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { money } from '../money';
 import {
   SUBSCRIPTION_PAYMENT_METHODS,
   type SubscriptionPaymentMethod,
@@ -7,7 +8,7 @@ import {
 } from '../subscription';
 import { emailField } from './auth';
 import type { PlanInfo, PlanUsage, SubscriptionSummary } from './billing';
-import { amountString } from './common';
+import { amountString, normalizeDecimal } from './common';
 
 /** Super-admin login: password and the 6-digit code of the authenticator app (TOTP). */
 export const adminLoginSchema = z.object({
@@ -64,7 +65,7 @@ export interface AdminTenantDetail extends SubscriptionSummary {
 }
 
 export const recordSubscriptionPaymentSchema = z.object({
-  amount: amountString,
+  amount: amountString.transform(normalizeDecimal).refine((v) => money(v).gt(0), 'invalid_amount'),
   method: z.enum(
     SUBSCRIPTION_PAYMENT_METHODS as [SubscriptionPaymentMethod, ...SubscriptionPaymentMethod[]],
   ),
