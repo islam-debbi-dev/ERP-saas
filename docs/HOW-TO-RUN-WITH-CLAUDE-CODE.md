@@ -13,14 +13,15 @@
    Do the task in @docs/prompts/phase-NN-name.md
    ```
    The `@` reference loads only that file. Check the plan: same scope as the prompt, nothing extra. Correct it before approving.
-4. Approve the plan and let it work. If a step is big (phases 1, 6, 8), tell it to commit after each section.
-5. When it says it's done, verify yourself:
+4. Phases with screens: your UI / design skills and the Cloudflare audit skill are installed in Claude Code on your Mac. The prompts tell Claude to load them, but check the plan names them; if not, say "load my UI skills first and run the Cloudflare audit at the end".
+5. Approve the plan and let it work. If a step is big (phases 1, 6, 8), tell it to commit after each section.
+6. When it says it's done, verify yourself:
    ```bash
    pnpm lint && pnpm typecheck && pnpm test && pnpm build
    ```
-   Then follow its "How to test manually" list in the browser.
-6. Optional but worth it on phases 1, 3, 6, 7: run `/code-review` (or `/security-review` on 1 and 11) and fix what it finds.
-7. Push, open a PR, merge into main. Next phase.
+   Then follow its "How to test manually" list in the browser, on the desktop **and** in Chrome DevTools at 360 px in Arabic (and on your phone for screens sellers use outside).
+7. Optional but worth it on phases 1, 3, 6, 7: run `/code-review` (or `/security-review` on 1 and 11) and fix what it finds.
+8. Push, open a PR, merge into main. Next phase.
 
 ## Token-saving habits
 - **One phase = one session.** Don't continue phase 7 in the phase 6 conversation. Use `/clear` between phases and `/compact` if a single phase gets long.

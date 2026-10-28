@@ -23,12 +23,14 @@ Branch: `phase-20-distribution-mode`. Phases 14–16 are merged. Feature flags: 
 - CRUD promotions (zod-validated params), `POST /pricing/preview` returns lines with applied promotions; CRUD packaging types; `GET /clients/:id/packaging`, `POST /packaging-movements` (manual return or adjustment, idempotent); `GET /reports/sell-out`.
 
 ### Web
+- Every screen follows [`docs/ui.md`](../ui.md): phone first (360 px, `ar` RTL), card lists below `md`, `ResponsiveDialog`, sticky main action. Load the UI skills before building screens and run the audit skill on them at the end.
 - Promotions page with active / upcoming / ended; sale and order screens show free lines and the applied promotion.
 - Packaging returned field on the sale screen; client packaging balance card.
 - Sell-out report with filters and export.
 - All strings in ar / fr / en; printed BL shows free lines ("UG") and packaging given/returned.
 
 ### Tests
+- Playwright mobile (`e2e/web/mobile.spec.ts`): each new screen at 360 and 393 px in `ar` and `fr`, no horizontal overflow, main action visible; screenshots in `e2e/artifacts/mobile/`.
 - Unit: promotion matching and priority, repeatable FREE_UNITS (25 bought with 10+1 → 2 free), percent discount totals in Decimal, proportional return of free units.
 - Integration: sale with promotion posts the right stock and ledger and is idempotent; promotion edited after a sale does not change the sale; packaging ledger on sale, return, cancel; balance reconcile; concurrent sales to the same client keep the packaging balance right; PROMO_OVERRIDE; feature flags off; tenant isolation.
 

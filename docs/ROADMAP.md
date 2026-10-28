@@ -17,6 +17,7 @@ Each phase is one branch, one PR and one Claude Code session. Prompts live in [`
 | 10 | [Dashboard & reports](prompts/phase-10-dashboard.md) | Sales today/month, credit outstanding, top debtors, low stock, margin, sales by product/client | 6, 7 | MVP |
 | 11 | [Users, permissions, audit](prompts/phase-11-users-audit.md) | Invite users, roles, sensitive-action permissions, audit log viewer, sessions screen | 1 | MVP |
 | 12 | [Production readiness](prompts/phase-12-production.md) | Deploy staging + prod, backups + PITR, restore drill, monitoring, rate limits, RLS, security pass | all | MVP |
+| 12b | [Phone-ready UI](prompts/phase-12b-mobile-ui.md) | Audit and fix every screen at 360 px in `ar`/`fr`: card lists, responsive dialogs, sticky actions, Playwright mobile checks, audit skill scores | 12 | MVP |
 | 13 | [Pilot & billing](prompts/phase-13-pilot-billing.md) | Subscription plans, trial, tenant suspension, onboarding checklist, support links | 12 | v1.1 |
 | 13b | [Plans & feature flags](prompts/phase-13b-feature-flags.md) | Editions Essentiel / Import / Distribution / Entreprise, `@RequireFeature` guard, per-tenant grants | 13 | v1.1 |
 | 14 | [Sales force foundation](prompts/phase-14-sales-force.md) | `Sale.sellerId`, `Payment.collectedBy`, teams (`managerId`), SUPERVISOR / LIVREUR, brands, sectors, client assignment, seller scoping | 13b, 21 | v2 |
@@ -29,7 +30,9 @@ Each phase is one branch, one PR and one Claude Code session. Prompts live in [`
 | 21 | [Crédit avancé](prompts/phase-21-credit-advanced.md) | Supplier ledger + règlements, client aging, relances WhatsApp, share links, cheques à échéance | 13b | v1.1 |
 | 22 | [Importateur](prompts/phase-22-import-landed-cost.md) | Dossiers d'importation, devises + taux, coût de revient (landed cost) into CUMP, late costs | 13b, 21 | v2 |
 
-**MVP = phases 1 to 12.** Put the pilot grossiste on it after phase 12; phase 13 can follow during the free pilot month.
+**MVP = phases 1 to 12b.** Put the pilot grossiste on it after phase 12b (traders open it on their phones); phase 13 can follow during the free pilot month.
+
+Every phase that adds a screen follows [`ui.md`](ui.md): phone first, RTL, Playwright mobile checks.
 
 ## Order rationale
 - Products → stock → purchases before sales, because a sale needs stock and cost (CUMP) to be right.
@@ -38,7 +41,7 @@ Each phase is one branch, one PR and one Claude Code session. Prompts live in [`
 - Printing (8) is its own phase because the A4/A5 layouts and Algerian legal fields take real iteration.
 
 ## After the MVP: recommended order
-**13 → 13b → 21 → 14 → 17 → 18 → 15 → 16 → 19 → 20**, and **22** right after 21 if the first paying client is an importer.
+**12b → 13 → 13b → 21 → 14 → 17 → 18 → 15 → 16 → 19 → 20**, and **22** right after 21 if the first paying client is an importer.
 - 13b first: every later phase declares its feature flag.
 - 21 is core (supplier debts and aging are wanted by every plan), so it comes before the distributor phases despite its number.
 - 17 and 18 only need 14 and work from the web; do them early if a distributor wants bonuses or GPS before the mobile app.

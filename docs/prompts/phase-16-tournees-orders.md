@@ -22,11 +22,13 @@ Branch: `phase-16-tournees-orders`. Phases 1–15 are merged. Feature flag: `TOU
 - CRUD routes + stops (reorder), `GET /me/today` (seller: today's stops with last visit, balance, last sale), `POST /visits` (idempotent), `POST /orders` (idempotent), `/confirm`, `/deliver` (idempotent), `/cancel`, `POST /seller-sessions/:id/close` (idempotent).
 
 ### Web
+- Every screen follows [`docs/ui.md`](../ui.md): phone first (360 px, `ar` RTL), card lists below `md`, `ResponsiveDialog`, sticky main action. Load the UI skills before building screens and run the audit skill on them at the end.
 - Routes editor (drag to reorder stops), orders list with "deliver" action, livreur view, clôture de caisse vendeur screen, visit report.
 - The seller "today" screen works on a phone browser (responsive) until the Flutter app (phase 19).
 - All strings in ar / fr / en; printable bon de commande through the PDF pipeline.
 
 ### Tests
+- Playwright mobile (`e2e/web/mobile.spec.ts`): each new screen at 360 and 393 px in `ar` and `fr`, no horizontal overflow, main action visible; screenshots in `e2e/artifacts/mobile/`.
 - Integration: order confirm freezes prices; deliver creates exactly one BL with correct stock and ledger, replay creates nothing new; partial delivery; two concurrent delivers of the same order → one BL; visit replay; expectedCash includes only cash and only this seller and day (Algiers day boundaries); closed session cannot be closed again; livreur and seller scoping; tenant isolation.
 
 ### Not in this phase

@@ -21,11 +21,13 @@ Branch: `phase-21-credit-advanced`. Phases 1–13b are merged. This phase is **c
 - `POST /share-links` (doc type + id) → URL; `DELETE /share-links/:id`; public `GET /s/:token`.
 
 ### Web
+- Every screen follows [`docs/ui.md`](../ui.md): phone first (360 px, `ar` RTL), card lists below `md`, `ResponsiveDialog`, sticky main action. Load the UI skills before building screens and run the audit skill on them at the end.
 - Supplier detail page: ledger with running balance, new règlement dialog, relevé fournisseur PDF.
 - Aging report with buckets, Excel export.
 - "À relancer" page with the WhatsApp button.
 
 ### Tests
+- Playwright mobile (`e2e/web/mobile.spec.ts`): each new screen at 360 and 393 px in `ar` and `fr`, no horizontal overflow, main action visible; screenshots in `e2e/artifacts/mobile/`.
 - Unit: aging buckets (partial payments, overpayment, avoirs), share token expiry.
 - Integration: BR posts to supplier ledger; payment and cancel; idempotent replay; backfill script run twice gives the same balances; concurrent payments on one supplier; aging sums to the ledger balance; expired/revoked share link refused; tenant isolation (a token never opens another tenant's document).
 

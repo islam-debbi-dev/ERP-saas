@@ -25,6 +25,7 @@ This phase lays the data every later field phase needs (tournées, GPS, objectiv
 - Reports: sales by seller, by brand, by sector (period, HT/TTC, quantity), team totals for a supervisor. Excel export.
 
 ### Web
+- Every screen follows [`docs/ui.md`](../ui.md): phone first (360 px, `ar` RTL), card lists below `md`, `ResponsiveDialog`, sticky main action. Load the UI skills before building screens and run the audit skill on them at the end.
 - Users page: manager column, team tree view.
 - Brands and sectors pages; product form brand select; client form sector + assigned seller; bulk assign from the client list.
 - Sale screen: seller select (prefilled), visible to office roles.
@@ -32,6 +33,7 @@ This phase lays the data every later field phase needs (tournées, GPS, objectiv
 - All strings in ar / fr / en.
 
 ### Tests
+- Playwright mobile (`e2e/web/mobile.spec.ts`): each new screen at 360 and 393 px in `ar` and `fr`, no horizontal overflow, main action visible; screenshots in `e2e/artifacts/mobile/`.
 - Integration: sellerId frozen and reassign rules; collectedBy defaults; manager cycle refused (direct and indirect); scoping for SELLER / SUPERVISOR / MANAGER on clients, sales, payments, reports (a seller reading another seller's client by id gets 404); `SALES_FORCE` off → sectors routes refused but sellerId still works; Excel import with brands, run twice creates no duplicate brand; tenant isolation.
 
 ### Not in this phase
