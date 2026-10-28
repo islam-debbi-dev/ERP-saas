@@ -36,12 +36,14 @@ Each company sets monthly targets for its sellers and sales managers and its own
 - CRUD targets (bulk upsert for a period), plans and rules (validated by the zod union), `POST /incentive-runs` (preview), `POST /incentive-runs/:id/approve`, `GET /incentive-runs/:id` with lines, Excel export (one row per user: rules, amounts, total) for payroll.
 
 ### Web
+- Every screen follows [`docs/ui.md`](../ui.md): phone first (360 px, `ar` RTL), card lists below `md`, `ResponsiveDialog`, sticky main action. Load the UI skills before building screens and run the audit skill on them at the end.
 - Plan builder: pick a rule type → a form for its params, live example with fake numbers.
 - Targets grid; run screen with per-user detail and explanation; approve button (OWNER, or new permission `INCENTIVE_APPROVE`).
 - Seller "Mes objectifs" card on the dashboard (progress bars), team view for supervisors.
 - All strings in ar / fr / en.
 
 ### Tests
+- Playwright mobile (`e2e/web/mobile.spec.ts`): each new screen at 360 and 393 px in `ar` and `fr`, no horizontal overflow, main action visible; screenshots in `e2e/artifacts/mobile/`.
 - Unit: each rule type, both tier modes, gates pass/fail, cap, zero target, scope filters, decimal precision (no float), explanation content.
 - Integration: metrics from a seeded month (sales, factures from BLs counted once, avoirs, payments, bounces); team target over a 3-level tree; preview → approve freezes; recompute after approve refused; sellerId change refused after approval; avoir after approval lowers next month; plan versioning; scoping (a seller sees only his own objectives); feature off; tenant isolation.
 

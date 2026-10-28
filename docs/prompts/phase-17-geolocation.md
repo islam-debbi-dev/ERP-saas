@@ -31,12 +31,14 @@ When a seller creates a sale (and a versement or a visit), the app sends where h
 - Report: flags per seller per month (used by phase 18 gates).
 
 ### Web
+- Every screen follows [`docs/ui.md`](../ui.md): phone first (360 px, `ar` RTL), card lists below `md`, `ResponsiveDialog`, sticky main action. Load the UI skills before building screens and run the audit skill on them at the end.
 - Browser geolocation (`navigator.geolocation`, high accuracy, 10 s timeout) on the sale and versement screens when the feature is on; the note field appears when the API answers that a note is required.
 - "Opérations signalées" page: list + map (react-leaflet with OpenStreetMap tiles) showing the client point, the operation point and the distance; justify / not justified buttons.
 - Client page: map with the saved location, pending change requests.
 - All strings in ar / fr / en.
 
 ### Tests
+- Playwright mobile (`e2e/web/mobile.spec.ts`): each new screen at 360 and 393 px in `ar` and `fr`, no horizontal overflow, main action visible; screenshots in `e2e/artifacts/mobile/`.
 - Unit: Haversine (known city pairs), status rules table (each branch), radius + accuracy edge.
 - Integration: sale with geo OK / FAR / MOCKED / no client GPS in FLAG and BLOCK modes; note required; `GEO_OVERRIDE`; idempotent replay of a sale does not create a second GeoCheck; seller change request flow; review audited; feature off → geo ignored, no rows; tenant isolation.
 

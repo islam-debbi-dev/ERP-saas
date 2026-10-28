@@ -22,12 +22,14 @@ An importer buys from China (or elsewhere) in USD/CNY/EUR, pays freight, customs
 - CRUD import files, attach/detach BRs (OPEN only), add costs, `GET /import-files/:id/preview` (allocation table, nothing written), `POST /import-files/:id/close` (idempotent), `POST /import-files/:id/late-cost` (idempotent).
 
 ### Web
+- Every screen follows [`docs/ui.md`](../ui.md): phone first (360 px, `ar` RTL), card lists below `md`, `ResponsiveDialog`, sticky main action. Load the UI skills before building screens and run the audit skill on them at the end.
 - Dossier screen: BRs, costs, allocation preview table per product (FOB, each cost, landed unit cost, versus the last CUMP), close button.
 - Currency and rate fields on BR and supplier forms (hidden when the feature is off).
 - Margin report gains the écart de coût column.
 - All strings in ar / fr / en; printable fiche de coût de revient (PDF).
 
 ### Tests
+- Playwright mobile (`e2e/web/mobile.spec.ts`): each new screen at 360 and 393 px in `ar` and `fr`, no horizontal overflow, main action visible; screenshots in `e2e/artifacts/mobile/`.
 - Unit: allocation by each method, rounding remainder, landed cost with currency, VAT rule by regime, COST_ADJUST spread and écart.
 - Integration: close posts stock and CUMP exactly once (replay safe); two dossiers closing concurrently on the same products keep the CUMP right (lock order by productId); late cost with partial stock and with zero stock; foreign supplier balance in currency and DZD; feature off → BR behaves as before; tenant isolation.
 

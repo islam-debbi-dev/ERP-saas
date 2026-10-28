@@ -10,6 +10,7 @@ Users are traders who type fast, work on credit, and will drop the software fore
 
 - Domain rules: [`docs/domain.md`](docs/domain.md). Read it whenever a task touches products, prices, stock, credit, documents or taxes.
 - Architecture: [`docs/architecture.md`](docs/architecture.md). Read it whenever you write backend code, schema or infra.
+- UI: [`docs/ui.md`](docs/ui.md). Read it whenever you build or change a screen.
 - Plan: [`docs/ROADMAP.md`](docs/ROADMAP.md). Each phase has a prompt in [`docs/prompts/`](docs/prompts/).
 
 ## 2. Stack (decided, do not reopen)
@@ -45,7 +46,7 @@ When a request is ambiguous, choose the option that protects data correctness, a
 ## 4. Code conventions
 
 - TypeScript `strict: true` everywhere. No `any` unless commented with why.
-- Code, identifiers, comments and commit messages in **English**. UI text in **Arabic (default, RTL), French and English** through the next-intl messages files `apps/web/src/messages/{ar,fr,en}.json`, which must keep identical keys (a test checks it); never hard-coded strings in components. Use logical CSS (`ms-`, `pe-`, `start-`, `text-start`) so layouts work right-to-left. Printed legal documents (factures, bons) stay in French. Business terms keep their French names in code where clearer (`versement`, `bonLivraison`, `avoir`) and are explained once in `docs/domain.md`.
+- Code, identifiers, comments and commit messages in **English**. UI text in **Arabic (default, RTL), French and English** through the next-intl messages files `apps/web/src/messages/{ar,fr,en}.json`, which must keep identical keys (a test checks it); never hard-coded strings in components. Use logical CSS (`ms-`, `pe-`, `start-`, `text-start`) so layouts work right-to-left. Printed legal documents (factures, bons) stay in French. **Phone first**: every screen must work at 360 px wide in Arabic (RTL) with no sideways scroll; follow [`docs/ui.md`](docs/ui.md) and its Playwright mobile checks. Before UI work, load the UI / design skills available in the session; at the end of a phase with UI, run the audit skill on the changed pages (`docs/ui.md` → Skills). Business terms keep their French names in code where clearer (`versement`, `bonLivraison`, `avoir`) and are explained once in `docs/domain.md`.
 - NestJS: thin controllers, logic in services, DB access only through Prisma inside services. Modules talk through exported services, never by querying another module's tables.
 - Every input validated (zod schema from `packages/shared` through a `ZodValidationPipe`, or class-validator DTO; pick zod for anything the web also uses).
 - Errors: throw `AppException(code, message, details?)`; the global filter returns `{ code, message, details? }`. Error codes are `SCREAMING_SNAKE_CASE` and listed in `packages/shared/errors.ts`.
@@ -101,4 +102,5 @@ The MVP is defined in `docs/ROADMAP.md`. If a task drifts into something not in 
 - [ ] New env vars are in `.env.example`; new setup steps are in `README.md`.
 - [ ] Money/stock paths have integration tests (happy path, idempotency, concurrency, tenant isolation).
 - [ ] UI strings are in all three messages files (ar, fr, en).
+- [ ] Every new or changed screen passes the phone checks of `docs/ui.md` (360 px and 393 px, `ar` and `fr`, Playwright mobile project green) and still looks right at 1280 px.
 - [ ] The phase summary is written (What / How to test / Decisions / Next phase).

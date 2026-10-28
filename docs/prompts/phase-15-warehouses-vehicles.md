@@ -28,11 +28,13 @@ This is the riskiest migration so far: production has real stock. Work in the th
 - CRUD `warehouses`; `POST /stock-transfers` (idempotent), `POST /stock-transfers/:id/validate`, `/cancel`; `GET /stock?warehouseId=`; stock card per product per warehouse.
 
 ### Web
+- Every screen follows [`docs/ui.md`](../ui.md): phone first (360 px, `ar` RTL), card lists below `md`, `ResponsiveDialog`, sticky main action. Load the UI skills before building screens and run the audit skill on them at the end.
 - Warehouses page; warehouse selector on BR, sale, return, inventory (hidden when the feature is off).
 - Transfer screen built for speed (barcode, Enter to add, quantities in cartons).
 - Stock list with one column per warehouse.
 
 ### Tests
+- Playwright mobile (`e2e/web/mobile.spec.ts`): each new screen at 360 and 393 px in `ar` and `fr`, no horizontal overflow, main action visible; screenshots in `e2e/artifacts/mobile/`.
 - Integration: transfer keeps total stock and CUMP equal; sum of WarehouseStock = ProductStock after every operation type; negative stock rules per warehouse; two concurrent sales of the last carton from the same truck → behaves as `negativeStockMode`; a sale and a transfer touching the same products in opposite order do not deadlock; backfill script run twice gives the same result; feature off → single implicit dépôt, all phase 3–7 tests unchanged; tenant isolation.
 
 ### Not in this phase

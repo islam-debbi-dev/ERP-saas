@@ -25,11 +25,13 @@ We sell the same product to three kinds of companies: a small grossiste who buys
 - Signup / onboarding asks "Quelle est votre activité ?" with three choices (grossiste, importateur, distributeur de marque) and picks the default plan from it.
 
 ### Web
+- Every screen follows [`docs/ui.md`](../ui.md): phone first (360 px, `ar` RTL), card lists below `md`, `ResponsiveDialog`, sticky main action. Load the UI skills before building screens and run the audit skill on them at the end.
 - `GET /me` returns `features: Feature[]`. A `useFeature(f)` hook; the sidebar and pages hide what is off, and a direct URL to a hidden page shows an "available in plan X" screen with the support link.
 - Super-admin tenant page: plan selector + feature grant/revoke checkboxes.
 - All new strings in ar / fr / en.
 
 ### Tests
+- Playwright mobile (`e2e/web/mobile.spec.ts`): each new screen at 360 and 393 px in `ar` and `fr`, no horizontal overflow, main action visible; screenshots in `e2e/artifacts/mobile/`.
 - Unit: `effectiveFeatures` (plan defaults, grant, revoke, unknown strings ignored).
 - Integration: a route decorated with a feature returns `FEATURE_NOT_IN_PLAN` for an ESSENTIEL tenant and works after a grant; cache invalidation after a plan change; tenant users cannot call the grant endpoints; changes audited; tenant isolation.
 

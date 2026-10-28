@@ -9,6 +9,8 @@ This phase is big. Run it in **two Claude Code sessions**: Part A, merge, then `
 ### Stack (decided in AGENTS.md)
 Flutter (Android first), Clean Architecture (data / domain / presentation per feature), BLoC/Cubit, go_router, drift (SQLite) for local data, dio for HTTP, `geolocator` for GPS, flutter intl ARB files ar / fr / en (Arabic default, RTL). Code in `apps/mobile`. Add a CI job: `flutter analyze`, `flutter test`, build an APK artifact. Money uses a Decimal package (`decimal`), never `double`.
 
+**UI**: apply the phone rules of [`docs/ui.md`](../ui.md) to Flutter: 360 dp minimum width, Arabic RTL by default (`Directionality` from the locale), 48 dp touch targets, amounts never wrapped and kept LTR inside Arabic text, big buttons usable with one thumb, main action in a bottom bar, readable in sunlight (contrast ≥ 4.5:1). Load the UI / design skills available in the session before building screens.
+
 ### Part A — core, sync, sale
 1. **Auth**: login (email or phone), refresh token in secure storage, device session visible in the owner's sessions screen (phase 11), mustChangePassword flow.
 2. **Pull sync** (server → phone): API endpoints `GET /sync/{products,prices,clients,routes,stock,objectives}?since=<cursor>` returning changed rows (including soft-deleted, so the phone can remove them) with a cursor based on `updatedAt` + id. Only the seller's scope (phase 14) and his vehicle's stock (phase 15). Store in drift.
@@ -24,6 +26,7 @@ Flutter (Android first), Clean Architecture (data / domain / presentation per fe
 10. Push notifications (FCM) are **parked** unless trivial; do not block the phase on them.
 
 ### Tests
+- Golden tests of the main screens (tournée, new sale, versement, objectives) at 360 × 640 in `ar` and `fr`.
 - Dart unit tests: Cubits (sale form totals, outbox worker states), Decimal totals, unit conversion.
 - drift in-memory tests: pull sync applies inserts, updates and deletes; cursor resumes.
 - Outbox integration test against the real API test server: send, kill connection mid-request, replay → one sale only; FAILED item visible.
