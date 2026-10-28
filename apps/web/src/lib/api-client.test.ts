@@ -77,6 +77,33 @@ describe('ApiClient token refresh', () => {
     expect(client.hasAccessToken()).toBe(false);
   });
 
+  it('never refreshes a fixed (support view) token: a 401 ends the view', async () => {
+    const fake = fakeApi();
+    const onSessionEnd = vi.fn();
+    const client = new ApiClient({ baseUrl: 'http://api', fetch: fake.fetchFn, onSessionEnd });
+    client.useFixedToken('t1');
+    await expect(client.request('/a')).resolves.toBeDefined();
+    client.useFixedToken('t0');
+    await expect(client.request('/b')).rejects.toBeInstanceOf(ApiError);
+    expect(fake.calls.refresh).toBe(0);
+    expect(onSessionEnd).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses its own auth routes (super-admin client)', async () => {
+    const paths: string[] = [];
+    const fetchFn = vi.fn((url: string) => {
+      paths.push(url.replace('http://api', ''));
+      return Promise.resolve(json(200, { accessToken: 'a1', expiresIn: 900, admin: {} }));
+    }) as unknown as typeof fetch;
+    const client = new ApiClient({
+      baseUrl: 'http://api',
+      fetch: fetchFn,
+      authPath: '/admin/auth',
+    });
+    await client.request('/admin/tenants');
+    expect(paths).toEqual(['/admin/auth/refresh', '/admin/tenants']);
+  });
+
   it('does not refresh on errors other than an expired token', async () => {
     const fetchFn = vi.fn(() => Promise.resolve(json(403, { code: 'FORBIDDEN', message: 'no' })));
     const client = new ApiClient({ baseUrl: 'http://api', fetch: fetchFn });

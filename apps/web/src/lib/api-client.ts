@@ -1,4 +1,5 @@
 import type { ApiError as ApiErrorBody, AuthResponse } from '@erp/shared';
+import { impersonation } from './impersonation';
 import { sessionHint } from './session-hint';
 
 export class ApiError extends Error {
@@ -32,6 +33,8 @@ export interface ApiClientOptions {
   fetch?: typeof fetch;
   /** Called once when the session is definitely over (refresh failed). */
   onSessionEnd?: (reason: ApiError) => void;
+  /** Auth routes of this client: `/auth` for companies, `/admin/auth` for the super-admin. */
+  authPath?: string;
 }
 
 /**
@@ -45,14 +48,27 @@ export interface ApiClientOptions {
 export class ApiClient {
   private accessToken: string | null = null;
   private refreshing: Promise<AuthResponse> | null = null;
+  /** A super-admin's read-only view: a fixed token, never refreshed (no cookie is used). */
+  private fixedToken = false;
   private readonly fetchFn: typeof fetch;
+  private readonly authPath: string;
 
   constructor(private readonly options: ApiClientOptions) {
     this.fetchFn = options.fetch ?? ((...args) => fetch(...args));
+    this.authPath = options.authPath ?? '/auth';
   }
 
   setAccessToken(token: string | null): void {
     this.accessToken = token;
+  }
+
+  /**
+   * Uses `token` until it expires, without ever calling refresh: the browser may hold
+   * another account's refresh cookie, which must not replace a support view.
+   */
+  useFixedToken(token: string): void {
+    this.accessToken = token;
+    this.fixedToken = true;
   }
 
   hasAccessToken(): boolean {
@@ -61,14 +77,20 @@ export class ApiClient {
 
   async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
     // After a page reload there is no token in memory yet: get one from the cookie first.
-    if (!this.accessToken && !path.startsWith('/auth/')) await this.refresh();
+    const auth = `${this.authPath}/`;
+    if (!this.accessToken && !path.startsWith(auth)) await this.refresh();
 
     const tokenUsed = this.accessToken;
     try {
       return await this.send<T>(path, options);
     } catch (err) {
-      if (!(err instanceof ApiError) || err.status !== 401 || !REFRESHABLE.has(err.code)) throw err;
-      if (path.startsWith('/auth/') && path !== '/auth/me' && path !== '/auth/logout') throw err;
+      if (!(err instanceof ApiError) || err.status !== 401) throw err;
+      if (this.fixedToken) {
+        this.options.onSessionEnd?.(err);
+        throw err;
+      }
+      if (!REFRESHABLE.has(err.code)) throw err;
+      if (path.startsWith(auth) && path !== `${auth}me` && path !== `${auth}logout`) throw err;
       // Another request may already have refreshed while this one was in flight.
       if (this.accessToken === tokenUsed) await this.refresh();
       return this.send<T>(path, options);
@@ -82,8 +104,16 @@ export class ApiClient {
 
   /** Single in-flight refresh shared by every caller. */
   refresh(): Promise<AuthResponse> {
+    if (this.fixedToken) {
+      const err = new ApiError(401, 'TOKEN_EXPIRED', 'Support view ended');
+      this.options.onSessionEnd?.(err);
+      return Promise.reject(err);
+    }
     if (!this.refreshing) {
-      this.refreshing = this.send<AuthResponse>('/auth/refresh', { method: 'POST', body: {} })
+      this.refreshing = this.send<AuthResponse>(`${this.authPath}/refresh`, {
+        method: 'POST',
+        body: {},
+      })
         .then((auth) => {
           this.accessToken = auth.accessToken;
           return auth;
@@ -150,6 +180,12 @@ export class ApiClient {
 export const api = new ApiClient({
   baseUrl: process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:3001',
   onSessionEnd: () => {
+    if (impersonation.get()) {
+      impersonation.clear();
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      window.location.assign('/support?ended=1');
+      return;
+    }
     sessionHint.set(false);
     if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
       // Full reload on purpose: drops every in-memory query and token of the old session.

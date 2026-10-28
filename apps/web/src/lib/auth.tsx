@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { AuthResponse, AuthUser, LoginInput, Permission, RegisterInput } from '@erp/shared';
 import { api, ApiError } from './api-client';
+import { impersonation } from './impersonation';
 import { sessionHint } from './session-hint';
 
 type AuthState =
@@ -41,6 +42,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // On load, the httpOnly refresh cookie (if any) restores the session.
   useEffect(() => {
     let cancelled = false;
+    // A support view (super-admin, read-only) in this tab: its own token, no cookie.
+    const supportToken = impersonation.get();
+    if (supportToken) {
+      api.useFixedToken(supportToken);
+      api
+        .request<AuthUser>('/auth/me')
+        .then((user) => {
+          if (!cancelled) setState({ status: 'authenticated', user });
+        })
+        .catch(() => {
+          if (!cancelled) setState({ status: 'anonymous', user: null });
+        });
+      return () => {
+        cancelled = true;
+      };
+    }
     if (!sessionHint.get()) {
       // Logged out on this browser: no session to restore.
       queueMicrotask(() => setState({ status: 'anonymous', user: null }));
@@ -79,6 +96,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         );
       },
       logout: async () => {
+        if (impersonation.get()) {
+          // A support view has no session of its own to close: just leave it.
+          impersonation.clear();
+          // Full reload: the tab forgets the support token and every cached query.
+          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+          window.location.assign('/support?ended=1');
+          return;
+        }
         try {
           await api.request('/auth/logout', { method: 'POST' });
         } catch (err) {

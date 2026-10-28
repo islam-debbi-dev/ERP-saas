@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronsUpDown, LogOut, Settings, X } from 'lucide-react';
+import { ChevronsUpDown, CirclePlay, LogOut, MessageCircle, Settings, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -29,6 +29,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { useAuth } from '@/lib/auth';
+import { tutorials, whatsappLink } from '@/lib/support';
 import { isActive, NAV_GROUPS, NAV_ITEMS } from './navigation';
 
 /** Alt + 1…9 jumps to a module. Uses `code` so it works with AZERTY and macOS Option. */
@@ -106,6 +107,7 @@ export function AppSidebar() {
             </SidebarGroup>
           ))}
         </nav>
+        <HelpLinks />
       </SidebarContent>
 
       <SidebarFooter className="border-t">
@@ -114,6 +116,35 @@ export function AppSidebar() {
 
       <SidebarRail />
     </Sidebar>
+  );
+}
+
+/** WhatsApp support and tutorial videos; each link only when it is configured. */
+function HelpLinks() {
+  const t = useTranslations('nav');
+  const whatsapp = whatsappLink();
+  const videos = tutorials();
+  if (!whatsapp && videos.length === 0) return null;
+  const links = [
+    ...(whatsapp ? [{ key: 'helpWhatsapp' as const, url: whatsapp, icon: MessageCircle }] : []),
+    ...videos.map((v) => ({ key: v.key, url: v.url, icon: CirclePlay })),
+  ];
+  return (
+    <SidebarGroup className="mt-auto">
+      <SidebarGroupLabel>{t('help')}</SidebarGroupLabel>
+      <SidebarMenu>
+        {links.map((l) => (
+          <SidebarMenuItem key={l.key}>
+            <SidebarMenuButton asChild tooltip={t(l.key)}>
+              <a href={l.url} target="_blank" rel="noopener noreferrer">
+                <l.icon aria-hidden />
+                <span className="truncate">{t(l.key)}</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
+      </SidebarMenu>
+    </SidebarGroup>
   );
 }
 

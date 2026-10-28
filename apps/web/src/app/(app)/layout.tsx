@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { type CSSProperties, useEffect } from 'react';
+import { SubscriptionBanner } from '@/components/billing/subscription-banner';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -46,6 +47,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <AppSidebar />
       <SidebarInset className="min-w-0 bg-muted/30">
         <SiteHeader />
+        <SubscriptionBanner />
         <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">{children}</div>
       </SidebarInset>
     </SidebarProvider>
