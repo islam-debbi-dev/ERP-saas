@@ -13,7 +13,27 @@ The check fails when the page is wider than the screen, or when a box inside it 
 the side (a table scrolling in its container hides the amount column), unless the box is marked
 `data-scroll-x` (an office table allowed to scroll, docs/ui.md rule 2).
 
-## Result: 18 of 31 routes fail
+## Status after phase 12b: all fixed
+
+Re-run on 2026-10-28 on the `phase-12b-mobile-ui` branch (production build): **31 of 31 routes
+pass** in `ar` and `fr` at 360 and 393 px, plus two interaction checks per locale and width (the
+new-versement sheet keeps its save button on screen; the fast sale keeps its total and the validate
+button on screen after a line is added). 132 screen checks, 0 failures. The check is also stricter
+than for the baseline: it fails when the browser has to zoom the page out to fit it (this caught
+the dashboard).
+
+Allowed to scroll inside their own box (`data-scroll-x`, first column pinned): the stock card
+(`/stock/[productId]`) and the reports table (`/rapports`), the office tables of docs/ui.md rule 2.
+
+Left as is, with the reason:
+
+- Lighthouse Performance on the signed-in pages is 65–67 (target 80): LCP waits for the session
+  refresh call and then the data call, both made from the browser. Moving the session check to the
+  server is an architecture change, out of scope for a screens-only phase (see the PR, Parked ideas).
+
+## Baseline (before phase 12b)
+
+### Result: 18 of 31 routes fail
 
 No page scrolls sideways as a whole (the shell already clips its content). Every failure is a
 table that hides its columns to the side at phone width:
@@ -39,11 +59,11 @@ table that hides its columns to the side at phone width:
 | `/ventes/nouvelle` | ar 360, ar 393, fr 360, fr 393 | hides content to the side: div.relative.w-full.overflow-x-auto (704px in 276px) |
 | `/versements` | ar 360, ar 393, fr 360, fr 393 | hides content to the side: div.relative.w-full.overflow-x-auto (736px in 326px) |
 
-## Routes that pass
+### Routes that pass
 
 `/achats/fournisseurs`, `/clients/[id]/modifier`, `/clients/nouveau`, `/inscription`, `/invitation/[token]`, `/login`, `/mot-de-passe`, `/parametres`, `/parametres/import`, `/produits/categories`, `/stock`, `/stock/inventaires`, `/tableau-de-bord`
 
-## Seen on the screenshots, not caught by the overflow check
+### Seen on the screenshots, not caught by the overflow check
 
 - The header shows the language switcher and theme toggle as separate buttons; on phone they should move into a menu.
 - 17 components open a centred `Dialog` / `AlertDialog` on phone (new versement, client, product, stock, users, confirmations).

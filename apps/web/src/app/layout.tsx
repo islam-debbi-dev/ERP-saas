@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Cairo, Inter } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages, getTranslations } from 'next-intl/server';
+import { preconnect } from 'react-dom';
 import { dirFor, TIMEZONE } from '@/i18n/config';
 import { Providers } from './providers';
 import './globals.css';
@@ -23,6 +24,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const locale = await getLocale();
   const messages = await getMessages();
   const dir = dirFor(locale);
+  // Every screen starts with a call to the API (session refresh): open the
+  // connection while the page loads. Credentialed, like the calls themselves.
+  preconnect(process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:3001', {
+    crossOrigin: 'use-credentials',
+  });
 
   return (
     <html

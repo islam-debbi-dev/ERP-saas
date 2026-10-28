@@ -75,7 +75,7 @@ export function SalesList() {
           invoiceable(row.original) ? (
             <input
               type="checkbox"
-              className="size-4 accent-primary"
+              className="size-6 accent-primary md:size-4"
               aria-label={t('selectBl', { number: row.original.number ?? '' })}
               checked={selected.has(row.original.id)}
               onClick={(e) => e.stopPropagation()}

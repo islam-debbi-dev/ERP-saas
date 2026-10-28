@@ -92,7 +92,8 @@ export function ClientDetail({ clientId }: { clientId: string }) {
     <>
       <PageHeader
         title={c?.name ?? t('detailTitle')}
-        description={c ? `${t('code')} ${c.code}` : undefined}
+        // While loading, a blank line and a disabled button keep their room: no layout shift.
+        description={c ? `${t('code')} ${c.code}` : '\u00a0'}
         more={[
           { label: t('back'), icon: ArrowLeft, flipIcon: true, href: '/clients' },
           live && { label: t('edit'), icon: Pencil, href: `/clients/${clientId}/modifier` },
@@ -107,8 +108,8 @@ export function ClientDetail({ clientId }: { clientId: string }) {
             canManage && { label: t('adjust'), icon: Scale, onSelect: () => setDialog('adjust') },
         ]}
         actions={
-          live ? (
-            <Button onClick={() => setDialog('payment')}>
+          live || !c ? (
+            <Button disabled={!live} onClick={() => setDialog('payment')}>
               <Banknote aria-hidden />
               {t('newPayment')}
             </Button>
