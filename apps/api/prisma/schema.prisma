@@ -88,41 +88,46 @@ model Tenant {
   documentFooter     String?     @db.VarChar(500)
   tvaMention         String      @default("Non assujetti à la TVA") @db.VarChar(120)
 
+  /// The owner hid the dashboard onboarding checklist (phase 13).
+  onboardingDismissedAt DateTime? @db.Timestamptz(3)
+
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
-  users               User[]
-  sessions            Session[]
-  auditLogs           AuditLog[]
-  userInvitations     UserInvitation[]
-  documentSequences   DocumentSequence[]
-  idempotencyKeys     IdempotencyKey[]
-  categories          Category[]
-  units               Unit[]
-  priceLevels         PriceLevel[]
-  products            Product[]
-  productUnits        ProductUnit[]
-  productPrices       ProductPrice[]
-  productStocks       ProductStock[]
-  stockMovements      StockMovement[]
-  inventories         Inventory[]
-  inventoryLines      InventoryLine[]
-  suppliers           Supplier[]
-  purchases           Purchase[]
-  purchaseLines       PurchaseLine[]
-  purchaseReturns     PurchaseReturn[]
-  purchaseReturnLines PurchaseReturnLine[]
-  clients             Client[]
-  clientLedger        ClientLedgerEntry[]
-  clientBalances      ClientBalance[]
-  sales               Sale[]
-  saleLines           SaleLine[]
-  saleReturns         SaleReturn[]
-  saleReturnLines     SaleReturnLine[]
-  payments            Payment[]
-  paymentAllocations  PaymentAllocation[]
-  documentPrints      DocumentPrint[]
-  importJobs          ImportJob[]
+  users                User[]
+  sessions             Session[]
+  auditLogs            AuditLog[]
+  userInvitations      UserInvitation[]
+  documentSequences    DocumentSequence[]
+  idempotencyKeys      IdempotencyKey[]
+  categories           Category[]
+  units                Unit[]
+  priceLevels          PriceLevel[]
+  products             Product[]
+  productUnits         ProductUnit[]
+  productPrices        ProductPrice[]
+  productStocks        ProductStock[]
+  stockMovements       StockMovement[]
+  inventories          Inventory[]
+  inventoryLines       InventoryLine[]
+  suppliers            Supplier[]
+  purchases            Purchase[]
+  purchaseLines        PurchaseLine[]
+  purchaseReturns      PurchaseReturn[]
+  purchaseReturnLines  PurchaseReturnLine[]
+  clients              Client[]
+  clientLedger         ClientLedgerEntry[]
+  clientBalances       ClientBalance[]
+  sales                Sale[]
+  saleLines            SaleLine[]
+  saleReturns          SaleReturn[]
+  saleReturnLines      SaleReturnLine[]
+  payments             Payment[]
+  paymentAllocations   PaymentAllocation[]
+  documentPrints       DocumentPrint[]
+  importJobs           ImportJob[]
+  subscription         Subscription?
+  subscriptionPayments SubscriptionPayment[]
 
   @@map("tenants")
 }
@@ -1065,4 +1070,137 @@ model ImportJob {
   @@index([tenantId, createdAt])
   @@index([fileExpiresAt])
   @@map("import_jobs")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 13: plans, subscriptions, super-admin
+// ---------------------------------------------------------------------------
+
+/// Stored statuses only. PAST_DUE and SUSPENDED are derived from currentPeriodEnd
+/// (packages/shared/subscription.ts), so no job has to move a tenant between them.
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+}
+
+enum SubscriptionPaymentMethod {
+  BARIDIMOB
+  VIREMENT
+  ESPECES
+}
+
+/// Global (not tenant-scoped). Null limits mean unlimited.
+model Plan {
+  id                   String   @id @default(uuid()) @db.Uuid
+  code                 String   @unique @db.VarChar(30)
+  name                 String   @db.VarChar(60)
+  monthlyPrice         Decimal  @db.Decimal(14, 2)
+  maxUsers             Int?
+  maxProducts          Int?
+  /// Soft limit: going over only warns.
+  maxDocumentsPerMonth Int?
+  active               Boolean  @default(true)
+  sortOrder            Int      @default(0) @db.SmallInt
+  createdAt            DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime @updatedAt @db.Timestamptz(3)
+
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+/// One per tenant. Changed only by registration and the super-admin.
+model Subscription {
+  id               String             @id @default(uuid()) @db.Uuid
+  tenantId         String             @unique @db.Uuid
+  planId           String             @db.Uuid
+  status           SubscriptionStatus
+  /// Pilot tenant: never billed, never suspended.
+  isFree           Boolean            @default(false)
+  trialEndsAt      DateTime?          @db.Timestamptz(3)
+  currentPeriodEnd DateTime           @db.Timestamptz(3)
+  createdAt        DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime           @updatedAt @db.Timestamptz(3)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  plan   Plan   @relation(fields: [planId], references: [id])
+
+  @@map("subscriptions")
+}
+
+/// A payment recorded by the super-admin (manual: BaridiMob, virement, espèces). Append-only.
+model SubscriptionPayment {
+  id             String                    @id @default(uuid()) @db.Uuid
+  tenantId       String                    @db.Uuid
+  amount         Decimal                   @db.Decimal(14, 2)
+  method         SubscriptionPaymentMethod
+  reference      String?                   @db.VarChar(80)
+  months         Int                       @db.SmallInt
+  periodFrom     DateTime                  @db.Timestamptz(3)
+  periodTo       DateTime                  @db.Timestamptz(3)
+  planId         String                    @db.Uuid
+  adminId        String                    @db.Uuid
+  idempotencyKey String                    @unique @db.VarChar(100)
+  createdAt      DateTime                  @default(now()) @db.Timestamptz(3)
+
+  tenant Tenant        @relation(fields: [tenantId], references: [id])
+  admin  PlatformAdmin @relation(fields: [adminId], references: [id])
+
+  @@index([tenantId, createdAt])
+  @@map("subscription_payments")
+}
+
+/// Super-admin: outside every tenant. Created with the admin:create CLI; login needs TOTP.
+model PlatformAdmin {
+  id               String    @id @default(uuid()) @db.Uuid
+  email            String    @unique @db.VarChar(254)
+  fullName         String    @db.VarChar(120)
+  passwordHash     String    @db.VarChar(255)
+  /// Base32 TOTP secret (RFC 6238).
+  totpSecret       String    @db.VarChar(64)
+  failedLoginCount Int       @default(0) @db.SmallInt
+  lockedUntil      DateTime? @db.Timestamptz(3)
+  deletedAt        DateTime? @db.Timestamptz(3)
+  createdAt        DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime  @updatedAt @db.Timestamptz(3)
+
+  sessions PlatformAdminSession[]
+  payments SubscriptionPayment[]
+
+  @@map("platform_admins")
+}
+
+model PlatformAdminSession {
+  id                       String    @id @default(uuid()) @db.Uuid
+  adminId                  String    @db.Uuid
+  refreshTokenHash         String    @db.Char(64)
+  previousRefreshTokenHash String?   @db.Char(64)
+  rotatedAt                DateTime? @db.Timestamptz(3)
+  userAgent                String?   @db.VarChar(255)
+  ip                       String?   @db.VarChar(45)
+  createdAt                DateTime  @default(now()) @db.Timestamptz(3)
+  lastUsedAt               DateTime  @default(now()) @db.Timestamptz(3)
+  expiresAt                DateTime  @db.Timestamptz(3)
+  revokedAt                DateTime? @db.Timestamptz(3)
+
+  admin PlatformAdmin @relation(fields: [adminId], references: [id])
+
+  @@index([adminId, revokedAt])
+  @@map("platform_admin_sessions")
+}
+
+/// Every super-admin action, including each request made while impersonating. Append-only.
+model PlatformAuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  adminId   String?  @db.Uuid
+  sessionId String?  @db.Uuid
+  tenantId  String?  @db.Uuid
+  action    String   @db.VarChar(60)
+  detail    Json?
+  ip        String?  @db.VarChar(45)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([createdAt])
+  @@index([tenantId, createdAt])
+  @@map("platform_audit_logs")
 }

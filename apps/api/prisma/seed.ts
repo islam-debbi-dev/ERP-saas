@@ -5,6 +5,7 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as argon2 from 'argon2';
+import { PLAN_DEFAULTS } from '../src/billing/plans';
 import { createDefaultUnits, ensurePriceLevels } from '../src/catalog/catalog-defaults';
 import { PrismaClient } from '../src/generated/prisma/client';
 
@@ -20,6 +21,11 @@ async function main(): Promise<void> {
 
   try {
     await prisma.$transaction(async (tx) => {
+      // Plans (phase 13): created if missing, never overwritten (prices may have changed).
+      for (const plan of PLAN_DEFAULTS) {
+        await tx.plan.upsert({ where: { code: plan.code }, update: {}, create: { ...plan } });
+      }
+
       const tenant = await tx.tenant.upsert({
         where: { id: DEMO_TENANT_ID },
         update: {},
@@ -47,6 +53,20 @@ async function main(): Promise<void> {
       // Idempotent too: skipDuplicates on the unique keys.
       await createDefaultUnits(tx, tenant.id);
       await ensurePriceLevels(tx, tenant.id, tenant.priceLevelCount);
+
+      // The demo tenant is free, so a dev database never expires into read-only.
+      const business = await tx.plan.findUniqueOrThrow({ where: { code: 'BUSINESS' } });
+      await tx.subscription.upsert({
+        where: { tenantId: tenant.id },
+        update: {},
+        create: {
+          tenantId: tenant.id,
+          planId: business.id,
+          status: 'ACTIVE',
+          isFree: true,
+          currentPeriodEnd: new Date(),
+        },
+      });
 
       const existing = await tx.user.findUnique({ where: { email: DEMO_OWNER_EMAIL } });
       if (existing) {

@@ -5,6 +5,8 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
+import { BillingModule } from './billing/billing.module';
+import { ClockModule } from './clock/clock.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { ClientsModule } from './clients/clients.module';
 import { PaymentsModule } from './payments/payments.module';
@@ -61,12 +63,14 @@ import { UsersModule } from './users/users.module';
             ttl: 60_000,
             limit: config.RATE_LIMIT_AUTH_PER_MINUTE,
             skipIf: (ctx) =>
-              !ctx.switchToHttp().getRequest<{ path: string }>().path.startsWith('/auth/'),
+              !/^\/(admin\/)?auth\//.test(ctx.switchToHttp().getRequest<{ path: string }>().path),
           },
         ],
       }),
     }),
     PrismaModule,
+    ClockModule,
+    BillingModule,
     AuditModule,
     IdempotencyModule,
     DocumentsModule,

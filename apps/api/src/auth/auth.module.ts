@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
+import { BillingModule } from '../billing/billing.module';
 import { CatalogModule } from '../catalog/catalog.module';
 import { APP_CONFIG, type AppConfig } from '../config/app-config';
 import { AuthController, SessionsController } from './auth.controller';
@@ -12,6 +13,7 @@ import { TokenService } from './token.service';
 
 @Module({
   imports: [
+    BillingModule,
     CatalogModule,
     JwtModule.registerAsync({
       inject: [APP_CONFIG],

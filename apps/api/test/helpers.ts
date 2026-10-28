@@ -5,6 +5,7 @@ import request from 'supertest';
 import type { App } from 'supertest/types';
 import type { AuthResponse } from '@erp/shared';
 import { AppModule } from '../src/app.module';
+import { ClockService } from '../src/clock/clock.service';
 import { tenantContext } from '../src/common/tenant-context';
 import { APP_CONFIG, type AppConfig } from '../src/config/app-config';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -17,11 +18,31 @@ export interface TestApp {
   close: () => Promise<void>;
 }
 
+/** A clock tests move by hand (subscription expiry), instead of fake timers. */
+export class FakeClock extends ClockService {
+  private offsetMs = 0;
+
+  override now(): Date {
+    return new Date(Date.now() + this.offsetMs);
+  }
+
+  advanceDays(days: number): void {
+    this.offsetMs += days * 24 * 3600 * 1000;
+  }
+
+  reset(): void {
+    this.offsetMs = 0;
+  }
+}
+
 /** Boots the real AppModule (plus optional test-only modules) against the test database. */
-export async function createTestApp(extraModules: Type[] = []): Promise<TestApp> {
-  const moduleRef = await Test.createTestingModule({
-    imports: [AppModule, ...extraModules],
-  }).compile();
+export async function createTestApp(
+  extraModules: Type[] = [],
+  options: { clock?: ClockService } = {},
+): Promise<TestApp> {
+  let builder = Test.createTestingModule({ imports: [AppModule, ...extraModules] });
+  if (options.clock) builder = builder.overrideProvider(ClockService).useValue(options.clock);
+  const moduleRef = await builder.compile();
   const app = moduleRef.createNestApplication<INestApplication<App>>({ bufferLogs: true });
   setupApp(app, app.get<AppConfig>(APP_CONFIG));
   await app.init();
@@ -44,10 +65,15 @@ export interface RegisteredTenant {
   tenantId: string;
 }
 
-/** Registers a new company + owner as a native client (refresh token in the body). */
+/**
+ * Registers a new company + owner as a native client (refresh token in the body).
+ * The tenant is made free (pilot) so plan limits stay out of unrelated tests; pass
+ * `{ trial: true }` to keep the 30-day trial a real signup gets.
+ */
 export async function registerTenant(
   t: TestApp,
   companyName = 'Test SARL',
+  options: { trial?: boolean } = {},
 ): Promise<RegisteredTenant> {
   const email = uniqueEmail('owner');
   const password = 'Password123!';
@@ -58,6 +84,11 @@ export async function registerTenant(
     .send({ companyName, fullName: 'Owner Test', email, password, deviceName: 'jest' })
     .expect(201);
   const auth = res.body as AuthResponse & { refreshToken: string };
+  if (!options.trial) {
+    await tamper(
+      t,
+    )`UPDATE subscriptions SET "isFree" = true WHERE "tenantId" = ${auth.user.tenantId}::uuid`;
+  }
   return { auth, email, password, tenantId: auth.user.tenantId };
 }
 

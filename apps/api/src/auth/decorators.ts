@@ -5,6 +5,9 @@ import type { AuthenticatedRequest, CurrentUserInfo } from './auth.types';
 export const IS_PUBLIC_KEY = 'erp:isPublic';
 export const ROLES_KEY = 'erp:roles';
 export const ALLOW_PASSWORD_CHANGE_KEY = 'erp:allowPasswordChange';
+export const ALLOW_WHEN_SUSPENDED_KEY = 'erp:allowWhenSuspended';
+/** Super-admin routes: the tenant guard skips them, AdminAuthGuard checks them. */
+export const ADMIN_ROUTE_KEY = 'erp:adminRoute';
 
 /** Route needs no access token (login, register, refresh, health). */
 export const Public = (): MethodDecorator & ClassDecorator => SetMetadata(IS_PUBLIC_KEY, true);
@@ -19,6 +22,13 @@ export const Roles = (...roles: Role[]): MethodDecorator & ClassDecorator =>
  */
 export const AllowPendingPasswordChange = (): MethodDecorator & ClassDecorator =>
   SetMetadata(ALLOW_PASSWORD_CHANGE_KEY, true);
+
+/**
+ * A write a SUSPENDED tenant can still make (logout, password change, closing a
+ * session): suspension is read-only, never a lock-out.
+ */
+export const AllowWhenSuspended = (): MethodDecorator & ClassDecorator =>
+  SetMetadata(ALLOW_WHEN_SUSPENDED_KEY, true);
 
 /** The authenticated user, as loaded by JwtAuthGuard. */
 export const CurrentUser = createParamDecorator(

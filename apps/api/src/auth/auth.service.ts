@@ -17,6 +17,7 @@ import {
   type TenantSessionDto,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
+import { BillingService } from '../billing/billing.service';
 import { CatalogService } from '../catalog/catalog.service';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
@@ -68,6 +69,7 @@ export class AuthService {
     private readonly audit: AuditService,
     private readonly catalog: CatalogService,
     private readonly limiter: LoginLimiter,
+    private readonly billing: BillingService,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
@@ -81,6 +83,7 @@ export class AuthService {
             data: { name: input.companyName, raisonSociale: input.companyName },
           });
           await this.catalog.initTenant(tx, tenant.id, tenant.priceLevelCount);
+          await this.billing.createTrial(tx, tenant.id);
           const user = await tx.user.create({
             data: {
               tenantId: tenant.id,
@@ -487,6 +490,7 @@ export class AuthService {
       tenantName: tenant.name,
       permissions: user.permissions,
       mustChangePassword: user.mustChangePassword,
+      ...(user.impersonatedBy ? { impersonating: true } : {}),
     };
   }
 
