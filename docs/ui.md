@@ -28,13 +28,26 @@ Arabic (RTL) is the default language, so check every screen in `ar` first, then 
 11. **Printing on phone**: "Imprimer" opens or shares the server PDF (download, WhatsApp share). Never use `window.print()` on the page.
 12. **Accessibility**: every input has a label, every icon button has an `aria-label` (in the messages files), and colour contrast is at least 4.5:1. Status is never shown by colour alone.
 
+## Building blocks (use them, do not rebuild them)
+
+| Need | Use |
+|---|---|
+| A dialog or a confirmation | `components/ui/responsive-dialog.tsx` (bottom sheet below `md`, centred from `md`); `AlertDialog` shares the same layout. Width with `md:max-w-*`. |
+| A list | `DataTable` (cards below `md`): give each column `meta: { card: 'title' \| 'subtitle' \| 'end' \| 'badge' \| 'leading' \| 'actions' \| 'hidden' }`; `mobile="scroll"` only for office tables. |
+| A small table written by hand | add `stack-table` on the `<table>` and `data-label` / `data-cell="main\|actions\|end"` on the cells: rows become cards below `md`. |
+| Header buttons | `PageHeader`: `actions` stay visible, `more` (back, edit, cancel…) fold into one menu on a phone. |
+| The main action of a form | `StickyActions` (fixed above the home indicator on a phone, a plain row from `md`). |
+| An amount | `<Amount value={…} />` (never `{formatDA(…)}` in JSX). |
+| Print | `PrintButton` / `usePrint`: a new tab on a computer, the share sheet or the downloads on a phone. |
+
 ## Tests (every phase that adds or changes a screen)
 
 - **Playwright mobile project**: `e2e/web/playwright.config.ts` has a `mobile` project (`devices['Pixel 5']`), and a 360 × 640 check runs too. Each new screen gets a test that opens it in `ar` at phone size and asserts:
   - no horizontal overflow: `document.documentElement.scrollWidth <= window.innerWidth`;
   - the main action is visible and clickable without scrolling sideways;
   - a screenshot is saved in `e2e/artifacts/mobile/<screen>-<locale>-<width>.png` for review.
-- Run it with `cd e2e && WEB=http://localhost:3000 API=http://localhost:3001 pnpm test:web`.
+- `e2e/web/mobile.spec.ts` already opens **every route** (read from the app folders) in `ar` and `fr` at 393 px (`mobile`) and 360 px (`mobile-360`), and fails when the page or a box inside it scrolls sideways, or when the browser has to zoom the page out. A new page is covered without touching it; add a step there for a new dialog or a new main action.
+- Run it with `cd e2e && WEB=http://localhost:3000 API=http://localhost:3001 pnpm test:web` (all projects) or add `-- --project mobile --project mobile-360`.
 - **Lighthouse (mobile)** on the main pages you changed: Performance ≥ 80 and Accessibility ≥ 90. Write the scores in the PR summary.
 - By hand, once per phase: Chrome DevTools device toolbar at 360 px in `ar`, then a real Android phone if the phase adds a screen sellers use on the road.
 
