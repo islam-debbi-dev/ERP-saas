@@ -43,6 +43,11 @@ const saleFields = {
    * Omitted = the creator if he is a SELLER, else none (unchanged on update).
    */
   sellerId: id.nullable().optional(),
+  /**
+   * The dépôt the goods leave from (phase 15, WAREHOUSES). Omitted = unchanged (none on
+   * create); null = decided at validation: the seller's truck if he has one, else MAIN.
+   */
+  warehouseId: id.nullable().optional(),
 };
 
 export const createSaleSchema = z.object(saleFields);
@@ -73,6 +78,8 @@ export const cancelSaleSchema = z.object({ reason: z.string().trim().min(3).max(
 export type CancelSaleInput = z.infer<typeof cancelSaleSchema>;
 
 export const saleReturnSchema = z.object({
+  /** Where the goods come back to; omitted = the dépôt the sale left from. */
+  warehouseId: id.optional(),
   disposition: z.enum([ReturnDisposition.RESTOCK, ReturnDisposition.DAMAGED]),
   reason: z.string().trim().min(3).max(255),
   lines: z
@@ -222,6 +229,8 @@ export interface SaleDto {
   sellerId: string | null;
   /** Who the sale counts for: the seller, else its creator. */
   seller: { id: string; fullName: string } | null;
+  /** The dépôt it left from (validated) or the one chosen so far (draft). */
+  warehouse: { id: string; name: string } | null;
   createdAt: string;
   validatedAt: string | null;
   cancelledAt: string | null;
@@ -250,7 +259,13 @@ export interface SalePage {
 }
 
 export type SaleWarning =
-  | { kind: 'NEGATIVE_STOCK'; productId: string; available: string; after: string }
+  | {
+      kind: 'NEGATIVE_STOCK';
+      productId: string;
+      available: string;
+      after: string;
+      warehouseId?: string;
+    }
   | { kind: 'CREDIT_LIMIT'; balance: string; limit: string; projected: string; forced: boolean };
 
 export interface SaleResultDto {

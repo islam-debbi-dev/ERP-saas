@@ -3,6 +3,7 @@ import { Prisma } from '../generated/prisma/client';
 
 export const purchaseInclude = {
   supplier: { select: { id: true, name: true } },
+  warehouse: { select: { id: true, name: true } },
   lines: { orderBy: { position: 'asc' }, include: { returnLines: { select: { qtyBase: true } } } },
   returns: { orderBy: { createdAt: 'asc' }, include: { lines: true } },
 } satisfies Prisma.PurchaseInclude;
@@ -27,6 +28,7 @@ export function toPurchaseDto(p: PurchaseWithRelations): PurchaseDto {
     number: p.number,
     status: p.status,
     supplier: p.supplier,
+    warehouse: p.warehouse,
     documentDate: toIsoDate(p.documentDate),
     supplierRef: p.supplierRef,
     note: p.note,

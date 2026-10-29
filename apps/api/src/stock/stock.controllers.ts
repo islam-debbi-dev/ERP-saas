@@ -16,12 +16,12 @@ import {
   adjustmentSchema,
   type CreateInventoryInput,
   createInventorySchema,
-  type CursorQuery,
-  cursorQuerySchema,
   type InventoryDto,
   type InventoryLinesInput,
   inventoryLinesSchema,
   type InventorySummaryDto,
+  type MovementQuery,
+  movementQuerySchema,
   type OpeningStockInput,
   openingStockSchema,
   type ReconcileReport,
@@ -41,6 +41,7 @@ import { Idempotent } from '../idempotency/idempotent.decorator';
 import { InventoriesService } from './inventories.service';
 import { StockOperationsService } from './stock-operations.service';
 import { StockQueriesService } from './stock-queries.service';
+import { WarehousesService } from './warehouses.service';
 
 /** Stock-changing actions: manager and above (AGENTS: adjustments are MANAGER+). */
 const STOCK_WRITERS = [Role.OWNER, Role.MANAGER];
@@ -50,14 +51,19 @@ export class StockController {
   constructor(
     private readonly queries: StockQueriesService,
     private readonly operations: StockOperationsService,
+    private readonly warehouses: WarehousesService,
   ) {}
 
   @Get()
-  list(
+  async list(
     @Query(new ZodValidationPipe(stockListQuerySchema)) query: StockListQuery,
     @CurrentUser() user: CurrentUserInfo,
   ): Promise<StockPage> {
-    return this.queries.list(query, can(user, Permission.VIEW_COST_AND_MARGIN));
+    return this.queries.list(
+      query,
+      can(user, Permission.VIEW_COST_AND_MARGIN),
+      await this.warehouses.enabled(user.tenantId),
+    );
   }
 
   // Declared before ':productId' so "reconcile" is not parsed as an id.
@@ -68,17 +74,21 @@ export class StockController {
   }
 
   @Get(':productId')
-  level(
+  async level(
     @Param('productId', ParseUUIDPipe) productId: string,
     @CurrentUser() user: CurrentUserInfo,
   ): Promise<StockLevelDto> {
-    return this.queries.level(productId, can(user, Permission.VIEW_COST_AND_MARGIN));
+    return this.queries.level(
+      productId,
+      can(user, Permission.VIEW_COST_AND_MARGIN),
+      await this.warehouses.enabled(user.tenantId),
+    );
   }
 
   @Get(':productId/movements')
   movements(
     @Param('productId', ParseUUIDPipe) productId: string,
-    @Query(new ZodValidationPipe(cursorQuerySchema)) query: CursorQuery,
+    @Query(new ZodValidationPipe(movementQuerySchema)) query: MovementQuery,
     @CurrentUser() user: CurrentUserInfo,
   ): Promise<StockMovementPage> {
     return this.queries.movements(productId, query, can(user, Permission.VIEW_COST_AND_MARGIN));

@@ -14,6 +14,7 @@ export const saleInclude = {
   lines: { orderBy: { position: 'asc' }, include: { returnLines: { select: { qtyBase: true } } } },
   returns: { orderBy: { createdAt: 'asc' }, include: { lines: true } },
   payments: { orderBy: { receivedAt: 'asc' } },
+  warehouse: { select: { id: true, name: true } },
 } satisfies Prisma.SaleInclude;
 
 export type SaleWithRelations = Prisma.SaleGetPayload<{ include: typeof saleInclude }>;
@@ -66,6 +67,7 @@ export function toSaleDto(
     version: s.version,
     sellerId: s.sellerId,
     seller,
+    warehouse: s.warehouse,
     createdAt: s.createdAt.toISOString(),
     validatedAt: s.validatedAt?.toISOString() ?? null,
     cancelledAt: s.cancelledAt?.toISOString() ?? null,

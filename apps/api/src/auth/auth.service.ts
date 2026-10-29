@@ -18,6 +18,7 @@ import {
   Role,
   type SessionInfo,
   type TenantSessionDto,
+  WarehouseType,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import { BillingService } from '../billing/billing.service';
@@ -28,6 +29,7 @@ import { tenantContext } from '../common/tenant-context';
 import { APP_CONFIG, type AppConfig } from '../config/app-config';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { DEFAULT_WAREHOUSE_NAME } from '../stock/warehouses.service';
 import type { ClientMeta, CurrentUserInfo } from './auth.types';
 import { LoginLimiter } from './login-limiter';
 import { TokenService } from './token.service';
@@ -106,6 +108,15 @@ export class AuthService {
             data: { name: input.companyName, raisonSociale: input.companyName },
           });
           await this.catalog.initTenant(tx, tenant.id, tenant.priceLevelCount);
+          // The implicit dépôt every tenant has (phase 15).
+          await tx.warehouse.create({
+            data: {
+              tenantId: tenant.id,
+              name: DEFAULT_WAREHOUSE_NAME,
+              type: WarehouseType.MAIN,
+              isDefault: true,
+            },
+          });
           await this.billing.createTrial(tx, tenant.id, ACTIVITY_EDITION[input.activity]);
           const user = await tx.user.create({
             data: {

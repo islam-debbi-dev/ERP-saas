@@ -40,6 +40,7 @@ import { timbreRuleOf } from '../tenants/timbre-rule';
 import { fromIsoDate } from './sale.mapper';
 import { snapshotSaleLines } from './sale-lines';
 import { lockSale, SalesService } from './sales.service';
+import { WarehousesService } from '../stock/warehouses.service';
 
 /**
  * The steps of a sale that have effects. Each runs in one transaction and takes
@@ -58,6 +59,7 @@ export class SaleWorkflowService {
     private readonly numbering: DocumentNumberingService,
     private readonly payments: PaymentsService,
     private readonly audit: AuditService,
+    private readonly warehouses: WarehousesService,
   ) {}
 
   async validate(
@@ -130,6 +132,8 @@ export class SaleWorkflowService {
       sale.priceLevelId,
       tenant.assujettiTva,
     );
+    // The chosen dépôt, else the seller's truck, else MAIN (phase 15).
+    const warehouseId = await this.warehouses.forSale(tx, sale.warehouseId, sale.sellerId);
     // Locks the stock rows first (see the class comment) and gives the CUMP for margins.
     const levels = await this.stock.lockedLevels(
       tx,
@@ -201,6 +205,7 @@ export class SaleWorkflowService {
       tx,
       lines.map((l) => ({
         productId: l.productId,
+        warehouseId,
         type: StockMovementType.SALE,
         qtyBase: qty(l.qtyBase).negated().toString(),
         refType: 'Sale',
@@ -276,6 +281,7 @@ export class SaleWorkflowService {
               },
             }
           : {}),
+        warehouseId,
         validatedAt: new Date(),
         validatedBy: user.id,
         version: { increment: 1 },
@@ -292,6 +298,7 @@ export class SaleWorkflowService {
         paid: paid.toString(),
         credit: credit.toString(),
         creditOverride,
+        warehouseId,
       },
     });
     return { warnings, change: toMoneyString(handed.minus(paid)) };
@@ -331,6 +338,8 @@ export class SaleWorkflowService {
           // The BLs keep their own effects; they can be invoiced again.
           await tx.sale.updateMany({ where: { invoiceId: id }, data: { invoiceId: null } });
         } else {
+          // Back into the dépôt it left from (sales before phase 15: the default one).
+          const warehouseId = sale.warehouseId ?? (await this.warehouses.defaultId(tx));
           const back = sale.lines
             .map((l) => ({
               line: l,
@@ -343,6 +352,7 @@ export class SaleWorkflowService {
             tx,
             back.map((r) => ({
               productId: r.line.productId,
+              warehouseId,
               type: StockMovementType.SALE_RETURN,
               qtyBase: r.remaining.toString(),
               // Back at the cost it left with, so the CUMP is as if it never left.
@@ -477,11 +487,16 @@ export class SaleWorkflowService {
         })),
         sale.assujettiTva,
       );
+      // Back where it left from unless another dépôt is chosen (the truck brings it back).
+      const warehouseId = await this.warehouses.resolve(tx, input.warehouseId, () =>
+        Promise.resolve(sale.warehouseId),
+      );
       const number = await this.numbering.next(tx, tenantId, DocType.AV);
       const avoir = await tx.saleReturn.create({
         data: {
           tenantId,
           number,
+          warehouseId,
           saleId: id,
           clientId: sale.clientId,
           disposition: input.disposition,
@@ -512,6 +527,7 @@ export class SaleWorkflowService {
         picked.flatMap((p) => [
           {
             productId: p.line.productId,
+            warehouseId,
             type: StockMovementType.SALE_RETURN,
             qtyBase: p.qtyBase.toString(),
             unitCost: p.line.unitCostBase.toString(),
@@ -523,6 +539,7 @@ export class SaleWorkflowService {
             ? [
                 {
                   productId: p.line.productId,
+                  warehouseId,
                   type: StockMovementType.ADJUSTMENT,
                   qtyBase: p.qtyBase.negated().toString(),
                   reason: AdjustmentReason.CASSE,
@@ -682,6 +699,11 @@ export class SaleWorkflowService {
           createdBy: user.id,
           // The BLs' seller when they share one; reports count the BLs, not the facture.
           sellerId: new Set(bls.map((b) => b.sellerId)).size === 1 ? first.sellerId : null,
+          // No stock effect (the BLs moved it): their dépôt when they share one, else MAIN.
+          warehouseId:
+            new Set(bls.map((b) => b.warehouseId)).size === 1 && first.warehouseId
+              ? first.warehouseId
+              : await this.warehouses.defaultId(tx),
           validatedBy: user.id,
           validatedAt: new Date(),
         },

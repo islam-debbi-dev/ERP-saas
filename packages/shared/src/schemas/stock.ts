@@ -27,7 +27,11 @@ function uniqueProducts(lines: { productId: string }[], ctx: z.RefinementCtx): v
   });
 }
 
+/** Dépôt of the operation (phase 15). Omitted = the default one. Needs WAREHOUSES otherwise. */
+const warehouseId = id.optional();
+
 export const openingStockSchema = z.object({
+  warehouseId,
   note: z.string().trim().max(255).optional(),
   lines: z
     .array(
@@ -52,6 +56,7 @@ export const adjustmentSchema = z.object({
     AdjustmentReason.ERREUR,
     AdjustmentReason.AUTRE,
   ]),
+  warehouseId,
   note: z.string().trim().max(255).optional(),
   lines: z
     .array(
@@ -67,7 +72,11 @@ export const adjustmentSchema = z.object({
 });
 export type AdjustmentInput = z.infer<typeof adjustmentSchema>;
 
-export const createInventorySchema = z.object({ note: z.string().trim().max(255).optional() });
+export const createInventorySchema = z.object({
+  /** The dépôt counted; omitted = the default one. */
+  warehouseId,
+  note: z.string().trim().max(255).optional(),
+});
 export type CreateInventoryInput = z.infer<typeof createInventorySchema>;
 
 export const inventoryLinesSchema = z.object({
@@ -103,6 +112,8 @@ export const stockListQuerySchema = z.object({
     .enum(['true', 'false'])
     .optional()
     .transform((v) => v === 'true'),
+  /** Quantities (and the low / out-of-stock filters) of this dépôt only. */
+  warehouseId,
   cursor: id.optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
@@ -114,6 +125,10 @@ export const cursorQuerySchema = z.object({
 });
 export type CursorQuery = z.infer<typeof cursorQuerySchema>;
 
+/** Stock card; with a warehouseId the running balance is that dépôt's. */
+export const movementQuerySchema = cursorQuerySchema.extend({ warehouseId });
+export type MovementQuery = z.infer<typeof movementQuerySchema>;
+
 // ---------------------------------------------------------------- responses
 
 export interface StockWarning {
@@ -122,6 +137,8 @@ export interface StockWarning {
   available: string;
   /** Stock after the exit (negative), in base unit. */
   after: string;
+  /** The dépôt that went negative (phase 15). */
+  warehouseId?: string;
 }
 
 export interface StockLevelDto {
@@ -144,6 +161,8 @@ export interface StockLevelDto {
     factorToBase: string;
   } | null;
   baseUnit: { unitCode: string; unitName: string | null; allowsDecimal: boolean };
+  /** Split per dépôt (WAREHOUSES only; absent otherwise). Sums to qtyBase. */
+  byWarehouse?: { warehouseId: string; qtyBase: string }[];
 }
 
 export interface StockPage {
@@ -167,6 +186,9 @@ export interface StockMovementDto {
   note: string | null;
   createdBy: { id: string; fullName: string } | null;
   createdAt: string;
+  warehouseId: string | null;
+  /** Running balance of that dépôt, when the card is filtered by one. */
+  warehouseBalanceAfter: string | null;
 }
 
 export interface StockMovementPage {
@@ -193,6 +215,7 @@ export interface InventoryDto {
   id: string;
   number: string;
   status: InventoryStatus;
+  warehouseId: string | null;
   note: string | null;
   createdAt: string;
   validatedAt: string | null;
@@ -204,6 +227,7 @@ export interface InventorySummaryDto {
   id: string;
   number: string;
   status: InventoryStatus;
+  warehouseId: string | null;
   lineCount: number;
   createdAt: string;
   validatedAt: string | null;

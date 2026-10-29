@@ -13,6 +13,7 @@ export const printableDocTypeSchema = z.enum([
   PrintableDocType.FAC,
   PrintableDocType.AV,
   PrintableDocType.BR,
+  PrintableDocType.TR,
 ]);
 
 /** Relevé de compte PDF: the statement range plus the paper format. */

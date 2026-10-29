@@ -5,6 +5,7 @@ import {
   type PrintableDocType,
   type PrintFormat,
   PurchaseStatus,
+  StockTransferStatus,
   SaleStatus,
   SaleType,
   type StatementQuery,
@@ -21,11 +22,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PurchasesService } from '../purchases/purchases.service';
 import { SuppliersService } from '../purchases/suppliers.service';
 import { SalesService } from '../sales/sales.service';
+import { StockTransfersService } from '../stock/stock-transfers.service';
 import { TenantsService } from '../tenants/tenants.service';
 import {
   avoirDocument,
   type PrintContext,
   purchaseDocument,
+  transferDocument,
   receiptDocument,
   saleDocument,
   statementDocument,
@@ -62,6 +65,7 @@ export class PrintingService {
     private readonly payments: PaymentsService,
     private readonly clients: ClientsService,
     private readonly suppliers: SuppliersService,
+    private readonly transfers: StockTransfersService,
   ) {}
 
   async document(
@@ -85,6 +89,14 @@ export class PrintingService {
       const duplicate = await this.recordPrint(DocType.AV, id, fmt, user);
       const number = sale.returns.find((r) => r.id === id)?.number ?? null;
       return done(avoirDocument(sale, id, ctx(duplicate)), number);
+    }
+    if (type === DocType.TR) {
+      const transfer = await this.transfers.get(id);
+      if (transfer.status === StockTransferStatus.DRAFT) {
+        throw new AppException(ErrorCode.TRANSFER_NOT_VALIDATED, 'A draft transfer is not printed');
+      }
+      const duplicate = await this.recordPrint(DocType.TR, id, fmt, user);
+      return done(transferDocument(transfer, ctx(duplicate)), transfer.number);
     }
     if (type === DocType.BR) {
       const purchase = await this.purchases.get(id);

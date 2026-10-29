@@ -54,6 +54,37 @@ export const RECONCILE_CHECKS: ReconcileCheck[] = [
       ORDER BY "tenantId", "productId", seq`,
   },
   {
+    // Phase 15: the split per dépôt sums to the product level. Checked once the default
+    // dépôt has its row (the first write after the deploy, or the backfill, creates it).
+    name: 'warehouse_sum_equals_product',
+    entity: 'Product',
+    sql: `
+      SELECT ps."tenantId"::text AS "tenantId", ps."productId"::text AS "entityId",
+             ps."qtyBase"::text AS cached, SUM(ws."qtyBase")::text AS ledger
+      FROM product_stocks ps
+      JOIN warehouse_stocks ws
+        ON ws."tenantId" = ps."tenantId" AND ws."productId" = ps."productId"
+      JOIN warehouses w ON w.id = ws."warehouseId"
+      GROUP BY ps."tenantId", ps."productId", ps."qtyBase"
+      HAVING bool_or(w."isDefault") AND ps."qtyBase" <> SUM(ws."qtyBase")`,
+  },
+  {
+    // Each dépôt level equals its movements; movements written before phase 15 have no
+    // dépôt and belong to the default one.
+    name: 'warehouse_stock_equals_ledger',
+    entity: 'Product',
+    sql: `
+      SELECT ws."tenantId"::text AS "tenantId", ws."productId"::text AS "entityId",
+             ws."qtyBase"::text AS cached, COALESCE(SUM(sm."qtyBase"), 0)::text AS ledger
+      FROM warehouse_stocks ws
+      JOIN warehouses w ON w.id = ws."warehouseId"
+      LEFT JOIN stock_movements sm
+        ON sm."tenantId" = ws."tenantId" AND sm."productId" = ws."productId"
+       AND (sm."warehouseId" = ws."warehouseId" OR (w."isDefault" AND sm."warehouseId" IS NULL))
+      GROUP BY ws."tenantId", ws."productId", ws."warehouseId", ws."qtyBase"
+      HAVING ws."qtyBase" <> COALESCE(SUM(sm."qtyBase"), 0)`,
+  },
+  {
     name: 'client_balance_equals_ledger',
     entity: 'Client',
     sql: `

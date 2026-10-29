@@ -354,7 +354,15 @@
     "MANAGER_CYCLE": "Ce responsable est déjà dans l’équipe de cet utilisateur.",
     "SELLER_NOT_ALLOWED": "Cet utilisateur ne peut pas être vendeur (désactivé ou rôle sans vente).",
     "BRAND_NAME_TAKEN": "Une marque porte déjà ce nom.",
-    "SECTOR_NAME_TAKEN": "Un secteur porte déjà ce nom."
+    "SECTOR_NAME_TAKEN": "Un secteur porte déjà ce nom.",
+    "WAREHOUSE_NOT_FOUND": "Dépôt introuvable.",
+    "WAREHOUSE_NAME_TAKEN": "Un dépôt porte déjà ce nom.",
+    "WAREHOUSE_NOT_EMPTY": "Ce dépôt contient encore du stock. Transférez-le d’abord.",
+    "WAREHOUSE_INVALID": "Ce choix de dépôt n’est pas possible.",
+    "VEHICLE_ALREADY_ASSIGNED": "Ce vendeur a déjà un camion.",
+    "TRANSFER_NOT_DRAFT": "Ce transfert est déjà validé ou annulé.",
+    "TRANSFER_NOT_VALIDATED": "Ce transfert n’est pas validé.",
+    "TRANSFER_EMPTY": "Ajoutez au moins un article."
   },
   "units": {
     "PIECE": "Pièce",
@@ -545,7 +553,9 @@
     "SALE": "Vente",
     "SALE_RETURN": "Retour client",
     "ADJUSTMENT": "Ajustement",
-    "INVENTORY": "Inventaire"
+    "INVENTORY": "Inventaire",
+    "TRANSFER_OUT": "Transfert (sortie)",
+    "TRANSFER_IN": "Transfert (entrée)"
   },
   "adjustmentReasons": {
     "CASSE": "Casse",

@@ -23,6 +23,7 @@ import { DocumentNumberingService } from '../documents/document-numbering.servic
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { StockService } from '../stock/stock.service';
 import { baseUnitCost } from '../stock/unit-conversion';
+import { WarehousesService } from '../stock/warehouses.service';
 import { snapshotLines } from './purchase-lines';
 import { lockPurchase, PurchasesService } from './purchases.service';
 import { SupplierAccountService } from './supplier-account.service';
@@ -42,6 +43,7 @@ export class PurchaseWorkflowService {
     private readonly numbering: DocumentNumberingService,
     private readonly audit: AuditService,
     private readonly account: SupplierAccountService,
+    private readonly warehouses: WarehousesService,
   ) {}
 
   async validate(id: string, input: ValidatePurchaseInput): Promise<PurchaseDto> {
@@ -75,11 +77,14 @@ export class PurchaseWorkflowService {
         data: lines.map((l) => ({ ...l, tenantId, purchaseId: id })),
       });
 
+      // The dépôt chosen on the BR, else the default one.
+      const warehouseId = await this.warehouses.resolve(tx, purchase.warehouseId);
       const number = await this.numbering.next(tx, tenantId, DocType.BR);
       await this.stock.applyMovements(
         tx,
         lines.map((l) => ({
           productId: l.productId,
+          warehouseId,
           type: StockMovementType.PURCHASE,
           qtyBase: l.qtyBase,
           // Under IFU (not assujetti) purchase TVA cannot be recovered: it is part of the cost.
@@ -100,6 +105,7 @@ export class PurchaseWorkflowService {
         data: {
           number,
           status: PurchaseStatus.VALIDATED,
+          warehouseId,
           totalHt: totals.totalHt.toString(),
           totalTva: totals.totalTva.toString(),
           totalTtc: totals.totalTtc.toString(),
@@ -174,10 +180,13 @@ export class PurchaseWorkflowService {
             ),
           }))
           .filter((r) => r.remaining.gt(0));
+        // Out of the dépôt that received it (BR before phase 15: the default one).
+        const warehouseId = purchase.warehouseId ?? (await this.warehouses.defaultId(tx));
         await this.stock.applyMovements(
           tx,
           reversals.map((r) => ({
             productId: r.productId,
+            warehouseId,
             type: StockMovementType.PURCHASE_RETURN,
             qtyBase: r.remaining.negated().toString(),
             refType: 'Purchase',
@@ -295,11 +304,15 @@ export class PurchaseWorkflowService {
         })),
         true,
       );
+      const warehouseId = await this.warehouses.resolve(tx, input.warehouseId, () =>
+        Promise.resolve(purchase.warehouseId),
+      );
       const number = await this.numbering.next(tx, tenantId, DocType.RF);
       const created = await tx.purchaseReturn.create({
         data: {
           tenantId,
           number,
+          warehouseId,
           purchaseId: id,
           supplierId: purchase.supplierId,
           note: input.note,
@@ -327,6 +340,7 @@ export class PurchaseWorkflowService {
         tx,
         returnLines.map((r) => ({
           productId: r.line.productId,
+          warehouseId,
           type: StockMovementType.PURCHASE_RETURN,
           qtyBase: r.qtyBase.negated().toString(),
           refType: 'PurchaseReturn',

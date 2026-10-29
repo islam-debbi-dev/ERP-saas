@@ -11,6 +11,7 @@ import {
   type StockPage,
 } from '@erp/shared';
 import { StockService } from '../src/stock/stock.service';
+import { WarehousesService } from '../src/stock/warehouses.service';
 import {
   asTenant,
   bearer,
@@ -132,11 +133,12 @@ describe('stock', () => {
   it('a failure inside the transaction leaves both ledger and cache unchanged', async () => {
     const p = await createProduct(t, a, catA);
     const stock = t.app.get(StockService);
+    const warehouseId = await asTenant(a.tenantId, () => t.app.get(WarehousesService).defaultId());
     await expect(
       asTenant(a.tenantId, () =>
         t.prisma.db.$transaction(async (tx) => {
           await stock.applyMovements(tx, [
-            { productId: p.id, type: 'ADJUSTMENT', qtyBase: '5', reason: 'AUTRE' },
+            { productId: p.id, warehouseId, type: 'ADJUSTMENT', qtyBase: '5', reason: 'AUTRE' },
           ]);
           throw new Error('crash after the movement');
         }),
@@ -216,10 +218,11 @@ describe('stock', () => {
       })
       .expect(201);
     const stock = t.app.get(StockService);
+    const warehouseId = await asTenant(c.tenantId, () => t.app.get(WarehousesService).defaultId());
     await asTenant(c.tenantId, () =>
       t.prisma.db.$transaction((tx) =>
         stock.applyMovements(tx, [
-          { productId: p.id, type: 'PURCHASE', qtyBase: '24', unitCost: '50' },
+          { productId: p.id, warehouseId, type: 'PURCHASE', qtyBase: '24', unitCost: '50' },
         ]),
       ),
     );
@@ -227,7 +230,7 @@ describe('stock', () => {
     await asTenant(c.tenantId, () =>
       t.prisma.db.$transaction((tx) =>
         stock.applyMovements(tx, [
-          { productId: p.id, type: 'PURCHASE', qtyBase: '20', unitCost: '60' },
+          { productId: p.id, warehouseId, type: 'PURCHASE', qtyBase: '20', unitCost: '60' },
         ]),
       ),
     );

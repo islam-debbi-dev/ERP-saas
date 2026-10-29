@@ -354,7 +354,15 @@
     "MANAGER_CYCLE": "هذا المسؤول ضمن فريق هذا المستخدم أصلًا.",
     "SELLER_NOT_ALLOWED": "لا يمكن أن يكون هذا المستخدم بائعًا (معطّل أو دوره لا يبيع).",
     "BRAND_NAME_TAKEN": "توجد علامة بهذا الاسم.",
-    "SECTOR_NAME_TAKEN": "يوجد قطاع بهذا الاسم."
+    "SECTOR_NAME_TAKEN": "يوجد قطاع بهذا الاسم.",
+    "WAREHOUSE_NOT_FOUND": "المستودع غير موجود.",
+    "WAREHOUSE_NAME_TAKEN": "يوجد مستودع بهذا الاسم.",
+    "WAREHOUSE_NOT_EMPTY": "هذا المستودع ما زال فيه مخزون. حوّله أولاً.",
+    "WAREHOUSE_INVALID": "لا يمكن اختيار هذا المستودع.",
+    "VEHICLE_ALREADY_ASSIGNED": "هذا البائع لديه شاحنة بالفعل.",
+    "TRANSFER_NOT_DRAFT": "هذا التحويل مصادق عليه أو ملغى.",
+    "TRANSFER_NOT_VALIDATED": "هذا التحويل غير مصادق عليه.",
+    "TRANSFER_EMPTY": "أضف منتجاً واحداً على الأقل."
   },
   "units": {
     "PIECE": "قطعة",
@@ -545,7 +553,9 @@
     "SALE": "بيع",
     "SALE_RETURN": "إرجاع من الزبون",
     "ADJUSTMENT": "تسوية",
-    "INVENTORY": "جرد"
+    "INVENTORY": "جرد",
+    "TRANSFER_OUT": "تحويل (خروج)",
+    "TRANSFER_IN": "تحويل (دخول)"
   },
   "adjustmentReasons": {
     "CASSE": "كسر",

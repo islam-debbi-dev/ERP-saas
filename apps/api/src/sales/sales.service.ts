@@ -24,6 +24,7 @@ import { tenantContext } from '../common/tenant-context';
 import { type Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
+import { WarehousesService } from '../stock/warehouses.service';
 import { fromIsoDate, saleInclude, toIsoDate, toSaleDto } from './sale.mapper';
 import { type PriceOverride, resolvePriceLevel, snapshotSaleLines } from './sale-lines';
 
@@ -34,6 +35,7 @@ export class SalesService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly scope: ScopeService,
+    private readonly warehouses: WarehousesService,
   ) {}
 
   async create(input: CreateSaleInput, user: CurrentUserInfo): Promise<SaleDto> {
@@ -46,6 +48,10 @@ export class SalesService {
     const tenantId = tenantContext.requireTenantId();
     await this.checkClient(tx, input.clientId, user);
     const sellerId = (await this.resolveSeller(tx, user, input.sellerId, undefined)) ?? null;
+    // Checked now (exists, module); the final choice is made at validation.
+    const warehouseId = input.warehouseId
+      ? await this.warehouses.resolve(tx, input.warehouseId)
+      : null;
     const priceLevelId = await resolvePriceLevel(tx, input.clientId);
     const assujetti = await this.assujettiTva(tx);
     const { lines, totals, overrides } = await snapshotSaleLines(
@@ -69,6 +75,7 @@ export class SalesService {
         totalTtc: totals.totalTtc.toString(),
         createdBy: user.id,
         sellerId,
+        warehouseId,
       },
     });
     if (lines.length > 0) {
@@ -84,6 +91,7 @@ export class SalesService {
         type: input.type,
         clientId: input.clientId,
         sellerId,
+        warehouseId,
         lines: input.lines,
         overrides,
       },
@@ -108,6 +116,9 @@ export class SalesService {
       }
       await this.checkClient(tx, input.clientId, user);
       const sellerId = await this.resolveSeller(tx, user, input.sellerId, current.sellerId);
+      const warehouseId = input.warehouseId
+        ? await this.warehouses.resolve(tx, input.warehouseId)
+        : input.warehouseId;
       const priceLevelId = await resolvePriceLevel(tx, input.clientId);
       const assujetti = await this.assujettiTva(tx);
       const { lines, totals, overrides } = await snapshotSaleLines(
@@ -136,6 +147,7 @@ export class SalesService {
           totalTva: totals.totalTva.toString(),
           totalTtc: totals.totalTtc.toString(),
           ...(sellerId !== undefined ? { sellerId } : {}),
+          ...(warehouseId !== undefined ? { warehouseId } : {}),
           version: { increment: 1 },
         },
       });
@@ -147,6 +159,7 @@ export class SalesService {
           type: input.type,
           clientId: input.clientId,
           sellerId: sellerId === undefined ? current.sellerId : sellerId,
+          ...(warehouseId !== undefined ? { warehouseId } : {}),
           lines: input.lines,
           overrides,
         },

@@ -25,6 +25,28 @@ LEFT JOIN product_stocks ps
 WHERE ps.id IS NULL
 GROUP BY sm."tenantId", sm."productId";
 
+-- name: warehouse_sum_equals_product
+-- Phase 15: the split per dépôt sums to the product level (once the default dépôt has its row).
+SELECT ps."tenantId", ps."productId", ps."qtyBase" AS cached_qty, SUM(ws."qtyBase") AS split_qty
+FROM product_stocks ps
+JOIN warehouse_stocks ws
+  ON ws."tenantId" = ps."tenantId" AND ws."productId" = ps."productId"
+JOIN warehouses w ON w.id = ws."warehouseId"
+GROUP BY ps."tenantId", ps."productId", ps."qtyBase"
+HAVING bool_or(w."isDefault") AND ps."qtyBase" <> SUM(ws."qtyBase");
+
+-- name: warehouse_stock_equals_ledger
+-- Each dépôt level equals its movements (no dépôt on a movement = the default dépôt).
+SELECT ws."tenantId", ws."productId", ws."warehouseId", ws."qtyBase" AS cached_qty,
+       COALESCE(SUM(sm."qtyBase"), 0) AS ledger_qty
+FROM warehouse_stocks ws
+JOIN warehouses w ON w.id = ws."warehouseId"
+LEFT JOIN stock_movements sm
+  ON sm."tenantId" = ws."tenantId" AND sm."productId" = ws."productId"
+ AND (sm."warehouseId" = ws."warehouseId" OR (w."isDefault" AND sm."warehouseId" IS NULL))
+GROUP BY ws."tenantId", ws."productId", ws."warehouseId", ws."qtyBase"
+HAVING ws."qtyBase" <> COALESCE(SUM(sm."qtyBase"), 0);
+
 -- name: stock_balance_chain
 -- balanceAfter of every movement must equal the running sum of qtyBase, and
 -- avgCostAfter must equal the running CUMP of unitCost.

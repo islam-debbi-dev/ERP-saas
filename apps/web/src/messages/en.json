@@ -354,7 +354,15 @@
     "MANAGER_CYCLE": "This manager is already in this user’s team.",
     "SELLER_NOT_ALLOWED": "This user cannot be the seller (deactivated or a role that does not sell).",
     "BRAND_NAME_TAKEN": "A brand already has this name.",
-    "SECTOR_NAME_TAKEN": "A sector already has this name."
+    "SECTOR_NAME_TAKEN": "A sector already has this name.",
+    "WAREHOUSE_NOT_FOUND": "Warehouse not found.",
+    "WAREHOUSE_NAME_TAKEN": "A warehouse already has this name.",
+    "WAREHOUSE_NOT_EMPTY": "This warehouse still holds stock. Transfer it out first.",
+    "WAREHOUSE_INVALID": "This warehouse choice is not possible.",
+    "VEHICLE_ALREADY_ASSIGNED": "This seller already has a truck.",
+    "TRANSFER_NOT_DRAFT": "This transfer is already validated or cancelled.",
+    "TRANSFER_NOT_VALIDATED": "This transfer is not validated.",
+    "TRANSFER_EMPTY": "Add at least one product."
   },
   "units": {
     "PIECE": "Piece",
@@ -545,7 +553,9 @@
     "SALE": "Sale",
     "SALE_RETURN": "Customer return",
     "ADJUSTMENT": "Adjustment",
-    "INVENTORY": "Stock count"
+    "INVENTORY": "Stock count",
+    "TRANSFER_OUT": "Transfer (out)",
+    "TRANSFER_IN": "Transfer (in)"
   },
   "adjustmentReasons": {
     "CASSE": "Breakage",
