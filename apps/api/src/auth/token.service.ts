@@ -37,8 +37,13 @@ export class TokenService {
   }
 
   newRefreshSecret(): { secret: string; hash: string } {
-    const secret = randomBytes(32).toString('base64url');
+    const secret = TokenService.newSecret();
     return { secret, hash: TokenService.hash(secret) };
+  }
+
+  /** 32 random bytes, base64url: refresh tokens and one-time links. */
+  static newSecret(): string {
+    return randomBytes(32).toString('base64url');
   }
 
   static hash(secret: string): string {

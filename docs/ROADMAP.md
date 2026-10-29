@@ -50,6 +50,11 @@ Every phase that adds a screen follows [`ui.md`](ui.md): phone first, RTL, Playw
 ## v1.1 backlog not covered by a phase yet
 - Price history and bulk price update (by % or by category).
 - Multiple caisses / sessions de caisse (cash register open/close).
+- Online subscription payment (CIB / Edahabia through a local gateway such as SATIM-based providers or Chargily): verify the current options and fees first. Phase 13 records payments by hand.
+- Tenant uploads a payment proof (photo of the BaridiMob receipt) from Paramètres > Abonnement, instead of sending it on WhatsApp.
+- Edit plans and prices from the admin area (phase 13: rows of the `plans` table).
+- Hide or disable write buttons while a company is suspended (phase 13: the API refuses with a clear message and a banner explains).
+- TOTP replay protection (remember the last used step per admin) and admin 2FA enrolment from the UI.
 
 ## Later
 - Flutter owner dashboard app (the vendeur app is phase 19).

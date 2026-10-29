@@ -11,6 +11,7 @@ import {
   type UpdateProductInput,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
+import { BillingService } from '../billing/billing.service';
 import { AppException } from '../common/app-exception';
 import { chunks } from '../common/chunks';
 import { tenantContext } from '../common/tenant-context';
@@ -41,6 +42,7 @@ export class ProductsService {
     private readonly audit: AuditService,
     private readonly categories: CategoriesService,
     private readonly priceLevels: PriceLevelsService,
+    private readonly billing: BillingService,
   ) {}
 
   /** Product, units and prices in one transaction. */
@@ -48,6 +50,7 @@ export class ProductsService {
     return this.withUniqueErrors(() =>
       this.prisma.db.$transaction(async (tx) => {
         await this.validate(tx, input);
+        await this.assertProductSlots(tx, 1);
         const tenantId = tenantContext.requireTenantId();
         const product = await tx.product.create({
           data: {
@@ -301,6 +304,7 @@ export class ProductsService {
    */
   async createManyInTx(tx: Tx, inputs: CreateProductInput[]): Promise<string[]> {
     if (inputs.length === 0) return [];
+    await this.assertProductSlots(tx, inputs.length);
     const tenantId = tenantContext.requireTenantId();
     const units = await tx.unit.findMany();
     const active = await this.priceLevels.activeIds(tx);
@@ -501,5 +505,12 @@ export class ProductsService {
       }
       throw err;
     }
+  }
+
+  /** The plan's product limit counts products not deleted (archived ones included). */
+  private assertProductSlots(tx: Tx, adding: number): Promise<void> {
+    return this.billing.assertCanAdd(tx, 'products', adding, () =>
+      tx.product.count({ where: { deletedAt: null } }),
+    );
   }
 }

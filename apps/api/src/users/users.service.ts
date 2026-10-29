@@ -14,6 +14,7 @@ import {
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import { AuthService, hashPassword } from '../auth/auth.service';
+import { BillingService } from '../billing/billing.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
@@ -63,6 +64,7 @@ export class UsersService {
     private readonly prisma: PrismaService,
     private readonly auth: AuthService,
     private readonly audit: AuditService,
+    private readonly billing: BillingService,
   ) {}
 
   async list(): Promise<UserDto[]> {
@@ -86,6 +88,7 @@ export class UsersService {
         : await unusablePassword();
     const { id, link } = await this.uniqueGuard(() =>
       this.prisma.db.$transaction(async (tx) => {
+        await this.assertUserSlot(tx);
         const user = await tx.user.create({
           data: {
             tenantId: tenantContext.requireTenantId(),
@@ -210,6 +213,7 @@ export class UsersService {
     await this.prisma.db.$transaction(async (tx) => {
       const user = await this.lockUser(tx, id);
       if (!user.deletedAt) return;
+      await this.assertUserSlot(tx);
       await tx.user.update({
         where: { id },
         data: { deletedAt: null, failedLoginCount: 0, lockedUntil: null },
@@ -345,6 +349,13 @@ export class UsersService {
       }
       throw err;
     }
+  }
+
+  /** The plan's user limit counts active accounts (deactivated ones free their slot). */
+  private assertUserSlot(tx: Tx): Promise<void> {
+    return this.billing.assertCanAdd(tx, 'users', 1, () =>
+      tx.user.count({ where: { deletedAt: null } }),
+    );
   }
 }
 

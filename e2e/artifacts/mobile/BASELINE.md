@@ -69,3 +69,15 @@ table that hides its columns to the side at phone width:
 - 17 components open a centred `Dialog` / `AlertDialog` on phone (new versement, client, product, stock, users, confirmations).
 - `Input` and `NativeSelect` are 36 px tall (`h-9`), below the 44 px touch minimum (the font is already 16 px on phone).
 - Forms keep their main action at the end of the page instead of a sticky bar.
+
+## Phase 13 (pilot & billing)
+
+Re-run on 2026-10-28 on `phase-13-pilot-billing` (dev servers): **36 routes**, now including
+`/parametres/abonnement`, `/support` and the super-admin area (`/admin/login`, `/admin`,
+`/admin/societes/[id]`, signed in with password + TOTP through the real `admin:create` CLI), in
+`ar` and `fr` at 360 and 393 px. Extra steps: the onboarding checklist on the dashboard, the
+admin code step, and the record-payment sheet (its submit button stays on screen).
+164 screen checks, 0 problems.
+
+The PAST_DUE and SUSPENDED banners were checked by hand at 360 px in `ar` (subscription end moved
+back in the dev database): one line of text with the "renew" button, no overflow.

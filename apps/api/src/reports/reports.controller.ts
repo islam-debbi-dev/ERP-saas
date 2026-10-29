@@ -1,20 +1,33 @@
-import { Controller, Get, Param, Query, StreamableFile } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  StreamableFile,
+} from '@nestjs/common';
 import {
   type DashboardDto,
   type DashboardQuery,
   dashboardQuerySchema,
+  type OnboardingStatus,
   Permission,
   type ReportDto,
   type ReportName,
   reportNameSchema,
   type ReportQuery,
   reportQuerySchema,
+  Role,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
-import { CurrentUser } from '../auth/decorators';
+import { CurrentUser, Roles } from '../auth/decorators';
 import { requirePermission } from '../auth/permissions';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
+import { TenantsService } from '../tenants/tenants.service';
 import { DashboardService } from './dashboard.service';
+import { OnboardingService } from './onboarding.service';
 import { buildReportXlsx, reportFileName } from './report-xlsx';
 import { ReportsService } from './reports.service';
 
@@ -23,7 +36,11 @@ const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.s
 /** Every role has a dashboard; what it shows depends on the role (DashboardService). */
 @Controller('dashboard')
 export class DashboardController {
-  constructor(private readonly dashboard: DashboardService) {}
+  constructor(
+    private readonly dashboard: DashboardService,
+    private readonly onboarding: OnboardingService,
+    private readonly tenants: TenantsService,
+  ) {}
 
   @Get()
   get(
@@ -31,6 +48,20 @@ export class DashboardController {
     @CurrentUser() user: CurrentUserInfo,
   ): Promise<DashboardDto> {
     return this.dashboard.get(user, query.date);
+  }
+
+  /** The first-week checklist, for the people who set the company up. */
+  @Get('onboarding')
+  @Roles(Role.OWNER, Role.MANAGER)
+  onboardingStatus(): Promise<OnboardingStatus> {
+    return this.onboarding.status();
+  }
+
+  @Post('onboarding/dismiss')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles(Role.OWNER)
+  dismissOnboarding(): Promise<void> {
+    return this.tenants.dismissOnboarding();
   }
 }
 

@@ -35,7 +35,7 @@ import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { APP_CONFIG, type AppConfig } from '../config/app-config';
 import { type IssuedTokens, AuthService } from './auth.service';
 import type { ClientMeta, CurrentUserInfo } from './auth.types';
-import { AllowPendingPasswordChange, CurrentUser, Public } from './decorators';
+import { AllowPendingPasswordChange, AllowWhenSuspended, CurrentUser, Public } from './decorators';
 
 export const REFRESH_COOKIE = 'erp_rt';
 /** The browser sends the refresh cookie to the auth routes only. */
@@ -107,6 +107,7 @@ export class AuthController {
   }
 
   @Post('password')
+  @AllowWhenSuspended()
   @HttpCode(HttpStatus.OK)
   @AllowPendingPasswordChange()
   changePassword(
@@ -117,6 +118,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @AllowWhenSuspended()
   @HttpCode(HttpStatus.NO_CONTENT)
   @AllowPendingPasswordChange()
   async logout(
@@ -139,6 +141,7 @@ export class AuthController {
   }
 
   @Delete('sessions/:id')
+  @AllowWhenSuspended()
   @HttpCode(HttpStatus.NO_CONTENT)
   revokeSession(
     @CurrentUser() user: CurrentUserInfo,
@@ -182,6 +185,7 @@ export class SessionsController {
 
   /** Own session, or any session of the company for the OWNER (lost phone). */
   @Delete(':id')
+  @AllowWhenSuspended()
   @HttpCode(HttpStatus.NO_CONTENT)
   revoke(
     @CurrentUser() user: CurrentUserInfo,

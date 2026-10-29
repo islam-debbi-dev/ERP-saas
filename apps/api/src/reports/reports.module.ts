@@ -2,7 +2,9 @@ import { Module } from '@nestjs/common';
 import { ClientsModule } from '../clients/clients.module';
 import { PaymentsModule } from '../payments/payments.module';
 import { StockModule } from '../stock/stock.module';
+import { TenantsModule } from '../tenants/tenants.module';
 import { DashboardService } from './dashboard.service';
+import { OnboardingService } from './onboarding.service';
 import { DashboardController, ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
 
@@ -12,8 +14,8 @@ import { ReportsService } from './reports.service';
  * per report), which is the one place that reads across modules' tables.
  */
 @Module({
-  imports: [ClientsModule, PaymentsModule, StockModule],
+  imports: [ClientsModule, PaymentsModule, StockModule, TenantsModule],
   controllers: [DashboardController, ReportsController],
-  providers: [DashboardService, ReportsService],
+  providers: [DashboardService, ReportsService, OnboardingService],
 })
 export class ReportsModule {}

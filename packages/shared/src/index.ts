@@ -11,4 +11,5 @@ export * from './pricing';
 export * from './quantity';
 export * from './schemas';
 export * from './stock';
+export * from './subscription';
 export * from './timbre';

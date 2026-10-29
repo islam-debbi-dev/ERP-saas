@@ -7,6 +7,7 @@
  * to the tests that do not test the login itself.
  */
 import { chromium } from '@playwright/test';
+import { execFileSync } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { buildFixture } from '../api/fixture.ts';
@@ -20,6 +21,7 @@ export default async function globalSetup(): Promise<void> {
 
   const fixture = await buildFixture('Web audit');
   await writeFile(`${authDir}fixture.json`, JSON.stringify(fixture, null, 2), 'utf8');
+  await writeFile(`${authDir}admin.json`, JSON.stringify(createAdmin(), null, 2), 'utf8');
 
   const browser = await chromium.launch();
   try {
@@ -36,4 +38,20 @@ export default async function globalSetup(): Promise<void> {
   } finally {
     await browser.close();
   }
+}
+
+/**
+ * A super-admin for the admin screens, made by the real CLI against the API's database
+ * (apps/api/.env). Its output gives the one-time password and the TOTP secret.
+ */
+function createAdmin(): { email: string; password: string; secret: string } {
+  const email = `e2e-admin-${Date.now()}@platform.dz`;
+  const out = execFileSync('pnpm', ['--filter', '@erp/api', 'admin:create', '--email', email], {
+    cwd: fileURLToPath(new URL('../../', import.meta.url)),
+    encoding: 'utf8',
+  });
+  const password = /Password \(shown once\):\s+(\S+)/.exec(out)?.[1];
+  const secret = /TOTP secret:\s+(\S+)/.exec(out)?.[1];
+  if (!password || !secret) throw new Error(`admin:create gave no credentials:\n${out}`);
+  return { email, password, secret };
 }

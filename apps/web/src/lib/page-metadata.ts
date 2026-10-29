@@ -26,7 +26,11 @@ type TitleKey =
   | 'clients.editTitle'
   | 'clients.detailTitle'
   | 'sales.newTitle'
-  | 'sales.detailTitle';
+  | 'sales.detailTitle'
+  | 'billing.title'
+  | 'admin.tenants'
+  | 'admin.loginTitle'
+  | 'support.title';
 
 /** `export const generateMetadata = titled('nav.products')` gives the tab a translated title. */
 export function titled(key: TitleKey): () => Promise<Metadata> {

@@ -49,6 +49,21 @@ Staging and production run on one VPS with Docker Compose and Caddy, with Postgr
 
 The API and the web app can also run as two Vercel projects (root directories `apps/api` and `apps/web`) on a Neon Postgres. The web project proxies `/api/*` to the API through [`apps/web/vercel.json`](apps/web/vercel.json), so the refresh cookie stays first-party: set `NEXT_PUBLIC_API_URL=/api` on the web project, and `PUBLIC_PATH_PREFIX=/api`, `COOKIE_SECURE=true` and `WEB_ORIGIN` on the API. `DATABASE_URL` must be Neon's direct (non `-pooler`) string, because the RLS settings are session-level. The API functions run in `fra1` (Frankfurt, [`apps/api/vercel.json`](apps/api/vercel.json)), next to the Neon database (AWS eu-central-1): every operation makes several queries, and from another region a sale took 5–10 s to validate and hit the transaction time limit. Keep the two in the same region. PDF printing does not work there (no Chromium).
 
+## Subscriptions and super-admin (phase 13)
+
+New companies get a **30-day trial** on the Pro plan. After the period end they are `PAST_DUE` for 7 days (banner, everything still works), then `SUSPENDED`: read-only, they can still view, print and export, but every write answers `SUBSCRIPTION_SUSPENDED`. The status is computed from the dates on each request; there is no scheduled job. Plans and prices (Starter 2 500 DA, Pro 4 500 DA, Business 8 000 DA per month) are rows of the `plans` table, inserted by the migration and the seed; change a price there. Companies that existed before phase 13 are **free (pilot)**.
+
+Payments are recorded by hand by the super-admin at `/admin` (BaridiMob, virement, espèces), which extends the period. The super-admin is not a company user: create one, once, with the owner database connection (`DATABASE_URL_MIGRATE`, or `DATABASE_URL` locally):
+
+```bash
+pnpm --filter @erp/api admin:create --email you@example.com --name "Your name"
+pnpm --filter @erp/api admin:create --email you@example.com --reset   # new password + code, closes its sessions
+```
+
+It prints a password (shown once) and a TOTP secret with an `otpauth://` link: add it to an authenticator app (Google Authenticator, Aegis…). Login at `/admin/login` asks for both. "View read-only" on a company opens it in a new tab for 30 minutes; every write is refused, each request is logged in `platform_audit_logs`, and the company sees the visit in its own journal.
+
+Sidebar help links come from the web env (`NEXT_PUBLIC_SUPPORT_WHATSAPP`, `NEXT_PUBLIC_TUTORIAL_*_URL`, see `apps/web/.env.example`); a link stays hidden while its variable is empty.
+
 ## Everyday commands
 
 ```bash

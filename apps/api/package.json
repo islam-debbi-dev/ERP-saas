@@ -9,6 +9,7 @@
     "start": "node dist/main.js",
     "reconcile": "node dist/reconcile/reconcile.cli.js",
     "db:check-migrations": "tsx scripts/check-migrations.ts",
+    "admin:create": "tsx scripts/admin-create.ts",
     "lint": "eslint .",
     "typecheck": "prisma generate && tsc --noEmit",
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings=ExperimentalWarning' jest",

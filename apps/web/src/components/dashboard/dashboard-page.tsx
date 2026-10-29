@@ -20,6 +20,7 @@ import { useAuth } from '@/lib/auth';
 import { useDashboard } from '@/lib/reports';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
+import { OnboardingCard } from './onboarding-card';
 import { SalesChart } from './sales-chart';
 import { Amount } from '@/components/shared/amount';
 
@@ -40,6 +41,7 @@ export function DashboardPage() {
           d ? format.dateTime(new Date(`${d.date}T12:00:00Z`), { dateStyle: 'full' }) : undefined
         }
       />
+      <OnboardingCard />
       {dashboard.isError ? (
         <p role="alert" className="text-sm text-destructive">
           {errorMessage(dashboard.error)}

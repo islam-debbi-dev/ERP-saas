@@ -67,6 +67,8 @@ export interface AuthUser {
   permissions: Permission[];
   /** Set by a temporary password: every other route answers PASSWORD_CHANGE_REQUIRED. */
   mustChangePassword: boolean;
+  /** A super-admin viewing the company read-only (phase 13). */
+  impersonating?: boolean;
 }
 
 export interface AuthResponse {

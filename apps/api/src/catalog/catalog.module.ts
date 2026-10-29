@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { BillingModule } from '../billing/billing.module';
 import {
   CategoriesController,
   PriceLevelsController,
@@ -13,6 +14,7 @@ import { UnitsService } from './units.service';
 
 /** Products, units, categories and price levels. Other modules use CatalogService only. */
 @Module({
+  imports: [BillingModule],
   controllers: [UnitsController, PriceLevelsController, CategoriesController, ProductsController],
   providers: [CatalogService, CategoriesService, PriceLevelsService, ProductsService, UnitsService],
   exports: [CatalogService],
