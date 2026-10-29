@@ -16,6 +16,7 @@ const valid = {
   priceLevelCount: 3,
   maxDiscountPct: '0',
   reminderDays: 30,
+  sellerScope: 'ALL_CLIENTS',
   timbreEnabled: false,
   timbreTranches: [],
   timbreMin: null,

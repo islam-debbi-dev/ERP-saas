@@ -21,6 +21,8 @@ export const Permission = {
   VIEW_COST_AND_MARGIN: 'VIEW_COST_AND_MARGIN',
   /** Export reports to Excel. */
   EXPORT_DATA: 'EXPORT_DATA',
+  /** Change the seller of a validated sale or the collector of a versement (phase 14). */
+  SALE_REASSIGN_SELLER: 'SALE_REASSIGN_SELLER',
 } as const;
 export type Permission = (typeof Permission)[keyof typeof Permission];
 export const PERMISSIONS = Object.values(Permission);
@@ -32,6 +34,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   [Role.SELLER]: [],
   // Counts stock but does not adjust it or validate an inventory (AGENTS: MANAGER+).
   [Role.STOREKEEPER]: [],
+  // Sees his team's figures; sensitive actions are granted one by one by the owner.
+  [Role.SUPERVISOR]: [],
+  [Role.LIVREUR]: [],
 };
 
 /**

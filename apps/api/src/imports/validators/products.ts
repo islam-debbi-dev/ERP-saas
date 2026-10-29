@@ -25,8 +25,20 @@ export interface ProductLookups {
 }
 
 export type ProductPlan =
-  | { kind: 'CREATE'; input: CreateProductInput; categoryName: string | null }
-  | { kind: 'UPDATE'; id: string; input: UpdateProductInput | null; categoryName: string | null };
+  | {
+      kind: 'CREATE';
+      input: CreateProductInput;
+      categoryName: string | null;
+      /** A brand the file names that does not exist yet: created at confirm (phase 14). */
+      brandName: string | null;
+    }
+  | {
+      kind: 'UPDATE';
+      id: string;
+      input: UpdateProductInput | null;
+      categoryName: string | null;
+      brandName: string | null;
+    };
 
 export interface ValidatedRow<P> {
   row: RowReader;
@@ -71,6 +83,7 @@ export function validateProducts(
   const refs = new DuplicateTracker();
   const barcodesInFile = new Map<string, { rowNumber: number; reference: string }>();
   const categories = new Map(lookups.catalog.categories.map((c) => [c.name.toLowerCase(), c.id]));
+  const brands = new Map(lookups.catalog.brands.map((b) => [b.name.toLowerCase(), b.id]));
   const unitById = new Map(lookups.catalog.units.map((u) => [u.id, u]));
   const levels = lookups.catalog.priceLevels;
 
@@ -168,6 +181,17 @@ export function validateProducts(
       }
     }
 
+    const brandText = row.optionalText('brand', 80) ?? '';
+    let brandName: string | null = null;
+    let brandId: string | null | undefined;
+    if (brandText !== '') {
+      brandId = brands.get(brandText.toLowerCase());
+      if (!brandId) {
+        brandName = brandText;
+        row.warn('brand', 'brand_created', { name: brandText });
+      }
+    }
+
     if (row.errors.length > 0 || !reference) return { row, plan: null };
 
     // Build the input -------------------------------------------------------
@@ -207,6 +231,7 @@ export function validateProducts(
         reference,
         designation: designation ?? '',
         categoryId: categoryId ?? null,
+        brandId: brandId ?? null,
         baseUnitId: baseUnitId ?? '',
         tvaRate: tvaRate || '0',
         minStock: minStock || '0',
@@ -219,7 +244,7 @@ export function validateProducts(
           row.error(undefined, 'invalid_product', { rule: issue.message });
         return { row, plan: null };
       }
-      return { row, plan: { kind: 'CREATE', input: parsed.data, categoryName } };
+      return { row, plan: { kind: 'CREATE', input: parsed.data, categoryName, brandName } };
     }
 
     // Merge into the existing product.
@@ -257,6 +282,7 @@ export function validateProducts(
       reference,
       designation: designation || existing.designation,
       categoryId: categoryId ?? existing.categoryId,
+      brandId: brandId ?? existing.brandId,
       baseUnitId: existing.baseUnitId,
       tvaRate: tvaRate || existing.tvaRate,
       minStock: minStock || existing.minStock,
@@ -271,11 +297,18 @@ export function validateProducts(
         row.error(undefined, 'invalid_product', { rule: issue.message });
       return { row, plan: null };
     }
-    const changed = categoryName !== null || productChanged(existing, parsed.data);
+    const changed =
+      categoryName !== null || brandName !== null || productChanged(existing, parsed.data);
     if (!changed) row.warn(undefined, 'no_changes');
     return {
       row,
-      plan: { kind: 'UPDATE', id: existing.id, input: changed ? parsed.data : null, categoryName },
+      plan: {
+        kind: 'UPDATE',
+        id: existing.id,
+        input: changed ? parsed.data : null,
+        categoryName,
+        brandName,
+      },
     };
   });
 }
@@ -292,6 +325,7 @@ function productChanged(p: ProductDto, input: UpdateProductInput): boolean {
   return (
     p.designation !== input.designation ||
     p.categoryId !== input.categoryId ||
+    (input.brandId !== undefined && p.brandId !== input.brandId) ||
     dec(p.tvaRate) !== dec(input.tvaRate) ||
     dec(p.minStock) !== dec(input.minStock) ||
     !sameSet(p.units.map(unitKey), input.units.map(unitKey)) ||

@@ -17,6 +17,14 @@ enum Role {
   MANAGER
   SELLER
   STOREKEEPER
+  SUPERVISOR
+  LIVREUR
+}
+
+/// Which clients a seller sees when SALES_FORCE is on (phase 14).
+enum SellerScope {
+  ALL_CLIENTS
+  ASSIGNED_ONLY
 }
 
 enum CreditLimitMode {
@@ -93,6 +101,8 @@ model Tenant {
   /// "Clients à relancer": oldest unpaid document older than this many days (phase 21).
   reminderDays Int @default(30) @db.SmallInt
 
+  sellerScope SellerScope @default(ALL_CLIENTS)
+
   /// The owner hid the dashboard onboarding checklist (phase 13).
   onboardingDismissedAt DateTime? @db.Timestamptz(3)
 
@@ -141,6 +151,8 @@ model Tenant {
   supplierBalances     SupplierBalance[]
   supplierPayments     SupplierPayment[]
   shareLinks           ShareLink[]
+  brands               Brand[]
+  sectors              Sector[]
 
   @@map("tenants")
 }
@@ -166,6 +178,8 @@ model User {
   failedLoginCount   Int       @default(0) @db.SmallInt
   lockedUntil        DateTime? @db.Timestamptz(3)
   createdBy          String?   @db.Uuid
+  /// The supervisor or manager this user reports to (phase 14). Never a cycle.
+  managerId          String?   @db.Uuid
   /// Deactivated: sessions revoked, cannot log in. Never deleted (history keeps the name).
   deletedAt          DateTime? @db.Timestamptz(3)
   createdAt          DateTime  @default(now()) @db.Timestamptz(3)
@@ -174,8 +188,14 @@ model User {
   tenant      Tenant           @relation(fields: [tenantId], references: [id])
   sessions    Session[]
   invitations UserInvitation[]
+  manager     User?            @relation("UserManager", fields: [managerId], references: [id], onDelete: Restrict)
+  members     User[]           @relation("UserManager")
+  clients     Client[]         @relation("ClientSeller")
+  sales       Sale[]           @relation("SaleSeller")
+  collected   Payment[]        @relation("PaymentCollector")
 
   @@index([tenantId, role])
+  @@index([tenantId, managerId])
   @@map("users")
 }
 
@@ -364,6 +384,7 @@ model Product {
   reference   String    @db.VarChar(40)
   designation String    @db.VarChar(160)
   categoryId  String?   @db.Uuid
+  brandId     String?   @db.Uuid
   baseUnitId  String    @db.Uuid
   tvaRate     Decimal   @db.Decimal(5, 2)
   minStock    Decimal   @default(0) @db.Decimal(14, 3)
@@ -376,6 +397,7 @@ model Product {
 
   tenant              Tenant               @relation(fields: [tenantId], references: [id])
   category            Category?            @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  brand               Brand?               @relation(fields: [brandId], references: [id], onDelete: Restrict)
   baseUnit            Unit                 @relation(fields: [baseUnitId], references: [id])
   units               ProductUnit[]
   prices              ProductPrice[]
@@ -389,6 +411,7 @@ model Product {
   @@unique([tenantId, reference])
   @@index([tenantId, designation])
   @@index([tenantId, categoryId])
+  @@index([tenantId, brandId])
   @@map("products")
 }
 
@@ -594,6 +617,7 @@ model Supplier {
   ledger    SupplierLedgerEntry[]
   balance   SupplierBalance?
   payments  SupplierPayment[]
+  brands    Brand[]
 
   @@unique([tenantId, code])
   @@index([tenantId, name])
@@ -819,40 +843,47 @@ enum ClientLedgerType {
 
 /// Master data: archived with deletedAt, never deleted.
 model Client {
-  id           String     @id @default(uuid()) @db.Uuid
-  tenantId     String     @db.Uuid
-  code         String     @db.VarChar(30)
-  name         String     @db.VarChar(160)
-  type         ClientType @default(PARTICULIER)
-  phone        String?    @db.VarChar(40)
-  phone2       String?    @db.VarChar(40)
-  address      String?    @db.VarChar(255)
-  wilaya       String?    @db.VarChar(60)
-  commune      String?    @db.VarChar(80)
-  rc           String?    @db.VarChar(40)
-  nif          String?    @db.VarChar(40)
-  nis          String?    @db.VarChar(40)
-  ai           String?    @db.VarChar(40)
-  priceLevelId String?    @db.Uuid
+  id               String     @id @default(uuid()) @db.Uuid
+  tenantId         String     @db.Uuid
+  code             String     @db.VarChar(30)
+  name             String     @db.VarChar(160)
+  type             ClientType @default(PARTICULIER)
+  phone            String?    @db.VarChar(40)
+  phone2           String?    @db.VarChar(40)
+  address          String?    @db.VarChar(255)
+  wilaya           String?    @db.VarChar(60)
+  commune          String?    @db.VarChar(80)
+  rc               String?    @db.VarChar(40)
+  nif              String?    @db.VarChar(40)
+  nis              String?    @db.VarChar(40)
+  ai               String?    @db.VarChar(40)
+  priceLevelId     String?    @db.Uuid
   /// Plafond de crédit; null = no limit.
-  creditLimit  Decimal?   @db.Decimal(14, 2)
-  notes        String?    @db.VarChar(500)
-  active       Boolean    @default(true)
-  version      Int        @default(1)
-  deletedAt    DateTime?  @db.Timestamptz(3)
-  createdAt    DateTime   @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime   @updatedAt @db.Timestamptz(3)
+  creditLimit      Decimal?   @db.Decimal(14, 2)
+  notes            String?    @db.VarChar(500)
+  active           Boolean    @default(true)
+  /// Sales force (phase 14): the client's zone and the seller who follows him.
+  sectorId         String?    @db.Uuid
+  assignedSellerId String?    @db.Uuid
+  version          Int        @default(1)
+  deletedAt        DateTime?  @db.Timestamptz(3)
+  createdAt        DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime   @updatedAt @db.Timestamptz(3)
 
-  tenant     Tenant              @relation(fields: [tenantId], references: [id])
-  priceLevel PriceLevel?         @relation(fields: [priceLevelId], references: [id], onDelete: Restrict)
-  ledger     ClientLedgerEntry[]
-  balance    ClientBalance?
-  sales      Sale[]
-  payments   Payment[]
+  tenant         Tenant              @relation(fields: [tenantId], references: [id])
+  priceLevel     PriceLevel?         @relation(fields: [priceLevelId], references: [id], onDelete: Restrict)
+  sector         Sector?             @relation(fields: [sectorId], references: [id], onDelete: Restrict)
+  assignedSeller User?               @relation("ClientSeller", fields: [assignedSellerId], references: [id], onDelete: Restrict)
+  ledger         ClientLedgerEntry[]
+  balance        ClientBalance?
+  sales          Sale[]
+  payments       Payment[]
 
   @@unique([tenantId, code])
   @@index([tenantId, name])
   @@index([tenantId, phone])
+  @@index([tenantId, sectorId])
+  @@index([tenantId, assignedSellerId])
   @@map("clients")
 }
 
@@ -960,6 +991,8 @@ model Sale {
   cancelReason   String?      @db.VarChar(255)
   version        Int          @default(1)
   createdBy      String?      @db.Uuid
+  /// Who made the sale (phase 14); frozen at validation, changed only through a reassign.
+  sellerId       String?      @db.Uuid
   validatedBy    String?      @db.Uuid
   validatedAt    DateTime?    @db.Timestamptz(3)
   cancelledBy    String?      @db.Uuid
@@ -969,6 +1002,7 @@ model Sale {
 
   tenant             Tenant              @relation(fields: [tenantId], references: [id])
   client             Client?             @relation(fields: [clientId], references: [id])
+  seller             User?               @relation("SaleSeller", fields: [sellerId], references: [id], onDelete: Restrict)
   invoice            Sale?               @relation("InvoiceBls", fields: [invoiceId], references: [id])
   sourceBls          Sale[]              @relation("InvoiceBls")
   lines              SaleLine[]
@@ -983,6 +1017,7 @@ model Sale {
   @@index([tenantId, invoiceId])
   /// Dashboard and reports: validated sales by validation time.
   @@index([tenantId, status, validatedAt])
+  @@index([tenantId, sellerId, validatedAt])
   @@map("sales")
 }
 
@@ -1089,6 +1124,8 @@ model Payment {
   dueDate      DateTime?     @db.Date
   note         String?       @db.VarChar(255)
   receivedBy   String?       @db.Uuid
+  /// Who collected the money from the client (phase 14); the receiver when he is a SELLER.
+  collectedBy  String?       @db.Uuid
   receivedAt   DateTime      @default(now()) @db.Timestamptz(3)
   cancelReason String?       @db.VarChar(255)
   cancelledBy  String?       @db.Uuid
@@ -1103,6 +1140,7 @@ model Payment {
   tenant      Tenant              @relation(fields: [tenantId], references: [id])
   client      Client?             @relation(fields: [clientId], references: [id])
   sale        Sale?               @relation(fields: [saleId], references: [id])
+  collector   User?               @relation("PaymentCollector", fields: [collectedBy], references: [id], onDelete: Restrict)
   allocations PaymentAllocation[]
 
   @@unique([tenantId, number])
@@ -1110,6 +1148,7 @@ model Payment {
   @@index([tenantId, clientId])
   @@index([tenantId, saleId])
   @@index([tenantId, mode, status, dueDate])
+  @@index([tenantId, collectedBy, receivedAt])
   @@map("payments")
 }
 
@@ -1365,4 +1404,42 @@ model ShareLink {
 
   @@index([tenantId, docType, docId])
   @@map("share_links")
+}
+
+// ---------------------------------------------------------------- sales force (phase 14)
+
+/// Marque. Core master data; names unique per tenant, case-insensitive (checked in the service).
+model Brand {
+  id         String    @id @default(uuid()) @db.Uuid
+  tenantId   String    @db.Uuid
+  name       String    @db.VarChar(80)
+  supplierId String?   @db.Uuid
+  deletedAt  DateTime? @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime  @updatedAt @db.Timestamptz(3)
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  supplier Supplier? @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  products Product[]
+
+  @@index([tenantId, name])
+  @@map("brands")
+}
+
+/// Secteur: a zone (wilaya + communes) clients belong to. SALES_FORCE.
+model Sector {
+  id        String    @id @default(uuid()) @db.Uuid
+  tenantId  String    @db.Uuid
+  name      String    @db.VarChar(80)
+  wilaya    String?   @db.VarChar(60)
+  communes  String[]  @default([])
+  deletedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3)
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id])
+  clients Client[]
+
+  @@index([tenantId, name])
+  @@map("sectors")
 }

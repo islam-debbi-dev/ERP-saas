@@ -9,6 +9,7 @@ import {
   SaleType,
   type StatementQuery,
   type SupplierStatementQuery,
+  ShareDocType,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
@@ -80,7 +81,7 @@ export class PrintingService {
     });
 
     if (type === DocType.AV) {
-      const sale = await this.sales.get(await this.sales.saleIdOfReturn(id));
+      const sale = await this.sales.get(await this.sales.saleIdOfReturn(id), user);
       const duplicate = await this.recordPrint(DocType.AV, id, fmt, user);
       const number = sale.returns.find((r) => r.id === id)?.number ?? null;
       return done(avoirDocument(sale, id, ctx(duplicate)), number);
@@ -96,7 +97,7 @@ export class PrintingService {
       const duplicate = await this.recordPrint(DocType.BR, id, fmt, user);
       return done(purchaseDocument(purchase, ctx(duplicate)), purchase.number);
     }
-    const sale = await this.sales.get(id);
+    const sale = await this.sales.get(id, user);
     // /documents/BL/<facture id> is a wrong link, not another way to print it.
     if (sale.type !== SALE_TYPE_OF[type]) {
       throw new AppException(ErrorCode.NOT_FOUND, 'Sale not found');
@@ -108,6 +109,16 @@ export class PrintingService {
     return done(saleDocument(sale, ctx(duplicate)), sale.number);
   }
 
+  /** 404 unless the user may read this facture or this client's relevé (phase 14 scope). */
+  async assertShareable(
+    docType: ShareDocType,
+    docId: string,
+    user: CurrentUserInfo,
+  ): Promise<void> {
+    if (docType === ShareDocType.FACTURE) await this.sales.get(docId, user);
+    else await this.clients.get(docId, user);
+  }
+
   async receipt(
     id: string,
     format: PrintFormat | undefined,
@@ -115,7 +126,7 @@ export class PrintingService {
   ): Promise<PreparedDocument> {
     const seller = await this.tenants.getSettings();
     const fmt = format ?? seller.defaultPrintFormat;
-    const payment = await this.payments.get(id);
+    const payment = await this.payments.get(id, user);
     const duplicate = await this.recordPrint(DocType.VER, id, fmt, user);
     return {
       html: receiptDocument(payment, { seller, format: fmt, duplicate }),
@@ -130,11 +141,12 @@ export class PrintingService {
     clientId: string,
     query: StatementQuery,
     format: PrintFormat | undefined,
+    user?: CurrentUserInfo,
   ): Promise<PreparedDocument> {
     const seller = await this.tenants.getSettings();
     const fmt = format ?? seller.defaultPrintFormat;
-    const client = await this.clients.get(clientId);
-    const statement = await this.clients.statement(clientId, query);
+    const client = await this.clients.get(clientId, user);
+    const statement = await this.clients.statement(clientId, query, user);
     return {
       html: statementDocument(statement, client, { seller, format: fmt }),
       format: fmt,

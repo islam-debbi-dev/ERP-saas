@@ -12,6 +12,7 @@ import { CatalogModule } from './catalog/catalog.module';
 import { ClientsModule } from './clients/clients.module';
 import { PaymentsModule } from './payments/payments.module';
 import { SalesModule } from './sales/sales.module';
+import { SalesForceModule } from './sales-force/sales-force.module';
 import { AllExceptionsFilter } from './common/all-exceptions.filter';
 import { RequestContextMiddleware } from './common/request-context.middleware';
 import { APP_CONFIG, type AppConfig } from './config/app-config';
@@ -73,6 +74,7 @@ import { UsersModule } from './users/users.module';
     ClockModule,
     BillingModule,
     AuditModule,
+    SalesForceModule,
     IdempotencyModule,
     DocumentsModule,
     AuthModule,

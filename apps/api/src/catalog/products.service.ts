@@ -58,6 +58,7 @@ export class ProductsService {
             reference: input.reference,
             designation: input.designation,
             categoryId: input.categoryId,
+            brandId: input.brandId ?? null,
             baseUnitId: input.baseUnitId,
             tvaRate: input.tvaRate,
             minStock: input.minStock,
@@ -174,6 +175,7 @@ export class ProductsService {
         reference: input.reference,
         designation: input.designation,
         categoryId: input.categoryId,
+        ...(input.brandId !== undefined ? { brandId: input.brandId } : {}),
         tvaRate: input.tvaRate,
         minStock: input.minStock,
         active: input.active,
@@ -224,6 +226,7 @@ export class ProductsService {
       ...(query.categoryId
         ? { categoryId: { in: await this.categories.idsWithChildren(query.categoryId) } }
         : {}),
+      ...(query.brandId ? { brandId: query.brandId } : {}),
       ...(search
         ? {
             OR: [
@@ -295,6 +298,10 @@ export class ProductsService {
       });
       if (!category) throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown category');
     }
+    if (input.brandId) {
+      const brand = await tx.brand.findFirst({ where: { id: input.brandId, deletedAt: null } });
+      if (!brand) throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown brand');
+    }
     this.checkUnits(input, units);
   }
 
@@ -313,6 +320,11 @@ export class ProductsService {
         (c) => c.id,
       ),
     );
+    const brandIds = new Set(
+      (await tx.brand.findMany({ where: { deletedAt: null }, select: { id: true } })).map(
+        (b) => b.id,
+      ),
+    );
     const products: Prisma.ProductCreateManyInput[] = [];
     const productUnits: Prisma.ProductUnitCreateManyInput[] = [];
     const prices: Prisma.ProductPriceCreateManyInput[] = [];
@@ -324,6 +336,9 @@ export class ProductsService {
       if (input.categoryId && !categoryIds.has(input.categoryId)) {
         throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown category');
       }
+      if (input.brandId && !brandIds.has(input.brandId)) {
+        throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown brand');
+      }
       const productId = randomUUID();
       products.push({
         id: productId,
@@ -331,6 +346,7 @@ export class ProductsService {
         reference: input.reference,
         designation: input.designation,
         categoryId: input.categoryId,
+        brandId: input.brandId ?? null,
         baseUnitId: input.baseUnitId,
         tvaRate: input.tvaRate,
         minStock: input.minStock,

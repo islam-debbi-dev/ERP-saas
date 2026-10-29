@@ -78,6 +78,25 @@ async function main(): Promise<void> {
         },
       });
 
+      // Sales force demo data (phase 14): one brand and one sector, fixed ids so a rerun
+      // changes nothing.
+      await tx.brand.upsert({
+        where: { id: '00000000-0000-4000-8000-0000000014b1' },
+        update: {},
+        create: { id: '00000000-0000-4000-8000-0000000014b1', tenantId: tenant.id, name: 'Elio' },
+      });
+      await tx.sector.upsert({
+        where: { id: '00000000-0000-4000-8000-0000000014c1' },
+        update: {},
+        create: {
+          id: '00000000-0000-4000-8000-0000000014c1',
+          tenantId: tenant.id,
+          name: 'Alger Est',
+          wilaya: 'Alger',
+          communes: ['Bab Ezzouar', 'Dar El Beïda', 'El Harrach'],
+        },
+      });
+
       const existing = await tx.user.findUnique({ where: { email: DEMO_OWNER_EMAIL } });
       if (existing) {
         console.log(`Seed: ${DEMO_OWNER_EMAIL} already exists, nothing to do.`);

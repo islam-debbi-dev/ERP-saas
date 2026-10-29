@@ -70,9 +70,10 @@ export class StatementPrintController {
   async statement(
     @Param('id', ParseUUIDPipe) id: string,
     @Query(new ZodValidationPipe(statementPdfQuerySchema)) query: StatementPdfQuery,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<StreamableFile> {
     const { format, ...range } = query;
-    return pdf(this.renderer, await this.printing.statement(id, range, format));
+    return pdf(this.renderer, await this.printing.statement(id, range, format, user));
   }
 }
 

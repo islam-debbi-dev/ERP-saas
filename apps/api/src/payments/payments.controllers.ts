@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -25,6 +26,8 @@ import {
   type PaymentPage,
   Role,
   type UnpaidDocumentDto,
+  type ReassignCollectorInput,
+  reassignCollectorSchema,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { CurrentUser, Roles } from '../auth/decorators';
@@ -34,7 +37,7 @@ import { PaymentsService } from './payments.service';
 
 const MANAGERS = [Role.OWNER, Role.MANAGER];
 /** Who takes money. Cancel rules for sellers are checked in the service. */
-const CASHIERS = [...MANAGERS, Role.SELLER];
+const CASHIERS = [...MANAGERS, Role.SUPERVISOR, Role.SELLER];
 
 @Controller('payments')
 export class PaymentsController {
@@ -43,21 +46,37 @@ export class PaymentsController {
   @Get()
   list(
     @Query(new ZodValidationPipe(paymentListQuerySchema)) query: PaymentListQuery,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<PaymentPage> {
-    return this.payments.list(query);
+    return this.payments.list(query, user);
   }
 
   // Declared before ':id'.
   @Get('summary')
   summary(
     @Query(new ZodValidationPipe(cashSummaryQuerySchema)) query: CashSummaryQuery,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<CashSummaryDto> {
-    return this.payments.summary(query.date);
+    return this.payments.summary(query.date, user);
   }
 
   @Get(':id')
-  get(@Param('id', ParseUUIDPipe) id: string): Promise<PaymentDto> {
-    return this.payments.get(id);
+  get(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<PaymentDto> {
+    return this.payments.get(id, user);
+  }
+
+  /** Change who collected a versement (phase 14, SALE_REASSIGN_SELLER + reason). */
+  @Patch(':id/collector')
+  @Roles(...CASHIERS)
+  reassignCollector(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(reassignCollectorSchema)) body: ReassignCollectorInput,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<PaymentDto> {
+    return this.payments.reassignCollector(id, body, user);
   }
 
   @Post()
@@ -100,7 +119,10 @@ export class ClientPaymentsController {
   constructor(private readonly payments: PaymentsService) {}
 
   @Get(':id/unpaid-documents')
-  unpaid(@Param('id', ParseUUIDPipe) id: string): Promise<UnpaidDocumentDto[]> {
-    return this.payments.unpaidDocuments(id);
+  unpaid(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<UnpaidDocumentDto[]> {
+    return this.payments.unpaidDocuments(id, user);
   }
 }

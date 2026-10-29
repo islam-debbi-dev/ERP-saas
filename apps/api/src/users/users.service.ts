@@ -8,6 +8,8 @@ import {
   type Permission,
   type ResetPasswordInput,
   Role,
+  SELLING_ROLES,
+  type TeamNodeDto,
   type UpdateUserInput,
   type UserDto,
   type UserPermissionsInput,
@@ -20,11 +22,16 @@ import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { Prisma, type User } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { ScopeService } from '../sales-force/scope.service';
 
 type UserRow = User & {
   sessions: { lastUsedAt: Date }[];
   invitations: { id: string }[];
+  manager: { fullName: string } | null;
 };
+
+/** Who can have a team under him (phase 14). */
+const MANAGER_ROLES = new Set<string>([Role.OWNER, Role.MANAGER, Role.SUPERVISOR]);
 
 function toDto(u: UserRow): UserDto {
   return {
@@ -33,6 +40,8 @@ function toDto(u: UserRow): UserDto {
     email: u.email,
     phone: u.phone,
     role: u.role,
+    managerId: u.managerId,
+    managerName: u.manager?.fullName ?? null,
     permissions: effectivePermissions(u.role, u.permissionGrants, u.permissionRevokes),
     grants: u.permissionGrants as Permission[],
     revokes: u.permissionRevokes as Permission[],
@@ -65,6 +74,7 @@ export class UsersService {
     private readonly auth: AuthService,
     private readonly audit: AuditService,
     private readonly billing: BillingService,
+    private readonly scope: ScopeService,
   ) {}
 
   async list(): Promise<UserDto[]> {
@@ -89,6 +99,9 @@ export class UsersService {
     const { id, link } = await this.uniqueGuard(() =>
       this.prisma.db.$transaction(async (tx) => {
         await this.assertUserSlot(tx);
+        // Serialized on the tenant like every hierarchy change (see lockUser).
+        await tx.$queryRaw`SELECT id FROM tenants WHERE id = ${tenantContext.requireTenantId()}::uuid FOR UPDATE`;
+        if (input.managerId) await this.checkManager(tx, null, input.managerId);
         const user = await tx.user.create({
           data: {
             tenantId: tenantContext.requireTenantId(),
@@ -96,6 +109,7 @@ export class UsersService {
             email: input.email,
             phone: input.phone,
             role: input.role,
+            managerId: input.managerId,
             passwordHash,
             mustChangePassword: input.mode === 'PASSWORD',
             createdBy: tenantContext.get()?.userId ?? null,
@@ -111,6 +125,7 @@ export class UsersService {
             email: user.email,
             phone: user.phone,
             role: user.role,
+            managerId: user.managerId,
             mode: input.mode,
           },
         });
@@ -129,6 +144,13 @@ export class UsersService {
       this.prisma.db.$transaction(async (tx) => {
         const before = await this.lockUser(tx, id);
         if (input.role !== before.role) await this.checkRoleChange(tx, before, actor);
+        if (
+          input.managerId !== undefined &&
+          input.managerId !== before.managerId &&
+          input.managerId
+        ) {
+          await this.checkManager(tx, id, input.managerId);
+        }
         const after = await tx.user.update({
           where: { id },
           data: {
@@ -136,6 +158,7 @@ export class UsersService {
             email: input.email,
             phone: input.phone,
             role: input.role,
+            ...(input.managerId !== undefined ? { managerId: input.managerId } : {}),
           },
         });
         await this.audit.log(tx, {
@@ -287,6 +310,7 @@ export class UsersService {
   private include() {
     const now = new Date();
     return {
+      manager: { select: { fullName: true } },
       sessions: {
         orderBy: { lastUsedAt: 'desc' as const },
         take: 1,
@@ -298,6 +322,90 @@ export class UsersService {
         select: { id: true },
       },
     };
+  }
+
+  /**
+   * The company's hierarchy as a tree (phase 14): users without a manager at the top.
+   * A supervisor gets his own subtree. Deactivated users stay in it, flagged.
+   */
+  async team(actor: CurrentUserInfo): Promise<TeamNodeDto[]> {
+    const users = await this.prisma.db.user.findMany({
+      orderBy: { fullName: 'asc' },
+      select: { id: true, fullName: true, role: true, managerId: true, deletedAt: true },
+    });
+    const byManager = new Map<string | null, typeof users>();
+    const ids = new Set(users.map((u) => u.id));
+    for (const u of users) {
+      // A manager outside the list cannot happen (same tenant); guard anyway.
+      const key = u.managerId && ids.has(u.managerId) ? u.managerId : null;
+      byManager.set(key, [...(byManager.get(key) ?? []), u]);
+    }
+    const node = (u: (typeof users)[number], seen: Set<string>): TeamNodeDto => {
+      seen.add(u.id);
+      return {
+        id: u.id,
+        fullName: u.fullName,
+        role: u.role,
+        active: u.deletedAt === null,
+        members: (byManager.get(u.id) ?? [])
+          .filter((m) => !seen.has(m.id))
+          .map((m) => node(m, seen)),
+      };
+    };
+    if (actor.role === Role.SUPERVISOR) {
+      const self = users.find((u) => u.id === actor.id);
+      return self ? [node(self, new Set())] : [];
+    }
+    return (byManager.get(null) ?? []).map((u) => node(u, new Set()));
+  }
+
+  /**
+   * Active users who can be put on a sale, a versement or a client (phase 14), for the
+   * pickers of office roles. A supervisor gets his team only.
+   */
+  async sellers(actor: CurrentUserInfo): Promise<{ id: string; fullName: string; role: Role }[]> {
+    const team = actor.role === Role.SUPERVISOR ? await this.scope.teamIds(actor.id) : null;
+    return this.prisma.db.user.findMany({
+      where: {
+        deletedAt: null,
+        role: { in: [...SELLING_ROLES] },
+        ...(team ? { id: { in: team } } : {}),
+      },
+      orderBy: { fullName: 'asc' },
+      select: { id: true, fullName: true, role: true },
+    });
+  }
+
+  /**
+   * A manager must be a live OWNER, MANAGER or SUPERVISOR of the tenant, and not the
+   * user himself or anyone under him (MANAGER_CYCLE). Called with the tenant row locked,
+   * so two concurrent edits cannot build a cycle between them.
+   */
+  private async checkManager(tx: Tx, userId: string | null, managerId: string): Promise<void> {
+    if (userId === managerId) {
+      throw new AppException(ErrorCode.MANAGER_CYCLE, 'A user cannot be his own manager');
+    }
+    const manager = await tx.user.findFirst({ where: { id: managerId, deletedAt: null } });
+    if (!manager || !MANAGER_ROLES.has(manager.role)) {
+      throw new AppException(ErrorCode.VALIDATION_FAILED, 'This user cannot manage a team', {
+        field: 'managerId',
+      });
+    }
+    if (!userId) return;
+    const tenantId = tenantContext.requireTenantId();
+    const [hit] = await tx.$queryRaw<{ found: boolean }[]>`
+      WITH RECURSIVE subtree AS (
+        SELECT id FROM users WHERE "managerId" = ${userId}::uuid AND "tenantId" = ${tenantId}::uuid
+        UNION
+        SELECT u.id FROM users u JOIN subtree s ON u."managerId" = s.id
+        WHERE u."tenantId" = ${tenantId}::uuid
+      )
+      SELECT EXISTS (SELECT 1 FROM subtree WHERE id = ${managerId}::uuid) AS found`;
+    if (hit?.found) {
+      throw new AppException(ErrorCode.MANAGER_CYCLE, "This manager is in the user's own team", {
+        managerId,
+      });
+    }
   }
 
   /**
@@ -360,5 +468,11 @@ export class UsersService {
 }
 
 function pick(u: User) {
-  return { fullName: u.fullName, email: u.email, phone: u.phone, role: u.role };
+  return {
+    fullName: u.fullName,
+    email: u.email,
+    phone: u.phone,
+    role: u.role,
+    managerId: u.managerId,
+  };
 }

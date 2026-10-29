@@ -21,6 +21,7 @@ import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
 import { PaymentsService } from '../payments/payments.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { ScopeService } from '../sales-force/scope.service';
 import { StockQueriesService } from '../stock/stock-queries.service';
 import { algiersDayOf, saleDocumentFacts, saleLineFacts, type Scope } from './reports-sql';
 
@@ -41,24 +42,32 @@ export class DashboardService {
     private readonly payments: PaymentsService,
     private readonly stock: StockQueriesService,
     private readonly aging: AgingService,
+    private readonly scopes: ScopeService,
   ) {}
 
   /**
    * What the owner sees in 5 seconds. Sections the role does not see are null:
-   * a seller sees his own sales only, a storekeeper the stock only.
+   * a seller sees his own sales only, a supervisor his team's, a storekeeper the stock only.
+   * The seller / team / brand filters (phase 14) narrow the sales figures only; cash,
+   * credit and stock stay company-wide.
    */
-  async get(user: CurrentUserInfo, date = algiersDay()): Promise<DashboardDto> {
+  async get(
+    user: CurrentUserInfo,
+    filters: { date?: string; sellerId?: string; teamOf?: string; brandId?: string } = {},
+  ): Promise<DashboardDto> {
+    const date = filters.date ?? algiersDay();
     const manager = MANAGERS.includes(user.role);
-    const seesSales = manager || user.role === Role.SELLER;
+    const seesSales = manager || user.role === Role.SELLER || user.role === Role.SUPERVISOR;
     const seesStock = manager || user.role === Role.STOREKEEPER;
     const scope: Scope = {
       tenantId: tenantContext.requireTenantId(),
-      sellerId: user.role === Role.SELLER ? user.id : null,
+      sellerIds: await this.scopes.figuresSellerIds(user, filters),
+      brandId: filters.brandId ?? null,
     };
     const seesCost = can(user, Permission.VIEW_COST_AND_MARGIN);
     const [sales, cash, credit, debtors, stock, cheques] = await Promise.all([
       seesSales ? this.sales(scope, date, seesCost) : null,
-      manager ? this.payments.summary(date) : null,
+      manager ? this.payments.summary(date, user) : null,
       manager ? this.clients.creditSummary(TOP_DEBTORS) : null,
       manager ? this.clients.debtors(TOP_DEBTORS) : null,
       seesStock ? this.stock.dashboardSummary(seesCost) : null,

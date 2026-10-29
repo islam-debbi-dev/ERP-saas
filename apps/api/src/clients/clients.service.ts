@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import {
   type ClientAdjustmentInput,
+  type ClientBulkAssignInput,
+  type ClientBulkAssignResultDto,
   type ClientDto,
   type ClientListQuery,
   type ClientPage,
@@ -24,13 +26,24 @@ import { chunks } from '../common/chunks';
 import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { type DataScope, ScopeService } from '../sales-force/scope.service';
+import { SectorsService } from '../sales-force/sectors.service';
 import { ClientAccountService } from './client-account.service';
 
-const clientInclude = { balance: true } satisfies Prisma.ClientInclude;
+const clientInclude = {
+  balance: true,
+  sector: { select: { id: true, name: true } },
+  assignedSeller: { select: { id: true, fullName: true } },
+} satisfies Prisma.ClientInclude;
 type ClientWithBalance = Prisma.ClientGetPayload<{ include: typeof clientInclude }>;
 
 /** Only managers decide how much credit a client gets. */
 const PLAFOND_ROLES = new Set<string>([Role.OWNER, Role.MANAGER]);
+
+/** Who sets a client's sector and seller (phase 14). A supervisor only within his team. */
+const ASSIGNER_ROLES = new Set<string>([Role.OWNER, Role.MANAGER, Role.SUPERVISOR]);
+
+type Assignment = { sectorId?: string | null; assignedSellerId?: string | null };
 
 function toDto(c: ClientWithBalance): ClientDto {
   const balance = c.balance?.balance.toString() ?? '0';
@@ -50,6 +63,8 @@ function toDto(c: ClientWithBalance): ClientDto {
     ai: c.ai,
     priceLevelId: c.priceLevelId,
     creditLimit: c.creditLimit ? toMoneyString(c.creditLimit.toString()) : null,
+    sector: c.sector,
+    assignedSeller: c.assignedSeller,
     notes: c.notes,
     active: c.active,
     version: c.version,
@@ -71,15 +86,24 @@ export class ClientsService {
     private readonly prisma: PrismaService,
     private readonly account: ClientAccountService,
     private readonly audit: AuditService,
+    private readonly scope: ScopeService,
+    private readonly sectors: SectorsService,
   ) {}
 
   /** Raw SQL picks the page (filters compare balance with plafond); Prisma loads the rows. */
-  async list(query: ClientListQuery): Promise<ClientPage> {
+  async list(query: ClientListQuery, user: CurrentUserInfo): Promise<ClientPage> {
     const tenantId = tenantContext.requireTenantId();
+    const scope = await this.scope.of(user);
     const filters: Prisma.Sql[] = [
       Prisma.sql`c."tenantId" = ${tenantId}::uuid`,
       Prisma.sql`c."deletedAt" IS NULL`,
+      this.scope.clientSql(scope, 'c'),
     ];
+    if (query.sectorId) filters.push(Prisma.sql`c."sectorId" = ${query.sectorId}::uuid`);
+    if (query.assignedSellerId)
+      filters.push(Prisma.sql`c."assignedSellerId" = ${query.assignedSellerId}::uuid`);
+    if (query.unassigned === 'sector') filters.push(Prisma.sql`c."sectorId" IS NULL`);
+    if (query.unassigned === 'seller') filters.push(Prisma.sql`c."assignedSellerId" IS NULL`);
     const search = query.search?.trim();
     if (search) {
       const like = `%${search.replace(/[%_\\]/g, (ch) => `\\${ch}`)}%`;
@@ -115,8 +139,16 @@ export class ClientsService {
     };
   }
 
-  async get(id: string): Promise<ClientDto> {
-    const c = await this.prisma.db.client.findUnique({ where: { id }, include: clientInclude });
+  /**
+   * Outside the user's scope (phase 14) the client does not exist for him: 404. Without
+   * a user (internal reads, share links) it is not scoped.
+   */
+  async get(id: string, user?: CurrentUserInfo): Promise<ClientDto> {
+    const scope = user ? await this.scope.of(user) : null;
+    const c = await this.prisma.db.client.findFirst({
+      where: { id, ...(scope ? this.scope.clientWhere(scope) : {}) },
+      include: clientInclude,
+    });
     if (!c) throw new AppException(ErrorCode.NOT_FOUND, 'Client not found');
     return toDto(c);
   }
@@ -130,8 +162,10 @@ export class ClientsService {
     return this.withCodeErrors(() =>
       this.prisma.db.$transaction(async (tx) => {
         await this.checkPriceLevel(tx, input.priceLevelId);
+        const { sectorId, assignedSellerId, ...fields } = input;
+        const assignment = await this.assignment(tx, user, { sectorId, assignedSellerId }, null);
         const c = await tx.client.create({
-          data: { ...input, tenantId: tenantContext.requireTenantId() },
+          data: { ...fields, ...assignment, tenantId: tenantContext.requireTenantId() },
           include: clientInclude,
         });
         await this.audit.log(tx, {
@@ -159,7 +193,10 @@ export class ClientsService {
     input: UpdateClientInput,
     user: CurrentUserInfo,
   ): Promise<ClientDto> {
-    const before = await tx.client.findFirst({ where: { id, deletedAt: null } });
+    const scope = await this.scope.of(user, tx);
+    const before = await tx.client.findFirst({
+      where: { id, deletedAt: null, ...this.scope.clientWhere(scope) },
+    });
     if (!before) throw new AppException(ErrorCode.NOT_FOUND, 'Client not found');
     const limitChanged =
       (before.creditLimit?.toString() ?? null) !==
@@ -170,10 +207,11 @@ export class ClientsService {
       });
     }
     await this.checkPriceLevel(tx, input.priceLevelId);
-    const { version, ...data } = input;
+    const { version, sectorId, assignedSellerId, ...data } = input;
+    const assignment = await this.assignment(tx, user, { sectorId, assignedSellerId }, before);
     const { count } = await tx.client.updateMany({
       where: { id, version, deletedAt: null },
-      data: { ...data, version: { increment: 1 } },
+      data: { ...data, ...assignment, version: { increment: 1 } },
     });
     if (count === 0) {
       throw new AppException(ErrorCode.CLIENT_MODIFIED, 'Client changed since it was read', {
@@ -189,6 +227,59 @@ export class ClientsService {
       after,
     });
     return toDto(after);
+  }
+
+  /**
+   * Sets the sector and/or the seller of many clients in one transaction (SALES_FORCE,
+   * managers). Each changed client gets its own audit row with before/after.
+   */
+  async bulkAssign(input: ClientBulkAssignInput): Promise<ClientBulkAssignResultDto> {
+    return this.prisma.db.$transaction(async (tx) => {
+      if (input.sectorId) await this.sectors.findLive(tx, input.sectorId);
+      if (input.assignedSellerId) await this.scope.assertSeller(tx, input.assignedSellerId);
+      // Lock in id order: two bulk assigns on overlapping clients cannot deadlock.
+      const ids = [...input.clientIds].sort();
+      const before = await tx.$queryRaw<
+        { id: string; sectorId: string | null; assignedSellerId: string | null }[]
+      >`SELECT id, "sectorId", "assignedSellerId" FROM clients
+        WHERE id = ANY(${ids}::uuid[]) AND "tenantId" = ${tenantContext.requireTenantId()}::uuid
+          AND "deletedAt" IS NULL
+        ORDER BY id FOR UPDATE`;
+      if (before.length !== ids.length) {
+        const found = new Set(before.map((c) => c.id));
+        throw new AppException(ErrorCode.NOT_FOUND, 'Client not found', {
+          clientIds: ids.filter((id) => !found.has(id)),
+        });
+      }
+      const data: Assignment = {};
+      if (input.sectorId !== undefined) data.sectorId = input.sectorId;
+      if (input.assignedSellerId !== undefined) data.assignedSellerId = input.assignedSellerId;
+      const changed = before.filter(
+        (c) =>
+          (data.sectorId !== undefined && c.sectorId !== data.sectorId) ||
+          (data.assignedSellerId !== undefined && c.assignedSellerId !== data.assignedSellerId),
+      );
+      if (changed.length === 0) return { updated: 0 };
+      await tx.client.updateMany({
+        where: { id: { in: changed.map((c) => c.id) } },
+        data: { ...data, version: { increment: 1 } },
+      });
+      await this.audit.logMany(
+        tx,
+        changed.map((c) => ({
+          action: 'CLIENT_ASSIGNED',
+          entity: 'Client',
+          entityId: c.id,
+          before: { sectorId: c.sectorId, assignedSellerId: c.assignedSellerId },
+          after: {
+            sectorId: data.sectorId === undefined ? c.sectorId : data.sectorId,
+            assignedSellerId:
+              data.assignedSellerId === undefined ? c.assignedSellerId : data.assignedSellerId,
+          },
+        })),
+      );
+      return { updated: changed.length };
+    });
   }
 
   /** Clients (archived included) by code, for matching imported rows. */
@@ -286,9 +377,14 @@ export class ClientsService {
    * Relevé de compte. Day boundaries are in Algiers time; the running balance is
    * computed by Postgres (window function), not by loading the history in memory.
    */
-  async statement(id: string, query: StatementQuery): Promise<ClientStatementDto> {
-    const client = await this.prisma.db.client.findUnique({
-      where: { id },
+  async statement(
+    id: string,
+    query: StatementQuery,
+    user?: CurrentUserInfo,
+  ): Promise<ClientStatementDto> {
+    const scope = user ? await this.scope.of(user) : null;
+    const client = await this.prisma.db.client.findFirst({
+      where: { id, ...(scope ? this.scope.clientWhere(scope) : {}) },
       select: { id: true, code: true, name: true },
     });
     if (!client) throw new AppException(ErrorCode.NOT_FOUND, 'Client not found');
@@ -361,9 +457,12 @@ export class ClientsService {
   }
 
   /** Who owes the most (dashboard, phase 10). */
-  async debtors(limit: number): Promise<DebtorDto[]> {
+  async debtors(limit: number, scope?: DataScope): Promise<DebtorDto[]> {
     const rows = await this.prisma.db.clientBalance.findMany({
-      where: { balance: { gt: 0 }, client: { deletedAt: null } },
+      where: {
+        balance: { gt: 0 },
+        client: { deletedAt: null, ...(scope ? this.scope.clientWhere(scope) : {}) },
+      },
       orderBy: { balance: 'desc' },
       take: limit,
       include: { client: true },
@@ -450,6 +549,64 @@ export class ClientsService {
   private async liveClient(tx: Tx, id: string): Promise<void> {
     const c = await tx.client.findFirst({ where: { id, deletedAt: null }, select: { id: true } });
     if (!c) throw new AppException(ErrorCode.NOT_FOUND, 'Client not found');
+  }
+
+  /**
+   * The sector and seller to store on a create (`before` null) or an update; a key left
+   * out keeps the stored value. Outside SALES_FORCE they cannot be set. A seller cannot
+   * move a client, and a client he creates is assigned to him (else ASSIGNED_ONLY would
+   * hide it from him at once); a supervisor assigns within his team.
+   */
+  private async assignment(
+    tx: Tx,
+    user: CurrentUserInfo,
+    wanted: Assignment,
+    before: { sectorId: string | null; assignedSellerId: string | null } | null,
+  ): Promise<Assignment> {
+    const changes = (k: keyof Assignment) =>
+      wanted[k] !== undefined && wanted[k] !== (before?.[k] ?? null);
+    if (!(await this.scope.salesForceOn(user.tenantId))) {
+      if (changes('sectorId') || changes('assignedSellerId')) {
+        throw new AppException(ErrorCode.FEATURE_NOT_IN_PLAN, 'This module is not in your plan', {
+          feature: 'SALES_FORCE',
+        });
+      }
+      return {};
+    }
+    const out: Assignment = {};
+    const selfDefault =
+      before === null && (user.role === Role.SELLER || user.role === Role.SUPERVISOR);
+    if (!ASSIGNER_ROLES.has(user.role)) {
+      const ownSeller =
+        wanted.assignedSellerId === undefined || wanted.assignedSellerId === user.id;
+      if ((before !== null && changes('sectorId')) || (changes('assignedSellerId') && !ownSeller)) {
+        throw new AppException(ErrorCode.FORBIDDEN, 'Only a manager assigns clients', {
+          field: changes('sectorId') ? 'sectorId' : 'assignedSellerId',
+        });
+      }
+    }
+    if (changes('sectorId')) {
+      if (wanted.sectorId) await this.sectors.findLive(tx, wanted.sectorId);
+      out.sectorId = wanted.sectorId;
+    }
+    if (changes('assignedSellerId')) {
+      const sellerId = wanted.assignedSellerId ?? null;
+      if (sellerId) {
+        await this.scope.assertSeller(tx, sellerId);
+        if (
+          user.role === Role.SUPERVISOR &&
+          !(await this.scope.teamIds(user.id, tx)).includes(sellerId)
+        ) {
+          throw new AppException(ErrorCode.FORBIDDEN, 'This seller is not in your team', {
+            field: 'assignedSellerId',
+          });
+        }
+      }
+      out.assignedSellerId = sellerId;
+    } else if (selfDefault && wanted.assignedSellerId === undefined) {
+      out.assignedSellerId = user.id;
+    }
+    return out;
   }
 
   private async checkPriceLevel(tx: Tx, priceLevelId: string | null): Promise<void> {

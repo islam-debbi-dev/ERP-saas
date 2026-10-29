@@ -93,6 +93,8 @@ const productFields = {
   reference: name(40),
   designation: name(160),
   categoryId: id.nullable().default(null),
+  /** Omitted = unchanged on update (none on create). */
+  brandId: id.nullable().optional(),
   baseUnitId: id,
   tvaRate: percentString(2).transform(normalizeDecimal),
   minStock: quantityString({ positive: false }).transform(normalizeDecimal).default('0'),
@@ -157,6 +159,7 @@ export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 export const productListQuerySchema = z.object({
   search: z.string().trim().max(100).optional(),
   categoryId: id.optional(),
+  brandId: id.optional(),
   archived: z
     .enum(['true', 'false'])
     .optional()
@@ -189,6 +192,8 @@ export interface ProductDto {
   reference: string;
   designation: string;
   categoryId: string | null;
+  brandId: string | null;
+  brandName: string | null;
   baseUnitId: string;
   tvaRate: string;
   minStock: string;
