@@ -1,15 +1,16 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Ban, FileText, Pencil, Undo2 } from 'lucide-react';
+import { ArrowLeft, Ban, FileText, Pencil, Share2, Undo2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { money, Permission, qty, type SaleResultDto } from '@erp/shared';
+import { formatDA, money, Permission, qty, Role, type SaleResultDto } from '@erp/shared';
 import { PageHeader } from '@/components/shared/page-header';
 import { PrintButton } from '@/components/shared/print-button';
+import { ShareLinkDialog } from '@/components/shared/share-link-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,13 +25,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { api } from '@/lib/api-client';
-import { usePermission } from '@/lib/auth';
+import { useAuth, usePermission } from '@/lib/auth';
 import { useUnitLabel } from '@/lib/catalog';
 import { useCanManageCredit } from '@/lib/clients';
 import { todayInAlgiers } from '@/lib/purchases';
 import { saleKeys, useSale } from '@/lib/sales';
 import { formatQty } from '@/lib/stock';
+import { useTenantSettings } from '@/lib/settings';
 import { useErrorMessage } from '@/lib/use-error-message';
+import { isolateLtr } from '@/lib/utils';
 import { useIdempotencyKey } from '@/lib/use-idempotency-key';
 import { PaymentDetailDialog } from '@/components/payments/payment-detail-dialog';
 import { CancelSaleDialog, ReturnDialog } from './sale-dialogs';
@@ -47,7 +50,11 @@ export function SaleView({ id }: { id: string }) {
   const canManage = useCanManageCredit();
   const canCancel = usePermission(Permission.SALE_CANCEL);
   const sale = useSale(id);
-  const [dialog, setDialog] = useState<'cancel' | 'return' | null>(null);
+  const [dialog, setDialog] = useState<'cancel' | 'return' | 'share' | null>(null);
+  const ts = useTranslations('share');
+  const settings = useTenantSettings();
+  // Storekeepers do not send documents to clients (the API refuses them too).
+  const canShare = useAuth().state.user?.role !== Role.STOREKEEPER;
   const [paymentId, setPaymentId] = useState<string | null>(null);
   const invoiceKey = useIdempotencyKey(true);
 
@@ -106,6 +113,13 @@ export function SaleView({ id }: { id: string }) {
           validated &&
             canManage &&
             !grouped && { label: t('return'), icon: Undo2, onSelect: () => setDialog('return') },
+          validated &&
+            canShare &&
+            s.type === 'FACTURE' && {
+              label: ts('button'),
+              icon: Share2,
+              onSelect: () => setDialog('share'),
+            },
           (s.status === 'DRAFT' || (validated && canCancel && !s.invoice)) && {
             label: s.status === 'DRAFT' ? t('abandon') : t('cancel'),
             icon: Ban,
@@ -436,6 +450,22 @@ export function SaleView({ id }: { id: string }) {
       ) : null}
       {dialog === 'return' ? (
         <ReturnDialog sale={s} open onOpenChange={(o) => !o && setDialog(null)} />
+      ) : null}
+      {dialog === 'share' ? (
+        <ShareLinkDialog
+          open
+          onOpenChange={(o) => !o && setDialog(null)}
+          input={{ docType: 'FACTURE', docId: s.id }}
+          phone={s.clientSnapshot?.phone}
+          message={(url) =>
+            ts('invoiceMessage', {
+              number: s.number ?? '',
+              company: settings.data?.raisonSociale ?? '',
+              amount: isolateLtr(formatDA(due)),
+              url,
+            })
+          }
+        />
       ) : null}
     </>
   );

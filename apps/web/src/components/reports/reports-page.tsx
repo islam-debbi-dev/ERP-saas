@@ -1,6 +1,6 @@
 'use client';
 
-import { ChartColumn, Download, Loader2 } from 'lucide-react';
+import { CalendarClock, ChartColumn, Download, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import { type ReactNode, useState } from 'react';
@@ -47,6 +47,7 @@ const NUMERIC: ReadonlySet<ReportColumn['kind']> = new Set(['count', 'qty', 'mon
 
 export function ReportsPage() {
   const t = useTranslations('reports');
+  const ta = useTranslations('aging');
   const errorMessage = useErrorMessage();
   const { state } = useAuth();
   const byRole = state.status === 'authenticated' ? REPORTS_BY_ROLE[state.user.role] : [];
@@ -86,6 +87,13 @@ export function ReportsPage() {
       <PageHeader
         title={t('title')}
         description={t('subtitle')}
+        more={[
+          (state.user?.role === 'OWNER' || state.user?.role === 'MANAGER') && {
+            label: ta('title'),
+            icon: CalendarClock,
+            href: '/rapports/balance-agee',
+          },
+        ]}
         actions={
           canExport ? (
             <Button

@@ -70,6 +70,12 @@ It prints a password (shown once) and a TOTP secret with an `otpauth://` link: a
 
 Sidebar help links come from the web env (`NEXT_PUBLIC_SUPPORT_WHATSAPP`, `NEXT_PUBLIC_TUTORIAL_*_URL`, see `apps/web/.env.example`); a link stays hidden while its variable is empty.
 
+## Crédit avancé (phase 21)
+
+- Supplier accounts: a validated bon de réception goes on the supplier account (minus what was paid at reception); règlements fournisseur (`RGF-YYYY-000001`) pay it. Fiche fournisseur under Achats → Fournisseurs, with the relevé fournisseur PDF.
+- **After deploying phase 21, run the supplier ledger backfill once** (`docs/runbook.md`, "Supplier ledger backfill"); locally: `pnpm --filter @erp/api build && pnpm --filter @erp/api db:backfill-supplier-ledger`.
+- Rapports → Balance âgée (clients and suppliers, Excel export), Clients → À relancer (WhatsApp), the "Chèques à échéance" dashboard card, and "Partager le lien" on the relevé and the facture (`/s/<token>`, 7 days, revocable). The share URL is built from the first `WEB_ORIGIN`.
+
 ## Everyday commands
 
 ```bash

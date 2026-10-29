@@ -213,6 +213,7 @@ Every night at 03:00 Algiers, the API checks every tenant:
 - the cached stock (`product_stocks`) equals the sum of `stock_movements`
 - each movement's `balanceAfter` chain is consistent
 - each client balance (`client_balances`) equals the sum of `client_ledger_entries`
+- each supplier balance (`supplier_balances`) equals the sum of `supplier_ledger_entries` (phase 21)
 - no cache row is missing
 
 A difference **is never fixed automatically**. It is:
@@ -232,6 +233,17 @@ When it reports something:
 2. Find when it diverged: the audit log of that product or client (Paramètres → Journal d'audit, filtered by object), and the movements around it.
 3. A wrong **cache** (the ledger is right, the cached value isn't) comes from a bug. Fix the bug first. Then recompute the cache from the ledger in one transaction, as the owner, with a note in the audit log.
 4. A wrong **ledger** (a movement that shouldn't exist, or a missing one) is fixed by a reversing or correcting entry through the app (adjustment, avoir, annulation), never by an UPDATE.
+
+### Supplier ledger backfill (once, after the phase 21 deploy)
+
+Bons de réception validated before phase 21 have no supplier ledger entries. After deploying phase 21 on an environment, run the backfill once (it is safe with the app running and safe to run again: a BR or retour that already has an entry is skipped):
+
+```bash
+docker compose -p erp-production -f /srv/erp/deploy/compose.yml --env-file /srv/erp/production.env \
+  exec api node dist/purchases/supplier-backfill.cli.js
+```
+
+It posts, dated at the original validation, the BR's TTC, minus what was paid at reception, minus its retours. Cancelled BRs post nothing. Then run the reconcile above: it must report no supplier difference.
 
 ## Database roles
 

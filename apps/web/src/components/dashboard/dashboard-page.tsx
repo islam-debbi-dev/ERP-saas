@@ -4,7 +4,7 @@ import { TrendingDown, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
-import { type DashboardDto, type DebtorDto, formatDA, money } from '@erp/shared';
+import { type DashboardDto, type DebtorDto, type DueChequesDto, formatDA, money } from '@erp/shared';
 import { PageHeader } from '@/components/shared/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -169,7 +169,76 @@ function Sections({ d }: { d: DashboardDto }) {
           <DebtorsCard title={t('overLimitList')} rows={d.credit.overLimit} />
         </div>
       ) : null}
+
+      {d.cheques ? <ChequesCard cheques={d.cheques} /> : null}
     </div>
+  );
+}
+
+/** Chèques à échéance (phase 21): to cash from clients, to cover for suppliers. */
+function ChequesCard({ cheques }: { cheques: DueChequesDto }) {
+  const t = useTranslations('dashboard');
+  const format = useFormatter();
+  const day = (iso: string) =>
+    format.dateTime(new Date(`${iso}T12:00:00Z`), { weekday: 'short', day: 'numeric', month: 'short' });
+  const side = (
+    title: string,
+    group: DueChequesDto['client'],
+    href: (partyId: string) => string,
+  ) => (
+    <div className="min-w-0 space-y-2">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="text-sm font-medium">{title}</h3>
+        <span className="text-xs text-muted-foreground">
+          {t('chequesCount', { count: group.count })} · <Amount value={group.total} />
+        </span>
+      </div>
+      {group.items.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{t('noneToShow')}</p>
+      ) : (
+        <ul className="divide-y rounded-md border">
+          {group.items.map((c) => (
+            <li key={c.id} className="flex items-center justify-between gap-3 px-3 py-2">
+              <div className="min-w-0">
+                {c.party ? (
+                  <Link
+                    href={href(c.party.id)}
+                    dir="auto"
+                    className="block truncate text-sm font-medium hover:underline"
+                  >
+                    {c.party.name}
+                  </Link>
+                ) : null}
+                <p className="truncate text-xs text-muted-foreground">
+                  {day(c.dueDate)}
+                  {c.reference ? (
+                    <>
+                      {' · '}
+                      <bdi dir="ltr">{c.reference}</bdi>
+                    </>
+                  ) : null}
+                  {c.bank ? ` · ${c.bank}` : ''}
+                </p>
+              </div>
+              <Amount value={c.amount} className="shrink-0 text-sm font-medium" />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+  return (
+    <Card className="gap-3 py-4">
+      <CardHeader>
+        <CardTitle role="heading" aria-level={2} className="text-base">
+          {t('chequesTitle')}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
+        {side(t('chequesClients'), cheques.client, (id) => `/clients/${id}`)}
+        {side(t('chequesSuppliers'), cheques.supplier, (id) => `/achats/fournisseurs/${id}`)}
+      </CardContent>
+    </Card>
   );
 }
 

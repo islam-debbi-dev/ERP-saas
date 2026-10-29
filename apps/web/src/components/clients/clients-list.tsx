@@ -1,7 +1,7 @@
 'use client';
 
 import { type ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { Loader2, Plus, Users } from 'lucide-react';
+import { BellRing, Loader2, Plus, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -16,13 +16,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
-import { useClientPages } from '@/lib/clients';
+import { useCanManageCredit, useClientPages } from '@/lib/clients';
 import { BalanceAmount } from './balance-amount';
 import { Amount } from '@/components/shared/amount';
 
 export function ClientsList() {
   const t = useTranslations('clients');
+  const tr = useTranslations('reminders');
   const router = useRouter();
+  const canManage = useCanManageCredit();
   const [search, setSearch] = useState('');
   const [hasDebt, setHasDebt] = useState(false);
   const [overLimit, setOverLimit] = useState(false);
@@ -108,6 +110,9 @@ export function ClientsList() {
       <PageHeader
         title={t('title')}
         description={t('subtitle')}
+        more={[
+          canManage && { label: tr('title'), icon: BellRing, href: '/clients/a-relancer' },
+        ]}
         actions={
           <Button asChild>
             <Link href="/clients/nouveau">

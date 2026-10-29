@@ -91,6 +91,7 @@ interface Ids {
   productId: string;
   saleId: string;
   purchaseId: string;
+  supplierId: string;
   inventoryId: string;
   productReference: string;
   tenantId: string;
@@ -149,6 +150,7 @@ async function prepareIds(f: Fixture): Promise<Ids> {
     productId: f.productId,
     saleId: sale.id,
     purchaseId: purchase.id,
+    supplierId: supplier.id,
     inventoryId: inventory.id,
     tenantId: f.tenantId,
   };
@@ -156,6 +158,7 @@ async function prepareIds(f: Fixture): Promise<Ids> {
 
 function resolve(pattern: string, v: Ids): string {
   return pattern
+    .replace('/achats/fournisseurs/[id]', `/achats/fournisseurs/${v.supplierId}`)
     .replace('/achats/[id]', `/achats/${v.purchaseId}`)
     .replace('/clients/[id]', `/clients/${v.clientId}`)
     .replace('/produits/[id]', `/produits/${v.productId}`)
@@ -267,6 +270,36 @@ for (const locale of LOCALES) {
         await page.waitForTimeout(400); // the sheet slides in
         await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
         await check(page, '/clients/[id]/versement', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+      });
+
+      await test.step('new règlement fournisseur opens as a sheet with its save button on screen', async () => {
+        const path = resolve('/achats/fournisseurs/[id]', v);
+        await page.evaluate((to) => {
+          (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push(to);
+        }, path);
+        await page.waitForURL((url) => url.pathname === path);
+        await settle(page);
+        await page.getByRole('button', { name: m['supplierAccount']?.['newPayment'] }).click();
+        await page.locator('#rgf-amount').waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
+        await check(page, '/achats/fournisseurs/[id]/reglement', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+      });
+
+      await test.step('share link of the relevé: the link and the WhatsApp button on screen', async () => {
+        const path = resolve('/clients/[id]', v);
+        await page.evaluate((to) => {
+          (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push(to);
+        }, path);
+        await page.waitForURL((url) => url.pathname === path);
+        await settle(page);
+        await page.getByRole('button', { name: m['share']?.['button'] }).click();
+        await page.locator('#share-url').waitFor();
+        await page.waitForTimeout(400);
+        await expectOnScreen(page, '[role="dialog"] a[href^="https://wa.me/"]');
+        await check(page, '/clients/[id]/partage', locale, results, { fullPage: false });
         await page.keyboard.press('Escape');
       });
 

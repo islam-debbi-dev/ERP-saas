@@ -18,10 +18,18 @@
 - Partial payment at sale time is normal: sale 100 000 DA, paid 60 000, 40 000 goes to credit.
 - Versement modes: espèces, chèque, virement, (later) CCP/BaridiMob. Cheques can bounce → reversing entry.
 - Client statement (relevé de compte) with running balance, printable and shareable (PDF/WhatsApp).
-- Aging: how long each client has owed (0–30, 31–60, 61–90, 90+ days) – v1.1.
+- Aging: how long each client has owed (0–30, 31–60, 61–90, 90+ days), phase 21 below.
 
 ## Suppliers (fournisseurs)
-- Bon de réception increases stock and (later) the supplier ledger. Supplier accounts are v1.1.
+- Supplier account (dettes fournisseurs, phase 21) = ledger of: validated BRs (+TTC as the BR stores it), what was paid at reception (−), règlements RGF (−), retours fournisseur (−), opening balance (±, Excel import "Fournisseurs et soldes"). Positive balance = we owe the supplier.
+- Cancelling a BR reverses exactly what its BR and retours still leave on the account; cancelling a règlement (MANAGER+, with a reason) brings the debt back. Nothing is deleted.
+- Règlements are not allocated to BRs: for the aging, they pay the oldest BR first.
+
+## Aging, reminders, share links (phase 21)
+- **Balance âgée**: each account's balance (the ledger) spread over 0–30 / 31–60 / 61–90 / 90+ days by the age of what is left on each document. Clients use the versement allocations of phase 7; unallocated credit pays the oldest bucket first. The buckets always sum to the balance.
+- **Clients à relancer**: balance > 0 and oldest unpaid amount older than the tenant's `reminderDays` (default 30). The WhatsApp button opens `wa.me` with a prefilled message and a share link to the relevé. Nothing is sent automatically.
+- **Share links**: a relevé or a facture opened without login through `/s/<token>`, valid 7 days, revocable. Only the token's hash is stored; every opening is counted and audited. A shared facture is not a print (DUPLICATA if the original was printed).
+- **Chèques à échéance**: the dashboard lists client and supplier cheques due today and the 6 days after.
 
 ## Documents
 - **Bon de livraison (BL)**: most daily sales; may not include tax details.
@@ -98,6 +106,7 @@
 | `negativeStockMode` | `ALLOW` / `WARN` / `BLOCK` | sales, adjustments |
 | Invoice header | raison sociale, adresse, téléphone, RC, NIF, NIS, AI, RIB (optional), logo (later) | all printed documents |
 | `priceLevelCount` | 1 to 5, default 3 (gros, demi-gros, détail) | products, clients |
+| `reminderDays` | 1 to 365, default 30 | clients à relancer |
 | Timbre fiscal rule | configurable rate, min, max, threshold; off by default | factures paid in cash |
 
 ## Glossary (French term → meaning in code)

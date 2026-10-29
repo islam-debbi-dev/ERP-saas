@@ -102,7 +102,11 @@
     "noneToShow": "Rien à afficher",
     "colClient": "Client",
     "colBalance": "Solde",
-    "colLimit": "Plafond"
+    "colLimit": "Plafond",
+    "chequesTitle": "Chèques à échéance (7 jours)",
+    "chequesClients": "Chèques clients à encaisser",
+    "chequesSuppliers": "Chèques fournisseurs à couvrir",
+    "chequesCount": "{count, plural, =0 {aucun} one {# chèque} other {# chèques}}"
   },
   "reports": {
     "title": "Rapports",
@@ -657,7 +661,8 @@
     "saved": "Fournisseur enregistré",
     "archived": "Fournisseur archivé",
     "archiveTitle": "Archiver ce fournisseur ?",
-    "archiveBody": "Il ne sera plus proposé, ses anciens bons restent consultables."
+    "archiveBody": "Il ne sera plus proposé, ses anciens bons restent consultables.",
+    "code": "Code fournisseur"
   },
   "clients": {
     "title": "Clients",
@@ -1433,5 +1438,99 @@
     "lockedContact": "Demander ce module sur WhatsApp",
     "lockedWhatsappMessage": "Bonjour, je voudrais ajouter le module « {feature} » pour {company}.",
     "lockedBack": "Retour au tableau de bord"
+  },
+  "share": {
+    "button": "Partager le lien",
+    "title": "Partager par lien",
+    "help": "Un lien vers le PDF, valable 7 jours, que le client ouvre sans compte.",
+    "creating": "Création du lien…",
+    "link": "Lien",
+    "expires": "Valable jusqu'au {date}.",
+    "revokedHelp": "Lien désactivé : il ne s'ouvre plus.",
+    "whatsapp": "Envoyer par WhatsApp",
+    "copy": "Copier le lien",
+    "copied": "Lien copié",
+    "copyFailed": "Copie impossible : sélectionnez le lien et copiez-le.",
+    "revoke": "Désactiver le lien",
+    "revoked": "Lien désactivé",
+    "close": "Fermer",
+    "statementMessage": "Bonjour {name}, voici votre relevé de compte chez {company}. Solde : {balance}. {url}",
+    "invoiceMessage": "Bonjour, voici la facture {number} de {company}, montant {amount}. {url}"
+  },
+  "supplierAccount": {
+    "title": "Fiche fournisseur",
+    "back": "Fournisseurs",
+    "newPayment": "Nouveau règlement",
+    "newPaymentHelp": "L'argent versé au fournisseur. Il diminue ce que vous lui devez.",
+    "managersOnly": "Les comptes fournisseurs sont réservés aux responsables.",
+    "balance": "Solde",
+    "balanceAfter": "Solde après le règlement",
+    "weOwe": "à payer",
+    "inOurFavour": "en notre faveur",
+    "savePayment": "Enregistrer le règlement",
+    "paymentCreated": "Règlement {number} de {amount} enregistré",
+    "paymentCancelled": "Règlement {number} annulé",
+    "paymentsTitle": "Derniers règlements",
+    "noPayments": "Aucun règlement pour ce fournisseur.",
+    "statusCANCELLED": "Annulé",
+    "dueOn": "échéance {date}",
+    "cancelPayment": "Annuler le règlement {number}",
+    "cancelTitle": "Annuler le règlement {number} ?",
+    "cancelHelp": "Le montant revient sur le compte du fournisseur. Le règlement reste dans l'historique.",
+    "cancelReason": "Motif",
+    "keep": "Garder",
+    "confirmCancel": "Annuler le règlement",
+    "statementTitle": "Relevé fournisseur",
+    "statementHelp": "Les mouvements du compte sur une période, en PDF.",
+    "ledgerTitle": "Historique du compte",
+    "noEntries": "Aucun mouvement sur ce compte.",
+    "paidAtReception": "payé à la réception",
+    "debit": "Débit",
+    "credit": "Crédit",
+    "loadMore": "Voir plus"
+  },
+  "supplierLedgerTypes": {
+    "OPENING": "Solde initial",
+    "PURCHASE": "Achat",
+    "PAYMENT": "Règlement",
+    "RETURN": "Retour",
+    "ADJUST": "Ajustement",
+    "REVERSAL": "Annulation"
+  },
+  "aging": {
+    "title": "Balance âgée",
+    "subtitle": "Depuis combien de temps chaque compte est dû.",
+    "back": "Rapports",
+    "export": "Exporter en Excel",
+    "managersOnly": "La balance âgée est réservée aux responsables.",
+    "accounts": "Comptes",
+    "kindClients": "Clients",
+    "kindSuppliers": "Fournisseurs",
+    "asOf": "Au",
+    "total": "Total dû",
+    "bucket": {
+      "d0_30": "0–30 jours",
+      "d31_60": "31–60 jours",
+      "d61_90": "61–90 jours",
+      "d90": "Plus de 90 jours"
+    },
+    "empty": "Aucun compte avec un solde à cette date.",
+    "caption": "Balance âgée : {kind}",
+    "colAccount": "Compte",
+    "colBalance": "Solde",
+    "colOldest": "Plus ancien",
+    "days": "{n, plural, one {# jour} other {# jours}}"
+  },
+  "reminders": {
+    "title": "Clients à relancer",
+    "subtitle": "Clients qui doivent de l'argent depuis plus de {days} jours.",
+    "back": "Clients",
+    "managersOnly": "La liste des relances est réservée aux responsables.",
+    "emptyTitle": "Personne à relancer",
+    "emptyDescription": "Aucun client ne doit de l'argent depuis plus longtemps que le délai choisi dans les paramètres.",
+    "since": "{days, plural, one {depuis # jour} other {depuis # jours}}",
+    "whatsapp": "Relancer sur WhatsApp",
+    "whatsappFor": "Relancer {name} sur WhatsApp",
+    "message": "Bonjour {name}, sauf erreur de notre part, votre solde chez {company} est de {balance} (le plus ancien depuis {days} jours). Votre relevé : {url}. Merci."
   }
 }

@@ -1,15 +1,16 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Archive, ArrowLeft, Banknote, FileText, Pencil, Scale, Wallet } from 'lucide-react';
+import { Archive, ArrowLeft, Banknote, FileText, Pencil, Scale, Share2, Wallet } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { type ClientDto, type ClientStatementDto, money } from '@erp/shared';
+import { type ClientDto, type ClientStatementDto, formatDA, money } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { PrintButton } from '@/components/shared/print-button';
+import { ShareLinkDialog } from '@/components/shared/share-link-dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,7 +48,8 @@ import {
   useStatement,
 } from '@/lib/clients';
 import { todayInAlgiers } from '@/lib/purchases';
-import { cn } from '@/lib/utils';
+import { cn, isolateLtr } from '@/lib/utils';
+import { useTenantSettings } from '@/lib/settings';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { PaymentDialog } from '@/components/payments/payment-dialog';
 import { UnpaidDocuments } from '@/components/payments/unpaid-documents';
@@ -129,7 +131,7 @@ export function ClientDetail({ clientId }: { clientId: string }) {
           <Summary client={c} />
           <UnpaidDocuments clientId={c.id} />
           <Info client={c} />
-          <StatementSection clientId={clientId} />
+          <StatementSection client={c} />
         </>
       ) : (
         <div className="grid gap-4" aria-busy>
@@ -271,9 +273,13 @@ function firstOfMonth(day: string): string {
   return `${day.slice(0, 8)}01`;
 }
 
-function StatementSection({ clientId }: { clientId: string }) {
+function StatementSection({ client }: { client: ClientDto }) {
+  const clientId = client.id;
   const t = useTranslations('clients');
+  const ts = useTranslations('share');
   const errorMessage = useErrorMessage();
+  const settings = useTenantSettings();
+  const [sharing, setSharing] = useState(false);
   const [range, setRange] = useState(() => {
     const today = todayInAlgiers();
     return { from: firstOfMonth(today), to: today };
@@ -314,10 +320,15 @@ function StatementSection({ clientId }: { clientId: string }) {
             />
           </div>
           {badRange ? null : (
-            <PrintButton
-              className="col-span-2"
-              path={`/clients/${clientId}/statement/pdf?from=${range.from}&to=${range.to}`}
-            />
+            <>
+              <PrintButton
+                path={`/clients/${clientId}/statement/pdf?from=${range.from}&to=${range.to}`}
+              />
+              <Button type="button" variant="outline" onClick={() => setSharing(true)}>
+                <Share2 aria-hidden />
+                {ts('button')}
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -333,6 +344,22 @@ function StatementSection({ clientId }: { clientId: string }) {
         <StatementTable statement={statement.data} />
       ) : (
         <Skeleton className="h-48 w-full" aria-busy />
+      )}
+      {badRange || !sharing ? null : (
+        <ShareLinkDialog
+          open
+          onOpenChange={setSharing}
+          input={{ docType: 'RELEVE', docId: clientId, from: range.from, to: range.to }}
+          phone={client.phone}
+          message={(url) =>
+            ts('statementMessage', {
+              name: client.name,
+              company: settings.data?.raisonSociale ?? '',
+              balance: isolateLtr(formatDA(client.balance)),
+              url,
+            })
+          }
+        />
       )}
     </section>
   );
