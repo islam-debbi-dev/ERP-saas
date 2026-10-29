@@ -64,6 +64,7 @@ export function toSaleDto(
     creditOverride: s.creditOverride,
     cancelReason: s.cancelReason,
     version: s.version,
+    sellerId: s.sellerId,
     seller,
     createdAt: s.createdAt.toISOString(),
     validatedAt: s.validatedAt?.toISOString() ?? null,

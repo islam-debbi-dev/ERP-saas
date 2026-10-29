@@ -218,6 +218,9 @@ export interface SaleDto {
   creditOverride: boolean;
   cancelReason: string | null;
   version: number;
+  /** The stored seller (phase 14); null on older sales and when none was picked. */
+  sellerId: string | null;
+  /** Who the sale counts for: the seller, else its creator. */
   seller: { id: string; fullName: string } | null;
   createdAt: string;
   validatedAt: string | null;
