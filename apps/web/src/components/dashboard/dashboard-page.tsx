@@ -1,10 +1,20 @@
 'use client';
 
-import { TrendingDown, TrendingUp } from 'lucide-react';
+import { SlidersHorizontal, TrendingDown, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
-import type { ReactNode } from 'react';
-import { type DashboardDto, type DebtorDto, type DueChequesDto, formatDA, money } from '@erp/shared';
+import { type ReactNode, useState } from 'react';
+import {
+  type DashboardDto,
+  type DebtorDto,
+  type DueChequesDto,
+  Feature,
+  formatDA,
+  money,
+  Role,
+} from '@erp/shared';
+import { Label } from '@/components/ui/label';
+import { NativeSelect } from '@/components/ui/native-select';
 import { PageHeader } from '@/components/shared/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,8 +26,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useAuth } from '@/lib/auth';
-import { useDashboard } from '@/lib/reports';
+import { useAuth, useFeature } from '@/lib/auth';
+import { type FigureFilters, NO_FIGURE_FILTERS, useDashboard } from '@/lib/reports';
+import { useBrands, useIsOffice, useSellers } from '@/lib/sales-force';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
 import { OnboardingCard } from './onboarding-card';
@@ -29,7 +40,8 @@ export function DashboardPage() {
   const format = useFormatter();
   const { state } = useAuth();
   const errorMessage = useErrorMessage();
-  const dashboard = useDashboard();
+  const [filters, setFilters] = useState<FigureFilters>(NO_FIGURE_FILTERS);
+  const dashboard = useDashboard(filters);
   const d = dashboard.data;
   const name = state.status === 'authenticated' ? state.user.fullName : '';
 
@@ -42,6 +54,7 @@ export function DashboardPage() {
         }
       />
       <OnboardingCard />
+      <FigureFilterBar value={filters} onChange={setFilters} />
       {dashboard.isError ? (
         <p role="alert" className="text-sm text-destructive">
           {errorMessage(dashboard.error)}
@@ -56,6 +69,89 @@ export function DashboardPage() {
         <Sections d={d} />
       )}
     </>
+  );
+}
+
+/**
+ * Seller / team / brand filters of the sales figures (phase 14), for office roles. Folded
+ * on a phone so the figures stay at the top.
+ */
+function FigureFilterBar({
+  value,
+  onChange,
+}: {
+  value: FigureFilters;
+  onChange: (f: FigureFilters) => void;
+}) {
+  const t = useTranslations('dashboard');
+  const office = useIsOffice();
+  const salesForce = useFeature(Feature.SALES_FORCE);
+  const sellers = useSellers();
+  const brands = useBrands();
+  if (!office) return null;
+  const supervisors = (sellers.data ?? []).filter((u) => u.role === Role.SUPERVISOR);
+  const active = [value.sellerId, value.teamOf, value.brandId].filter(Boolean).length;
+  const set = (patch: Partial<FigureFilters>) => onChange({ ...value, ...patch });
+  return (
+    <details className="group rounded-lg border bg-card md:open:bg-card" open={active > 0}>
+      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-4 text-sm font-medium">
+        <SlidersHorizontal className="size-4" aria-hidden />
+        {t('filters')}
+        {active > 0 ? (
+          <span className="text-muted-foreground">({t('filtersActive', { count: active })})</span>
+        ) : null}
+      </summary>
+      <div className="grid gap-3 px-4 pb-4 sm:grid-cols-3">
+        <div className="space-y-1">
+          <Label htmlFor="dash-seller">{t('filterSeller')}</Label>
+          <NativeSelect
+            id="dash-seller"
+            value={value.sellerId}
+            onChange={(e) => set({ sellerId: e.target.value })}
+          >
+            <option value="">{t('allSellers')}</option>
+            {(sellers.data ?? []).map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.fullName}
+              </option>
+            ))}
+          </NativeSelect>
+        </div>
+        {salesForce && supervisors.length > 0 ? (
+          <div className="space-y-1">
+            <Label htmlFor="dash-team">{t('filterTeam')}</Label>
+            <NativeSelect
+              id="dash-team"
+              value={value.teamOf}
+              onChange={(e) => set({ teamOf: e.target.value })}
+            >
+              <option value="">{t('allTeams')}</option>
+              {supervisors.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.fullName}
+                </option>
+              ))}
+            </NativeSelect>
+          </div>
+        ) : null}
+        <div className="space-y-1">
+          <Label htmlFor="dash-brand">{t('filterBrand')}</Label>
+          <NativeSelect
+            id="dash-brand"
+            value={value.brandId}
+            onChange={(e) => set({ brandId: e.target.value })}
+          >
+            <option value="">{t('allBrands')}</option>
+            {(brands.data ?? []).map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </NativeSelect>
+        </div>
+        <p className="text-xs text-muted-foreground sm:col-span-3">{t('filtersHint')}</p>
+      </div>
+    </details>
   );
 }
 
@@ -180,7 +276,11 @@ function ChequesCard({ cheques }: { cheques: DueChequesDto }) {
   const t = useTranslations('dashboard');
   const format = useFormatter();
   const day = (iso: string) =>
-    format.dateTime(new Date(`${iso}T12:00:00Z`), { weekday: 'short', day: 'numeric', month: 'short' });
+    format.dateTime(new Date(`${iso}T12:00:00Z`), {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
   const side = (
     title: string,
     group: DueChequesDto['client'],

@@ -9,22 +9,49 @@ export interface ReportParams {
   groupBy: ReportGroupBy;
   from: string;
   to: string;
+  /** Sales force filters (phase 14); '' or absent = all. */
+  sellerId?: string;
+  teamOf?: string;
+  brandId?: string;
 }
 
+export interface FigureFilters {
+  sellerId: string;
+  teamOf: string;
+  brandId: string;
+}
+
+export const NO_FIGURE_FILTERS: FigureFilters = { sellerId: '', teamOf: '', brandId: '' };
+
 export const reportKeys = {
-  dashboard: ['dashboard'] as const,
+  dashboard: (f: FigureFilters) => ['dashboard', f] as const,
   report: (p: ReportParams) => ['reports', p] as const,
 };
 
+function filterParams(params: URLSearchParams, f: Partial<FigureFilters>): URLSearchParams {
+  if (f.sellerId) params.set('sellerId', f.sellerId);
+  if (f.teamOf) params.set('teamOf', f.teamOf);
+  if (f.brandId) params.set('brandId', f.brandId);
+  return params;
+}
+
 function reportQuery(p: ReportParams): string {
-  return new URLSearchParams({ from: p.from, to: p.to, groupBy: p.groupBy }).toString();
+  return filterParams(
+    new URLSearchParams({ from: p.from, to: p.to, groupBy: p.groupBy }),
+    p,
+  ).toString();
 }
 
 /** What the user's role sees today (sections the role does not see are null). */
-export function useDashboard() {
+export function useDashboard(filters: FigureFilters = NO_FIGURE_FILTERS) {
   return useQuery({
-    queryKey: reportKeys.dashboard,
-    queryFn: ({ signal }) => api.request<DashboardDto>('/dashboard', { signal }),
+    queryKey: reportKeys.dashboard(filters),
+    queryFn: ({ signal }) => {
+      const qs = filterParams(new URLSearchParams(), filters).toString();
+      return api.request<DashboardDto>(`/dashboard${qs ? `?${qs}` : ''}`, { signal });
+    },
+    // Keep the figures while another filter loads.
+    placeholderData: keepPreviousData,
   });
 }
 

@@ -44,6 +44,7 @@ import {
 import { api } from '@/lib/api-client';
 import { findProductByCode, useUnitLabel } from '@/lib/catalog';
 import { clientKeys, useCanManageCredit, useClient } from '@/lib/clients';
+import { useIsOffice, useSellers } from '@/lib/sales-force';
 import { todayInAlgiers } from '@/lib/purchases';
 import { effectiveLevel, listPrice, saleKeys } from '@/lib/sales';
 import { formatQty, stockKeys } from '@/lib/stock';
@@ -103,6 +104,10 @@ export function SaleScreen({
   const [resultIndex, setResultIndex] = useState(0);
   const [looking, setLooking] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+  // Who made the sale (phase 14): office roles pick it; a seller's sales are his (API).
+  const office = useIsOffice();
+  const sellers = useSellers();
+  const [sellerChoice, setSellerChoice] = useState<string | null>(null);
   const scanRef = useRef<HTMLInputElement>(null);
   const paidRef = useRef<HTMLInputElement>(null);
   /** Same body = same key (a retry is a replay); any change = a new operation. */
@@ -112,6 +117,8 @@ export function SaleScreen({
   const live = useClient(picked?.id ?? '');
   const client = picked ? (live.data ?? picked) : null;
   const levelId = effectiveLevel(levels, client?.priceLevelId);
+  // Until the user picks one: the draft's seller, else the client's assigned seller.
+  const sellerId = sellerChoice ?? draft?.sellerId ?? client?.assignedSeller?.id ?? '';
 
   const unitPrice = (l: ScreenLine) => l.price ?? listPrice(l.product, l.unitId, levelId);
   const totals = useMemo(
@@ -241,6 +248,7 @@ export function SaleScreen({
   function reset() {
     setDraftRef(null);
     setPicked(null);
+    setSellerChoice(null);
     setLines([]);
     setSelected(0);
     setPaid(null);
@@ -256,6 +264,7 @@ export function SaleScreen({
     clientId: client?.id ?? null,
     documentDate: todayInAlgiers(),
     note: draft?.note ?? '',
+    ...(office ? { sellerId: sellerId || null } : {}),
     lines: lines.map((l) => ({
       productId: l.product.id,
       unitId: l.unitId,
@@ -805,6 +814,23 @@ export function SaleScreen({
               ) : (
                 <p className="text-sm text-muted-foreground">{t('counterClientHelp')}</p>
               )}
+              {office ? (
+                <div className="space-y-1 pt-1">
+                  <Label htmlFor="sale-seller">{t('seller')}</Label>
+                  <NativeSelect
+                    id="sale-seller"
+                    value={sellerId}
+                    onChange={(e) => setSellerChoice(e.target.value)}
+                  >
+                    <option value="">{t('noSeller')}</option>
+                    {(sellers.data ?? []).map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.fullName}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </div>
+              ) : null}
               {overLimit ? (
                 <Alert variant={blockMode ? 'destructive' : 'default'} role="alert">
                   <AlertDescription className="space-y-2">

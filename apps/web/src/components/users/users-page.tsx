@@ -4,7 +4,8 @@ import { MoreHorizontal, Plus, Users } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { formatPhone, Role, type UserDto } from '@erp/shared';
+import { Feature, formatPhone, Role, type UserDto } from '@erp/shared';
+import { TeamTree } from '@/components/sales-force/team-tree';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import {
@@ -35,7 +36,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useAuth } from '@/lib/auth';
+import { useAuth, useFeature } from '@/lib/auth';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { useSetActive, useUsers } from '@/lib/users';
 import {
@@ -59,6 +60,7 @@ export function UsersPage() {
   const { state } = useAuth();
   const me = state.user;
   const owner = me?.role === Role.OWNER;
+  const salesForce = useFeature(Feature.SALES_FORCE);
   const users = useUsers();
   const setActive = useSetActive();
   const [open, setOpen] = useState<Open>(null);
@@ -103,6 +105,7 @@ export function UsersPage() {
                 <TableHead>{t('colName')}</TableHead>
                 <TableHead>{t('colLogin')}</TableHead>
                 <TableHead>{t('colRole')}</TableHead>
+                {salesForce ? <TableHead>{t('colManager')}</TableHead> : null}
                 <TableHead>{t('colStatus')}</TableHead>
                 <TableHead>{t('colLastActivity')}</TableHead>
                 {owner ? <TableHead className="w-10" /> : null}
@@ -135,6 +138,9 @@ export function UsersPage() {
                       <span className="ms-1 text-xs text-muted-foreground">{t('customized')}</span>
                     ) : null}
                   </TableCell>
+                  {salesForce ? (
+                    <TableCell data-label={t('colManager')}>{u.managerName ?? '—'}</TableCell>
+                  ) : null}
                   <TableCell data-label={t('colStatus')}>
                     <div className="flex flex-wrap gap-1">
                       {!u.active ? (
@@ -215,6 +221,8 @@ export function UsersPage() {
           </Table>
         </div>
       )}
+
+      {salesForce && users.data && users.data.length > 0 ? <TeamTree /> : null}
 
       {open?.kind === 'invite' ? <InviteDialog open onOpenChange={close} /> : null}
       {open?.kind === 'edit' ? <EditUserDialog user={open.user} open onOpenChange={close} /> : null}

@@ -19,13 +19,14 @@ export const purchaseKeys = {
 };
 
 /** Live suppliers (first 100, enough for the select; the list page searches). */
-export function useSuppliers(search = '') {
+export function useSuppliers(search = '', enabled = true) {
   return useQuery({
     queryKey: purchaseKeys.suppliers(search),
     queryFn: () =>
       api.request<SupplierPage>(
         `/suppliers?limit=100${search ? `&search=${encodeURIComponent(search)}` : ''}`,
       ),
+    enabled,
   });
 }
 

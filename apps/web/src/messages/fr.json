@@ -14,7 +14,8 @@
     "comingSoon": "Ce module arrive dans une prochaine version.",
     "comingSoonTitle": "Bientôt disponible",
     "notifications": "Notifications",
-    "actions": "Actions"
+    "actions": "Actions",
+    "cancel": "Annuler"
   },
   "nav": {
     "groupMain": "Activité",
@@ -50,7 +51,9 @@
     "OWNER": "Propriétaire",
     "MANAGER": "Gérant",
     "SELLER": "Vendeur",
-    "STOREKEEPER": "Magasinier"
+    "STOREKEEPER": "Magasinier",
+    "SUPERVISOR": "Superviseur",
+    "LIVREUR": "Livreur"
   },
   "auth": {
     "loginTitle": "Connexion",
@@ -106,7 +109,16 @@
     "chequesTitle": "Chèques à échéance (7 jours)",
     "chequesClients": "Chèques clients à encaisser",
     "chequesSuppliers": "Chèques fournisseurs à couvrir",
-    "chequesCount": "{count, plural, =0 {aucun} one {# chèque} other {# chèques}}"
+    "chequesCount": "{count, plural, =0 {aucun} one {# chèque} other {# chèques}}",
+    "filters": "Filtrer les ventes",
+    "filtersActive": "{count, plural, one {# filtre} other {# filtres}}",
+    "filterSeller": "Vendeur",
+    "allSellers": "Tous les vendeurs",
+    "filterTeam": "Équipe",
+    "allTeams": "Toutes les équipes",
+    "filterBrand": "Marque",
+    "allBrands": "Toutes les marques",
+    "filtersHint": "Les filtres changent les chiffres de ventes. Caisse, crédit et stock restent ceux de toute l’entreprise."
   },
   "reports": {
     "title": "Rapports",
@@ -136,7 +148,10 @@
       "type": "Type de mouvement",
       "mode": "Mode de paiement",
       "user": "Utilisateur",
-      "supplier": "Fournisseur"
+      "supplier": "Fournisseur",
+      "brand": "Marque",
+      "sector": "Secteur",
+      "team": "Équipe"
     },
     "columns": {
       "day": "Jour",
@@ -164,13 +179,24 @@
       "cost": "Coût",
       "margin": "Marge",
       "marginPct": "Marge %",
-      "total": "Montant"
+      "total": "Montant",
+      "brand": "Marque",
+      "sector": "Secteur"
     },
     "none": {
       "client": "Client comptoir",
       "category": "Sans catégorie",
-      "other": "—"
-    }
+      "other": "—",
+      "brand": "Sans marque",
+      "sector": "Sans secteur",
+      "user": "Non attribué"
+    },
+    "filterSeller": "Vendeur",
+    "allSellers": "Tous",
+    "filterTeam": "Équipe",
+    "allTeams": "Toutes",
+    "filterBrand": "Marque",
+    "allBrands": "Toutes"
   },
   "settings": {
     "title": "Paramètres",
@@ -232,7 +258,11 @@
     "subscriptionLink": "Abonnement",
     "subscriptionLinkHelp": "Formule, échéance, utilisation et paiements.",
     "reminderDays": "Relance après (jours)",
-    "reminderDaysHint": "Un client apparaît dans « À relancer » quand sa plus ancienne dette dépasse ce nombre de jours."
+    "reminderDaysHint": "Un client apparaît dans « À relancer » quand sa plus ancienne dette dépasse ce nombre de jours.",
+    "sellerScope": "Clients visibles par un vendeur",
+    "sellerScopeHint": "Avec « ses clients », un vendeur ne voit que ses clients, ses ventes et ses versements. Un superviseur voit ceux de son équipe.",
+    "sellerScopeAll": "Tous les clients",
+    "sellerScopeAssigned": "Seulement ses clients"
   },
   "validation": {
     "required": "Ce champ est obligatoire.",
@@ -320,7 +350,11 @@
     "SUPPLIER_CODE_TAKEN": "Ce code fournisseur est déjà utilisé.",
     "SUPPLIER_OPENING_ALREADY_SET": "Ce fournisseur a déjà un solde initial.",
     "SUPPLIER_PAYMENT_NOT_VALID": "Ce règlement est déjà annulé.",
-    "SHARE_LINK_INVALID": "Ce lien n'est plus valide."
+    "SHARE_LINK_INVALID": "Ce lien n'est plus valide.",
+    "MANAGER_CYCLE": "Ce responsable est déjà dans l’équipe de cet utilisateur.",
+    "SELLER_NOT_ALLOWED": "Cet utilisateur ne peut pas être vendeur (désactivé ou rôle sans vente).",
+    "BRAND_NAME_TAKEN": "Une marque porte déjà ce nom.",
+    "SECTOR_NAME_TAKEN": "Un secteur porte déjà ce nom."
   },
   "units": {
     "PIECE": "Pièce",
@@ -413,7 +447,10 @@
       "whole_factor_required": "Ce produit se compte à la pièce : le contenu doit être un nombre entier.",
       "whole_min_stock_required": "Ce produit se compte à la pièce : le stock minimum doit être un nombre entier.",
       "base_unit_immutable": "L'unité de base ne peut pas être modifiée."
-    }
+    },
+    "brands": "Marques",
+    "brand": "Marque",
+    "noBrand": "Sans marque"
   },
   "categories": {
     "title": "Catégories",
@@ -755,7 +792,24 @@
     "reasonHint": "Obligatoire, par exemple « remise accordée ».",
     "adjustSubmit": "Enregistrer l'ajustement",
     "adjustDone": "Solde ajusté",
-    "newPayment": "Nouveau versement"
+    "newPayment": "Nouveau versement",
+    "selectForAssign": "Sélection pour affectation",
+    "selectClient": "Sélectionner {name}",
+    "sectorSeller": "Secteur / vendeur",
+    "sectors": "Secteurs",
+    "filterSector": "Secteur",
+    "allSectors": "Tous les secteurs",
+    "filterSeller": "Vendeur",
+    "allSellers": "Tous les vendeurs",
+    "selectedCount": "{count, plural, one {# client sélectionné} other {# clients sélectionnés}}",
+    "clearSelection": "Désélectionner",
+    "assign": "Affecter",
+    "salesForceSection": "Secteur et vendeur",
+    "salesForceHelp": "Le vendeur qui suit ce client et sa zone.",
+    "sector": "Secteur",
+    "noSector": "Aucun secteur",
+    "assignedSeller": "Vendeur affecté",
+    "noSeller": "Aucun vendeur"
   },
   "clientLedgerTypes": {
     "OPENING": "Solde d'ouverture",
@@ -906,7 +960,10 @@
     "netToPay": "Net à payer",
     "print": "Imprimer",
     "qtyLess": "Un {product} de moins",
-    "qtyMore": "Un {product} de plus"
+    "qtyMore": "Un {product} de plus",
+    "noSeller": "Aucun vendeur",
+    "changeSeller": "Changer le vendeur",
+    "sellerChanged": "Vendeur changé"
   },
   "payments": {
     "title": "Versements",
@@ -976,7 +1033,10 @@
     "unpaidTitle": "Documents impayés",
     "unpaidTotal": "Reste à payer :",
     "unpaidNone": "Tous les documents sont réglés.",
-    "ofTotal": "sur"
+    "ofTotal": "sur",
+    "collectedBy": "Encaissé par",
+    "changeCollector": "Changer",
+    "collectorChanged": "Encaisseur changé"
   },
   "print": {
     "print": "Imprimer",
@@ -1096,7 +1156,8 @@
       "phone": "Téléphone",
       "address": "Adresse",
       "creditLimit": "Plafond",
-      "openingBalance": "Solde initial"
+      "openingBalance": "Solde initial",
+      "brand": "Marque"
     },
     "issues": {
       "required": "obligatoire",
@@ -1125,6 +1186,7 @@
       "invalid_client": "client invalide ({rule})",
       "opening_already_set": "déjà saisi : un solde ou stock initial ne s'importe qu'une fois",
       "category_created": "la catégorie « {name} » sera créée",
+      "brand_created": "la marque « {name} » sera créée",
       "tva_defaulted": "TVA vide : 0 % sera appliqué",
       "no_changes": "aucune modification",
       "stock_not_empty": "le produit a déjà {qty} en stock ; le stock initial s'y ajoutera",
@@ -1189,7 +1251,11 @@
     "deactivateTitle": "Désactiver {name} ?",
     "deactivateHelp": "Toutes ses sessions sont fermées immédiatement et il ne peut plus se connecter. Son nom reste sur les documents.",
     "cancel": "Annuler",
-    "empty": "Aucun utilisateur"
+    "empty": "Aucun utilisateur",
+    "manager": "Responsable",
+    "managerHint": "Le superviseur ou le gérant de cet utilisateur.",
+    "noManager": "Aucun",
+    "colManager": "Responsable"
   },
   "permissions": {
     "PRICE_OVERRIDE": {
@@ -1223,6 +1289,10 @@
     "EXPORT_DATA": {
       "label": "Exporter",
       "help": "Exporter les rapports vers Excel."
+    },
+    "SALE_REASSIGN_SELLER": {
+      "label": "Changer le vendeur",
+      "help": "Changer le vendeur d’une vente validée ou l’encaisseur d’un versement, avec une raison."
     }
   },
   "sessions": {
@@ -1532,5 +1602,78 @@
     "whatsapp": "Relancer sur WhatsApp",
     "whatsappFor": "Relancer {name} sur WhatsApp",
     "message": "Bonjour {name}, sauf erreur de notre part, votre solde chez {company} est de {balance} (le plus ancien depuis {days} jours). Votre relevé : {url}. Merci."
+  },
+  "brands": {
+    "title": "Marques",
+    "subtitle": "Les marques de vos produits, pour suivre les ventes par marque.",
+    "new": "Nouvelle marque",
+    "edit": "Modifier la marque",
+    "editNamed": "Modifier {name}",
+    "delete": "Supprimer",
+    "deleteNamed": "Supprimer {name}",
+    "deleteTitle": "Supprimer cette marque ?",
+    "deleteBody": "Elle disparaît des listes. Les produits et les rapports la gardent.",
+    "emptyTitle": "Aucune marque",
+    "emptyDescription": "Ajoutez vos marques, ou une colonne « Marque » dans l’import des produits.",
+    "created": "Marque créée",
+    "saved": "Marque enregistrée",
+    "deleted": "Marque supprimée",
+    "name": "Nom",
+    "supplier": "Fournisseur habituel",
+    "noSupplier": "Aucun",
+    "productCount": "{count, plural, =0 {Aucun produit} one {# produit} other {# produits}}"
+  },
+  "sectors": {
+    "title": "Secteurs",
+    "subtitle": "Les zones de vos vendeurs : une wilaya et ses communes.",
+    "new": "Nouveau secteur",
+    "edit": "Modifier le secteur",
+    "editNamed": "Modifier {name}",
+    "delete": "Supprimer",
+    "deleteNamed": "Supprimer {name}",
+    "deleteTitle": "Supprimer ce secteur ?",
+    "deleteBody": "{count, plural, =0 {Aucun client n’y est rattaché.} one {# client sera retiré du secteur.} other {# clients seront retirés du secteur.}}",
+    "emptyTitle": "Aucun secteur",
+    "emptyDescription": "Créez un secteur, puis affectez-y vos clients depuis la liste des clients.",
+    "created": "Secteur créé",
+    "saved": "Secteur enregistré",
+    "deleted": "Secteur supprimé",
+    "name": "Nom",
+    "wilaya": "Wilaya",
+    "communes": "Communes",
+    "communesHint": "Séparez les communes par des virgules.",
+    "help": "Une zone que vos vendeurs couvrent.",
+    "clientCount": "{count, plural, =0 {Aucun client} one {# client} other {# clients}}",
+    "back": "Clients"
+  },
+  "assign": {
+    "title": "{count, plural, one {Affecter # client} other {Affecter # clients}}",
+    "help": "Choisissez ce qui change. « Ne pas changer » garde la valeur de chaque client.",
+    "sector": "Secteur",
+    "seller": "Vendeur",
+    "keep": "Ne pas changer",
+    "noSector": "Retirer le secteur",
+    "noSeller": "Retirer le vendeur",
+    "submit": "Affecter",
+    "done": "{count, plural, =0 {Rien n’a changé} one {# client affecté} other {# clients affectés}}"
+  },
+  "reassign": {
+    "sellerTitle": "Changer le vendeur",
+    "collectorTitle": "Changer l’encaisseur",
+    "help": "Le changement et sa raison sont gardés dans le journal.",
+    "seller": "Vendeur",
+    "collector": "Encaissé par",
+    "none": "Personne",
+    "reason": "Raison",
+    "submit": "Changer"
+  },
+  "team": {
+    "title": "Équipes",
+    "help": "Qui dépend de qui, d’après le responsable de chaque utilisateur.",
+    "inactive": "Désactivé",
+    "memberCount": "{count, plural, one {# personne dans l’équipe} other {# personnes dans l’équipe}}",
+    "emptyTitle": "Aucune équipe",
+    "emptyDescription": "Donnez un responsable à vos vendeurs (Modifier) pour former des équipes.",
+    "withoutTeam": "Sans équipe"
   }
 }

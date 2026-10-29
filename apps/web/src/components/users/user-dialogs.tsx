@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import {
+  Feature,
   type InviteMode,
   type InviteResultDto,
   type Permission,
@@ -27,7 +28,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Switch } from '@/components/ui/switch';
-import { useResetPassword, useInviteUser, useSetPermissions, useUpdateUser } from '@/lib/users';
+import { useFeature } from '@/lib/auth';
+import {
+  useResetPassword,
+  useInviteUser,
+  useSetPermissions,
+  useUpdateUser,
+  useUsers,
+} from '@/lib/users';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
 
@@ -36,7 +44,56 @@ interface DialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const INVITE_ROLES = [Role.SELLER, Role.STOREKEEPER, Role.MANAGER, Role.OWNER] as const;
+const INVITE_ROLES = [
+  Role.SELLER,
+  Role.STOREKEEPER,
+  Role.MANAGER,
+  Role.OWNER,
+  Role.SUPERVISOR,
+  Role.LIVREUR,
+] as const;
+
+/** Roles of the sales force (phase 14): offered only when the company has the module. */
+const SALES_FORCE_ROLES = new Set<Role>([Role.SUPERVISOR, Role.LIVREUR]);
+const MANAGER_ROLES = new Set<Role>([Role.OWNER, Role.MANAGER, Role.SUPERVISOR]);
+
+function useRoleChoices(current?: Role): Role[] {
+  const salesForce = useFeature(Feature.SALES_FORCE);
+  return INVITE_ROLES.filter((r) => salesForce || !SALES_FORCE_ROLES.has(r) || r === current);
+}
+
+/** Who the user reports to (phase 14): an active owner, manager or supervisor, not himself. */
+function ManagerField({
+  id,
+  userId,
+  value,
+  onChange,
+}: {
+  id: string;
+  userId: string | null;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const t = useTranslations('users');
+  const users = useUsers();
+  const salesForce = useFeature(Feature.SALES_FORCE);
+  if (!salesForce) return null;
+  const options = (users.data ?? []).filter(
+    (u) => u.active && u.id !== userId && MANAGER_ROLES.has(u.role),
+  );
+  return (
+    <Field id={id} label={t('manager')} hint={t('managerHint')}>
+      <NativeSelect id={id} value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">{t('noManager')}</option>
+        {options.map((u) => (
+          <option key={u.id} value={u.id}>
+            {u.fullName}
+          </option>
+        ))}
+      </NativeSelect>
+    </Field>
+  );
+}
 
 function Field({
   id,
@@ -145,6 +202,8 @@ export function InviteDialog({ open, onOpenChange }: DialogProps) {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState<(typeof INVITE_ROLES)[number]>(Role.SELLER);
+  const roles = useRoleChoices();
+  const [managerId, setManagerId] = useState('');
   const [mode, setMode] = useState<InviteMode>('LINK');
   const [password, setPassword] = useState('');
   const [result, setResult] = useState<InviteResultDto | null>(null);
@@ -158,6 +217,7 @@ export function InviteDialog({ open, onOpenChange }: DialogProps) {
         email,
         phone,
         role,
+        managerId: managerId || null,
         mode,
         ...(mode === 'PASSWORD' ? { password } : {}),
       },
@@ -232,13 +292,19 @@ export function InviteDialog({ open, onOpenChange }: DialogProps) {
                 value={role}
                 onChange={(e) => setRole(e.target.value as (typeof INVITE_ROLES)[number])}
               >
-                {INVITE_ROLES.map((r) => (
+                {roles.map((r) => (
                   <option key={r} value={r}>
                     {tr(r)}
                   </option>
                 ))}
               </NativeSelect>
             </Field>
+            <ManagerField
+              id="invite-manager"
+              userId={null}
+              value={managerId}
+              onChange={setManagerId}
+            />
             <ModePicker mode={mode} onMode={setMode} password={password} onPassword={setPassword} />
           </form>
         )}
@@ -266,6 +332,9 @@ export function EditUserDialog({ user, open, onOpenChange }: DialogProps & { use
   const [email, setEmail] = useState(user.email ?? '');
   const [phone, setPhone] = useState(user.phone ?? '');
   const [role, setRole] = useState<Role>(user.role);
+  const roles = useRoleChoices(user.role);
+  const salesForce = useFeature(Feature.SALES_FORCE);
+  const [managerId, setManagerId] = useState(user.managerId ?? '');
   const [error, setError] = useState<string | null>(null);
 
   return (
@@ -282,7 +351,17 @@ export function EditUserDialog({ user, open, onOpenChange }: DialogProps & { use
             e.preventDefault();
             setError(null);
             update.mutate(
-              { id: user.id, body: { fullName, email, phone, role } },
+              {
+                id: user.id,
+                body: {
+                  fullName,
+                  email,
+                  phone,
+                  role,
+                  // Without the module the hierarchy is not shown, so it is left as it is.
+                  ...(salesForce ? { managerId: managerId || null } : {}),
+                },
+              },
               {
                 onSuccess: () => {
                   toast.success(t('saved'));
@@ -327,13 +406,19 @@ export function EditUserDialog({ user, open, onOpenChange }: DialogProps & { use
               value={role}
               onChange={(e) => setRole(e.target.value as Role)}
             >
-              {Object.values(Role).map((r) => (
+              {roles.map((r) => (
                 <option key={r} value={r}>
                   {tr(r)}
                 </option>
               ))}
             </NativeSelect>
           </Field>
+          <ManagerField
+            id="edit-manager"
+            userId={user.id}
+            value={managerId}
+            onChange={setManagerId}
+          />
         </form>
         <ResponsiveDialogFooter>
           <Button type="submit" form="edit-user-form" disabled={update.isPending}>
