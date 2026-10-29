@@ -55,7 +55,7 @@ New companies get a **30-day trial** on the Pro plan. After the period end they 
 
 ### Editions and modules (phase 13b)
 
-A subscription has two parts: the **plan** (Starter / Pro / Business) sets the price and the limits, the **edition** (Essentiel / Import / Distribution / Entreprise) sets the modules on top of the core (`packages/shared/src/features.ts`). Price = plan price + the edition's supplement, a row of the `edition_prices` table (0 DA until you set the real supplements there). Signup asks the company's activity and starts the trial on the matching edition; pilots are on Entreprise.
+A subscription has two parts: the **plan** (Starter / Pro / Business) sets the price and the limits, the **edition** (Essentiel / Import / Distribution / Entreprise) sets the modules on top of the core (`packages/shared/src/features.ts`). Price = plan price + the edition's supplement, a row of the `edition_prices` table: Essentiel 0, Import 1 500, Distribution 2 500, Entreprise 4 000 DA per month. Change a supplement in that table. Signup asks the company's activity and starts the trial on the matching edition; pilots are on Entreprise.
 
 From the super-admin tenant page you change the edition and switch single modules on or off for one company (stored as `featureGrants` / `featureRevokes` on the tenant, audited). A module's routes carry `@RequireFeature(Feature.X)` and answer `403 FEATURE_NOT_IN_PLAN` when the company does not have it; its reports and exports stay readable and its data is never deleted. The API reads the modules on each request through a 60-second cache, so a change applies without a new login: at once on the instance that handled it, within 60 s on the others.
 

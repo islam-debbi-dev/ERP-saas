@@ -255,7 +255,7 @@ describe('editions and feature flags (phase 13b)', () => {
     ).body as AdminTenantDetail;
     expect(detail.edition).toMatchObject({
       edition: Edition.DISTRIBUTION,
-      monthlySupplement: '0.00',
+      monthlySupplement: '2500.00',
     });
     expect(detail.featureGrants).toEqual([]);
     expect(detail.editions.map((e) => e.edition)).toEqual([

@@ -44,7 +44,7 @@ export const TRIAL_PLAN_CODE = 'PRO';
  */
 export const EDITION_PRICE_DEFAULTS = [
   { edition: 'ESSENTIEL', monthlySupplement: '0.00', sortOrder: 1 },
-  { edition: 'IMPORT', monthlySupplement: '0.00', sortOrder: 2 },
-  { edition: 'DISTRIBUTION', monthlySupplement: '0.00', sortOrder: 3 },
-  { edition: 'ENTREPRISE', monthlySupplement: '0.00', sortOrder: 4 },
+  { edition: 'IMPORT', monthlySupplement: '1500.00', sortOrder: 2 },
+  { edition: 'DISTRIBUTION', monthlySupplement: '2500.00', sortOrder: 3 },
+  { edition: 'ENTREPRISE', monthlySupplement: '4000.00', sortOrder: 4 },
 ] as const;
