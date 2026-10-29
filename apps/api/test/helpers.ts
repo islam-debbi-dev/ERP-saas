@@ -3,7 +3,7 @@ import type { INestApplication, Type } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import type { App } from 'supertest/types';
-import type { AuthResponse } from '@erp/shared';
+import type { Activity, AuthResponse } from '@erp/shared';
 import { AppModule } from '../src/app.module';
 import { ClockService } from '../src/clock/clock.service';
 import { tenantContext } from '../src/common/tenant-context';
@@ -68,12 +68,13 @@ export interface RegisteredTenant {
 /**
  * Registers a new company + owner as a native client (refresh token in the body).
  * The tenant is made free (pilot) so plan limits stay out of unrelated tests; pass
- * `{ trial: true }` to keep the 30-day trial a real signup gets.
+ * `{ trial: true }` to keep the 30-day trial a real signup gets. `activity` picks the
+ * edition (phase 13b); none means grossiste (ESSENTIEL).
  */
 export async function registerTenant(
   t: TestApp,
   companyName = 'Test SARL',
-  options: { trial?: boolean } = {},
+  options: { trial?: boolean; activity?: Activity } = {},
 ): Promise<RegisteredTenant> {
   const email = uniqueEmail('owner');
   const password = 'Password123!';
@@ -81,7 +82,14 @@ export async function registerTenant(
     .http()
     .post('/auth/register')
     .set('X-Client-Type', 'native')
-    .send({ companyName, fullName: 'Owner Test', email, password, deviceName: 'jest' })
+    .send({
+      companyName,
+      fullName: 'Owner Test',
+      email,
+      password,
+      deviceName: 'jest',
+      ...(options.activity ? { activity: options.activity } : {}),
+    })
     .expect(201);
   const auth = res.body as AuthResponse & { refreshToken: string };
   if (!options.trial) {

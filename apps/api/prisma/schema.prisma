@@ -91,6 +91,10 @@ model Tenant {
   /// The owner hid the dashboard onboarding checklist (phase 13).
   onboardingDismissedAt DateTime? @db.Timestamptz(3)
 
+  /// Modules the super-admin added to / took from the edition (phase 13b, packages/shared/features).
+  featureGrants  String[] @default([])
+  featureRevokes String[] @default([])
+
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
@@ -1099,6 +1103,8 @@ model Plan {
   maxProducts          Int?
   /// Soft limit: going over only warns.
   maxDocumentsPerMonth Int?
+  /// Sellers on the mobile app (phase 19).
+  maxMobileSellers     Int?
   active               Boolean  @default(true)
   sortOrder            Int      @default(0) @db.SmallInt
   createdAt            DateTime @default(now()) @db.Timestamptz(3)
@@ -1109,12 +1115,31 @@ model Plan {
   @@map("plans")
 }
 
+enum Edition {
+  ESSENTIEL
+  IMPORT
+  DISTRIBUTION
+  ENTREPRISE
+}
+
+/// What each edition adds to the plan's monthly price (phase 13b). Platform data, like plans.
+model EditionPrice {
+  edition           Edition  @id
+  monthlySupplement Decimal  @db.Decimal(14, 2)
+  sortOrder         Int      @default(0) @db.SmallInt
+  updatedAt         DateTime @updatedAt @db.Timestamptz(3)
+
+  @@map("edition_prices")
+}
+
 /// One per tenant. Changed only by registration and the super-admin.
 model Subscription {
   id               String             @id @default(uuid()) @db.Uuid
   tenantId         String             @unique @db.Uuid
   planId           String             @db.Uuid
   status           SubscriptionStatus
+  /// The modules (phase 13b). The plan sets the price and the limits.
+  edition          Edition            @default(ESSENTIEL)
   /// Pilot tenant: never billed, never suspended.
   isFree           Boolean            @default(false)
   trialEndsAt      DateTime?          @db.Timestamptz(3)

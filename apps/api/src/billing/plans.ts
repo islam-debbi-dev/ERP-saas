@@ -10,6 +10,7 @@ export const PLAN_DEFAULTS = [
     maxUsers: 2,
     maxProducts: 500,
     maxDocumentsPerMonth: 300,
+    maxMobileSellers: 2,
     sortOrder: 1,
   },
   {
@@ -19,6 +20,7 @@ export const PLAN_DEFAULTS = [
     maxUsers: 5,
     maxProducts: 3000,
     maxDocumentsPerMonth: 1500,
+    maxMobileSellers: 5,
     sortOrder: 2,
   },
   {
@@ -28,9 +30,21 @@ export const PLAN_DEFAULTS = [
     maxUsers: null,
     maxProducts: null,
     maxDocumentsPerMonth: null,
+    maxMobileSellers: null,
     sortOrder: 3,
   },
 ] as const;
 
 /** New tenants try the software on this plan. */
 export const TRIAL_PLAN_CODE = 'PRO';
+
+/**
+ * What each edition adds to the plan's price (phase 13b), DZD per month. Like the plans,
+ * the migration inserts them and the seed upserts them; change a price in the table.
+ */
+export const EDITION_PRICE_DEFAULTS = [
+  { edition: 'ESSENTIEL', monthlySupplement: '0.00', sortOrder: 1 },
+  { edition: 'IMPORT', monthlySupplement: '0.00', sortOrder: 2 },
+  { edition: 'DISTRIBUTION', monthlySupplement: '0.00', sortOrder: 3 },
+  { edition: 'ENTREPRISE', monthlySupplement: '0.00', sortOrder: 4 },
+] as const;

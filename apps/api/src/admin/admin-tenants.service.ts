@@ -15,6 +15,7 @@ import {
 import { AuditService } from '../audit/audit.service';
 import type { AccessTokenPayload } from '../auth/auth.types';
 import { BillingService } from '../billing/billing.service';
+import { FeaturesService } from '../billing/features.service';
 import { AppException } from '../common/app-exception';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -35,6 +36,7 @@ export class AdminTenantsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly billing: BillingService,
+    private readonly features: FeaturesService,
     private readonly audit: AuditService,
     private readonly platformAudit: PlatformAuditService,
     private readonly jwt: JwtService,
@@ -54,6 +56,7 @@ export class AdminTenantsService {
         id,
         name: u.name,
         planName: sub.plan.name,
+        edition: sub.edition,
         status: effectiveSubscriptionStatus(sub, now),
         isFree: sub.isFree,
         currentPeriodEnd: sub.currentPeriodEnd.toISOString(),
@@ -72,11 +75,12 @@ export class AdminTenantsService {
   async detail(tenantId: string): Promise<AdminTenantDetail> {
     const tenant = await this.prisma.db.tenant.findUnique({ where: { id: tenantId } });
     if (!tenant) throw new AppException(ErrorCode.NOT_FOUND, 'Tenant not found');
-    const [summary, owner, activity, plans] = await Promise.all([
+    const [summary, owner, activity, plans, editions] = await Promise.all([
       this.billing.summary(tenantId),
       this.owner(tenantId),
       this.prisma.db.session.aggregate({ where: { tenantId }, _max: { lastUsedAt: true } }),
       this.billing.plans(),
+      this.billing.editions(),
     ]);
     return {
       ...summary,
@@ -88,6 +92,7 @@ export class AdminTenantsService {
       createdAt: tenant.createdAt.toISOString(),
       lastActivityAt: activity._max.lastUsedAt?.toISOString() ?? null,
       plans,
+      editions,
     };
   }
 
@@ -175,6 +180,8 @@ export class AdminTenantsService {
         after: { ...change.after, by: admin.email },
       });
     });
+    // The modules apply on the tenant's next request, without a new login.
+    this.features.invalidate(tenantId);
     return this.billing.summary(tenantId);
   }
 

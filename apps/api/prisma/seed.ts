@@ -5,7 +5,7 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as argon2 from 'argon2';
-import { PLAN_DEFAULTS } from '../src/billing/plans';
+import { EDITION_PRICE_DEFAULTS, PLAN_DEFAULTS } from '../src/billing/plans';
 import { createDefaultUnits, ensurePriceLevels } from '../src/catalog/catalog-defaults';
 import { PrismaClient } from '../src/generated/prisma/client';
 
@@ -24,6 +24,14 @@ async function main(): Promise<void> {
       // Plans (phase 13): created if missing, never overwritten (prices may have changed).
       for (const plan of PLAN_DEFAULTS) {
         await tx.plan.upsert({ where: { code: plan.code }, update: {}, create: { ...plan } });
+      }
+      // Edition supplements (phase 13b): same rule.
+      for (const row of EDITION_PRICE_DEFAULTS) {
+        await tx.editionPrice.upsert({
+          where: { edition: row.edition },
+          update: {},
+          create: { ...row },
+        });
       }
 
       const tenant = await tx.tenant.upsert({
@@ -54,7 +62,8 @@ async function main(): Promise<void> {
       await createDefaultUnits(tx, tenant.id);
       await ensurePriceLevels(tx, tenant.id, tenant.priceLevelCount);
 
-      // The demo tenant is free, so a dev database never expires into read-only.
+      // The demo tenant is free, so a dev database never expires into read-only, and has
+      // every module (ENTREPRISE) so each screen can be tried.
       const business = await tx.plan.findUniqueOrThrow({ where: { code: 'BUSINESS' } });
       await tx.subscription.upsert({
         where: { tenantId: tenant.id },
@@ -63,6 +72,7 @@ async function main(): Promise<void> {
           tenantId: tenant.id,
           planId: business.id,
           status: 'ACTIVE',
+          edition: 'ENTREPRISE',
           isFree: true,
           currentPeriodEnd: new Date(),
         },

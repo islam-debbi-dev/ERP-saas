@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { EDITIONS, type Edition, type Feature, FEATURES } from '../features';
 import { money } from '../money';
 import {
   SUBSCRIPTION_PAYMENT_METHODS,
@@ -7,7 +8,7 @@ import {
   SubscriptionStatus as Status,
 } from '../subscription';
 import { emailField } from './auth';
-import type { PlanInfo, PlanUsage, SubscriptionSummary } from './billing';
+import type { EditionInfo, PlanInfo, PlanUsage, SubscriptionSummary } from './billing';
 import { amountString, normalizeDecimal } from './common';
 
 /** Super-admin login: password and the 6-digit code of the authenticator app (TOTP). */
@@ -44,6 +45,7 @@ export interface AdminTenantRow {
   id: string;
   name: string;
   planName: string;
+  edition: Edition;
   status: SubscriptionStatus;
   isFree: boolean;
   currentPeriodEnd: string;
@@ -62,6 +64,7 @@ export interface AdminTenantDetail extends SubscriptionSummary {
   createdAt: string;
   lastActivityAt: string | null;
   plans: PlanInfo[];
+  editions: EditionInfo[];
 }
 
 export const recordSubscriptionPaymentSchema = z.object({
@@ -80,14 +83,29 @@ export const recordSubscriptionPaymentSchema = z.object({
 });
 export type RecordSubscriptionPaymentInput = z.infer<typeof recordSubscriptionPaymentSchema>;
 
-/** Change plan, switch free (pilot) on or off, or give more trial days. */
+const featureList = z
+  .array(z.enum(FEATURES as [Feature, ...Feature[]]))
+  .max(FEATURES.length)
+  .transform((v) => [...new Set(v)]);
+
+/**
+ * Change plan or edition, grant or revoke single modules, switch free (pilot) on or off,
+ * or give more trial days. Grants and revokes replace the stored lists.
+ */
 export const updateSubscriptionSchema = z
   .object({
     planId: z.uuid().optional(),
+    edition: z.enum(EDITIONS as [Edition, ...Edition[]]).optional(),
+    featureGrants: featureList.optional(),
+    featureRevokes: featureList.optional(),
     isFree: z.boolean().optional(),
     extendTrialDays: z.number().int().min(1).max(90).optional(),
   })
-  .refine((v) => Object.values(v).some((x) => x !== undefined), { message: 'empty' });
+  .refine((v) => Object.values(v).some((x) => x !== undefined), { message: 'empty' })
+  .refine((v) => !(v.featureGrants ?? []).some((f) => (v.featureRevokes ?? []).includes(f)), {
+    message: 'grant_and_revoke',
+    path: ['featureRevokes'],
+  });
 export type UpdateSubscriptionInput = z.infer<typeof updateSubscriptionSchema>;
 
 export interface ImpersonationResponse {

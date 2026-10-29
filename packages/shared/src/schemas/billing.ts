@@ -1,3 +1,4 @@
+import type { Edition, Feature } from '../features';
 import type {
   StoredSubscriptionStatus,
   SubscriptionPaymentMethod,
@@ -14,6 +15,16 @@ export interface PlanInfo {
   maxUsers: number | null;
   maxProducts: number | null;
   maxDocumentsPerMonth: number | null;
+  /** Sellers on the mobile app (phase 19). */
+  maxMobileSellers: number | null;
+}
+
+/** An edition and what it adds to the plan's monthly price. */
+export interface EditionInfo {
+  edition: Edition;
+  /** DZD per month on top of the plan, `"0.00"`. */
+  monthlySupplement: string;
+  features: Feature[];
 }
 
 export interface PlanUsage {
@@ -36,6 +47,12 @@ export interface SubscriptionPaymentInfo {
 
 export interface SubscriptionSummary {
   plan: PlanInfo;
+  edition: EditionInfo;
+  /** Super-admin overrides on top of the edition. */
+  featureGrants: Feature[];
+  featureRevokes: Feature[];
+  /** Edition + grants − revokes. */
+  features: Feature[];
   /** Derived from the dates: TRIAL, ACTIVE, PAST_DUE or SUSPENDED. */
   status: SubscriptionStatus;
   storedStatus: StoredSubscriptionStatus;
