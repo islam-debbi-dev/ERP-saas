@@ -63,7 +63,7 @@ const CSS = new SafeHtml(`
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body {
-  font-family: 'DejaVu Sans', 'Noto Sans', Arial, Helvetica, sans-serif;
+  font-family: 'DejaVu Sans', 'Noto Sans', Arial, Helvetica, 'Open Sans', 'Noto Naskh Arabic', sans-serif;
   color: #111; font-size: var(--fs); line-height: 1.35;
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
