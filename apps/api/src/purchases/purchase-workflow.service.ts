@@ -10,6 +10,7 @@ import {
   PurchaseStatus,
   qty,
   StockMovementType,
+  SupplierLedgerType,
   toBase,
   toQtyString,
   type ValidatePurchaseInput,
@@ -24,6 +25,7 @@ import { StockService } from '../stock/stock.service';
 import { baseUnitCost } from '../stock/unit-conversion';
 import { snapshotLines } from './purchase-lines';
 import { lockPurchase, PurchasesService } from './purchases.service';
+import { SupplierAccountService } from './supplier-account.service';
 
 /**
  * The steps of a bon de réception that have effects: validation (stock in, CUMP),
@@ -39,6 +41,7 @@ export class PurchaseWorkflowService {
     private readonly catalog: CatalogService,
     private readonly numbering: DocumentNumberingService,
     private readonly audit: AuditService,
+    private readonly account: SupplierAccountService,
   ) {}
 
   async validate(id: string, input: ValidatePurchaseInput): Promise<PurchaseDto> {
@@ -105,6 +108,35 @@ export class PurchaseWorkflowService {
           version: { increment: 1 },
         },
       });
+      // Dettes fournisseurs (phase 21): the BR as it stores it, minus what was paid on the spot.
+      const paid = money(purchase.paidAmount.toString());
+      await this.account.post(tx, [
+        ...(totals.totalTtc.gt(0)
+          ? [
+              {
+                supplierId: purchase.supplierId,
+                type: SupplierLedgerType.PURCHASE,
+                amount: totals.totalTtc.toString(),
+                label: number,
+                refType: 'Purchase',
+                refId: id,
+              },
+            ]
+          : []),
+        ...(paid.gt(0)
+          ? [
+              {
+                supplierId: purchase.supplierId,
+                type: SupplierLedgerType.PAYMENT,
+                amount: paid.negated().toString(),
+                label: number,
+                reason: 'paid_at_reception',
+                refType: 'Purchase',
+                refId: id,
+              },
+            ]
+          : []),
+      ]);
       await this.audit.log(tx, {
         action: 'PURCHASE_VALIDATED',
         entity: 'Purchase',
@@ -154,6 +186,25 @@ export class PurchaseWorkflowService {
             note: purchase.number,
           })),
         );
+        // Take back exactly what the BR and its retours still leave on the account.
+        const returnIds = (
+          await tx.purchaseReturn.findMany({ where: { purchaseId: id }, select: { id: true } })
+        ).map((r) => r.id);
+        const net = (await this.account.netOf(tx, { refType: 'Purchase', refIds: [id] })).plus(
+          await this.account.netOf(tx, { refType: 'PurchaseReturn', refIds: returnIds }),
+        );
+        if (!net.isZero()) {
+          await this.account.post(tx, [
+            {
+              supplierId: purchase.supplierId,
+              type: SupplierLedgerType.REVERSAL,
+              amount: net.negated().toString(),
+              label: purchase.number ?? '',
+              refType: 'Purchase',
+              refId: id,
+            },
+          ]);
+        }
       }
       await tx.purchase.update({
         where: { id },
@@ -283,6 +334,18 @@ export class PurchaseWorkflowService {
           note: number,
         })),
       );
+      if (totals.totalTtc.gt(0)) {
+        await this.account.post(tx, [
+          {
+            supplierId: purchase.supplierId,
+            type: SupplierLedgerType.RETURN,
+            amount: totals.totalTtc.negated().toString(),
+            label: number,
+            refType: 'PurchaseReturn',
+            refId: created.id,
+          },
+        ]);
+      }
       await this.audit.log(tx, {
         action: 'PURCHASE_RETURN_CREATED',
         entity: 'Purchase',

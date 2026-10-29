@@ -9,6 +9,8 @@ export const ImportType = {
   PRODUCTS: 'PRODUCTS',
   OPENING_STOCK: 'OPENING_STOCK',
   CLIENTS: 'CLIENTS',
+  /** Fournisseurs et soldes (phase 21). */
+  SUPPLIERS: 'SUPPLIERS',
 } as const;
 export type ImportType = (typeof ImportType)[keyof typeof ImportType];
 export const IMPORT_TYPES = Object.values(ImportType);
@@ -294,6 +296,32 @@ const CLIENT_FIELDS: ImportFieldDef[] = [
   ]),
 ];
 
+const SUPPLIER_FIELDS: ImportFieldDef[] = [
+  f('code', 'text', true, ['code', 'code fournisseur', 'ref', 'reference', 'الرمز']),
+  f('name', 'text', true, [
+    'nom',
+    'nom fournisseur',
+    'fournisseur',
+    'raison sociale',
+    'name',
+    'supplier',
+    'الاسم',
+    'المورد',
+  ]),
+  f('phone', 'text', false, ['telephone', 'tel', 'tél', 'mobile', 'portable', 'phone', 'الهاتف']),
+  f('address', 'text', false, ['adresse', 'address', 'العنوان']),
+  f('openingBalance', 'money', false, [
+    'solde initial',
+    'solde',
+    'dette',
+    'reste',
+    'a payer',
+    'opening balance',
+    'balance',
+    'الرصيد',
+  ]),
+];
+
 /** The fields of an import type. Products need the tenant's active price levels. */
 export function importFields(
   type: ImportType,
@@ -301,6 +329,7 @@ export function importFields(
 ): ImportFieldDef[] {
   if (type === ImportType.PRODUCTS) return [...PRODUCT_FIELDS, ...priceFields(priceLevels)];
   if (type === ImportType.OPENING_STOCK) return OPENING_STOCK_FIELDS;
+  if (type === ImportType.SUPPLIERS) return SUPPLIER_FIELDS;
   return CLIENT_FIELDS;
 }
 

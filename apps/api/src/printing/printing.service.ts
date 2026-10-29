@@ -8,6 +8,7 @@ import {
   SaleStatus,
   SaleType,
   type StatementQuery,
+  type SupplierStatementQuery,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
@@ -17,6 +18,7 @@ import { tenantContext } from '../common/tenant-context';
 import { PaymentsService } from '../payments/payments.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { PurchasesService } from '../purchases/purchases.service';
+import { SuppliersService } from '../purchases/suppliers.service';
 import { SalesService } from '../sales/sales.service';
 import { TenantsService } from '../tenants/tenants.service';
 import {
@@ -26,6 +28,7 @@ import {
   receiptDocument,
   saleDocument,
   statementDocument,
+  supplierStatementDocument,
 } from './templates/documents';
 
 /** A document ready to be turned into a PDF. */
@@ -57,6 +60,7 @@ export class PrintingService {
     private readonly purchases: PurchasesService,
     private readonly payments: PaymentsService,
     private readonly clients: ClientsService,
+    private readonly suppliers: SuppliersService,
   ) {}
 
   async document(
@@ -135,6 +139,46 @@ export class PrintingService {
       html: statementDocument(statement, client, { seller, format: fmt }),
       format: fmt,
       filename: `releve-${client.code}-${query.from}-${query.to}.pdf`,
+      footer: seller.documentFooter,
+    };
+  }
+
+  /** Relevé fournisseur (phase 21): a report of the account, never a duplicata. */
+  async supplierStatement(
+    supplierId: string,
+    query: SupplierStatementQuery,
+    format: PrintFormat | undefined,
+  ): Promise<PreparedDocument> {
+    const seller = await this.tenants.getSettings();
+    const fmt = format ?? seller.defaultPrintFormat;
+    const supplier = await this.suppliers.get(supplierId);
+    const statement = await this.suppliers.statement(supplierId, query);
+    return {
+      html: supplierStatementDocument(statement, supplier, { seller, format: fmt }),
+      format: fmt,
+      filename: `releve-fournisseur-${supplier.code ?? supplier.id.slice(0, 8)}-${query.from}-${query.to}.pdf`,
+      footer: seller.documentFooter,
+    };
+  }
+
+  /**
+   * A facture opened through a share link (phase 21). Not a print: nothing is added to
+   * the print log, and it is a DUPLICATA once the original was printed.
+   */
+  async sharedFacture(id: string): Promise<PreparedDocument> {
+    const seller = await this.tenants.getSettings();
+    const sale = await this.sales.get(id);
+    if (sale.type !== SaleType.FACTURE || sale.status === SaleStatus.DRAFT) {
+      throw new AppException(ErrorCode.NOT_FOUND, 'Sale not found');
+    }
+    const printed = await this.prisma.db.documentPrint.count({
+      where: { docType: DocType.FAC, docId: id },
+    });
+    const fmt = seller.defaultPrintFormat;
+    return {
+      html: saleDocument(sale, { seller, format: fmt, duplicate: printed > 0 }),
+      format: fmt,
+      filename: `${sale.number ?? 'FAC'}.pdf`,
       footer: seller.documentFooter,
     };
   }

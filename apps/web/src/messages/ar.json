@@ -102,7 +102,11 @@
     "noneToShow": "لا شيء للعرض",
     "colClient": "الزبون",
     "colBalance": "الرصيد",
-    "colLimit": "السقف"
+    "colLimit": "السقف",
+    "chequesTitle": "شيكات مستحقة (7 أيام)",
+    "chequesClients": "شيكات الزبائن للتحصيل",
+    "chequesSuppliers": "شيكات الموردين للتغطية",
+    "chequesCount": "{count, plural, =0 {لا شيء} one {شيك واحد} two {شيكان} few {# شيكات} other {# شيكًا}}"
   },
   "reports": {
     "title": "التقارير",
@@ -226,7 +230,9 @@
     "auditLink": "سجل التدقيق",
     "auditLinkHelp": "من فعل ماذا، متى، ومن أي جهاز.",
     "subscriptionLink": "الاشتراك",
-    "subscriptionLinkHelp": "الباقة، تاريخ التجديد، الاستعمال والمدفوعات."
+    "subscriptionLinkHelp": "الباقة، تاريخ التجديد، الاستعمال والمدفوعات.",
+    "reminderDays": "التذكير بعد (أيام)",
+    "reminderDaysHint": "يظهر الزبون في «للتذكير» عندما يتجاوز أقدم دين له هذا العدد من الأيام."
   },
   "validation": {
     "required": "هذا الحقل إلزامي.",
@@ -310,7 +316,11 @@
     "IMPERSONATION_READ_ONLY": "عرض الدعم للقراءة فقط: لا يمكن تعديل أي شيء.",
     "PLAN_LIMIT_REACHED": "بلغت حدّ باقتك. انتقل إلى باقة أكبر لإضافة المزيد.",
     "ADMIN_TOTP_INVALID": "الرمز غير صحيح أو منتهي الصلاحية. أدخل الرمز المعروض الآن.",
-    "FEATURE_NOT_IN_PLAN": "هذه الوحدة غير مشمولة في نسختك. تواصل معنا لإضافتها."
+    "FEATURE_NOT_IN_PLAN": "هذه الوحدة غير مشمولة في نسختك. تواصل معنا لإضافتها.",
+    "SUPPLIER_CODE_TAKEN": "رمز المورد هذا مستعمل.",
+    "SUPPLIER_OPENING_ALREADY_SET": "لهذا المورد رصيد افتتاحي مسبقًا.",
+    "SUPPLIER_PAYMENT_NOT_VALID": "هذه التسوية ملغاة مسبقًا.",
+    "SHARE_LINK_INVALID": "هذا الرابط لم يعد صالحًا."
   },
   "units": {
     "PIECE": "قطعة",
@@ -651,7 +661,8 @@
     "saved": "تم حفظ المورد",
     "archived": "تمت أرشفة المورد",
     "archiveTitle": "أرشفة هذا المورد؟",
-    "archiveBody": "لن يُقترح بعد الآن، وتبقى وصولاته القديمة متاحة."
+    "archiveBody": "لن يُقترح بعد الآن، وتبقى وصولاته القديمة متاحة.",
+    "code": "رمز المورد"
   },
   "clients": {
     "title": "الزبائن",
@@ -988,12 +999,14 @@
     "types": {
       "PRODUCTS": "المنتجات",
       "OPENING_STOCK": "المخزون الافتتاحي",
-      "CLIENTS": "الزبائن والأرصدة"
+      "CLIENTS": "الزبائن والأرصدة",
+      "SUPPLIERS": "الموردون والأرصدة"
     },
     "typesHelp": {
       "PRODUCTS": "المرجع، التسمية، الوحدات، التعبئة، الباركود، الأسعار، الرسم على القيمة المضافة.",
       "OPENING_STOCK": "الكمية والتكلفة الافتتاحية للمنتجات الموجودة.",
-      "CLIENTS": "الرمز، الاسم، الهاتف، سقف الكريدي والرصيد الافتتاحي."
+      "CLIENTS": "الرمز، الاسم، الهاتف، سقف الكريدي والرصيد الافتتاحي.",
+      "SUPPLIERS": "الرمز، الاسم، الهاتف والرصيد الافتتاحي (ما تدين به للمورد)."
     },
     "template": "تحميل النموذج",
     "file": "الملف",
@@ -1042,7 +1055,8 @@
     "countOpening": {
       "PRODUCTS": "{n, plural, other {# سطر افتتاحي}}",
       "OPENING_STOCK": "{n, plural, other {# مخزون افتتاحي سُجّل}}",
-      "CLIENTS": "{n, plural, other {# رصيد افتتاحي سُجّل}}"
+      "CLIENTS": "{n, plural, other {# رصيد افتتاحي سُجّل}}",
+      "SUPPLIERS": "{n, plural, one {تم تسجيل رصيد مورد واحد} other {تم تسجيل # أرصدة موردين}}"
     },
     "again": "استيراد جديد",
     "history": "سجل الاستيراد",
@@ -1114,7 +1128,9 @@
       "tva_defaulted": "الرسم فارغ: سيُطبّق 0 %",
       "no_changes": "لا تغييرات",
       "stock_not_empty": "المنتج لديه {qty} في المخزون؛ سيُضاف المخزون الافتتاحي إليه",
-      "zero_cost": "تكلفة صفر: سيكون هامش هذا المنتج خاطئًا"
+      "zero_cost": "تكلفة صفر: سيكون هامش هذا المنتج خاطئًا",
+      "supplier_archived": "مورد مؤرشف",
+      "invalid_supplier": "مورد غير صالح ({rule})"
     }
   },
   "users": {
@@ -1422,5 +1438,99 @@
     "lockedContact": "اطلب هذه الوحدة عبر واتساب",
     "lockedWhatsappMessage": "السلام عليكم، أريد إضافة وحدة «{feature}» لشركة {company}.",
     "lockedBack": "العودة إلى لوحة القيادة"
+  },
+  "share": {
+    "button": "مشاركة الرابط",
+    "title": "مشاركة عبر رابط",
+    "help": "رابط إلى ملف PDF، صالح 7 أيام، يفتحه الزبون دون حساب.",
+    "creating": "جارٍ إنشاء الرابط…",
+    "link": "الرابط",
+    "expires": "صالح حتى {date}.",
+    "revokedHelp": "تم تعطيل الرابط: لم يعد يفتح.",
+    "whatsapp": "إرسال عبر واتساب",
+    "copy": "نسخ الرابط",
+    "copied": "تم نسخ الرابط",
+    "copyFailed": "تعذر النسخ: حدد الرابط وانسخه.",
+    "revoke": "تعطيل الرابط",
+    "revoked": "تم تعطيل الرابط",
+    "close": "إغلاق",
+    "statementMessage": "السلام عليكم {name}، هذا كشف حسابك لدى {company}. الرصيد: {balance}. {url}",
+    "invoiceMessage": "السلام عليكم، هذه الفاتورة {number} من {company}، المبلغ {amount}. {url}"
+  },
+  "supplierAccount": {
+    "title": "بطاقة المورد",
+    "back": "الموردون",
+    "newPayment": "تسوية جديدة",
+    "newPaymentHelp": "المبلغ المدفوع للمورد. ينقص ما تدين به له.",
+    "managersOnly": "حسابات الموردين مخصصة للمسؤولين.",
+    "balance": "الرصيد",
+    "balanceAfter": "الرصيد بعد التسوية",
+    "weOwe": "للدفع",
+    "inOurFavour": "لصالحنا",
+    "savePayment": "حفظ التسوية",
+    "paymentCreated": "تم حفظ التسوية {number} بمبلغ {amount}",
+    "paymentCancelled": "تم إلغاء التسوية {number}",
+    "paymentsTitle": "آخر التسويات",
+    "noPayments": "لا توجد تسويات لهذا المورد.",
+    "statusCANCELLED": "ملغاة",
+    "dueOn": "الاستحقاق {date}",
+    "cancelPayment": "إلغاء التسوية {number}",
+    "cancelTitle": "إلغاء التسوية {number}؟",
+    "cancelHelp": "يعود المبلغ إلى حساب المورد. تبقى التسوية في السجل.",
+    "cancelReason": "السبب",
+    "keep": "الإبقاء",
+    "confirmCancel": "إلغاء التسوية",
+    "statementTitle": "كشف حساب المورد",
+    "statementHelp": "حركات الحساب خلال فترة، بصيغة PDF.",
+    "ledgerTitle": "سجل الحساب",
+    "noEntries": "لا توجد حركات في هذا الحساب.",
+    "paidAtReception": "مدفوع عند الاستلام",
+    "debit": "مدين",
+    "credit": "دائن",
+    "loadMore": "عرض المزيد"
+  },
+  "supplierLedgerTypes": {
+    "OPENING": "رصيد افتتاحي",
+    "PURCHASE": "شراء",
+    "PAYMENT": "تسوية",
+    "RETURN": "إرجاع",
+    "ADJUST": "تعديل",
+    "REVERSAL": "إلغاء"
+  },
+  "aging": {
+    "title": "أعمار الديون",
+    "subtitle": "منذ متى يستحق كل حساب.",
+    "back": "التقارير",
+    "export": "تصدير إلى Excel",
+    "managersOnly": "أعمار الديون مخصصة للمسؤولين.",
+    "accounts": "الحسابات",
+    "kindClients": "الزبائن",
+    "kindSuppliers": "الموردون",
+    "asOf": "بتاريخ",
+    "total": "إجمالي المستحق",
+    "bucket": {
+      "d0_30": "0–30 يومًا",
+      "d31_60": "31–60 يومًا",
+      "d61_90": "61–90 يومًا",
+      "d90": "أكثر من 90 يومًا"
+    },
+    "empty": "لا يوجد حساب برصيد في هذا التاريخ.",
+    "caption": "أعمار الديون: {kind}",
+    "colAccount": "الحساب",
+    "colBalance": "الرصيد",
+    "colOldest": "الأقدم",
+    "days": "{n, plural, one {يوم واحد} two {يومان} few {# أيام} other {# يومًا}}"
+  },
+  "reminders": {
+    "title": "زبائن للتذكير",
+    "subtitle": "زبائن عليهم ديون منذ أكثر من {days} يومًا.",
+    "back": "الزبائن",
+    "managersOnly": "قائمة التذكير مخصصة للمسؤولين.",
+    "emptyTitle": "لا أحد للتذكير",
+    "emptyDescription": "لا يوجد زبون عليه دين منذ مدة أطول من المهلة المحددة في الإعدادات.",
+    "since": "{days, plural, one {منذ يوم} two {منذ يومين} few {منذ # أيام} other {منذ # يومًا}}",
+    "whatsapp": "تذكير عبر واتساب",
+    "whatsappFor": "تذكير {name} عبر واتساب",
+    "message": "السلام عليكم {name}، ما لم نخطئ، رصيدك لدى {company} هو {balance} (الأقدم منذ {days} يومًا). كشف حسابك: {url}. شكرًا."
   }
 }

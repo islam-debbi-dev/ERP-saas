@@ -50,6 +50,25 @@ LEFT JOIN client_ledger_entries le
 GROUP BY cb."tenantId", cb."clientId", cb.balance
 HAVING cb.balance <> COALESCE(SUM(le.amount), 0);
 
+-- name: supplier_balance_equals_ledger
+-- Cached supplier balance must equal the sum of the supplier ledger (phase 21).
+SELECT sb."tenantId", sb."supplierId", sb.balance AS cached_balance,
+       COALESCE(SUM(le.amount), 0) AS ledger_balance
+FROM supplier_balances sb
+LEFT JOIN supplier_ledger_entries le
+  ON le."tenantId" = sb."tenantId" AND le."supplierId" = sb."supplierId"
+GROUP BY sb."tenantId", sb."supplierId", sb.balance
+HAVING sb.balance <> COALESCE(SUM(le.amount), 0);
+
+-- name: suppliers_missing_balance
+-- A supplier that has ledger entries must have a cached balance row.
+SELECT le."tenantId", le."supplierId", COUNT(*) AS entries
+FROM supplier_ledger_entries le
+LEFT JOIN supplier_balances sb
+  ON sb."tenantId" = le."tenantId" AND sb."supplierId" = le."supplierId"
+WHERE sb.id IS NULL
+GROUP BY le."tenantId", le."supplierId";
+
 -- name: clients_missing_balance
 -- A client that has ledger entries must have a cached balance row.
 SELECT le."tenantId", le."clientId", COUNT(*) AS entries

@@ -83,6 +83,16 @@ const EXAMPLES: Record<ImportType, Record<string, string | number>[]> = {
     },
     { code: 'C002', name: 'Superette Nour', phone: '0661 98 76 54', openingBalance: '-2 000,00' },
   ],
+  SUPPLIERS: [
+    {
+      code: 'F001',
+      name: 'Sarl Distribution Atlas',
+      phone: '0770 11 22 33',
+      address: 'Zone industrielle, Rouiba',
+      openingBalance: '320 000,00',
+    },
+    { code: 'F002', name: 'Ets Benali Frères', phone: '0555 44 33 22', openingBalance: '-15 000,00' },
+  ],
 };
 
 export async function buildTemplate(
@@ -109,4 +119,5 @@ export const TEMPLATE_FILE_NAMES: Record<ImportType, string> = {
   [ImportType.PRODUCTS]: 'modele-import-produits.xlsx',
   [ImportType.OPENING_STOCK]: 'modele-import-stock-initial.xlsx',
   [ImportType.CLIENTS]: 'modele-import-clients.xlsx',
+  [ImportType.SUPPLIERS]: 'modele-import-fournisseurs.xlsx',
 };

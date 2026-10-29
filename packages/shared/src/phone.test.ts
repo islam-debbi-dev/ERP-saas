@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatPhone, isEmailIdentifier, normalizePhone } from './phone';
+import { formatPhone, isEmailIdentifier, normalizePhone, whatsappUrl } from './phone';
 
 describe('normalizePhone', () => {
   it('reads the usual ways of writing a mobile', () => {
@@ -38,5 +38,17 @@ describe('isEmailIdentifier', () => {
   it('tells an email from a phone', () => {
     expect(isEmailIdentifier('a@b.dz')).toBe(true);
     expect(isEmailIdentifier('0550123456')).toBe(false);
+  });
+});
+
+describe('whatsappUrl', () => {
+  it('uses the international number without + and encodes the message', () => {
+    expect(whatsappUrl('0550 12 34 56', 'Bonjour, solde: 1 200 DA')).toBe(
+      'https://wa.me/213550123456?text=Bonjour%2C%20solde%3A%201%20200%20DA',
+    );
+  });
+
+  it('refuses a number that is not Algerian', () => {
+    expect(whatsappUrl('12345', 'x')).toBeNull();
   });
 });

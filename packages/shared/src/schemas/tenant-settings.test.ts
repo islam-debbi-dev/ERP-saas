@@ -15,6 +15,7 @@ const valid = {
   negativeStockMode: 'WARN',
   priceLevelCount: 3,
   maxDiscountPct: '0',
+  reminderDays: 30,
   timbreEnabled: false,
   timbreTranches: [],
   timbreMin: null,

@@ -4,8 +4,9 @@
       "/opt/homebrew/Cellar/node/26.10.0_2/bin/node",
       "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/node_modules/@playwright/test/cli.js",
       "test",
-      "-c",
+      "--config",
       "web/playwright.config.ts",
+      "--",
       "--project",
       "mobile",
       "--project",
@@ -77,6 +78,36 @@
       }
     ],
     "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "desktop",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "snapshotDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": {},
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://localhost:3000",
+          "actionTimeout": 20000,
+          "navigationTimeout": 30000,
+          "trace": "retain-on-failure",
+          "storageState": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/.auth/state.json",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          }
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "desktop"
+      },
       {
         "grep": {},
         "grepInvert": null,
@@ -183,6 +214,364 @@
   },
   "suites": [
     {
+      "title": "web.spec.ts",
+      "file": "web.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "the session survives a reload (the refresh cookie is used)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2646,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T19:03:46.640Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2948388c6448a8e5345d-06adc39c2d7277010ce8",
+          "file": "web.spec.ts",
+          "line": 110,
+          "column": 1
+        },
+        {
+          "title": "the token stays out of the browser storage and the cookie is httpOnly",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1616,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T19:03:49.348Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2948388c6448a8e5345d-83f1ed323cb1dd3b1ba3",
+          "file": "web.spec.ts",
+          "line": 120,
+          "column": 1
+        },
+        {
+          "title": "the balance of a client is shown exactly, in DA",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1916,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T19:03:50.980Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2948388c6448a8e5345d-81ec3b15d60b5907a7d1",
+          "file": "web.spec.ts",
+          "line": 136,
+          "column": 1
+        },
+        {
+          "title": "a hostile client name is shown as text, not executed",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1858,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T19:03:52.917Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2948388c6448a8e5345d-4a2a7b75f1ee7225bae9",
+          "file": "web.spec.ts",
+          "line": 145,
+          "column": 1
+        },
+        {
+          "title": "a hostile id in the URL gives a message, not a crash",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3742,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T19:03:54.787Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2948388c6448a8e5345d-13cf1924395e2ec65273",
+          "file": "web.spec.ts",
+          "line": 161,
+          "column": 1
+        },
+        {
+          "title": "a payment made from the screen carries an idempotency key",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2976,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T19:03:58.542Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2948388c6448a8e5345d-aab663097a14efefe2a5",
+          "file": "web.spec.ts",
+          "line": 170,
+          "column": 1
+        },
+        {
+          "title": "logging out ends the session for good",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3649,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T19:04:01.535Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2948388c6448a8e5345d-f0b617ab65f38329c876",
+          "file": "web.spec.ts",
+          "line": 186,
+          "column": 1
+        }
+      ],
+      "suites": [
+        {
+          "title": "the login itself",
+          "file": "web.spec.ts",
+          "line": 75,
+          "column": 6,
+          "specs": [
+            {
+              "title": "an anonymous visitor is sent to the login page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1983,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T19:03:41.540Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-5aecc166d87a067ed82d",
+              "file": "web.spec.ts",
+              "line": 79,
+              "column": 3
+            },
+            {
+              "title": "a wrong password is refused and says nothing about the secret",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1111,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T19:03:43.684Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-5a413aa38ddd63c4c7ff",
+              "file": "web.spec.ts",
+              "line": 86,
+              "column": 3
+            },
+            {
+              "title": "the right credentials open the dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1824,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T19:03:44.804Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-4dea74d700d2e0e38d8b",
+              "file": "web.spec.ts",
+              "line": 99,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
       "title": "mobile.spec.ts",
       "file": "mobile.spec.ts",
       "column": 0,
@@ -201,10 +590,10 @@
               "projectName": "mobile",
               "results": [
                 {
-                  "workerIndex": 0,
+                  "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 46751,
+                  "duration": 41244,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -212,134 +601,154 @@
                   "steps": [
                     {
                       "title": "/achats",
-                      "duration": 1768
+                      "duration": 1030
                     },
                     {
                       "title": "/achats/[id]",
-                      "duration": 3335
+                      "duration": 1765
                     },
                     {
                       "title": "/achats/fournisseurs",
-                      "duration": 2566
+                      "duration": 765
+                    },
+                    {
+                      "title": "/achats/fournisseurs/[id]",
+                      "duration": 4056
                     },
                     {
                       "title": "/achats/nouveau",
-                      "duration": 974
+                      "duration": 853
                     },
                     {
                       "title": "/clients",
-                      "duration": 803
+                      "duration": 440
                     },
                     {
                       "title": "/clients/[id]",
-                      "duration": 1527
+                      "duration": 582
                     },
                     {
                       "title": "/clients/[id]/modifier",
-                      "duration": 1439
+                      "duration": 1160
+                    },
+                    {
+                      "title": "/clients/a-relancer",
+                      "duration": 2839
                     },
                     {
                       "title": "/clients/nouveau",
-                      "duration": 877
+                      "duration": 786
                     },
                     {
                       "title": "/mot-de-passe",
-                      "duration": 798
+                      "duration": 810
                     },
                     {
                       "title": "/parametres",
-                      "duration": 2043
+                      "duration": 1064
                     },
                     {
                       "title": "/parametres/abonnement",
-                      "duration": 1409
+                      "duration": 826
                     },
                     {
                       "title": "/parametres/import",
-                      "duration": 795
+                      "duration": 870
                     },
                     {
                       "title": "/parametres/journal",
-                      "duration": 822
+                      "duration": 986
                     },
                     {
                       "title": "/parametres/sessions",
-                      "duration": 715
+                      "duration": 741
                     },
                     {
                       "title": "/parametres/utilisateurs",
-                      "duration": 640
+                      "duration": 568
                     },
                     {
                       "title": "/produits",
-                      "duration": 626
+                      "duration": 636
                     },
                     {
                       "title": "/produits/[id]",
-                      "duration": 2987
+                      "duration": 1662
                     },
                     {
                       "title": "/produits/categories",
-                      "duration": 978
+                      "duration": 605
                     },
                     {
                       "title": "/produits/nouveau",
-                      "duration": 862
+                      "duration": 607
                     },
                     {
                       "title": "/rapports",
-                      "duration": 743
+                      "duration": 628
+                    },
+                    {
+                      "title": "/rapports/balance-agee",
+                      "duration": 954
                     },
                     {
                       "title": "/stock",
-                      "duration": 1518
+                      "duration": 859
                     },
                     {
                       "title": "/stock/[productId]",
-                      "duration": 1424
+                      "duration": 885
                     },
                     {
                       "title": "/stock/inventaires",
-                      "duration": 691
+                      "duration": 448
                     },
                     {
                       "title": "/stock/inventaires/[id]",
-                      "duration": 1045
+                      "duration": 1171
                     },
                     {
                       "title": "/tableau-de-bord",
-                      "duration": 823
+                      "duration": 585
                     },
                     {
                       "title": "/ventes",
-                      "duration": 983
+                      "duration": 687
                     },
                     {
                       "title": "/ventes/[id]",
-                      "duration": 1413
+                      "duration": 1268
                     },
                     {
                       "title": "/ventes/nouvelle",
-                      "duration": 960
+                      "duration": 755
                     },
                     {
                       "title": "/versements",
-                      "duration": 3385
+                      "duration": 727
                     },
                     {
                       "title": "new versement opens as a sheet with its save button on screen",
-                      "duration": 1053
+                      "duration": 1164
+                    },
+                    {
+                      "title": "new règlement fournisseur opens as a sheet with its save button on screen",
+                      "duration": 973
+                    },
+                    {
+                      "title": "share link of the relevé: the link and the WhatsApp button on screen",
+                      "duration": 1062
                     },
                     {
                       "title": "dashboard: the onboarding checklist fits",
-                      "duration": 650
+                      "duration": 561
                     },
                     {
                       "title": "fast sale: a line, then the total and the validate button on screen",
-                      "duration": 853
+                      "duration": 769
                     }
                   ],
-                  "startTime": "2026-10-29T10:30:01.841Z",
+                  "startTime": "2026-10-29T19:04:06.530Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -349,7 +758,7 @@
           ],
           "id": "e79c838550b25e92508e-c363fb8506d445ccb8af",
           "file": "mobile.spec.ts",
-          "line": 232,
+          "line": 235,
           "column": 3
         },
         {
@@ -365,10 +774,10 @@
               "projectName": "mobile",
               "results": [
                 {
-                  "workerIndex": 0,
+                  "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 15889,
+                  "duration": 13260,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -376,26 +785,26 @@
                   "steps": [
                     {
                       "title": "/admin/login",
-                      "duration": 5222
+                      "duration": 4438
                     },
                     {
                       "title": "/inscription",
-                      "duration": 5309
+                      "duration": 2669
                     },
                     {
                       "title": "/invitation/[token]",
-                      "duration": 2372
+                      "duration": 3653
                     },
                     {
                       "title": "/login",
-                      "duration": 1499
+                      "duration": 1258
                     },
                     {
                       "title": "/support",
-                      "duration": 1483
+                      "duration": 1234
                     }
                   ],
-                  "startTime": "2026-10-29T10:30:49.614Z",
+                  "startTime": "2026-10-29T19:04:48.565Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -405,7 +814,7 @@
           ],
           "id": "e79c838550b25e92508e-310943156c06c1ecdfac",
           "file": "mobile.spec.ts",
-          "line": 306,
+          "line": 339,
           "column": 3
         },
         {
@@ -421,10 +830,10 @@
               "projectName": "mobile",
               "results": [
                 {
-                  "workerIndex": 0,
+                  "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 29907,
+                  "duration": 21945,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -432,134 +841,154 @@
                   "steps": [
                     {
                       "title": "/achats",
-                      "duration": 729
+                      "duration": 470
                     },
                     {
                       "title": "/achats/[id]",
-                      "duration": 826
+                      "duration": 566
                     },
                     {
                       "title": "/achats/fournisseurs",
-                      "duration": 781
+                      "duration": 402
+                    },
+                    {
+                      "title": "/achats/fournisseurs/[id]",
+                      "duration": 501
                     },
                     {
                       "title": "/achats/nouveau",
-                      "duration": 616
+                      "duration": 495
                     },
                     {
                       "title": "/clients",
-                      "duration": 1027
+                      "duration": 480
                     },
                     {
                       "title": "/clients/[id]",
-                      "duration": 1960
+                      "duration": 477
                     },
                     {
                       "title": "/clients/[id]/modifier",
-                      "duration": 1914
+                      "duration": 489
+                    },
+                    {
+                      "title": "/clients/a-relancer",
+                      "duration": 335
                     },
                     {
                       "title": "/clients/nouveau",
-                      "duration": 1828
+                      "duration": 444
                     },
                     {
                       "title": "/mot-de-passe",
-                      "duration": 2314
+                      "duration": 441
                     },
                     {
                       "title": "/parametres",
-                      "duration": 1720
+                      "duration": 688
                     },
                     {
                       "title": "/parametres/abonnement",
-                      "duration": 618
+                      "duration": 497
                     },
                     {
                       "title": "/parametres/import",
-                      "duration": 604
+                      "duration": 437
                     },
                     {
                       "title": "/parametres/journal",
-                      "duration": 695
+                      "duration": 685
                     },
                     {
                       "title": "/parametres/sessions",
-                      "duration": 562
+                      "duration": 388
                     },
                     {
                       "title": "/parametres/utilisateurs",
-                      "duration": 492
+                      "duration": 377
                     },
                     {
                       "title": "/produits",
-                      "duration": 445
+                      "duration": 481
                     },
                     {
                       "title": "/produits/[id]",
-                      "duration": 661
+                      "duration": 561
                     },
                     {
                       "title": "/produits/categories",
-                      "duration": 458
+                      "duration": 363
                     },
                     {
                       "title": "/produits/nouveau",
-                      "duration": 511
+                      "duration": 479
                     },
                     {
                       "title": "/rapports",
-                      "duration": 504
+                      "duration": 405
+                    },
+                    {
+                      "title": "/rapports/balance-agee",
+                      "duration": 472
                     },
                     {
                       "title": "/stock",
-                      "duration": 1253
+                      "duration": 1151
                     },
                     {
                       "title": "/stock/[productId]",
-                      "duration": 508
+                      "duration": 426
                     },
                     {
                       "title": "/stock/inventaires",
-                      "duration": 483
+                      "duration": 416
                     },
                     {
                       "title": "/stock/inventaires/[id]",
-                      "duration": 513
+                      "duration": 406
                     },
                     {
                       "title": "/tableau-de-bord",
-                      "duration": 503
+                      "duration": 573
                     },
                     {
                       "title": "/ventes",
-                      "duration": 548
+                      "duration": 400
                     },
                     {
                       "title": "/ventes/[id]",
-                      "duration": 591
+                      "duration": 515
                     },
                     {
                       "title": "/ventes/nouvelle",
-                      "duration": 508
+                      "duration": 484
                     },
                     {
                       "title": "/versements",
-                      "duration": 499
+                      "duration": 424
                     },
                     {
                       "title": "new versement opens as a sheet with its save button on screen",
-                      "duration": 1030
+                      "duration": 948
+                    },
+                    {
+                      "title": "new règlement fournisseur opens as a sheet with its save button on screen",
+                      "duration": 883
+                    },
+                    {
+                      "title": "share link of the relevé: the link and the WhatsApp button on screen",
+                      "duration": 956
                     },
                     {
                       "title": "dashboard: the onboarding checklist fits",
-                      "duration": 534
+                      "duration": 540
                     },
                     {
                       "title": "fast sale: a line, then the total and the validate button on screen",
-                      "duration": 612
+                      "duration": 647
                     }
                   ],
-                  "startTime": "2026-10-29T10:31:05.519Z",
+                  "startTime": "2026-10-29T19:05:01.854Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -569,7 +998,7 @@
           ],
           "id": "e79c838550b25e92508e-3f644165a2f8eca7f86c",
           "file": "mobile.spec.ts",
-          "line": 232,
+          "line": 235,
           "column": 3
         },
         {
@@ -585,10 +1014,10 @@
               "projectName": "mobile",
               "results": [
                 {
-                  "workerIndex": 0,
+                  "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 8520,
+                  "duration": 6821,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -596,26 +1025,26 @@
                   "steps": [
                     {
                       "title": "/admin/login",
-                      "duration": 2537
+                      "duration": 1895
                     },
                     {
                       "title": "/inscription",
-                      "duration": 1930
+                      "duration": 1257
                     },
                     {
                       "title": "/invitation/[token]",
-                      "duration": 1426
+                      "duration": 1352
                     },
                     {
                       "title": "/login",
-                      "duration": 1316
+                      "duration": 1158
                     },
                     {
                       "title": "/support",
-                      "duration": 1309
+                      "duration": 1155
                     }
                   ],
-                  "startTime": "2026-10-29T10:31:35.443Z",
+                  "startTime": "2026-10-29T19:05:23.811Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -625,7 +1054,7 @@
           ],
           "id": "e79c838550b25e92508e-3f576c7c859908d62308",
           "file": "mobile.spec.ts",
-          "line": 306,
+          "line": 339,
           "column": 3
         },
         {
@@ -641,10 +1070,10 @@
               "projectName": "mobile",
               "results": [
                 {
-                  "workerIndex": 0,
+                  "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 12872,
+                  "duration": 11611,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -652,18 +1081,18 @@
                   "steps": [
                     {
                       "title": "/admin",
-                      "duration": 5888
+                      "duration": 4932
                     },
                     {
                       "title": "/admin/societes/[id]",
-                      "duration": 3668
+                      "duration": 3968
                     },
                     {
                       "title": "record payment opens as a sheet with its button on screen",
-                      "duration": 916
+                      "duration": 952
                     }
                   ],
-                  "startTime": "2026-10-29T10:31:43.974Z",
+                  "startTime": "2026-10-29T19:05:30.653Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -673,7 +1102,7 @@
           ],
           "id": "e79c838550b25e92508e-8923eb9d1ef2bcc1c11d",
           "file": "mobile.spec.ts",
-          "line": 336,
+          "line": 369,
           "column": 3
         },
         {
@@ -689,10 +1118,10 @@
               "projectName": "mobile",
               "results": [
                 {
-                  "workerIndex": 0,
+                  "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 8993,
+                  "duration": 9310,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -700,18 +1129,18 @@
                   "steps": [
                     {
                       "title": "/admin",
-                      "duration": 5239
+                      "duration": 6016
                     },
                     {
                       "title": "/admin/societes/[id]",
-                      "duration": 496
+                      "duration": 592
                     },
                     {
                       "title": "record payment opens as a sheet with its button on screen",
-                      "duration": 674
+                      "duration": 654
                     }
                   ],
-                  "startTime": "2026-10-29T10:31:56.855Z",
+                  "startTime": "2026-10-29T19:05:42.270Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -721,7 +1150,7 @@
           ],
           "id": "e79c838550b25e92508e-d8170968548e2dbe780a",
           "file": "mobile.spec.ts",
-          "line": 336,
+          "line": 369,
           "column": 3
         },
         {
@@ -737,10 +1166,10 @@
               "projectName": "mobile-360",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 18911,
+                  "duration": 21793,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -748,134 +1177,154 @@
                   "steps": [
                     {
                       "title": "/achats",
-                      "duration": 576
+                      "duration": 501
                     },
                     {
                       "title": "/achats/[id]",
-                      "duration": 627
+                      "duration": 613
                     },
                     {
                       "title": "/achats/fournisseurs",
-                      "duration": 510
+                      "duration": 424
+                    },
+                    {
+                      "title": "/achats/fournisseurs/[id]",
+                      "duration": 502
                     },
                     {
                       "title": "/achats/nouveau",
-                      "duration": 601
+                      "duration": 467
                     },
                     {
                       "title": "/clients",
-                      "duration": 459
+                      "duration": 497
                     },
                     {
                       "title": "/clients/[id]",
-                      "duration": 499
+                      "duration": 545
                     },
                     {
                       "title": "/clients/[id]/modifier",
-                      "duration": 495
+                      "duration": 603
                     },
                     {
-                      "title": "/clients/nouveau",
-                      "duration": 512
-                    },
-                    {
-                      "title": "/mot-de-passe",
-                      "duration": 500
-                    },
-                    {
-                      "title": "/parametres",
-                      "duration": 667
-                    },
-                    {
-                      "title": "/parametres/abonnement",
-                      "duration": 449
-                    },
-                    {
-                      "title": "/parametres/import",
-                      "duration": 433
-                    },
-                    {
-                      "title": "/parametres/journal",
-                      "duration": 650
-                    },
-                    {
-                      "title": "/parametres/sessions",
-                      "duration": 442
-                    },
-                    {
-                      "title": "/parametres/utilisateurs",
-                      "duration": 395
-                    },
-                    {
-                      "title": "/produits",
-                      "duration": 414
-                    },
-                    {
-                      "title": "/produits/[id]",
-                      "duration": 521
-                    },
-                    {
-                      "title": "/produits/categories",
-                      "duration": 422
-                    },
-                    {
-                      "title": "/produits/nouveau",
-                      "duration": 494
-                    },
-                    {
-                      "title": "/rapports",
-                      "duration": 381
-                    },
-                    {
-                      "title": "/stock",
-                      "duration": 1189
-                    },
-                    {
-                      "title": "/stock/[productId]",
-                      "duration": 413
-                    },
-                    {
-                      "title": "/stock/inventaires",
+                      "title": "/clients/a-relancer",
                       "duration": 385
                     },
                     {
+                      "title": "/clients/nouveau",
+                      "duration": 445
+                    },
+                    {
+                      "title": "/mot-de-passe",
+                      "duration": 424
+                    },
+                    {
+                      "title": "/parametres",
+                      "duration": 656
+                    },
+                    {
+                      "title": "/parametres/abonnement",
+                      "duration": 394
+                    },
+                    {
+                      "title": "/parametres/import",
+                      "duration": 427
+                    },
+                    {
+                      "title": "/parametres/journal",
+                      "duration": 811
+                    },
+                    {
+                      "title": "/parametres/sessions",
+                      "duration": 438
+                    },
+                    {
+                      "title": "/parametres/utilisateurs",
+                      "duration": 372
+                    },
+                    {
+                      "title": "/produits",
+                      "duration": 575
+                    },
+                    {
+                      "title": "/produits/[id]",
+                      "duration": 578
+                    },
+                    {
+                      "title": "/produits/categories",
+                      "duration": 351
+                    },
+                    {
+                      "title": "/produits/nouveau",
+                      "duration": 491
+                    },
+                    {
+                      "title": "/rapports",
+                      "duration": 374
+                    },
+                    {
+                      "title": "/rapports/balance-agee",
+                      "duration": 425
+                    },
+                    {
+                      "title": "/stock",
+                      "duration": 682
+                    },
+                    {
+                      "title": "/stock/[productId]",
+                      "duration": 510
+                    },
+                    {
+                      "title": "/stock/inventaires",
+                      "duration": 355
+                    },
+                    {
                       "title": "/stock/inventaires/[id]",
-                      "duration": 396
+                      "duration": 488
                     },
                     {
                       "title": "/tableau-de-bord",
-                      "duration": 444
+                      "duration": 531
                     },
                     {
                       "title": "/ventes",
-                      "duration": 418
+                      "duration": 428
                     },
                     {
                       "title": "/ventes/[id]",
-                      "duration": 443
+                      "duration": 488
                     },
                     {
                       "title": "/ventes/nouvelle",
-                      "duration": 453
+                      "duration": 432
                     },
                     {
                       "title": "/versements",
-                      "duration": 417
+                      "duration": 455
                     },
                     {
                       "title": "new versement opens as a sheet with its save button on screen",
-                      "duration": 878
+                      "duration": 888
+                    },
+                    {
+                      "title": "new règlement fournisseur opens as a sheet with its save button on screen",
+                      "duration": 842
+                    },
+                    {
+                      "title": "share link of the relevé: the link and the WhatsApp button on screen",
+                      "duration": 873
                     },
                     {
                       "title": "dashboard: the onboarding checklist fits",
-                      "duration": 426
+                      "duration": 501
                     },
                     {
                       "title": "fast sale: a line, then the total and the validate button on screen",
-                      "duration": 626
+                      "duration": 587
                     }
                   ],
-                  "startTime": "2026-10-29T10:32:06.709Z",
+                  "startTime": "2026-10-29T19:05:52.920Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -885,7 +1334,7 @@
           ],
           "id": "e79c838550b25e92508e-64139fae68b2d0f06c9d",
           "file": "mobile.spec.ts",
-          "line": 232,
+          "line": 235,
           "column": 3
         },
         {
@@ -901,10 +1350,10 @@
               "projectName": "mobile-360",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 6999,
+                  "duration": 6695,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -912,26 +1361,26 @@
                   "steps": [
                     {
                       "title": "/admin/login",
-                      "duration": 1745
+                      "duration": 1732
                     },
                     {
                       "title": "/inscription",
-                      "duration": 1376
+                      "duration": 1282
                     },
                     {
                       "title": "/invitation/[token]",
-                      "duration": 1394
+                      "duration": 1295
                     },
                     {
                       "title": "/login",
-                      "duration": 1188
+                      "duration": 1183
                     },
                     {
                       "title": "/support",
-                      "duration": 1295
+                      "duration": 1200
                     }
                   ],
-                  "startTime": "2026-10-29T10:32:26.403Z",
+                  "startTime": "2026-10-29T19:06:15.352Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -941,7 +1390,7 @@
           ],
           "id": "e79c838550b25e92508e-a76434bf256ee6188cae",
           "file": "mobile.spec.ts",
-          "line": 306,
+          "line": 339,
           "column": 3
         },
         {
@@ -957,10 +1406,10 @@
               "projectName": "mobile-360",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 15009,
+                  "duration": 19823,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -968,111 +1417,123 @@
                   "steps": [
                     {
                       "title": "/achats",
-                      "duration": 381
+                      "duration": 380
                     },
                     {
                       "title": "/achats/[id]",
-                      "duration": 422
+                      "duration": 453
                     },
                     {
                       "title": "/achats/fournisseurs",
-                      "duration": 307
+                      "duration": 327
+                    },
+                    {
+                      "title": "/achats/fournisseurs/[id]",
+                      "duration": 369
                     },
                     {
                       "title": "/achats/nouveau",
-                      "duration": 384
+                      "duration": 417
                     },
                     {
                       "title": "/clients",
-                      "duration": 329
+                      "duration": 364
                     },
                     {
                       "title": "/clients/[id]",
-                      "duration": 396
+                      "duration": 418
                     },
                     {
                       "title": "/clients/[id]/modifier",
-                      "duration": 416
+                      "duration": 403
                     },
                     {
-                      "title": "/clients/nouveau",
-                      "duration": 349
-                    },
-                    {
-                      "title": "/mot-de-passe",
-                      "duration": 308
-                    },
-                    {
-                      "title": "/parametres",
-                      "duration": 617
-                    },
-                    {
-                      "title": "/parametres/abonnement",
-                      "duration": 340
-                    },
-                    {
-                      "title": "/parametres/import",
-                      "duration": 377
-                    },
-                    {
-                      "title": "/parametres/journal",
-                      "duration": 533
-                    },
-                    {
-                      "title": "/parametres/sessions",
-                      "duration": 397
-                    },
-                    {
-                      "title": "/parametres/utilisateurs",
-                      "duration": 358
-                    },
-                    {
-                      "title": "/produits",
-                      "duration": 367
-                    },
-                    {
-                      "title": "/produits/[id]",
-                      "duration": 463
-                    },
-                    {
-                      "title": "/produits/categories",
+                      "title": "/clients/a-relancer",
                       "duration": 298
                     },
                     {
+                      "title": "/clients/nouveau",
+                      "duration": 380
+                    },
+                    {
+                      "title": "/mot-de-passe",
+                      "duration": 297
+                    },
+                    {
+                      "title": "/parametres",
+                      "duration": 595
+                    },
+                    {
+                      "title": "/parametres/abonnement",
+                      "duration": 387
+                    },
+                    {
+                      "title": "/parametres/import",
+                      "duration": 381
+                    },
+                    {
+                      "title": "/parametres/journal",
+                      "duration": 828
+                    },
+                    {
+                      "title": "/parametres/sessions",
+                      "duration": 422
+                    },
+                    {
+                      "title": "/parametres/utilisateurs",
+                      "duration": 322
+                    },
+                    {
+                      "title": "/produits",
+                      "duration": 348
+                    },
+                    {
+                      "title": "/produits/[id]",
+                      "duration": 524
+                    },
+                    {
+                      "title": "/produits/categories",
+                      "duration": 296
+                    },
+                    {
                       "title": "/produits/nouveau",
-                      "duration": 379
+                      "duration": 399
                     },
                     {
                       "title": "/rapports",
-                      "duration": 295
+                      "duration": 323
+                    },
+                    {
+                      "title": "/rapports/balance-agee",
+                      "duration": 395
                     },
                     {
                       "title": "/stock",
-                      "duration": 623
+                      "duration": 1160
                     },
                     {
                       "title": "/stock/[productId]",
-                      "duration": 339
+                      "duration": 404
                     },
                     {
                       "title": "/stock/inventaires",
-                      "duration": 283
+                      "duration": 305
                     },
                     {
                       "title": "/stock/inventaires/[id]",
-                      "duration": 326
+                      "duration": 443
                     },
                     {
                       "title": "/tableau-de-bord",
-                      "duration": 539
+                      "duration": 594
                     },
                     {
                       "title": "/ventes",
-                      "duration": 389
+                      "duration": 435
                     },
                     {
                       "title": "/ventes/[id]",
-                      "duration": 385
+                      "duration": 447
                     },
                     {
                       "title": "/ventes/nouvelle",
@@ -1080,22 +1541,30 @@
                     },
                     {
                       "title": "/versements",
-                      "duration": 373
+                      "duration": 368
                     },
                     {
                       "title": "new versement opens as a sheet with its save button on screen",
-                      "duration": 909
+                      "duration": 900
+                    },
+                    {
+                      "title": "new règlement fournisseur opens as a sheet with its save button on screen",
+                      "duration": 882
+                    },
+                    {
+                      "title": "share link of the relevé: the link and the WhatsApp button on screen",
+                      "duration": 943
                     },
                     {
                       "title": "dashboard: the onboarding checklist fits",
-                      "duration": 471
+                      "duration": 522
                     },
                     {
                       "title": "fast sale: a line, then the total and the validate button on screen",
-                      "duration": 548
+                      "duration": 694
                     }
                   ],
-                  "startTime": "2026-10-29T10:32:33.408Z",
+                  "startTime": "2026-10-29T19:06:22.055Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1105,7 +1574,7 @@
           ],
           "id": "e79c838550b25e92508e-3ae71ed9887b579dcab9",
           "file": "mobile.spec.ts",
-          "line": 232,
+          "line": 235,
           "column": 3
         },
         {
@@ -1121,10 +1590,10 @@
               "projectName": "mobile-360",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 5964,
+                  "duration": 6064,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -1132,26 +1601,26 @@
                   "steps": [
                     {
                       "title": "/admin/login",
-                      "duration": 1287
+                      "duration": 1221
                     },
                     {
                       "title": "/inscription",
-                      "duration": 1133
+                      "duration": 1247
                     },
                     {
                       "title": "/invitation/[token]",
-                      "duration": 1268
+                      "duration": 1275
                     },
                     {
                       "title": "/login",
-                      "duration": 1166
+                      "duration": 1180
                     },
                     {
                       "title": "/support",
-                      "duration": 1108
+                      "duration": 1139
                     }
                   ],
-                  "startTime": "2026-10-29T10:32:48.425Z",
+                  "startTime": "2026-10-29T19:06:41.889Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1161,7 +1630,7 @@
           ],
           "id": "e79c838550b25e92508e-a9b60ff6dea3a938e427",
           "file": "mobile.spec.ts",
-          "line": 306,
+          "line": 339,
           "column": 3
         },
         {
@@ -1177,10 +1646,10 @@
               "projectName": "mobile-360",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 7863,
+                  "duration": 15147,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -1188,18 +1657,18 @@
                   "steps": [
                     {
                       "title": "/admin",
-                      "duration": 5033
+                      "duration": 5223
                     },
                     {
                       "title": "/admin/societes/[id]",
-                      "duration": 720
+                      "duration": 7109
                     },
                     {
                       "title": "record payment opens as a sheet with its button on screen",
-                      "duration": 762
+                      "duration": 1174
                     }
                   ],
-                  "startTime": "2026-10-29T10:32:54.397Z",
+                  "startTime": "2026-10-29T19:06:47.960Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1209,7 +1678,7 @@
           ],
           "id": "e79c838550b25e92508e-336c727c12a3cd6e471b",
           "file": "mobile.spec.ts",
-          "line": 336,
+          "line": 369,
           "column": 3
         },
         {
@@ -1225,10 +1694,10 @@
               "projectName": "mobile-360",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 6420,
+                  "duration": 11452,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -1236,18 +1705,18 @@
                   "steps": [
                     {
                       "title": "/admin",
-                      "duration": 3732
+                      "duration": 6518
                     },
                     {
                       "title": "/admin/societes/[id]",
-                      "duration": 583
+                      "duration": 1120
                     },
                     {
                       "title": "record payment opens as a sheet with its button on screen",
-                      "duration": 792
+                      "duration": 662
                     }
                   ],
-                  "startTime": "2026-10-29T10:33:02.266Z",
+                  "startTime": "2026-10-29T19:07:03.115Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1257,7 +1726,7 @@
           ],
           "id": "e79c838550b25e92508e-0e878b8d9f0337c6d555",
           "file": "mobile.spec.ts",
-          "line": 336,
+          "line": 369,
           "column": 3
         }
       ]
@@ -1265,9 +1734,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-29T10:29:49.491Z",
-    "duration": 199336.542,
-    "expected": 12,
+    "startTime": "2026-10-29T19:03:35.388Z",
+    "duration": 219474.92700000003,
+    "expected": 22,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

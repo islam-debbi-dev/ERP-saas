@@ -29,3 +29,13 @@ export function formatPhone(phone: string): string {
 export function isEmailIdentifier(identifier: string): boolean {
   return identifier.includes('@');
 }
+
+/**
+ * `https://wa.me/<number>?text=<message>` for an Algerian number (phase 21 reminders).
+ * Null when the number is not one: WhatsApp needs the international form without `+`.
+ */
+export function whatsappUrl(phone: string, text: string): string | null {
+  const normalized = normalizePhone(phone);
+  if (!normalized) return null;
+  return `https://wa.me/${normalized.slice(1)}?text=${encodeURIComponent(text)}`;
+}

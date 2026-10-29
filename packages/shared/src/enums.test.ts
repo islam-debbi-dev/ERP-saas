@@ -7,6 +7,6 @@ describe('enums', () => {
   });
 
   it('lists the document types that have a numbering sequence', () => {
-    expect(DOC_TYPES).toEqual(['BL', 'FAC', 'AV', 'BR', 'VER', 'INV', 'RF']);
+    expect(DOC_TYPES).toEqual(['BL', 'FAC', 'AV', 'BR', 'VER', 'INV', 'RF', 'RGF']);
   });
 });

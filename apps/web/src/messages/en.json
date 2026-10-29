@@ -102,7 +102,11 @@
     "noneToShow": "Nothing to show",
     "colClient": "Client",
     "colBalance": "Balance",
-    "colLimit": "Limit"
+    "colLimit": "Limit",
+    "chequesTitle": "Cheques due (7 days)",
+    "chequesClients": "Customer cheques to cash",
+    "chequesSuppliers": "Supplier cheques to cover",
+    "chequesCount": "{count, plural, =0 {none} one {# cheque} other {# cheques}}"
   },
   "reports": {
     "title": "Reports",
@@ -226,7 +230,9 @@
     "auditLink": "Audit log",
     "auditLinkHelp": "Who did what, when, from which device.",
     "subscriptionLink": "Subscription",
-    "subscriptionLinkHelp": "Plan, renewal date, usage and payments."
+    "subscriptionLinkHelp": "Plan, renewal date, usage and payments.",
+    "reminderDays": "Remind after (days)",
+    "reminderDaysHint": "A customer shows in \"To remind\" when their oldest unpaid amount is older than this."
   },
   "validation": {
     "required": "This field is required.",
@@ -310,7 +316,11 @@
     "IMPERSONATION_READ_ONLY": "Read-only support view: nothing can be changed.",
     "PLAN_LIMIT_REACHED": "Your plan’s limit is reached. Move to a bigger plan to add more.",
     "ADMIN_TOTP_INVALID": "Wrong or expired code. Enter the code shown now.",
-    "FEATURE_NOT_IN_PLAN": "This module is not in your edition. Contact us to add it."
+    "FEATURE_NOT_IN_PLAN": "This module is not in your edition. Contact us to add it.",
+    "SUPPLIER_CODE_TAKEN": "This supplier code is already used.",
+    "SUPPLIER_OPENING_ALREADY_SET": "This supplier already has an opening balance.",
+    "SUPPLIER_PAYMENT_NOT_VALID": "This payment is already cancelled.",
+    "SHARE_LINK_INVALID": "This link is no longer valid."
   },
   "units": {
     "PIECE": "Piece",
@@ -651,7 +661,8 @@
     "saved": "Supplier saved",
     "archived": "Supplier archived",
     "archiveTitle": "Archive this supplier?",
-    "archiveBody": "It will no longer be offered; its old receipts stay available."
+    "archiveBody": "It will no longer be offered; its old receipts stay available.",
+    "code": "Supplier code"
   },
   "clients": {
     "title": "Clients",
@@ -988,12 +999,14 @@
     "types": {
       "PRODUCTS": "Products",
       "OPENING_STOCK": "Opening stock",
-      "CLIENTS": "Clients and balances"
+      "CLIENTS": "Clients and balances",
+      "SUPPLIERS": "Suppliers and balances"
     },
     "typesHelp": {
       "PRODUCTS": "Reference, name, units, packaging, barcodes, prices, VAT.",
       "OPENING_STOCK": "Starting quantity and cost of existing products.",
-      "CLIENTS": "Code, name, phone, credit limit and opening balance."
+      "CLIENTS": "Code, name, phone, credit limit and opening balance.",
+      "SUPPLIERS": "Code, name, phone and opening balance (what you owe the supplier)."
     },
     "template": "Download template",
     "file": "File",
@@ -1042,7 +1055,8 @@
     "countOpening": {
       "PRODUCTS": "{n, plural, one {# opening row} other {# opening rows}}",
       "OPENING_STOCK": "{n, plural, one {# opening stock saved} other {# opening stocks saved}}",
-      "CLIENTS": "{n, plural, one {# opening balance saved} other {# opening balances saved}}"
+      "CLIENTS": "{n, plural, one {# opening balance saved} other {# opening balances saved}}",
+      "SUPPLIERS": "{n, plural, one {# supplier balance recorded} other {# supplier balances recorded}}"
     },
     "again": "New import",
     "history": "Import history",
@@ -1114,7 +1128,9 @@
       "tva_defaulted": "empty VAT: 0% will be used",
       "no_changes": "no changes",
       "stock_not_empty": "the product already has {qty} in stock; the opening stock will add to it",
-      "zero_cost": "zero cost: this product's margin will be wrong"
+      "zero_cost": "zero cost: this product's margin will be wrong",
+      "supplier_archived": "supplier archived",
+      "invalid_supplier": "invalid supplier ({rule})"
     }
   },
   "users": {
@@ -1422,5 +1438,99 @@
     "lockedContact": "Ask for this module on WhatsApp",
     "lockedWhatsappMessage": "Hello, I would like to add the “{feature}” module for {company}.",
     "lockedBack": "Back to the dashboard"
+  },
+  "share": {
+    "button": "Share link",
+    "title": "Share by link",
+    "help": "A link to the PDF, valid 7 days, that the customer opens without an account.",
+    "creating": "Creating the link…",
+    "link": "Link",
+    "expires": "Valid until {date}.",
+    "revokedHelp": "Link turned off: it no longer opens.",
+    "whatsapp": "Send on WhatsApp",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "copyFailed": "Could not copy: select the link and copy it.",
+    "revoke": "Turn off link",
+    "revoked": "Link turned off",
+    "close": "Close",
+    "statementMessage": "Hello {name}, here is your account statement at {company}. Balance: {balance}. {url}",
+    "invoiceMessage": "Hello, here is invoice {number} from {company}, amount {amount}. {url}"
+  },
+  "supplierAccount": {
+    "title": "Supplier account",
+    "back": "Suppliers",
+    "newPayment": "New payment",
+    "newPaymentHelp": "Money paid to the supplier. It lowers what you owe them.",
+    "managersOnly": "Supplier accounts are for managers.",
+    "balance": "Balance",
+    "balanceAfter": "Balance after the payment",
+    "weOwe": "to pay",
+    "inOurFavour": "in our favour",
+    "savePayment": "Save payment",
+    "paymentCreated": "Payment {number} of {amount} saved",
+    "paymentCancelled": "Payment {number} cancelled",
+    "paymentsTitle": "Recent payments",
+    "noPayments": "No payment to this supplier yet.",
+    "statusCANCELLED": "Cancelled",
+    "dueOn": "due {date}",
+    "cancelPayment": "Cancel payment {number}",
+    "cancelTitle": "Cancel payment {number}?",
+    "cancelHelp": "The amount goes back on the supplier account. The payment stays in the history.",
+    "cancelReason": "Reason",
+    "keep": "Keep",
+    "confirmCancel": "Cancel payment",
+    "statementTitle": "Supplier statement",
+    "statementHelp": "The account movements of a period, as a PDF.",
+    "ledgerTitle": "Account history",
+    "noEntries": "No movement on this account.",
+    "paidAtReception": "paid at reception",
+    "debit": "Debit",
+    "credit": "Credit",
+    "loadMore": "Load more"
+  },
+  "supplierLedgerTypes": {
+    "OPENING": "Opening balance",
+    "PURCHASE": "Purchase",
+    "PAYMENT": "Payment",
+    "RETURN": "Return",
+    "ADJUST": "Adjustment",
+    "REVERSAL": "Reversal"
+  },
+  "aging": {
+    "title": "Aged balance",
+    "subtitle": "How long each account has been owed.",
+    "back": "Reports",
+    "export": "Export to Excel",
+    "managersOnly": "The aged balance is for managers.",
+    "accounts": "Accounts",
+    "kindClients": "Customers",
+    "kindSuppliers": "Suppliers",
+    "asOf": "As of",
+    "total": "Total owed",
+    "bucket": {
+      "d0_30": "0–30 days",
+      "d31_60": "31–60 days",
+      "d61_90": "61–90 days",
+      "d90": "Over 90 days"
+    },
+    "empty": "No account with a balance on that day.",
+    "caption": "Aged balance: {kind}",
+    "colAccount": "Account",
+    "colBalance": "Balance",
+    "colOldest": "Oldest",
+    "days": "{n, plural, one {# day} other {# days}}"
+  },
+  "reminders": {
+    "title": "Customers to remind",
+    "subtitle": "Customers who have owed money for more than {days} days.",
+    "back": "Customers",
+    "managersOnly": "The reminder list is for managers.",
+    "emptyTitle": "Nobody to remind",
+    "emptyDescription": "No customer has owed money for longer than the delay set in the settings.",
+    "since": "{days, plural, one {for # day} other {for # days}}",
+    "whatsapp": "Remind on WhatsApp",
+    "whatsappFor": "Remind {name} on WhatsApp",
+    "message": "Hello {name}, unless we are mistaken, your balance at {company} is {balance} (the oldest for {days} days). Your statement: {url}. Thank you."
   }
 }

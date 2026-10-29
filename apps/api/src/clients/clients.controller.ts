@@ -19,6 +19,7 @@ import {
   clientListQuerySchema,
   type ClientPage,
   type ClientReconcileReport,
+  type ClientsToRemindDto,
   type ClientStatementDto,
   type CreateClientInput,
   createClientSchema,
@@ -36,6 +37,7 @@ import {
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { CurrentUser, Roles } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
+import { AgingService } from '../credit/aging.service';
 import { Idempotent } from '../idempotency/idempotent.decorator';
 import { ClientsService } from './clients.service';
 
@@ -45,7 +47,10 @@ const CLIENT_EDITORS = [...MANAGERS, Role.SELLER];
 
 @Controller('clients')
 export class ClientsController {
-  constructor(private readonly clients: ClientsService) {}
+  constructor(
+    private readonly clients: ClientsService,
+    private readonly aging: AgingService,
+  ) {}
 
   @Get()
   list(
@@ -60,6 +65,13 @@ export class ClientsController {
     @Query(new ZodValidationPipe(debtorsQuerySchema)) query: DebtorsQuery,
   ): Promise<DebtorDto[]> {
     return this.clients.debtors(query.limit);
+  }
+
+  /** Clients à relancer (phase 21). Declared before ':id'. */
+  @Get('to-remind')
+  @Roles(...MANAGERS)
+  toRemind(): Promise<ClientsToRemindDto> {
+    return this.aging.toRemind();
   }
 
   @Get('reconcile')

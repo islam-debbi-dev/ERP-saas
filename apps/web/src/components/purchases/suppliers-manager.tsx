@@ -34,12 +34,18 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { api } from '@/lib/api-client';
+import { useCanManageCredit } from '@/lib/clients';
 import { useSuppliers } from '@/lib/purchases';
 import { useErrorMessage } from '@/lib/use-error-message';
+import { SupplierBalance } from './supplier-balance';
 
-type Fields = Record<'name' | 'phone' | 'address' | 'rc' | 'nif' | 'nis' | 'ai' | 'notes', string>;
+type Fields = Record<
+  'name' | 'code' | 'phone' | 'address' | 'rc' | 'nif' | 'nis' | 'ai' | 'notes',
+  string
+>;
 const EMPTY: Fields = {
   name: '',
+  code: '',
   phone: '',
   address: '',
   rc: '',
@@ -48,7 +54,7 @@ const EMPTY: Fields = {
   ai: '',
   notes: '',
 };
-const LTR_FIELDS = new Set(['phone', 'rc', 'nif', 'nis', 'ai']);
+const LTR_FIELDS = new Set(['code', 'phone', 'rc', 'nif', 'nis', 'ai']);
 
 export function SuppliersManager() {
   const t = useTranslations('suppliers');
@@ -56,6 +62,7 @@ export function SuppliersManager() {
   const tc = useTranslations('common');
   const errorMessage = useErrorMessage();
   const queryClient = useQueryClient();
+  const canManage = useCanManageCredit();
   const [search, setSearch] = useState('');
   const suppliers = useSuppliers(useDebouncedValue(search.trim(), 300));
   const [editing, setEditing] = useState<{ id: string | null; fields: Fields } | null>(null);
@@ -124,13 +131,19 @@ export function SuppliersManager() {
           <ul className="divide-y">
             {items.map((s) => (
               <li key={s.id} className="flex items-center justify-between gap-3 px-4 py-3">
-                <div className="min-w-0">
+                <Link
+                  href={`/achats/fournisseurs/${s.id}`}
+                  className="min-w-0 flex-1 rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                >
                   <p className="truncate font-medium">{s.name}</p>
                   <p className="truncate text-xs text-muted-foreground">
-                    {[s.phone, s.address].filter(Boolean).join(' · ')}
+                    {[s.code, s.phone, s.address].filter(Boolean).join(' · ')}
                   </p>
-                </div>
-                <div className="flex shrink-0 gap-1">
+                </Link>
+                <div className="flex shrink-0 items-center gap-1">
+                  {canManage ? (
+                    <SupplierBalance value={s.balance} showHint={false} className="me-1 text-sm" />
+                  ) : null}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -189,7 +202,7 @@ export function SuppliersManager() {
                 <div
                   key={k}
                   className={
-                    k === 'name' || k === 'address' || k === 'notes'
+                    k === 'address' || k === 'notes'
                       ? 'space-y-2 sm:col-span-2'
                       : 'space-y-2'
                   }

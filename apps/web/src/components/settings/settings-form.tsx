@@ -55,6 +55,7 @@ function toForm(s: TenantSettingsResponse): FormInput {
     negativeStockMode: s.negativeStockMode,
     priceLevelCount: s.priceLevelCount,
     maxDiscountPct: s.maxDiscountPct,
+    reminderDays: s.reminderDays,
     timbreEnabled: s.timbreEnabled,
     timbreTranches: s.timbreTranches.map((tr) => ({
       upTo: tr.upTo === null ? null : formatDA(tr.upTo, { currency: false }),
@@ -76,6 +77,7 @@ const ERROR_KEYS: Partial<Record<keyof FormInput, ValidationKey>> = {
   raisonSociale: 'tooShort',
   priceLevelCount: 'range',
   maxDiscountPct: 'invalidRate',
+  reminderDays: 'range',
   timbreTranches: 'invalidTranches',
   tvaMention: 'required',
   timbreMin: 'invalidAmount',
@@ -369,6 +371,23 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
               inputMode="decimal"
               className="num text-end"
               {...form.register('maxDiscountPct')}
+            />
+          </FieldShell>
+          <FieldShell
+            id="reminderDays"
+            label={t('settings.reminderDays')}
+            hint={t('settings.reminderDaysHint')}
+            error={errorFor(errors, 'reminderDays')}
+          >
+            <Input
+              {...aria('reminderDays', errorFor(errors, 'reminderDays'), true)}
+              type="number"
+              min={1}
+              max={365}
+              dir="ltr"
+              inputMode="numeric"
+              className="num text-end"
+              {...form.register('reminderDays', { valueAsNumber: true })}
             />
           </FieldShell>
         </Section>

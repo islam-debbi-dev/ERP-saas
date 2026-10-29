@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { type PaymentMode, Role } from '../enums';
 import { rangeLength } from '../periods';
 import { type DebtorDto } from './clients';
+import { type DueChequesDto } from './credit';
 
 const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'invalid_date');
 
@@ -155,4 +156,6 @@ export interface DashboardDto {
     /** At CUMP; null without VIEW_COST_AND_MARGIN. */
     value: string | null;
   } | null;
+  /** Client and supplier cheques due in the next 7 days (phase 21); managers only. */
+  cheques: DueChequesDto | null;
 }
