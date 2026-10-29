@@ -32,6 +32,7 @@ function toResponse(t: Tenant): TenantSettingsResponse {
     priceLevelCount: t.priceLevelCount,
     maxDiscountPct: toMoneyString(t.maxDiscountPct.toString()),
     reminderDays: t.reminderDays,
+    sellerScope: t.sellerScope,
     timbreEnabled: t.timbreEnabled,
     timbreTranches: readTranches(t.timbreTranches),
     timbreMin: t.timbreMin ? toMoneyString(t.timbreMin) : null,

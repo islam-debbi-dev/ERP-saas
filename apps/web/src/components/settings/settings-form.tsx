@@ -8,6 +8,7 @@ import { Controller, type FieldErrors, useFieldArray, useForm, useWatch } from '
 import { toast } from 'sonner';
 import type { z } from 'zod';
 import {
+  Feature,
   formatDA,
   money,
   Role,
@@ -25,7 +26,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/lib/api-client';
-import { useAuth } from '@/lib/auth';
+import { useAuth, useFeature } from '@/lib/auth';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
 
@@ -56,6 +57,7 @@ function toForm(s: TenantSettingsResponse): FormInput {
     priceLevelCount: s.priceLevelCount,
     maxDiscountPct: s.maxDiscountPct,
     reminderDays: s.reminderDays,
+    sellerScope: s.sellerScope,
     timbreEnabled: s.timbreEnabled,
     timbreTranches: s.timbreTranches.map((tr) => ({
       upTo: tr.upTo === null ? null : formatDA(tr.upTo, { currency: false }),
@@ -211,6 +213,7 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
   const canEdit =
     state.status === 'authenticated' &&
     (state.user.role === Role.OWNER || state.user.role === Role.MANAGER);
+  const salesForce = useFeature(Feature.SALES_FORCE);
 
   const form = useForm<FormInput, unknown, TenantSettings>({
     resolver: zodResolver(tenantSettingsSchema),
@@ -390,6 +393,19 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
               {...form.register('reminderDays', { valueAsNumber: true })}
             />
           </FieldShell>
+          {salesForce ? (
+            <FieldShell
+              id="sellerScope"
+              label={t('settings.sellerScope')}
+              hint={t('settings.sellerScopeHint')}
+              wide
+            >
+              <NativeSelect id="sellerScope" {...form.register('sellerScope')}>
+                <option value="ALL_CLIENTS">{t('settings.sellerScopeAll')}</option>
+                <option value="ASSIGNED_ONLY">{t('settings.sellerScopeAssigned')}</option>
+              </NativeSelect>
+            </FieldShell>
+          ) : null}
         </Section>
 
         <Section title={t('settings.timbreSection')} description={t('settings.timbreHelp')}>

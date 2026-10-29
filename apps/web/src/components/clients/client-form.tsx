@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import {
   type ClientDto,
   ClientType,
+  Feature,
   createClientSchema,
   formatDA,
   type PriceLevelDto,
@@ -23,7 +24,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import { api } from '@/lib/api-client';
+import { useFeature } from '@/lib/auth';
 import { clientKeys, useCanManageCredit } from '@/lib/clients';
+import { useIsOffice, useSectors, useSellers } from '@/lib/sales-force';
 import { useErrorMessage } from '@/lib/use-error-message';
 
 const TEXT_FIELDS = [
@@ -46,6 +49,8 @@ type FormValues = Record<TextField, string> & {
   type: ClientType;
   priceLevelId: string;
   creditLimit: string;
+  sectorId: string;
+  assignedSellerId: string;
 };
 
 function toFormValues(c: ClientDto | null): FormValues {
@@ -58,6 +63,8 @@ function toFormValues(c: ClientDto | null): FormValues {
     type: c?.type ?? ClientType.PARTICULIER,
     priceLevelId: c?.priceLevelId ?? '',
     creditLimit: c?.creditLimit ? formatDA(c.creditLimit, { currency: false }) : '',
+    sectorId: c?.sector?.id ?? '',
+    assignedSellerId: c?.assignedSeller?.id ?? '',
   };
 }
 
@@ -97,6 +104,12 @@ export function ClientForm({
   const router = useRouter();
   const queryClient = useQueryClient();
   const canManageCredit = useCanManageCredit();
+  // Sales force (phase 14): office roles set the sector and the seller; a seller's new
+  // client is assigned to him by the API.
+  const salesForce = useFeature(Feature.SALES_FORCE);
+  const canAssign = useIsOffice() && salesForce;
+  const sectors = useSectors();
+  const sellers = useSellers();
   const [problems, setProblems] = useState<string[]>([]);
   const form = useForm<FormValues>({ defaultValues: toFormValues(client) });
   const type = useWatch({ control: form.control, name: 'type' });
@@ -116,9 +129,12 @@ export function ClientForm({
     onError: (err) => setProblems([errorMessage(err)]),
   });
 
-  const onSubmit = form.handleSubmit((v) => {
+  const onSubmit = form.handleSubmit(({ sectorId, assignedSellerId, ...v }) => {
     const body = {
       ...v,
+      ...(canAssign
+        ? { sectorId: sectorId || null, assignedSellerId: assignedSellerId || null }
+        : {}),
       priceLevelId: v.priceLevelId || null,
       creditLimit: v.creditLimit.trim() || null,
       active: client?.active ?? true,
@@ -239,6 +255,33 @@ export function ClientForm({
           </div>
           {field('notes', { wide: true })}
         </Section>
+
+        {canAssign ? (
+          <Section title={t('salesForceSection')} description={t('salesForceHelp')}>
+            <div className="space-y-2">
+              <Label htmlFor="sectorId">{t('sector')}</Label>
+              <NativeSelect id="sectorId" {...form.register('sectorId')}>
+                <option value="">{t('noSector')}</option>
+                {(sectors.data ?? []).map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="assignedSellerId">{t('assignedSeller')}</Label>
+              <NativeSelect id="assignedSellerId" {...form.register('assignedSellerId')}>
+                <option value="">{t('noSeller')}</option>
+                {(sellers.data ?? []).map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.fullName}
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
+          </Section>
+        ) : null}
       </fieldset>
       <StickyActions>
         <Button type="submit" disabled={save.isPending}>

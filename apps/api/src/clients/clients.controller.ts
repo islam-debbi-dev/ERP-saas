@@ -33,38 +33,56 @@ import {
   statementQuerySchema,
   type UpdateClientInput,
   updateClientSchema,
+  type ClientBulkAssignInput,
+  type ClientBulkAssignResultDto,
+  clientBulkAssignSchema,
+  Feature,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
-import { CurrentUser, Roles } from '../auth/decorators';
+import { CurrentUser, RequireFeature, Roles } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { AgingService } from '../credit/aging.service';
 import { Idempotent } from '../idempotency/idempotent.decorator';
+import { ScopeService } from '../sales-force/scope.service';
 import { ClientsService } from './clients.service';
 
 const MANAGERS = [Role.OWNER, Role.MANAGER];
 /** Sellers add and edit clients at the counter (but not their plafond, see the service). */
-const CLIENT_EDITORS = [...MANAGERS, Role.SELLER];
+const CLIENT_EDITORS = [...MANAGERS, Role.SUPERVISOR, Role.SELLER];
 
 @Controller('clients')
 export class ClientsController {
   constructor(
     private readonly clients: ClientsService,
     private readonly aging: AgingService,
+    private readonly scope: ScopeService,
   ) {}
 
   @Get()
   list(
     @Query(new ZodValidationPipe(clientListQuerySchema)) query: ClientListQuery,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<ClientPage> {
-    return this.clients.list(query);
+    return this.clients.list(query, user);
   }
 
   // Declared before ':id'.
   @Get('debtors')
-  debtors(
+  async debtors(
     @Query(new ZodValidationPipe(debtorsQuerySchema)) query: DebtorsQuery,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<DebtorDto[]> {
-    return this.clients.debtors(query.limit);
+    return this.clients.debtors(query.limit, await this.scope.of(user));
+  }
+
+  /** Set the sector and/or seller of many clients (phase 14). Declared before ':id'. */
+  @Patch('bulk-assign')
+  @Roles(...MANAGERS)
+  @RequireFeature(Feature.SALES_FORCE)
+  bulkAssign(
+    @Body(new ZodValidationPipe(clientBulkAssignSchema)) body: ClientBulkAssignInput,
+  ): Promise<ClientBulkAssignResultDto> {
+    return this.clients.bulkAssign(body);
   }
 
   /** Clients à relancer (phase 21). Declared before ':id'. */
@@ -81,16 +99,20 @@ export class ClientsController {
   }
 
   @Get(':id')
-  get(@Param('id', ParseUUIDPipe) id: string): Promise<ClientDto> {
-    return this.clients.get(id);
+  get(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<ClientDto> {
+    return this.clients.get(id, user);
   }
 
   @Get(':id/statement')
   statement(
     @Param('id', ParseUUIDPipe) id: string,
     @Query(new ZodValidationPipe(statementQuerySchema)) query: StatementQuery,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<ClientStatementDto> {
-    return this.clients.statement(id, query);
+    return this.clients.statement(id, query, user);
   }
 
   @Post()

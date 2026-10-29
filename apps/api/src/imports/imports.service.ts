@@ -394,20 +394,29 @@ export class ImportsService {
       tx,
       plans.flatMap((p) => (p.categoryName ? [p.categoryName] : [])),
     );
-    const withCategory = <T extends { categoryId: string | null }>(
-      input: T,
-      name: string | null,
-    ) =>
-      name ? { ...input, categoryId: categoryIds.get(name.trim().toLowerCase()) ?? null } : input;
-
-    const creates = plans.flatMap((p) =>
-      p.kind === 'CREATE' ? [withCategory(p.input, p.categoryName)] : [],
+    const brandIds = await this.catalog.ensureBrands(
+      tx,
+      plans.flatMap((p) => (p.brandName ? [p.brandName] : [])),
     );
+    const withNames = <T extends { categoryId: string | null; brandId?: string | null }>(
+      input: T,
+      plan: { categoryName: string | null; brandName: string | null },
+    ): T => ({
+      ...input,
+      ...(plan.categoryName
+        ? { categoryId: categoryIds.get(plan.categoryName.trim().toLowerCase()) ?? null }
+        : {}),
+      ...(plan.brandName
+        ? { brandId: brandIds.get(plan.brandName.trim().toLowerCase()) ?? null }
+        : {}),
+    });
+
+    const creates = plans.flatMap((p) => (p.kind === 'CREATE' ? [withNames(p.input, p)] : []));
     await this.catalog.createProducts(tx, creates);
     let updated = 0;
     for (const p of plans) {
       if (p.kind !== 'UPDATE' || !p.input) continue;
-      await this.catalog.updateProduct(tx, p.id, withCategory(p.input, p.categoryName));
+      await this.catalog.updateProduct(tx, p.id, withNames(p.input, p));
       updated++;
     }
     return { created: creates.length, updated, opening: 0 };

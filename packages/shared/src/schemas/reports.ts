@@ -8,7 +8,7 @@ const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'invalid_date');
 
 /** Each report and the groupings it accepts; the first one is the default. */
 export const REPORT_GROUPS = {
-  sales: ['day', 'month', 'product', 'client', 'seller'],
+  sales: ['day', 'month', 'product', 'client', 'seller', 'brand', 'sector', 'team'],
   margin: ['product', 'category'],
   'stock-movements': ['day', 'product', 'type'],
   payments: ['mode', 'user', 'day'],
@@ -25,7 +25,13 @@ export const REPORTS_BY_ROLE: Record<Role, readonly ReportName[]> = {
   [Role.MANAGER]: REPORT_NAMES,
   [Role.SELLER]: ['sales'],
   [Role.STOREKEEPER]: ['stock-movements'],
+  // A supervisor's reports cover his team (himself and everyone under him).
+  [Role.SUPERVISOR]: ['sales', 'payments'],
+  [Role.LIVREUR]: [],
 };
+
+/** Groupings that need the SALES_FORCE module (brand is core). */
+export const SALES_FORCE_GROUPS: readonly ReportGroupBy[] = ['sector', 'team'];
 
 /** Longest period a report covers (a year, leap day included). */
 export const MAX_REPORT_DAYS = 366;
@@ -38,6 +44,11 @@ export const reportQuerySchema = z
     from: dateString,
     to: dateString,
     groupBy: z.string().optional(),
+    /** Only the sales of this seller (phase 14). */
+    sellerId: z.uuid().optional(),
+    /** Only the sales of this user's team (himself and his subtree); SALES_FORCE. */
+    teamOf: z.uuid().optional(),
+    brandId: z.uuid().optional(),
   })
   .refine((q) => q.from <= q.to, { message: 'invalid_range', path: ['to'] })
   .refine((q) => q.from > q.to || rangeLength(q) <= MAX_REPORT_DAYS, {
@@ -56,6 +67,9 @@ export function resolveGroupBy(name: ReportName, groupBy?: string): ReportGroupB
 export const dashboardQuerySchema = z.object({
   /** The day the dashboard is "as of" (Algiers); default today. */
   date: dateString.optional(),
+  sellerId: z.uuid().optional(),
+  teamOf: z.uuid().optional(),
+  brandId: z.uuid().optional(),
 });
 export type DashboardQuery = z.infer<typeof dashboardQuerySchema>;
 
@@ -76,6 +90,8 @@ export const REPORT_COLUMN_KEYS = [
   'unit',
   'category',
   'supplier',
+  'brand',
+  'sector',
   'mode',
   'type',
   'count',

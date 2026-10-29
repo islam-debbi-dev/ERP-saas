@@ -157,6 +157,7 @@ const PRODUCT_FIELDS: ImportFieldDef[] = [
     'المنتج',
   ]),
   f('category', 'text', false, ['categorie', 'famille', 'rayon', 'category', 'الفئة', 'العائلة']),
+  f('brand', 'text', false, ['marque', 'brand', 'العلامة', 'الماركة']),
   f('baseUnit', 'unit', true, ['unite de base', 'unite', 'u', 'base unit', 'unit', 'الوحدة']),
   f('barcode', 'barcode', false, [
     'code barre',

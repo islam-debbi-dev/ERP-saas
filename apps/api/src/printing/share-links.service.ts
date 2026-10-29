@@ -36,6 +36,7 @@ export class ShareLinksService {
   ) {}
 
   async create(input: CreateShareLinkInput, user: CurrentUserInfo): Promise<ShareLinkDto> {
+    await this.printing.assertShareable(input.docType, input.docId, user);
     await this.checkDocument(input);
     const { token, hash } = newShareToken();
     const expiresAt = new Date(Date.now() + SHARE_LINK_TTL_DAYS * DAY_MS);

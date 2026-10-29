@@ -6,6 +6,8 @@ import {
   Permission,
   type PricePreviewDto,
   type PricePreviewQuery,
+  type ReassignSellerInput,
+  Role,
   type SaleDto,
   type SaleListQuery,
   type SalePage,
@@ -16,11 +18,12 @@ import {
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
-import { can } from '../auth/permissions';
+import { can, requirePermission } from '../auth/permissions';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { type Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { ScopeService } from '../sales-force/scope.service';
 import { fromIsoDate, saleInclude, toIsoDate, toSaleDto } from './sale.mapper';
 import { type PriceOverride, resolvePriceLevel, snapshotSaleLines } from './sale-lines';
 
@@ -30,17 +33,19 @@ export class SalesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly scope: ScopeService,
   ) {}
 
   async create(input: CreateSaleInput, user: CurrentUserInfo): Promise<SaleDto> {
     const id = await this.prisma.db.$transaction((tx) => this.createDraftInTx(tx, input, user));
-    return this.get(id);
+    return this.get(id, user);
   }
 
   /** Also used by the quick sale, which validates in the same transaction. */
   async createDraftInTx(tx: Tx, input: CreateSaleInput, user: CurrentUserInfo): Promise<string> {
     const tenantId = tenantContext.requireTenantId();
-    await this.checkClient(tx, input.clientId);
+    await this.checkClient(tx, input.clientId, user);
+    const sellerId = (await this.resolveSeller(tx, user, input.sellerId, undefined)) ?? null;
     const priceLevelId = await resolvePriceLevel(tx, input.clientId);
     const assujetti = await this.assujettiTva(tx);
     const { lines, totals, overrides } = await snapshotSaleLines(
@@ -63,6 +68,7 @@ export class SalesService {
         totalTva: totals.totalTva.toString(),
         totalTtc: totals.totalTtc.toString(),
         createdBy: user.id,
+        sellerId,
       },
     });
     if (lines.length > 0) {
@@ -74,7 +80,13 @@ export class SalesService {
       action: 'SALE_DRAFT_CREATED',
       entity: 'Sale',
       entityId: sale.id,
-      after: { type: input.type, clientId: input.clientId, lines: input.lines, overrides },
+      after: {
+        type: input.type,
+        clientId: input.clientId,
+        sellerId,
+        lines: input.lines,
+        overrides,
+      },
     });
     return sale.id;
   }
@@ -82,6 +94,7 @@ export class SalesService {
   /** Replaces the draft (header and lines). `version` guards against concurrent edits. */
   async update(id: string, input: UpdateSaleInput, user: CurrentUserInfo): Promise<SaleDto> {
     await this.prisma.db.$transaction(async (tx) => {
+      await this.assertInScope(tx, user, id);
       const current = await lockSale(tx, id);
       if (current.status !== SaleStatus.DRAFT) {
         throw new AppException(ErrorCode.SALE_NOT_DRAFT, 'Only a draft can be edited', {
@@ -93,7 +106,8 @@ export class SalesService {
           currentVersion: current.version,
         });
       }
-      await this.checkClient(tx, input.clientId);
+      await this.checkClient(tx, input.clientId, user);
+      const sellerId = await this.resolveSeller(tx, user, input.sellerId, current.sellerId);
       const priceLevelId = await resolvePriceLevel(tx, input.clientId);
       const assujetti = await this.assujettiTva(tx);
       const { lines, totals, overrides } = await snapshotSaleLines(
@@ -121,6 +135,7 @@ export class SalesService {
           totalHt: totals.totalHt.toString(),
           totalTva: totals.totalTva.toString(),
           totalTtc: totals.totalTtc.toString(),
+          ...(sellerId !== undefined ? { sellerId } : {}),
           version: { increment: 1 },
         },
       });
@@ -128,22 +143,97 @@ export class SalesService {
         action: 'SALE_DRAFT_UPDATED',
         entity: 'Sale',
         entityId: id,
-        after: { type: input.type, clientId: input.clientId, lines: input.lines, overrides },
+        after: {
+          type: input.type,
+          clientId: input.clientId,
+          sellerId: sellerId === undefined ? current.sellerId : sellerId,
+          lines: input.lines,
+          overrides,
+        },
       });
     });
-    return this.get(id);
+    return this.get(id, user);
   }
 
-  async get(id: string): Promise<SaleDto> {
-    const s = await this.prisma.db.sale.findUnique({ where: { id }, include: saleInclude });
+  /**
+   * One sale. With a user, a sale outside his scope (phase 14) answers 404; without
+   * one (share links, internal reads after a write already checked) it is not scoped.
+   */
+  async get(id: string, user?: CurrentUserInfo): Promise<SaleDto> {
+    const scope = user ? await this.scope.of(user) : null;
+    const s = await this.prisma.db.sale.findFirst({
+      where: { id, ...(scope ? this.scope.saleWhere(scope) : {}) },
+      include: saleInclude,
+    });
     if (!s) throw new AppException(ErrorCode.NOT_FOUND, 'Sale not found');
-    const seller = s.createdBy
+    // Sales before phase 14 have no sellerId: their creator is shown as the seller.
+    const sellerUserId = s.sellerId ?? s.createdBy;
+    const seller = sellerUserId
       ? await this.prisma.db.user.findUnique({
-          where: { id: s.createdBy },
+          where: { id: sellerUserId },
           select: { id: true, fullName: true },
         })
       : null;
     return toSaleDto(s, seller);
+  }
+
+  /**
+   * Changes the seller of a validated sale (phase 14): SALE_REASSIGN_SELLER and a reason,
+   * audited with before/after. A draft is simply edited. Phase 18 refuses it once the
+   * month's incentives are approved (`assertSellerChangeAllowed`).
+   */
+  async reassignSeller(
+    id: string,
+    input: ReassignSellerInput,
+    user: CurrentUserInfo,
+  ): Promise<SaleDto> {
+    requirePermission(user, Permission.SALE_REASSIGN_SELLER);
+    await this.prisma.db.$transaction(async (tx) => {
+      await this.assertInScope(tx, user, id);
+      const current = await lockSale(tx, id);
+      if (current.status !== SaleStatus.VALIDATED) {
+        throw new AppException(
+          ErrorCode.SALE_NOT_VALIDATED,
+          'Only a validated sale is reassigned',
+          {
+            status: current.status,
+          },
+        );
+      }
+      const sale = await tx.sale.findUniqueOrThrow({
+        where: { id },
+        select: { sellerId: true, createdBy: true, validatedAt: true, number: true },
+      });
+      await this.scope.assertSellerChangeAllowed(tx, {
+        kind: 'SALE',
+        at: sale.validatedAt ?? new Date(),
+      });
+      if (input.sellerId) await this.scope.assertSeller(tx, input.sellerId);
+      if (input.sellerId === sale.sellerId) return;
+      await tx.sale.update({
+        where: { id },
+        data: { sellerId: input.sellerId, version: { increment: 1 } },
+      });
+      await this.audit.log(tx, {
+        action: 'SALE_SELLER_REASSIGNED',
+        entity: 'Sale',
+        entityId: id,
+        before: { sellerId: sale.sellerId, number: sale.number },
+        after: { sellerId: input.sellerId, reason: input.reason },
+      });
+    });
+    return this.get(id, user);
+  }
+
+  /** 404 unless the sale is in the user's scope (phase 14). Used by every write on a sale. */
+  async assertInScope(tx: Tx, user: CurrentUserInfo, id: string): Promise<void> {
+    const scope = await this.scope.of(user, tx);
+    if (!scope.documentUserIds) return;
+    const s = await tx.sale.findFirst({
+      where: { id, ...this.scope.saleWhere(scope) },
+      select: { id: true },
+    });
+    if (!s) throw new AppException(ErrorCode.NOT_FOUND, 'Sale not found');
   }
 
   /** The sale an avoir was made on (printing an avoir starts from its id). */
@@ -156,12 +246,21 @@ export class SalesService {
     return r.saleId;
   }
 
-  async list(query: SaleListQuery): Promise<SalePage> {
+  async list(query: SaleListQuery, user: CurrentUserInfo): Promise<SalePage> {
+    const scope = await this.scope.of(user);
     const where: Prisma.SaleWhereInput = {
+      AND: [
+        this.scope.saleWhere(scope),
+        // Sales before phase 14 have no sellerId: they belong to their creator.
+        query.sellerId
+          ? {
+              OR: [{ sellerId: query.sellerId }, { sellerId: null, createdBy: query.sellerId }],
+            }
+          : {},
+      ],
       ...(query.type ? { type: query.type } : {}),
       ...(query.status ? { status: query.status } : {}),
       ...(query.clientId ? { clientId: query.clientId } : {}),
-      ...(query.sellerId ? { createdBy: query.sellerId } : {}),
       ...(query.notInvoiced ? { type: SaleType.BL, invoiceId: null } : {}),
       ...(query.from || query.to
         ? {
@@ -184,7 +283,9 @@ export class SalesService {
       ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
     });
     const page = rows.slice(0, query.limit);
-    const sellerIds = [...new Set(page.map((s) => s.createdBy).filter((u): u is string => !!u))];
+    const sellerOf = (s: { sellerId: string | null; createdBy: string | null }) =>
+      s.sellerId ?? s.createdBy;
+    const sellerIds = [...new Set(page.map(sellerOf).filter((u): u is string => !!u))];
     const sellers = await this.prisma.db.user.findMany({
       where: { id: { in: sellerIds } },
       select: { id: true, fullName: true },
@@ -201,7 +302,7 @@ export class SalesService {
         totalTtc: toMoneyString(s.totalTtc.toString()),
         paidAmount: toMoneyString(s.paidAmount.toString()),
         invoice: s.invoice,
-        seller: s.createdBy ? (sellerById.get(s.createdBy) ?? null) : null,
+        seller: sellerById.get(sellerOf(s) ?? '') ?? null,
         lineCount: s._count.lines,
       })),
       nextCursor: rows.length > query.limit ? (page.at(-1)?.id ?? null) : null,
@@ -209,7 +310,7 @@ export class SalesService {
   }
 
   /** The price the client would get for one product unit. */
-  async pricePreview(query: PricePreviewQuery): Promise<PricePreviewDto> {
+  async pricePreview(query: PricePreviewQuery, user: CurrentUserInfo): Promise<PricePreviewDto> {
     const db = this.prisma.db;
     const unit = await db.productUnit.findFirst({
       where: { id: query.productUnitId, deletedAt: null },
@@ -219,6 +320,7 @@ export class SalesService {
     if (query.clientId) {
       const client = await db.client.findUnique({ where: { id: query.clientId } });
       if (!client) throw new AppException(ErrorCode.NOT_FOUND, 'Client not found');
+      await this.scope.assertClient(db, user, query.clientId);
     }
     const priceLevelId = await db.$transaction((tx) =>
       resolvePriceLevel(tx, query.clientId ?? null),
@@ -272,12 +374,50 @@ export class SalesService {
     }
   }
 
-  private async checkClient(tx: Tx, clientId: string | null): Promise<void> {
+  private async checkClient(tx: Tx, clientId: string | null, user: CurrentUserInfo): Promise<void> {
     if (!clientId) return;
     const c = await tx.client.findFirst({ where: { id: clientId, deletedAt: null } });
     if (!c) {
       throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown client', { field: 'clientId' });
     }
+    await this.scope.assertClient(tx, user, clientId);
+  }
+
+  /**
+   * The seller to store (phase 14). `current` is undefined on a create; the result is
+   * undefined when the stored seller does not change. A SELLER always sells in his own
+   * name; office roles pick any seller, a supervisor one of his team.
+   */
+  private async resolveSeller(
+    tx: Tx,
+    user: CurrentUserInfo,
+    requested: string | null | undefined,
+    current: string | null | undefined,
+  ): Promise<string | null | undefined> {
+    const creating = current === undefined;
+    if (user.role === Role.SELLER) {
+      const keeps = requested === undefined || requested === (creating ? user.id : current);
+      if (!keeps) {
+        throw new AppException(ErrorCode.FORBIDDEN, 'A seller cannot sell in the name of another', {
+          field: 'sellerId',
+        });
+      }
+      return creating ? user.id : undefined;
+    }
+    if (requested === undefined) return creating ? null : undefined;
+    if (requested === current) return undefined;
+    if (requested !== null) {
+      await this.scope.assertSeller(tx, requested);
+      if (
+        user.role === Role.SUPERVISOR &&
+        !(await this.scope.teamIds(user.id, tx)).includes(requested)
+      ) {
+        throw new AppException(ErrorCode.FORBIDDEN, 'This seller is not in your team', {
+          field: 'sellerId',
+        });
+      }
+    }
+    return requested;
   }
 
   private async assujettiTva(tx: Tx): Promise<boolean> {
@@ -293,9 +433,11 @@ export class SalesService {
 export async function lockSale(
   tx: Tx,
   id: string,
-): Promise<{ status: SaleStatus; version: number }> {
-  const rows = await tx.$queryRaw<{ status: SaleStatus; version: number }[]>`
-    SELECT status, version FROM sales
+): Promise<{ status: SaleStatus; version: number; sellerId: string | null }> {
+  const rows = await tx.$queryRaw<
+    { status: SaleStatus; version: number; sellerId: string | null }[]
+  >`
+    SELECT status, version, "sellerId" FROM sales
     WHERE id = ${id}::uuid AND "tenantId" = ${tenantContext.requireTenantId()}::uuid
     FOR UPDATE`;
   const row = rows[0];

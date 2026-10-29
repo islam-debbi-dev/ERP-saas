@@ -21,6 +21,8 @@ const COLUMN_TITLES: Record<ReportColumnKey, string> = {
   unit: 'Unité',
   category: 'Catégorie',
   supplier: 'Fournisseur',
+  brand: 'Marque',
+  sector: 'Secteur',
   mode: 'Mode',
   type: 'Type',
   count: 'Nombre',

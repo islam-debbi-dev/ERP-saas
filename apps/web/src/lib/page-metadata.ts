@@ -18,6 +18,8 @@ type TitleKey =
   | 'products.newTitle'
   | 'products.editTitle'
   | 'categories.title'
+  | 'brands.title'
+  | 'sectors.title'
   | 'stock.inventories'
   | 'purchases.newTitle'
   | 'purchases.editTitle'

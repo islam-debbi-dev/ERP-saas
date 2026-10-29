@@ -14,7 +14,8 @@
     "comingSoon": "هذه الوحدة ستتوفر في إصدار قادم.",
     "comingSoonTitle": "قريبًا",
     "notifications": "الإشعارات",
-    "actions": "إجراءات"
+    "actions": "إجراءات",
+    "cancel": "إلغاء"
   },
   "nav": {
     "groupMain": "النشاط",
@@ -50,7 +51,9 @@
     "OWNER": "المالك",
     "MANAGER": "المسيّر",
     "SELLER": "البائع",
-    "STOREKEEPER": "أمين المخزن"
+    "STOREKEEPER": "أمين المخزن",
+    "SUPERVISOR": "مشرف",
+    "LIVREUR": "موزّع"
   },
   "auth": {
     "loginTitle": "تسجيل الدخول",
@@ -106,7 +109,16 @@
     "chequesTitle": "شيكات مستحقة (7 أيام)",
     "chequesClients": "شيكات الزبائن للتحصيل",
     "chequesSuppliers": "شيكات الموردين للتغطية",
-    "chequesCount": "{count, plural, =0 {لا شيء} one {شيك واحد} two {شيكان} few {# شيكات} other {# شيكًا}}"
+    "chequesCount": "{count, plural, =0 {لا شيء} one {شيك واحد} two {شيكان} few {# شيكات} other {# شيكًا}}",
+    "filters": "تصفية المبيعات",
+    "filtersActive": "{count, plural, one {مرشح واحد} two {مرشحان} few {# مرشحات} many {# مرشحًا} other {# مرشح}}",
+    "filterSeller": "البائع",
+    "allSellers": "كل البائعين",
+    "filterTeam": "الفريق",
+    "allTeams": "كل الفرق",
+    "filterBrand": "العلامة",
+    "allBrands": "كل العلامات",
+    "filtersHint": "المرشحات تغيّر أرقام المبيعات فقط. الصندوق والديون والمخزون تبقى للشركة كلها."
   },
   "reports": {
     "title": "التقارير",
@@ -136,7 +148,10 @@
       "type": "نوع الحركة",
       "mode": "طريقة الدفع",
       "user": "المستخدم",
-      "supplier": "المورد"
+      "supplier": "المورد",
+      "brand": "العلامة",
+      "sector": "القطاع",
+      "team": "الفريق"
     },
     "columns": {
       "day": "اليوم",
@@ -164,13 +179,24 @@
       "cost": "التكلفة",
       "margin": "الهامش",
       "marginPct": "الهامش %",
-      "total": "المبلغ"
+      "total": "المبلغ",
+      "brand": "العلامة",
+      "sector": "القطاع"
     },
     "none": {
       "client": "زبون عابر",
       "category": "دون فئة",
-      "other": "—"
-    }
+      "other": "—",
+      "brand": "بدون علامة",
+      "sector": "بدون قطاع",
+      "user": "غير منسوب"
+    },
+    "filterSeller": "البائع",
+    "allSellers": "الكل",
+    "filterTeam": "الفريق",
+    "allTeams": "الكل",
+    "filterBrand": "العلامة",
+    "allBrands": "الكل"
   },
   "settings": {
     "title": "الإعدادات",
@@ -232,7 +258,11 @@
     "subscriptionLink": "الاشتراك",
     "subscriptionLinkHelp": "الباقة، تاريخ التجديد، الاستعمال والمدفوعات.",
     "reminderDays": "التذكير بعد (أيام)",
-    "reminderDaysHint": "يظهر الزبون في «للتذكير» عندما يتجاوز أقدم دين له هذا العدد من الأيام."
+    "reminderDaysHint": "يظهر الزبون في «للتذكير» عندما يتجاوز أقدم دين له هذا العدد من الأيام.",
+    "sellerScope": "الزبائن المرئيون للبائع",
+    "sellerScopeHint": "مع «زبائنه فقط» لا يرى البائع إلا زبائنه ومبيعاته وتحصيلاته. يرى المشرف ما يخص فريقه.",
+    "sellerScopeAll": "كل الزبائن",
+    "sellerScopeAssigned": "زبائنه فقط"
   },
   "validation": {
     "required": "هذا الحقل إلزامي.",
@@ -320,7 +350,11 @@
     "SUPPLIER_CODE_TAKEN": "رمز المورد هذا مستعمل.",
     "SUPPLIER_OPENING_ALREADY_SET": "لهذا المورد رصيد افتتاحي مسبقًا.",
     "SUPPLIER_PAYMENT_NOT_VALID": "هذه التسوية ملغاة مسبقًا.",
-    "SHARE_LINK_INVALID": "هذا الرابط لم يعد صالحًا."
+    "SHARE_LINK_INVALID": "هذا الرابط لم يعد صالحًا.",
+    "MANAGER_CYCLE": "هذا المسؤول ضمن فريق هذا المستخدم أصلًا.",
+    "SELLER_NOT_ALLOWED": "لا يمكن أن يكون هذا المستخدم بائعًا (معطّل أو دوره لا يبيع).",
+    "BRAND_NAME_TAKEN": "توجد علامة بهذا الاسم.",
+    "SECTOR_NAME_TAKEN": "يوجد قطاع بهذا الاسم."
   },
   "units": {
     "PIECE": "قطعة",
@@ -413,7 +447,10 @@
       "whole_factor_required": "هذا المنتج يُعدّ بالقطعة: يجب أن يكون المحتوى عددًا صحيحًا.",
       "whole_min_stock_required": "هذا المنتج يُعدّ بالقطعة: يجب أن يكون الحد الأدنى عددًا صحيحًا.",
       "base_unit_immutable": "لا يمكن تغيير الوحدة الأساسية."
-    }
+    },
+    "brands": "العلامات التجارية",
+    "brand": "العلامة",
+    "noBrand": "بدون علامة"
   },
   "categories": {
     "title": "الفئات",
@@ -755,7 +792,24 @@
     "reasonHint": "إجباري، مثلًا «تخفيض ممنوح».",
     "adjustSubmit": "حفظ التسوية",
     "adjustDone": "تمت تسوية الرصيد",
-    "newPayment": "دفعة جديدة"
+    "newPayment": "دفعة جديدة",
+    "selectForAssign": "تحديد للتوزيع",
+    "selectClient": "تحديد {name}",
+    "sectorSeller": "القطاع / البائع",
+    "sectors": "القطاعات",
+    "filterSector": "القطاع",
+    "allSectors": "كل القطاعات",
+    "filterSeller": "البائع",
+    "allSellers": "كل البائعين",
+    "selectedCount": "{count, plural, one {زبون واحد محدد} two {زبونان محددان} few {# زبائن محددين} many {# زبونًا محددًا} other {# زبون محدد}}",
+    "clearSelection": "إلغاء التحديد",
+    "assign": "توزيع",
+    "salesForceSection": "القطاع والبائع",
+    "salesForceHelp": "البائع الذي يتابع هذا الزبون ومنطقته.",
+    "sector": "القطاع",
+    "noSector": "بدون قطاع",
+    "assignedSeller": "البائع المكلّف",
+    "noSeller": "بدون بائع"
   },
   "clientLedgerTypes": {
     "OPENING": "رصيد افتتاحي",
@@ -906,7 +960,10 @@
     "netToPay": "الصافي للدفع",
     "print": "طباعة",
     "qtyLess": "إنقاص {product} بواحد",
-    "qtyMore": "زيادة {product} بواحد"
+    "qtyMore": "زيادة {product} بواحد",
+    "noSeller": "بدون بائع",
+    "changeSeller": "تغيير البائع",
+    "sellerChanged": "تم تغيير البائع"
   },
   "payments": {
     "title": "الدفعات",
@@ -976,7 +1033,10 @@
     "unpaidTitle": "الوثائق غير المسددة",
     "unpaidTotal": "الباقي للدفع:",
     "unpaidNone": "كل الوثائق مسددة.",
-    "ofTotal": "من"
+    "ofTotal": "من",
+    "collectedBy": "حصّله",
+    "changeCollector": "تغيير",
+    "collectorChanged": "تم تغيير المحصّل"
   },
   "print": {
     "print": "طباعة",
@@ -1096,7 +1156,8 @@
       "phone": "الهاتف",
       "address": "العنوان",
       "creditLimit": "السقف",
-      "openingBalance": "الرصيد الافتتاحي"
+      "openingBalance": "الرصيد الافتتاحي",
+      "brand": "العلامة"
     },
     "issues": {
       "required": "إلزامي",
@@ -1125,6 +1186,7 @@
       "invalid_client": "زبون غير صالح ({rule})",
       "opening_already_set": "مسجّل مسبقًا: الرصيد أو المخزون الافتتاحي يُستورد مرة واحدة فقط",
       "category_created": "سيتم إنشاء الفئة «{name}»",
+      "brand_created": "سيتم إنشاء العلامة «{name}»",
       "tva_defaulted": "الرسم فارغ: سيُطبّق 0 %",
       "no_changes": "لا تغييرات",
       "stock_not_empty": "المنتج لديه {qty} في المخزون؛ سيُضاف المخزون الافتتاحي إليه",
@@ -1189,7 +1251,11 @@
     "deactivateTitle": "تعطيل {name}؟",
     "deactivateHelp": "تُغلق جميع جلساته فورًا ولا يمكنه الدخول بعد الآن. يبقى اسمه على الوثائق.",
     "cancel": "إلغاء",
-    "empty": "لا يوجد مستخدمون"
+    "empty": "لا يوجد مستخدمون",
+    "manager": "المسؤول",
+    "managerHint": "المشرف أو المسيّر المسؤول عن هذا المستخدم.",
+    "noManager": "لا يوجد",
+    "colManager": "المسؤول"
   },
   "permissions": {
     "PRICE_OVERRIDE": {
@@ -1223,6 +1289,10 @@
     "EXPORT_DATA": {
       "label": "التصدير",
       "help": "تصدير التقارير إلى Excel."
+    },
+    "SALE_REASSIGN_SELLER": {
+      "label": "تغيير البائع",
+      "help": "تغيير بائع بيع مصادق عليه أو محصّل دفعة، مع ذكر السبب."
     }
   },
   "sessions": {
@@ -1532,5 +1602,78 @@
     "whatsapp": "تذكير عبر واتساب",
     "whatsappFor": "تذكير {name} عبر واتساب",
     "message": "السلام عليكم {name}، ما لم نخطئ، رصيدك لدى {company} هو {balance} (الأقدم منذ {days} يومًا). كشف حسابك: {url}. شكرًا."
+  },
+  "brands": {
+    "title": "العلامات التجارية",
+    "subtitle": "علامات منتجاتك، لمتابعة المبيعات حسب العلامة.",
+    "new": "علامة جديدة",
+    "edit": "تعديل العلامة",
+    "editNamed": "تعديل {name}",
+    "delete": "حذف",
+    "deleteNamed": "حذف {name}",
+    "deleteTitle": "حذف هذه العلامة؟",
+    "deleteBody": "تختفي من القوائم، وتبقى في المنتجات والتقارير.",
+    "emptyTitle": "لا توجد علامات",
+    "emptyDescription": "أضف علاماتك، أو عمود «Marque» في استيراد المنتجات.",
+    "created": "تم إنشاء العلامة",
+    "saved": "تم حفظ العلامة",
+    "deleted": "تم حذف العلامة",
+    "name": "الاسم",
+    "supplier": "المورّد المعتاد",
+    "noSupplier": "لا يوجد",
+    "productCount": "{count, plural, =0 {لا منتجات} one {منتج واحد} two {منتجان} few {# منتجات} many {# منتجًا} other {# منتج}}"
+  },
+  "sectors": {
+    "title": "القطاعات",
+    "subtitle": "مناطق البائعين: ولاية وبلدياتها.",
+    "new": "قطاع جديد",
+    "edit": "تعديل القطاع",
+    "editNamed": "تعديل {name}",
+    "delete": "حذف",
+    "deleteNamed": "حذف {name}",
+    "deleteTitle": "حذف هذا القطاع؟",
+    "deleteBody": "{count, plural, =0 {لا يوجد زبون في هذا القطاع.} one {سيُسحب زبون واحد من القطاع.} two {سيُسحب زبونان من القطاع.} few {سيُسحب # زبائن من القطاع.} many {سيُسحب # زبونًا من القطاع.} other {سيُسحب # زبون من القطاع.}}",
+    "emptyTitle": "لا توجد قطاعات",
+    "emptyDescription": "أنشئ قطاعًا ثم وزّع عليه زبائنك من قائمة الزبائن.",
+    "created": "تم إنشاء القطاع",
+    "saved": "تم حفظ القطاع",
+    "deleted": "تم حذف القطاع",
+    "name": "الاسم",
+    "wilaya": "الولاية",
+    "communes": "البلديات",
+    "communesHint": "افصل بين البلديات بفواصل.",
+    "help": "منطقة يغطيها البائعون.",
+    "clientCount": "{count, plural, =0 {لا زبائن} one {زبون واحد} two {زبونان} few {# زبائن} many {# زبونًا} other {# زبون}}",
+    "back": "الزبائن"
+  },
+  "assign": {
+    "title": "{count, plural, one {توزيع زبون واحد} two {توزيع زبونين} few {توزيع # زبائن} many {توزيع # زبونًا} other {توزيع # زبون}}",
+    "help": "اختر ما يتغير. «بدون تغيير» يحتفظ بقيمة كل زبون.",
+    "sector": "القطاع",
+    "seller": "البائع",
+    "keep": "بدون تغيير",
+    "noSector": "إزالة القطاع",
+    "noSeller": "إزالة البائع",
+    "submit": "توزيع",
+    "done": "{count, plural, =0 {لم يتغير شيء} one {تم توزيع زبون واحد} two {تم توزيع زبونين} few {تم توزيع # زبائن} many {تم توزيع # زبونًا} other {تم توزيع # زبون}}"
+  },
+  "reassign": {
+    "sellerTitle": "تغيير البائع",
+    "collectorTitle": "تغيير المحصّل",
+    "help": "يُحفظ التغيير وسببه في السجل.",
+    "seller": "البائع",
+    "collector": "حصّله",
+    "none": "لا أحد",
+    "reason": "السبب",
+    "submit": "تغيير"
+  },
+  "team": {
+    "title": "الفرق",
+    "help": "من يتبع من، حسب مسؤول كل مستخدم.",
+    "inactive": "معطّل",
+    "memberCount": "{count, plural, one {شخص واحد في الفريق} two {شخصان في الفريق} few {# أشخاص في الفريق} many {# شخصًا في الفريق} other {# شخص في الفريق}}",
+    "emptyTitle": "لا توجد فرق",
+    "emptyDescription": "عيّن مسؤولًا لبائعيك (تعديل) لتكوين الفرق.",
+    "withoutTeam": "بدون فريق"
   }
 }

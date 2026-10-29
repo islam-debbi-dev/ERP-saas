@@ -38,6 +38,11 @@ const saleFields = {
   documentDate: dateString,
   note: optionalText(255),
   lines: z.array(saleLineInputSchema).max(300),
+  /**
+   * Who made the sale (phase 14). Office roles pick it; a SELLER's sales are always his.
+   * Omitted = the creator if he is a SELLER, else none (unchanged on update).
+   */
+  sellerId: id.nullable().optional(),
 };
 
 export const createSaleSchema = z.object(saleFields);
@@ -213,6 +218,9 @@ export interface SaleDto {
   creditOverride: boolean;
   cancelReason: string | null;
   version: number;
+  /** The stored seller (phase 14); null on older sales and when none was picked. */
+  sellerId: string | null;
+  /** Who the sale counts for: the seller, else its creator. */
   seller: { id: string; fullName: string } | null;
   createdAt: string;
   validatedAt: string | null;

@@ -5,9 +5,35 @@ export const Role = {
   MANAGER: 'MANAGER',
   SELLER: 'SELLER',
   STOREKEEPER: 'STOREKEEPER',
+  /** Manages a team of sellers through `User.managerId` (phase 14). */
+  SUPERVISOR: 'SUPERVISOR',
+  /** Delivers pre-sale orders (screens in phase 16). */
+  LIVREUR: 'LIVREUR',
 } as const;
 export type Role = (typeof Role)[keyof typeof Role];
 export const ROLES = Object.values(Role);
+
+/**
+ * Which clients a seller sees (phase 14, SALES_FORCE). ALL_CLIENTS keeps the old
+ * behaviour; ASSIGNED_ONLY limits a seller to his assigned clients and his own documents.
+ */
+export const SellerScope = {
+  ALL_CLIENTS: 'ALL_CLIENTS',
+  ASSIGNED_ONLY: 'ASSIGNED_ONLY',
+} as const;
+export type SellerScope = (typeof SellerScope)[keyof typeof SellerScope];
+export const SELLER_SCOPES = Object.values(SellerScope);
+
+/** Roles that can be put on a sale as its seller, or on a versement as its collector. */
+export const SELLING_ROLES: readonly Role[] = [
+  Role.OWNER,
+  Role.MANAGER,
+  Role.SUPERVISOR,
+  Role.SELLER,
+];
+
+/** Office roles pick the seller of a sale; a SELLER always sells in his own name. */
+export const OFFICE_ROLES: readonly Role[] = [Role.OWNER, Role.MANAGER, Role.SUPERVISOR];
 
 /** Document types with their own numbering sequence. See docs/domain.md glossary. */
 export const DocType = {

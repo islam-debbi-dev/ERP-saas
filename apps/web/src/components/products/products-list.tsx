@@ -1,7 +1,7 @@
 'use client';
 
 import { type ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { FolderTree, Loader2, PackageSearch, Plus, ScanBarcode } from 'lucide-react';
+import { FolderTree, Loader2, PackageSearch, Plus, ScanBarcode, Tag } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -167,6 +167,7 @@ export function ProductsList() {
       <PageHeader
         title={t('title')}
         description={t('subtitle')}
+        more={[{ label: t('brands'), icon: Tag, href: '/produits/marques' }]}
         actions={
           <>
             <Button asChild variant="outline">

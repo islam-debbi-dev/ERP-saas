@@ -12,6 +12,7 @@ import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
 import { type Tx } from '../prisma/prisma.service';
 import { createDefaultUnits, ensurePriceLevels } from './catalog-defaults';
+import { BrandsService } from './brands.service';
 import { CategoriesService } from './categories.service';
 import { PriceLevelsService } from './price-levels.service';
 import { ProductsService } from './products.service';
@@ -28,6 +29,7 @@ export interface CatalogLookups {
   /** Active levels only, by position. */
   priceLevels: { id: string; position: number; name: string }[];
   categories: { id: string; name: string }[];
+  brands: { id: string; name: string }[];
 }
 
 /** Entry point other modules use to set up or adjust a tenant's catalog. */
@@ -38,6 +40,7 @@ export class CatalogService {
     private readonly audit: AuditService,
     private readonly products: ProductsService,
     private readonly categories: CategoriesService,
+    private readonly brands: BrandsService,
   ) {}
 
   // ---------------------------------------------------------------- Excel import
@@ -45,10 +48,11 @@ export class CatalogService {
   /** Units, active price levels and live categories, to validate imported rows. */
   async importLookups(tx: Tx): Promise<CatalogLookups> {
     const active = await this.priceLevels.activeIds(tx);
-    const [units, levels, categories] = await Promise.all([
+    const [units, levels, categories, brands] = await Promise.all([
       tx.unit.findMany({ orderBy: { createdAt: 'asc' } }),
       tx.priceLevel.findMany({ orderBy: { position: 'asc' } }),
       tx.category.findMany({ where: { deletedAt: null }, select: { id: true, name: true } }),
+      tx.brand.findMany({ where: { deletedAt: null }, select: { id: true, name: true } }),
     ]);
     return {
       units: units.map((u) => ({
@@ -61,6 +65,7 @@ export class CatalogService {
         .filter((l) => active.has(l.id))
         .map((l) => ({ id: l.id, position: l.position, name: l.name })),
       categories,
+      brands,
     };
   }
 
@@ -74,6 +79,10 @@ export class CatalogService {
 
   ensureCategories(tx: Tx, names: string[]): Promise<Map<string, string>> {
     return this.categories.ensureByNames(tx, names);
+  }
+
+  ensureBrands(tx: Tx, names: string[]): Promise<Map<string, string>> {
+    return this.brands.ensureByNames(tx, names);
   }
 
   createProducts(tx: Tx, inputs: CreateProductInput[]): Promise<string[]> {

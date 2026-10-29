@@ -27,6 +27,8 @@ import { saleKeys } from '@/lib/sales';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { useIdempotencyKey } from '@/lib/use-idempotency-key';
 import { PrintButton } from '@/components/shared/print-button';
+import { ReassignDialog } from '@/components/sales-force/reassign-dialog';
+import { useReassignCollector } from '@/lib/sales-force';
 import { PaymentStatusBadge } from './payment-status-badge';
 import { Amount } from '@/components/shared/amount';
 
@@ -58,6 +60,9 @@ export function PaymentDetailDialog({
   const payment = usePayment(open ? id : '');
   const p = payment.data;
   const canCancel = useCanCancel(p);
+  const canReassign = usePermission(Permission.SALE_REASSIGN_SELLER) && p?.status === 'VALID';
+  const reassign = useReassignCollector();
+  const [reassigning, setReassigning] = useState(false);
   const canBounce =
     useCanManageCredit() && p?.status === 'VALID' && p.mode === 'CHEQUE' && p.client !== null;
   const [action, setAction] = useState<'cancel' | 'bounce' | null>(null);
@@ -113,6 +118,24 @@ export function PaymentDetailDialog({
           }),
         },
         { label: t('receivedBy'), value: p.receivedBy?.fullName ?? '—' },
+        {
+          label: t('collectedBy'),
+          value: (
+            <span className="flex flex-wrap items-center gap-x-2">
+              {p.collectedBy?.fullName ?? '—'}
+              {canReassign ? (
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="h-auto min-h-11 px-0 md:min-h-0"
+                  onClick={() => setReassigning(true)}
+                >
+                  {t('changeCollector')}
+                </Button>
+              ) : null}
+            </span>
+          ),
+        },
         ...(p.reference
           ? [
               {
@@ -277,6 +300,32 @@ export function PaymentDetailDialog({
           </>
         )}
       </ResponsiveDialogContent>
+      {reassigning && p ? (
+        <ReassignDialog
+          kind="collector"
+          currentId={p.collectedBy?.id ?? null}
+          open
+          onOpenChange={(o) => {
+            if (!o) {
+              setReassigning(false);
+              reassign.reset();
+            }
+          }}
+          pending={reassign.isPending}
+          error={reassign.error ? errorMessage(reassign.error) : null}
+          onSubmit={(collectedBy, reason) =>
+            reassign.mutate(
+              { id: p.id, body: { collectedBy, reason } },
+              {
+                onSuccess: () => {
+                  toast.success(t('collectorChanged'));
+                  setReassigning(false);
+                },
+              },
+            )
+          }
+        />
+      ) : null}
     </ResponsiveDialog>
   );
 }

@@ -14,7 +14,8 @@
     "comingSoon": "This module is coming in a later version.",
     "comingSoonTitle": "Coming soon",
     "notifications": "Notifications",
-    "actions": "Actions"
+    "actions": "Actions",
+    "cancel": "Cancel"
   },
   "nav": {
     "groupMain": "Activity",
@@ -50,7 +51,9 @@
     "OWNER": "Owner",
     "MANAGER": "Manager",
     "SELLER": "Seller",
-    "STOREKEEPER": "Storekeeper"
+    "STOREKEEPER": "Storekeeper",
+    "SUPERVISOR": "Supervisor",
+    "LIVREUR": "Delivery driver"
   },
   "auth": {
     "loginTitle": "Log in",
@@ -106,7 +109,16 @@
     "chequesTitle": "Cheques due (7 days)",
     "chequesClients": "Customer cheques to cash",
     "chequesSuppliers": "Supplier cheques to cover",
-    "chequesCount": "{count, plural, =0 {none} one {# cheque} other {# cheques}}"
+    "chequesCount": "{count, plural, =0 {none} one {# cheque} other {# cheques}}",
+    "filters": "Filter sales",
+    "filtersActive": "{count, plural, one {# filter} other {# filters}}",
+    "filterSeller": "Seller",
+    "allSellers": "All sellers",
+    "filterTeam": "Team",
+    "allTeams": "All teams",
+    "filterBrand": "Brand",
+    "allBrands": "All brands",
+    "filtersHint": "Filters change the sales figures. Cash, credit and stock stay company-wide."
   },
   "reports": {
     "title": "Reports",
@@ -136,7 +148,10 @@
       "type": "Movement type",
       "mode": "Payment method",
       "user": "User",
-      "supplier": "Supplier"
+      "supplier": "Supplier",
+      "brand": "Brand",
+      "sector": "Sector",
+      "team": "Team"
     },
     "columns": {
       "day": "Day",
@@ -164,13 +179,24 @@
       "cost": "Cost",
       "margin": "Margin",
       "marginPct": "Margin %",
-      "total": "Amount"
+      "total": "Amount",
+      "brand": "Brand",
+      "sector": "Sector"
     },
     "none": {
       "client": "Walk-in client",
       "category": "No category",
-      "other": "—"
-    }
+      "other": "—",
+      "brand": "No brand",
+      "sector": "No sector",
+      "user": "Unassigned"
+    },
+    "filterSeller": "Seller",
+    "allSellers": "All",
+    "filterTeam": "Team",
+    "allTeams": "All",
+    "filterBrand": "Brand",
+    "allBrands": "All"
   },
   "settings": {
     "title": "Settings",
@@ -232,7 +258,11 @@
     "subscriptionLink": "Subscription",
     "subscriptionLinkHelp": "Plan, renewal date, usage and payments.",
     "reminderDays": "Remind after (days)",
-    "reminderDaysHint": "A customer shows in \"To remind\" when their oldest unpaid amount is older than this."
+    "reminderDaysHint": "A customer shows in \"To remind\" when their oldest unpaid amount is older than this.",
+    "sellerScope": "Clients a seller sees",
+    "sellerScopeHint": "With “his clients”, a seller sees only his clients, sales and payments. A supervisor sees his team’s.",
+    "sellerScopeAll": "All clients",
+    "sellerScopeAssigned": "Only his clients"
   },
   "validation": {
     "required": "This field is required.",
@@ -320,7 +350,11 @@
     "SUPPLIER_CODE_TAKEN": "This supplier code is already used.",
     "SUPPLIER_OPENING_ALREADY_SET": "This supplier already has an opening balance.",
     "SUPPLIER_PAYMENT_NOT_VALID": "This payment is already cancelled.",
-    "SHARE_LINK_INVALID": "This link is no longer valid."
+    "SHARE_LINK_INVALID": "This link is no longer valid.",
+    "MANAGER_CYCLE": "This manager is already in this user’s team.",
+    "SELLER_NOT_ALLOWED": "This user cannot be the seller (deactivated or a role that does not sell).",
+    "BRAND_NAME_TAKEN": "A brand already has this name.",
+    "SECTOR_NAME_TAKEN": "A sector already has this name."
   },
   "units": {
     "PIECE": "Piece",
@@ -413,7 +447,10 @@
       "whole_factor_required": "This product is counted by the piece: the content must be a whole number.",
       "whole_min_stock_required": "This product is counted by the piece: the minimum stock must be a whole number.",
       "base_unit_immutable": "The base unit cannot be changed."
-    }
+    },
+    "brands": "Brands",
+    "brand": "Brand",
+    "noBrand": "No brand"
   },
   "categories": {
     "title": "Categories",
@@ -755,7 +792,24 @@
     "reasonHint": "Required, for example “discount granted”.",
     "adjustSubmit": "Save adjustment",
     "adjustDone": "Balance adjusted",
-    "newPayment": "New payment"
+    "newPayment": "New payment",
+    "selectForAssign": "Select to assign",
+    "selectClient": "Select {name}",
+    "sectorSeller": "Sector / seller",
+    "sectors": "Sectors",
+    "filterSector": "Sector",
+    "allSectors": "All sectors",
+    "filterSeller": "Seller",
+    "allSellers": "All sellers",
+    "selectedCount": "{count, plural, one {# client selected} other {# clients selected}}",
+    "clearSelection": "Clear selection",
+    "assign": "Assign",
+    "salesForceSection": "Sector and seller",
+    "salesForceHelp": "The seller who follows this client, and the area.",
+    "sector": "Sector",
+    "noSector": "No sector",
+    "assignedSeller": "Assigned seller",
+    "noSeller": "No seller"
   },
   "clientLedgerTypes": {
     "OPENING": "Opening balance",
@@ -906,7 +960,10 @@
     "netToPay": "Net to pay",
     "print": "Print",
     "qtyLess": "One less {product}",
-    "qtyMore": "One more {product}"
+    "qtyMore": "One more {product}",
+    "noSeller": "No seller",
+    "changeSeller": "Change seller",
+    "sellerChanged": "Seller changed"
   },
   "payments": {
     "title": "Payments",
@@ -976,7 +1033,10 @@
     "unpaidTitle": "Unpaid documents",
     "unpaidTotal": "Left to pay:",
     "unpaidNone": "All documents are paid.",
-    "ofTotal": "of"
+    "ofTotal": "of",
+    "collectedBy": "Collected by",
+    "changeCollector": "Change",
+    "collectorChanged": "Collector changed"
   },
   "print": {
     "print": "Print",
@@ -1096,7 +1156,8 @@
       "phone": "Phone",
       "address": "Address",
       "creditLimit": "Credit limit",
-      "openingBalance": "Opening balance"
+      "openingBalance": "Opening balance",
+      "brand": "Brand"
     },
     "issues": {
       "required": "required",
@@ -1125,6 +1186,7 @@
       "invalid_client": "invalid client ({rule})",
       "opening_already_set": "already set: an opening balance or stock is imported only once",
       "category_created": "category “{name}” will be created",
+      "brand_created": "brand “{name}” will be created",
       "tva_defaulted": "empty VAT: 0% will be used",
       "no_changes": "no changes",
       "stock_not_empty": "the product already has {qty} in stock; the opening stock will add to it",
@@ -1189,7 +1251,11 @@
     "deactivateTitle": "Deactivate {name}?",
     "deactivateHelp": "All their sessions are closed at once and they can no longer log in. Their name stays on documents.",
     "cancel": "Cancel",
-    "empty": "No users"
+    "empty": "No users",
+    "manager": "Manager",
+    "managerHint": "This user’s supervisor or manager.",
+    "noManager": "None",
+    "colManager": "Manager"
   },
   "permissions": {
     "PRICE_OVERRIDE": {
@@ -1223,6 +1289,10 @@
     "EXPORT_DATA": {
       "label": "Export",
       "help": "Export reports to Excel."
+    },
+    "SALE_REASSIGN_SELLER": {
+      "label": "Change the seller",
+      "help": "Change the seller of a validated sale or the collector of a payment, with a reason."
     }
   },
   "sessions": {
@@ -1532,5 +1602,78 @@
     "whatsapp": "Remind on WhatsApp",
     "whatsappFor": "Remind {name} on WhatsApp",
     "message": "Hello {name}, unless we are mistaken, your balance at {company} is {balance} (the oldest for {days} days). Your statement: {url}. Thank you."
+  },
+  "brands": {
+    "title": "Brands",
+    "subtitle": "The brands of your products, to follow sales by brand.",
+    "new": "New brand",
+    "edit": "Edit brand",
+    "editNamed": "Edit {name}",
+    "delete": "Delete",
+    "deleteNamed": "Delete {name}",
+    "deleteTitle": "Delete this brand?",
+    "deleteBody": "It leaves the lists. Products and reports keep it.",
+    "emptyTitle": "No brands",
+    "emptyDescription": "Add your brands, or a “Marque” column in the product import.",
+    "created": "Brand created",
+    "saved": "Brand saved",
+    "deleted": "Brand deleted",
+    "name": "Name",
+    "supplier": "Usual supplier",
+    "noSupplier": "None",
+    "productCount": "{count, plural, =0 {No products} one {# product} other {# products}}"
+  },
+  "sectors": {
+    "title": "Sectors",
+    "subtitle": "Your sellers’ areas: a wilaya and its communes.",
+    "new": "New sector",
+    "edit": "Edit sector",
+    "editNamed": "Edit {name}",
+    "delete": "Delete",
+    "deleteNamed": "Delete {name}",
+    "deleteTitle": "Delete this sector?",
+    "deleteBody": "{count, plural, =0 {No client is in it.} one {# client will leave the sector.} other {# clients will leave the sector.}}",
+    "emptyTitle": "No sectors",
+    "emptyDescription": "Create a sector, then assign clients to it from the client list.",
+    "created": "Sector created",
+    "saved": "Sector saved",
+    "deleted": "Sector deleted",
+    "name": "Name",
+    "wilaya": "Wilaya",
+    "communes": "Communes",
+    "communesHint": "Separate communes with commas.",
+    "help": "An area your sellers cover.",
+    "clientCount": "{count, plural, =0 {No clients} one {# client} other {# clients}}",
+    "back": "Clients"
+  },
+  "assign": {
+    "title": "{count, plural, one {Assign # client} other {Assign # clients}}",
+    "help": "Pick what changes. “Keep as is” leaves each client’s value.",
+    "sector": "Sector",
+    "seller": "Seller",
+    "keep": "Keep as is",
+    "noSector": "Remove the sector",
+    "noSeller": "Remove the seller",
+    "submit": "Assign",
+    "done": "{count, plural, =0 {Nothing changed} one {# client assigned} other {# clients assigned}}"
+  },
+  "reassign": {
+    "sellerTitle": "Change the seller",
+    "collectorTitle": "Change the collector",
+    "help": "The change and its reason are kept in the log.",
+    "seller": "Seller",
+    "collector": "Collected by",
+    "none": "Nobody",
+    "reason": "Reason",
+    "submit": "Change"
+  },
+  "team": {
+    "title": "Teams",
+    "help": "Who reports to whom, from each user’s manager.",
+    "inactive": "Deactivated",
+    "memberCount": "{count, plural, one {# person in the team} other {# people in the team}}",
+    "emptyTitle": "No teams",
+    "emptyDescription": "Give your sellers a manager (Edit) to build teams.",
+    "withoutTeam": "Without a team"
   }
 }

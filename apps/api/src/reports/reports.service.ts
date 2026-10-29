@@ -12,7 +12,6 @@ import {
   type ReportRow,
   REPORTS_BY_ROLE,
   resolveGroupBy,
-  Role,
   toMoneyString,
   toQtyString,
 } from '@erp/shared';
@@ -23,12 +22,14 @@ import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { ScopeService } from '../sales-force/scope.service';
 import {
   algiersDayOf,
   algiersMonthOf,
   saleDocumentFacts,
   saleLineFacts,
   type Scope,
+  teamOfCte,
   within,
 } from './reports-sql';
 
@@ -54,7 +55,10 @@ const PRODUCT_GROUP = Prisma.sql`f."productId", p.reference, p.designation, u.na
 
 @Injectable()
 export class ReportsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly scopes: ScopeService,
+  ) {}
 
   async run(name: ReportName, query: ReportQuery, user: CurrentUserInfo): Promise<ReportDto> {
     if (!REPORTS_BY_ROLE[user.role].includes(name)) {
@@ -74,9 +78,11 @@ export class ReportsService {
         rule: 'invalid_group_by',
       });
     }
+    // Sales force data stays readable when the module is off (phase 13b): no feature check.
     const scope: Scope = {
       tenantId: tenantContext.requireTenantId(),
-      sellerId: user.role === Role.SELLER ? user.id : null,
+      sellerIds: await this.scopes.figuresSellerIds(user, query),
+      brandId: query.brandId ?? null,
     };
     const { start, end } = algiersRange(query.from, query.to);
     const spec = this.spec(name, groupBy, scope, start, end);
@@ -102,9 +108,9 @@ export class ReportsService {
   ): Spec {
     switch (name) {
       case 'sales':
-        return groupBy === 'product'
-          ? salesByProduct(scope, start, end)
-          : salesByDocument(groupBy, scope, start, end);
+        if (groupBy === 'product') return salesByProduct(scope, start, end);
+        if (groupBy === 'brand') return salesByBrand(scope, start, end);
+        return salesByDocument(groupBy, scope, start, end);
       case 'margin':
         return margin(groupBy, scope, start, end);
       case 'stock-movements':
@@ -151,6 +157,31 @@ function salesByDocument(groupBy: ReportGroupBy, scope: Scope, start: Date, end:
           GROUP BY f.seller, us."fullName"
           ORDER BY "netTtc" DESC, us."fullName" NULLS LAST`,
       };
+    case 'sector':
+      // The client's sector now; the comptoir and unassigned clients are the null row.
+      return {
+        columns: [col('sector', 'text'), ...valueColumns],
+        link: null,
+        sql: Prisma.sql`
+          SELECT c."sectorId" AS key, se.name AS sector, ${values}
+          FROM (${facts}) f LEFT JOIN clients c ON c.id = f."clientId"
+          LEFT JOIN sectors se ON se.id = c."sectorId"
+          GROUP BY c."sectorId", se.name
+          ORDER BY "netTtc" DESC, se.name NULLS LAST`,
+      };
+    case 'team':
+      // One row per supervisor's team (his nearest supervisor for a seller); null = no team.
+      return {
+        columns: [col('user', 'text'), ...valueColumns],
+        link: null,
+        sql: Prisma.sql`
+          ${teamOfCte(scope.tenantId)}
+          SELECT t."teamId" AS key, us."fullName" AS "user", ${values}
+          FROM (${facts}) f LEFT JOIN team_of t ON t."userId" = f.seller
+          LEFT JOIN users us ON us.id = t."teamId"
+          GROUP BY t."teamId", us."fullName"
+          ORDER BY "netTtc" DESC, us."fullName" NULLS LAST`,
+      };
     default: {
       const month = groupBy === 'month';
       const bucket = month ? algiersMonthOf('f.at') : algiersDayOf('f.at');
@@ -183,6 +214,29 @@ function salesByProduct(scope: Scope, start: Date, end: Date): Spec {
       FROM (${saleLineFacts(scope, start, end)}) f ${PRODUCT_JOIN}
       GROUP BY ${PRODUCT_GROUP}
       ORDER BY "netHt" DESC, p.designation`,
+  };
+}
+
+/** Line level: a document with several brands counts once in each. TTC per line. */
+function salesByBrand(scope: Scope, start: Date, end: Date): Spec {
+  return {
+    columns: [
+      col('brand', 'text'),
+      col('count', 'count'),
+      col('qty', 'qty'),
+      col('grossHt', 'money'),
+      col('returnsHt', 'money'),
+      col('netHt', 'money'),
+      col('netTtc', 'money'),
+    ],
+    link: null,
+    sql: Prisma.sql`
+      SELECT f."brandId" AS key, b.name AS brand, COUNT(DISTINCT f."saleId") AS count,
+             SUM(f.qty) AS qty, SUM(f.ht) AS "grossHt", SUM(f."retHt") AS "returnsHt",
+             SUM(f.ht - f."retHt") AS "netHt", SUM(f.ttc - f."retTtc") AS "netTtc"
+      FROM (${saleLineFacts(scope, start, end)}) f LEFT JOIN brands b ON b.id = f."brandId"
+      GROUP BY f."brandId", b.name
+      ORDER BY "netHt" DESC, b.name NULLS LAST`,
   };
 }
 
@@ -260,8 +314,11 @@ function stockMovements(groupBy: ReportGroupBy, scope: Scope, start: Date, end: 
 }
 
 function payments(groupBy: ReportGroupBy, scope: Scope, start: Date, end: Date): Spec {
+  // Who collected the money (phase 14), or who received it for older versements.
+  const collector = Prisma.raw('COALESCE(py."collectedBy", py."receivedBy")');
   const where = Prisma.sql`py."tenantId" = ${scope.tenantId}::uuid AND py.status = 'VALID'
-    AND ${within('py."receivedAt"', start, end)}`;
+    AND ${within('py."receivedAt"', start, end)}
+    ${scope.sellerIds ? Prisma.sql`AND ${collector} = ANY(${scope.sellerIds}::uuid[])` : Prisma.empty}`;
   const values = Prisma.sql`COUNT(*) AS count, SUM(py.amount) AS total`;
   const valueColumns = [col('count', 'count'), col('total', 'money')];
   if (groupBy === 'user') {
@@ -269,10 +326,10 @@ function payments(groupBy: ReportGroupBy, scope: Scope, start: Date, end: Date):
       columns: [col('user', 'text'), ...valueColumns],
       link: null,
       sql: Prisma.sql`
-        SELECT py."receivedBy" AS key, us."fullName" AS "user", ${values}
-        FROM payments py LEFT JOIN users us ON us.id = py."receivedBy"
+        SELECT ${collector} AS key, us."fullName" AS "user", ${values}
+        FROM payments py LEFT JOIN users us ON us.id = ${collector}
         WHERE ${where}
-        GROUP BY py."receivedBy", us."fullName"
+        GROUP BY ${collector}, us."fullName"
         ORDER BY total DESC, us."fullName" NULLS LAST`,
     };
   }

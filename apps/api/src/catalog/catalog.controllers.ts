@@ -13,6 +13,11 @@ import {
 } from '@nestjs/common';
 import {
   type BarcodeMatchDto,
+  type BrandDto,
+  type CreateBrandInput,
+  createBrandSchema,
+  type UpdateBrandInput,
+  updateBrandSchema,
   type CategoryDto,
   type CreateCategoryInput,
   createCategorySchema,
@@ -36,6 +41,7 @@ import {
 } from '@erp/shared';
 import { Roles } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
+import { BrandsService } from './brands.service';
 import { CategoriesService } from './categories.service';
 import { PriceLevelsService } from './price-levels.service';
 import { ProductsService } from './products.service';
@@ -110,6 +116,41 @@ export class CategoriesController {
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.categories.remove(id);
+  }
+}
+
+/** Marques (phase 14): core, every role reads them. */
+@Controller('brands')
+export class BrandsController {
+  constructor(private readonly brands: BrandsService) {}
+
+  @Get()
+  list(): Promise<BrandDto[]> {
+    return this.brands.list();
+  }
+
+  @Post()
+  @Roles(...CATALOG_WRITERS)
+  create(
+    @Body(new ZodValidationPipe(createBrandSchema)) body: CreateBrandInput,
+  ): Promise<BrandDto> {
+    return this.brands.create(body);
+  }
+
+  @Patch(':id')
+  @Roles(...CATALOG_WRITERS)
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(updateBrandSchema)) body: UpdateBrandInput,
+  ): Promise<BrandDto> {
+    return this.brands.update(id, body);
+  }
+
+  @Delete(':id')
+  @Roles(...CATALOG_WRITERS)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  archive(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
+    return this.brands.archive(id);
   }
 }
 

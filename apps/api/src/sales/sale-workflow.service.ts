@@ -23,6 +23,7 @@ import {
   toQtyString,
   type ValidateSaleInput,
   computeTimbre,
+  Role,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
@@ -64,9 +65,10 @@ export class SaleWorkflowService {
     input: ValidateSaleInput,
     user: CurrentUserInfo,
   ): Promise<SaleResultDto> {
-    const result = await this.prisma.db.$transaction((tx) =>
-      this.validateInTx(tx, id, input, user),
-    );
+    const result = await this.prisma.db.$transaction(async (tx) => {
+      await this.sales.assertInScope(tx, user, id);
+      return this.validateInTx(tx, id, input, user);
+    });
     return { sale: await this.sales.get(id), ...result };
   }
 
@@ -239,6 +241,8 @@ export class SaleWorkflowService {
         amount: paid.toString(),
         mode: input.paymentMode,
         receivedBy: user.id,
+        // The money is collected by the sale's seller when he takes it himself.
+        collectedBy: user.role === Role.SELLER ? user.id : null,
       });
     }
 
@@ -300,6 +304,7 @@ export class SaleWorkflowService {
    */
   async cancel(id: string, reason: string, user: CurrentUserInfo): Promise<SaleResultDto> {
     await this.prisma.db.$transaction(async (tx) => {
+      await this.sales.assertInScope(tx, user, id);
       const current = await lockSale(tx, id);
       if (current.status === SaleStatus.CANCELLED) {
         throw new AppException(ErrorCode.SALE_NOT_VALIDATED, 'Already cancelled');
@@ -407,6 +412,7 @@ export class SaleWorkflowService {
   ): Promise<SaleResultDto> {
     const warnings: SaleWarning[] = [];
     await this.prisma.db.$transaction(async (tx) => {
+      await this.sales.assertInScope(tx, user, id);
       const current = await lockSale(tx, id);
       if (current.status !== SaleStatus.VALIDATED) {
         throw new AppException(ErrorCode.SALE_NOT_VALIDATED, 'Only a validated sale has returns');
@@ -567,6 +573,7 @@ export class SaleWorkflowService {
     const id = await this.prisma.db.$transaction(async (tx) => {
       const tenantId = tenantContext.requireTenantId();
       const ids = [...input.saleIds].sort();
+      for (const blId of ids) await this.sales.assertInScope(tx, user, blId);
       await tx.$queryRaw`
         SELECT id FROM sales
         WHERE "tenantId" = ${tenantId}::uuid
@@ -673,6 +680,8 @@ export class SaleWorkflowService {
           totalTtc: totals.totalTtc.toString(),
           paidAmount: (blPaid.gt(totals.totalTtc) ? totals.totalTtc : blPaid).toString(),
           createdBy: user.id,
+          // The BLs' seller when they share one; reports count the BLs, not the facture.
+          sellerId: new Set(bls.map((b) => b.sellerId)).size === 1 ? first.sellerId : null,
           validatedBy: user.id,
           validatedAt: new Date(),
         },

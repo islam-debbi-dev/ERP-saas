@@ -60,6 +60,7 @@ export const paymentListQuerySchema = z.object({
   mode: z.enum(PAYMENT_MODES).optional(),
   status: z.enum(['VALID', 'CANCELLED', 'BOUNCED']).optional(),
   receivedBy: id.optional(),
+  collectedBy: id.optional(),
   /** Received between these Algiers days. */
   from: dateString.optional(),
   to: dateString.optional(),
@@ -95,6 +96,8 @@ export interface PaymentDto {
   dueDate: string | null;
   note: string | null;
   receivedBy: { id: string; fullName: string } | null;
+  /** Who collected the money from the client (phase 14); the receiver by default for a SELLER. */
+  collectedBy: { id: string; fullName: string } | null;
   receivedAt: string;
   cancelReason: string | null;
   cancelledAt: string | null;

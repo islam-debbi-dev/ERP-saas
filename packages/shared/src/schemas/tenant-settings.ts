@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { CreditLimitMode, NegativeStockMode, PrintFormat } from '../enums';
+import {
+  CreditLimitMode,
+  NegativeStockMode,
+  PrintFormat,
+  SELLER_SCOPES,
+  type SellerScope,
+} from '../enums';
 import { parseDA } from '../money';
 import { amountString, percentString } from './common';
 
@@ -59,6 +65,8 @@ export const tenantSettingsSchema = z.object({
   maxDiscountPct: percentString(2),
   /** "Clients à relancer": balance > 0 and oldest unpaid document older than this (days). */
   reminderDays: z.number().int().min(1).max(365),
+  /** Which clients a seller sees when SALES_FORCE is on (phase 14). */
+  sellerScope: z.enum(SELLER_SCOPES as [SellerScope, ...SellerScope[]]),
   // Timbre fiscal rule: off by default; values come from the current loi de finances.
   timbreEnabled: z.boolean(),
   timbreTranches: timbreTranchesSchema,

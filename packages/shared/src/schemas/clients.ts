@@ -43,6 +43,9 @@ const clientFields = {
   creditLimit: amountString.transform(normalizeDecimal).nullable().default(null),
   notes: optionalText(500),
   active: z.boolean().default(true),
+  /** SALES_FORCE only. Omitted = unchanged (none on create); null clears it. */
+  sectorId: id.nullable().optional(),
+  assignedSellerId: id.nullable().optional(),
 };
 
 export const createClientSchema = z.object(clientFields);
@@ -61,6 +64,10 @@ export const clientListQuerySchema = z.object({
     .enum(['true', 'false'])
     .optional()
     .transform((v) => v === 'true'),
+  sectorId: id.optional(),
+  assignedSellerId: id.optional(),
+  /** Only clients without a sector / without a seller. */
+  unassigned: z.enum(['sector', 'seller']).optional(),
   cursor: id.optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
@@ -108,6 +115,8 @@ export interface ClientDto {
   ai: string | null;
   priceLevelId: string | null;
   creditLimit: string | null;
+  sector: { id: string; name: string } | null;
+  assignedSeller: { id: string; fullName: string } | null;
   notes: string | null;
   active: boolean;
   version: number;

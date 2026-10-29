@@ -6,6 +6,7 @@ const HEADERS: Record<string, string> = {
   reference: 'Référence',
   designation: 'Désignation',
   category: 'Catégorie',
+  brand: 'Marque',
   baseUnit: 'Unité de base',
   barcode: 'Code-barres',
   tvaRate: 'TVA %',
@@ -44,6 +45,7 @@ const EXAMPLES: Record<ImportType, Record<string, string | number>[]> = {
       reference: 'HUI-5L',
       designation: 'Huile de table 5 L',
       category: 'Alimentation',
+      brand: 'Elio',
       baseUnit: 'Pièce',
       barcode: '6130000000017',
       tvaRate: 9,
@@ -91,7 +93,12 @@ const EXAMPLES: Record<ImportType, Record<string, string | number>[]> = {
       address: 'Zone industrielle, Rouiba',
       openingBalance: '320 000,00',
     },
-    { code: 'F002', name: 'Ets Benali Frères', phone: '0555 44 33 22', openingBalance: '-15 000,00' },
+    {
+      code: 'F002',
+      name: 'Ets Benali Frères',
+      phone: '0555 44 33 22',
+      openingBalance: '-15 000,00',
+    },
   ],
 };
 

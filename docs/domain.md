@@ -71,6 +71,14 @@
 - **Vendeur** (SELLER) sells in the shop or on the road; **superviseur** (SUPERVISOR) and **chef des ventes** manage a team through `User.managerId`; **livreur** (LIVREUR) delivers pre-sale orders.
 - Every sale has a `sellerId` and every versement a `collectedBy`, frozen like prices. Objectives and bonuses are computed from them.
 - **Secteur**: a zone (wilaya + communes); clients belong to a sector and can be assigned to a seller.
+- **Marque**: master data of every plan (not only Distribution); a product has at most one. The product import accepts a "Marque" column and creates unknown brands.
+
+### Who sold, who collected, who sees what (phase 14)
+- A SELLER always sells in his own name; office roles (owner, gérant, superviseur) pick the seller, a superviseur within his team. The seller is frozen at validation; changing it afterwards (or the collector of a versement) needs the permission "Changer le vendeur", a reason, and is kept in the journal.
+- Sales and versements made before phase 14 have no seller / collector: they count for their creator / receiver in reports and in a seller's own scope.
+- Tenant setting `sellerScope` (Distribution only): `ALL_CLIENTS` (default, as before) or `ASSIGNED_ONLY`, where a SELLER sees only his assigned clients and his own sales and versements, and a SUPERVISOR those of his team. A client outside the scope answers "not found". The client comptoir stays open. A client a seller creates is assigned to him.
+- A seller's figures (dashboard, reports) are always his own, whatever the setting; a superviseur's are his team's.
+- Brand figures are computed per line: a document with several brands counts once in each, and line TTC can differ by a centime from the document total.
 - **Tournée**: the ordered list of clients a seller visits on given weekdays. **Visite**: one stop, with an outcome (sale, order, payment only, no sale + reason).
 - **Vente directe**: the seller sells from his truck and prints the BL on the spot. **Pré-vente**: he takes a bon de commande; a livreur delivers it later and the BL is created at delivery.
 - **Camion = dépôt** (`Warehouse` type VEHICLE). Chargement / déchargement are stock transfers. CUMP stays per product for the whole company.
@@ -107,6 +115,7 @@
 | Invoice header | raison sociale, adresse, téléphone, RC, NIF, NIS, AI, RIB (optional), logo (later) | all printed documents |
 | `priceLevelCount` | 1 to 5, default 3 (gros, demi-gros, détail) | products, clients |
 | `reminderDays` | 1 to 365, default 30 | clients à relancer |
+| `sellerScope` | `ALL_CLIENTS` / `ASSIGNED_ONLY`, default `ALL_CLIENTS` | clients, sales, versements seen by sellers (SALES_FORCE) |
 | Timbre fiscal rule | configurable rate, min, max, threshold; off by default | factures paid in cash |
 
 ## Glossary (French term → meaning in code)

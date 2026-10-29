@@ -14,18 +14,21 @@ import {
   type PaymentPage,
   PaymentStatus,
   Permission,
+  type ReassignCollectorInput,
+  Role,
   toMoneyString,
   type UnpaidDocumentDto,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
-import { can } from '../auth/permissions';
+import { can, requirePermission } from '../auth/permissions';
 import { ClientAccountService } from '../clients/client-account.service';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { ScopeService } from '../sales-force/scope.service';
 
 const paymentInclude = {
   client: { select: { id: true, code: true, name: true } },
@@ -69,6 +72,7 @@ function toDto(
     dueDate: p.dueDate?.toISOString().slice(0, 10) ?? null,
     note: p.note,
     receivedBy: p.receivedBy ? (users.get(p.receivedBy) ?? null) : null,
+    collectedBy: p.collectedBy ? (users.get(p.collectedBy) ?? null) : null,
     receivedAt: p.receivedAt.toISOString(),
     cancelReason: p.cancelReason,
     cancelledAt: p.cancelledAt?.toISOString() ?? null,
@@ -96,6 +100,7 @@ export class PaymentsService {
     private readonly account: ClientAccountService,
     private readonly numbering: DocumentNumberingService,
     private readonly audit: AuditService,
+    private readonly scope: ScopeService,
   ) {}
 
   // ---------------------------------------------------------------- used by sales
@@ -112,6 +117,7 @@ export class PaymentsService {
       amount: string;
       mode: PaymentMode;
       receivedBy: string;
+      collectedBy: string | null;
     },
   ): Promise<void> {
     const tenantId = tenantContext.requireTenantId();
@@ -124,6 +130,7 @@ export class PaymentsService {
         amount: input.amount,
         mode: input.mode,
         receivedBy: input.receivedBy,
+        collectedBy: input.collectedBy,
       },
     });
     await tx.paymentAllocation.create({
@@ -172,6 +179,7 @@ export class PaymentsService {
           field: 'clientId',
         });
       }
+      await this.scope.assertClient(tx, user, client.id);
       const number = await this.numbering.next(tx, tenantId, DocType.VER);
       const payment = await tx.payment.create({
         data: {
@@ -185,6 +193,8 @@ export class PaymentsService {
           dueDate: input.dueDate ? new Date(`${input.dueDate}T00:00:00.000Z`) : null,
           note: input.note,
           receivedBy: user.id,
+          // A seller who takes the money collected it himself (phase 14).
+          collectedBy: user.role === Role.SELLER ? user.id : null,
         },
       });
       // Posting first locks the client balance: concurrent versements of the same
@@ -235,6 +245,7 @@ export class PaymentsService {
   /** Input mistake: the money is taken back off the account. Never deleted. */
   async cancel(id: string, reason: string, user: CurrentUserInfo): Promise<PaymentDto> {
     await this.prisma.db.$transaction(async (tx) => {
+      await this.assertInScope(tx, user, id);
       const p = await this.lockValid(tx, id);
       if (p.saleId) {
         throw new AppException(ErrorCode.PAYMENT_LINKED_TO_SALE, 'Cancel the sale instead', {
@@ -348,14 +359,77 @@ export class PaymentsService {
 
   // ---------------------------------------------------------------- reads
 
-  async get(id: string): Promise<PaymentDto> {
-    const p = await this.prisma.db.payment.findUnique({ where: { id }, include: paymentInclude });
+  /** With a user, a versement outside his scope (phase 14) answers 404. */
+  async get(id: string, user?: CurrentUserInfo): Promise<PaymentDto> {
+    const scope = user ? await this.scope.of(user) : null;
+    const p = await this.prisma.db.payment.findFirst({
+      where: { id, ...(scope ? this.scope.paymentWhere(scope) : {}) },
+      include: paymentInclude,
+    });
     if (!p) throw new AppException(ErrorCode.NOT_FOUND, 'Payment not found');
-    return toDto(p, await this.users([p.receivedBy]));
+    return toDto(p, await this.users([p.receivedBy, p.collectedBy]));
   }
 
-  async list(query: PaymentListQuery): Promise<PaymentPage> {
+  /**
+   * Changes who collected a versement (phase 14): SALE_REASSIGN_SELLER and a reason,
+   * audited with before/after. Phase 18 refuses it once the month's incentives are approved.
+   */
+  async reassignCollector(
+    id: string,
+    input: ReassignCollectorInput,
+    user: CurrentUserInfo,
+  ): Promise<PaymentDto> {
+    requirePermission(user, Permission.SALE_REASSIGN_SELLER);
+    await this.prisma.db.$transaction(async (tx) => {
+      await this.assertInScope(tx, user, id);
+      const [p] = await tx.$queryRaw<
+        { collectedBy: string | null; receivedAt: Date; number: string }[]
+      >`SELECT "collectedBy", "receivedAt", number FROM payments
+        WHERE id = ${id}::uuid AND "tenantId" = ${tenantContext.requireTenantId()}::uuid
+        FOR UPDATE`;
+      if (!p) throw new AppException(ErrorCode.NOT_FOUND, 'Payment not found');
+      await this.scope.assertSellerChangeAllowed(tx, { kind: 'PAYMENT', at: p.receivedAt });
+      if (input.collectedBy) await this.scope.assertSeller(tx, input.collectedBy);
+      if (input.collectedBy === p.collectedBy) return;
+      await tx.payment.update({
+        where: { id },
+        data: { collectedBy: input.collectedBy, version: { increment: 1 } },
+      });
+      await this.audit.log(tx, {
+        action: 'PAYMENT_COLLECTOR_REASSIGNED',
+        entity: 'Payment',
+        entityId: id,
+        before: { collectedBy: p.collectedBy, number: p.number },
+        after: { collectedBy: input.collectedBy, reason: input.reason },
+      });
+    });
+    return this.get(id, user);
+  }
+
+  private async assertInScope(tx: Tx, user: CurrentUserInfo, id: string): Promise<void> {
+    const scope = await this.scope.of(user, tx);
+    if (!scope.documentUserIds) return;
+    const p = await tx.payment.findFirst({
+      where: { id, ...this.scope.paymentWhere(scope) },
+      select: { id: true },
+    });
+    if (!p) throw new AppException(ErrorCode.NOT_FOUND, 'Payment not found');
+  }
+
+  async list(query: PaymentListQuery, user: CurrentUserInfo): Promise<PaymentPage> {
+    const scope = await this.scope.of(user);
     const where: Prisma.PaymentWhereInput = {
+      AND: [
+        this.scope.paymentWhere(scope),
+        query.collectedBy
+          ? {
+              OR: [
+                { collectedBy: query.collectedBy },
+                { collectedBy: null, receivedBy: query.collectedBy },
+              ],
+            }
+          : {},
+      ],
       ...(query.clientId ? { clientId: query.clientId } : {}),
       ...(query.mode ? { mode: query.mode } : {}),
       ...(query.status ? { status: query.status } : {}),
@@ -381,16 +455,17 @@ export class PaymentsService {
       ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
     });
     const page = rows.slice(0, query.limit);
-    const users = await this.users(page.map((p) => p.receivedBy));
+    const users = await this.users(page.flatMap((p) => [p.receivedBy, p.collectedBy]));
     return {
       items: page.map((p) => toDto(p, users)),
       nextCursor: rows.length > query.limit ? (page.at(-1)?.id ?? null) : null,
     };
   }
 
-  async unpaidDocuments(clientId: string): Promise<UnpaidDocumentDto[]> {
+  async unpaidDocuments(clientId: string, user: CurrentUserInfo): Promise<UnpaidDocumentDto[]> {
     const client = await this.prisma.db.client.findUnique({ where: { id: clientId } });
     if (!client) throw new AppException(ErrorCode.NOT_FOUND, 'Client not found');
+    await this.scope.assertClient(this.prisma.db, user, clientId);
     return (await this.unpaid(this.prisma.db, clientId)).map((d) => ({
       saleId: d.id,
       type: d.type,
@@ -404,14 +479,16 @@ export class PaymentsService {
   }
 
   /** Journal de caisse: money received that Algiers day, by mode and by user. */
-  async summary(date: string): Promise<CashSummaryDto> {
+  async summary(date: string, user: CurrentUserInfo): Promise<CashSummaryDto> {
     const tenantId = tenantContext.requireTenantId();
+    const scope = await this.scope.of(user);
     const rows = await this.prisma.db.$queryRaw<
       { mode: PaymentMode; receivedBy: string | null; count: bigint; total: Prisma.Decimal }[]
     >`
       SELECT mode, "receivedBy", COUNT(*) AS count, SUM(amount) AS total
       FROM payments
       WHERE "tenantId" = ${tenantId}::uuid AND status = 'VALID'
+        AND ${this.scope.paymentSql(scope, 'payments')}
         AND "receivedAt" >= ${algiersMidnight(date)} AND "receivedAt" < ${algiersMidnight(nextDay(date))}
       GROUP BY mode, "receivedBy"
       ORDER BY mode, "receivedBy"`;

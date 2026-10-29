@@ -61,7 +61,7 @@ export class DashboardController {
     @Query(new ZodValidationPipe(dashboardQuerySchema)) query: DashboardQuery,
     @CurrentUser() user: CurrentUserInfo,
   ): Promise<DashboardDto> {
-    return this.dashboard.get(user, query.date);
+    return this.dashboard.get(user, query);
   }
 
   /** The first-week checklist, for the people who set the company up. */

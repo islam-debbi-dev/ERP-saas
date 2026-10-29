@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -34,6 +35,8 @@ import {
   updateSaleSchema,
   type ValidateSaleInput,
   validateSaleSchema,
+  type ReassignSellerInput,
+  reassignSellerSchema,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { CurrentUser, Roles } from '../auth/decorators';
@@ -44,7 +47,7 @@ import { SalesService } from './sales.service';
 
 const MANAGERS = [Role.OWNER, Role.MANAGER];
 /** Who sells. Price overrides, credit overrides and cancellations are checked in the service. */
-const SELLERS = [...MANAGERS, Role.SELLER];
+const SELLERS = [...MANAGERS, Role.SUPERVISOR, Role.SELLER];
 
 @Controller('sales')
 export class SalesController {
@@ -54,21 +57,39 @@ export class SalesController {
   ) {}
 
   @Get()
-  list(@Query(new ZodValidationPipe(saleListQuerySchema)) query: SaleListQuery): Promise<SalePage> {
-    return this.sales.list(query);
+  list(
+    @Query(new ZodValidationPipe(saleListQuerySchema)) query: SaleListQuery,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<SalePage> {
+    return this.sales.list(query, user);
   }
 
   // Declared before ':id'.
   @Get('price-preview')
   pricePreview(
     @Query(new ZodValidationPipe(pricePreviewQuerySchema)) query: PricePreviewQuery,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<PricePreviewDto> {
-    return this.sales.pricePreview(query);
+    return this.sales.pricePreview(query, user);
   }
 
   @Get(':id')
-  get(@Param('id', ParseUUIDPipe) id: string): Promise<SaleDto> {
-    return this.sales.get(id);
+  get(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<SaleDto> {
+    return this.sales.get(id, user);
+  }
+
+  /** Change the seller of a validated sale (phase 14, SALE_REASSIGN_SELLER + reason). */
+  @Patch(':id/seller')
+  @Roles(...SELLERS)
+  reassignSeller(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(reassignSellerSchema)) body: ReassignSellerInput,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<SaleDto> {
+    return this.sales.reassignSeller(id, body, user);
   }
 
   @Post()

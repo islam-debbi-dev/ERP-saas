@@ -21,9 +21,11 @@ import {
   type UserDto,
   type UserPermissionsInput,
   userPermissionsSchema,
+  Feature,
+  type TeamNodeDto,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
-import { CurrentUser, Roles } from '../auth/decorators';
+import { CurrentUser, RequireFeature, Roles } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { UsersService } from './users.service';
 
@@ -44,6 +46,23 @@ export class UsersController {
     @Body(new ZodValidationPipe(inviteUserSchema)) body: InviteUserInput,
   ): Promise<InviteResultDto> {
     return this.users.invite(body);
+  }
+
+  /** Active users who can be a sale's seller (phase 14, core): the seller pickers. */
+  @Get('sellers')
+  @Roles(Role.OWNER, Role.MANAGER, Role.SUPERVISOR)
+  sellers(
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<{ id: string; fullName: string; role: Role }[]> {
+    return this.users.sellers(user);
+  }
+
+  /** The hierarchy as a tree (phase 14); a supervisor sees his own team. */
+  @Get('team')
+  @Roles(Role.OWNER, Role.MANAGER, Role.SUPERVISOR)
+  @RequireFeature(Feature.SALES_FORCE)
+  team(@CurrentUser() user: CurrentUserInfo): Promise<TeamNodeDto[]> {
+    return this.users.team(user);
   }
 
   @Get(':id')

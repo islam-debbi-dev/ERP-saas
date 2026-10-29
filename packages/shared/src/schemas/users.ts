@@ -49,7 +49,16 @@ export type InviteMode = (typeof INVITE_MODES)[number];
 export const inviteUserSchema = z
   .object({
     ...contact,
-    role: z.enum([Role.MANAGER, Role.SELLER, Role.STOREKEEPER, Role.OWNER]),
+    role: z.enum([
+      Role.MANAGER,
+      Role.SELLER,
+      Role.STOREKEEPER,
+      Role.OWNER,
+      Role.SUPERVISOR,
+      Role.LIVREUR,
+    ]),
+    /** The supervisor or manager this user reports to (phase 14). */
+    managerId: id.nullable().default(null),
     mode: z.enum(INVITE_MODES),
     password: passwordField.optional(),
   })
@@ -61,7 +70,12 @@ export const inviteUserSchema = z
 export type InviteUserInput = z.infer<typeof inviteUserSchema>;
 
 export const updateUserSchema = z
-  .object({ ...contact, role: z.enum(ROLES as [Role, ...Role[]]) })
+  .object({
+    ...contact,
+    role: z.enum(ROLES as [Role, ...Role[]]),
+    /** Omitted = unchanged; null = no manager. A cycle is refused (MANAGER_CYCLE). */
+    managerId: id.nullable().optional(),
+  })
   .refine(hasLogin, { message: 'email_or_phone_required', path: ['email'] });
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
@@ -113,6 +127,9 @@ export interface UserDto {
   email: string | null;
   phone: string | null;
   role: Role;
+  /** Who this user reports to (phase 14). */
+  managerId: string | null;
+  managerName: string | null;
   /** Effective permissions, and the exceptions to the role that produce them. */
   permissions: Permission[];
   grants: Permission[];

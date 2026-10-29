@@ -19,7 +19,8 @@ const authDir = fileURLToPath(new URL('../.auth/', import.meta.url));
 export default async function globalSetup(): Promise<void> {
   await mkdir(authDir, { recursive: true });
 
-  const fixture = await buildFixture('Web audit');
+  // Distribution edition: every screen, the sales force ones included (phase 14), is swept.
+  const fixture = await buildFixture('Web audit', 'DISTRIBUTEUR');
   await writeFile(`${authDir}fixture.json`, JSON.stringify(fixture, null, 2), 'utf8');
   await writeFile(`${authDir}admin.json`, JSON.stringify(createAdmin(), null, 2), 'utf8');
 

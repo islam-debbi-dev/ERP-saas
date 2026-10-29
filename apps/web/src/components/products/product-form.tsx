@@ -43,6 +43,7 @@ import { Switch } from '@/components/ui/switch';
 import { ProductCost } from './product-cost';
 import { api, ApiError } from '@/lib/api-client';
 import { catalogKeys, flattenCategories, useCategories, useUnitLabel } from '@/lib/catalog';
+import { useBrands } from '@/lib/sales-force';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
 
@@ -56,6 +57,7 @@ interface FormValues {
   reference: string;
   designation: string;
   categoryId: string;
+  brandId: string;
   baseUnitId: string;
   tvaRate: string;
   minStock: string;
@@ -78,6 +80,7 @@ function toFormValues(product: ProductDto | null, units: UnitDto[]): FormValues 
       reference: '',
       designation: '',
       categoryId: '',
+      brandId: '',
       baseUnitId: base,
       tvaRate: '19',
       minStock: '0',
@@ -92,6 +95,7 @@ function toFormValues(product: ProductDto | null, units: UnitDto[]): FormValues 
     reference: product.reference,
     designation: product.designation,
     categoryId: product.categoryId ?? '',
+    brandId: product.brandId ?? '',
     baseUnitId: product.baseUnitId,
     tvaRate: qty(product.tvaRate).toString(),
     minStock: qty(product.minStock).toString(),
@@ -157,6 +161,7 @@ export function ProductForm({
   const router = useRouter();
   const queryClient = useQueryClient();
   const categories = useCategories();
+  const brands = useBrands();
   const [problems, setProblems] = useState<string[]>([]);
 
   const unitById = useMemo(() => new Map(units.map((u) => [u.id, u])), [units]);
@@ -179,6 +184,7 @@ export function ProductForm({
       reference: v.reference,
       designation: v.designation,
       categoryId: v.categoryId || null,
+      brandId: v.brandId || null,
       baseUnitId: v.baseUnitId,
       tvaRate: v.tvaRate,
       minStock: v.minStock || '0',
@@ -317,6 +323,17 @@ export function ProductForm({
               {flattenCategories(categories.data ?? []).map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.label}
+                </option>
+              ))}
+            </NativeSelect>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="brandId">{t('brand')}</Label>
+            <NativeSelect id="brandId" {...form.register('brandId')}>
+              <option value="">{t('noBrand')}</option>
+              {(brands.data ?? []).map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
                 </option>
               ))}
             </NativeSelect>

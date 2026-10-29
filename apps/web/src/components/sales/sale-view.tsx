@@ -36,6 +36,8 @@ import { useErrorMessage } from '@/lib/use-error-message';
 import { isolateLtr } from '@/lib/utils';
 import { useIdempotencyKey } from '@/lib/use-idempotency-key';
 import { PaymentDetailDialog } from '@/components/payments/payment-detail-dialog';
+import { ReassignDialog } from '@/components/sales-force/reassign-dialog';
+import { useReassignSeller } from '@/lib/sales-force';
 import { CancelSaleDialog, ReturnDialog } from './sale-dialogs';
 import { SaleStatusBadge } from './sale-status-badge';
 import { Amount } from '@/components/shared/amount';
@@ -49,6 +51,9 @@ export function SaleView({ id }: { id: string }) {
   const queryClient = useQueryClient();
   const canManage = useCanManageCredit();
   const canCancel = usePermission(Permission.SALE_CANCEL);
+  const canReassign = usePermission(Permission.SALE_REASSIGN_SELLER);
+  const reassign = useReassignSeller();
+  const [reassigning, setReassigning] = useState(false);
   const sale = useSale(id);
   const [dialog, setDialog] = useState<'cancel' | 'return' | 'share' | null>(null);
   const ts = useTranslations('share');
@@ -200,7 +205,19 @@ export function SaleView({ id }: { id: string }) {
               </div>
               <div>
                 <dt className="text-xs text-muted-foreground">{t('seller')}</dt>
-                <dd>{s.seller?.fullName ?? '—'}</dd>
+                <dd className="flex flex-wrap items-center gap-x-2">
+                  {s.seller?.fullName ?? '—'}
+                  {validated && canReassign ? (
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="h-auto min-h-11 px-0 md:min-h-0"
+                      onClick={() => setReassigning(true)}
+                    >
+                      {t('changeSeller')}
+                    </Button>
+                  ) : null}
+                </dd>
               </div>
               {s.validatedAt ? (
                 <div>
@@ -464,6 +481,32 @@ export function SaleView({ id }: { id: string }) {
               amount: isolateLtr(formatDA(due)),
               url,
             })
+          }
+        />
+      ) : null}
+      {reassigning ? (
+        <ReassignDialog
+          kind="seller"
+          currentId={s.sellerId}
+          open
+          onOpenChange={(o) => {
+            if (!o) {
+              setReassigning(false);
+              reassign.reset();
+            }
+          }}
+          pending={reassign.isPending}
+          error={reassign.error ? errorMessage(reassign.error) : null}
+          onSubmit={(sellerId, reason) =>
+            reassign.mutate(
+              { id: s.id, body: { sellerId, reason } },
+              {
+                onSuccess: () => {
+                  toast.success(t('sellerChanged'));
+                  setReassigning(false);
+                },
+              },
+            )
           }
         />
       ) : null}

@@ -5,6 +5,7 @@ import type { Prisma } from '../generated/prisma/client';
 export const productInclude = {
   units: { where: { deletedAt: null }, include: { unit: true }, orderBy: { factorToBase: 'asc' } },
   prices: true,
+  brand: { select: { name: true } },
 } satisfies Prisma.ProductInclude;
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{ include: typeof productInclude }>;
@@ -31,6 +32,8 @@ export function toProductDto(p: ProductWithRelations): ProductDto {
     reference: p.reference,
     designation: p.designation,
     categoryId: p.categoryId,
+    brandId: p.brandId,
+    brandName: p.brand?.name ?? null,
     baseUnitId: p.baseUnitId,
     tvaRate: p.tvaRate.toFixed(2),
     minStock: toQtyString(p.minStock),

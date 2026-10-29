@@ -9,6 +9,9 @@ export interface ClientFilters {
   search: string;
   hasDebt: boolean;
   overLimit: boolean;
+  /** Sales force (phase 14): '' = any. */
+  sectorId?: string;
+  assignedSellerId?: string;
 }
 
 export const clientKeys = {
@@ -28,6 +31,8 @@ export function useClientPages(filters: ClientFilters) {
       if (filters.search) params.set('search', filters.search);
       if (filters.hasDebt) params.set('hasDebt', 'true');
       if (filters.overLimit) params.set('overLimit', 'true');
+      if (filters.sectorId) params.set('sectorId', filters.sectorId);
+      if (filters.assignedSellerId) params.set('assignedSellerId', filters.assignedSellerId);
       if (pageParam) params.set('cursor', pageParam);
       return api.request<ClientPage>(`/clients?${params.toString()}`, { signal });
     },

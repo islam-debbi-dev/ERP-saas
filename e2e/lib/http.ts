@@ -111,10 +111,16 @@ export async function register(
   fullName: string,
   email: string,
   password: string,
+  /** Picks the trial edition (phase 13b): DISTRIBUTEUR turns the sales force screens on. */
+  activity?: 'GROSSISTE' | 'IMPORTATEUR' | 'DISTRIBUTEUR',
 ): Promise<Session> {
   const res = await request<{ accessToken: string; user: { id: string; tenantId: string; email: string } }>(
     '/auth/register',
-    { method: 'POST', body: { companyName, fullName, email, password }, headers: { 'X-Client-Type': 'native' } },
+    {
+      method: 'POST',
+      body: { companyName, fullName, email, password, ...(activity ? { activity } : {}) },
+      headers: { 'X-Client-Type': 'native' },
+    },
   );
   if (res.status !== 200 && res.status !== 201) {
     throw new Error(`register failed: HTTP ${res.status} ${res.raw.slice(0, 300)}`);

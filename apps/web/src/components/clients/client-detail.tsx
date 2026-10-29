@@ -1,7 +1,16 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Archive, ArrowLeft, Banknote, FileText, Pencil, Scale, Share2, Wallet } from 'lucide-react';
+import {
+  Archive,
+  ArrowLeft,
+  Banknote,
+  FileText,
+  Pencil,
+  Scale,
+  Share2,
+  Wallet,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -238,6 +247,9 @@ function Info({ client }: { client: ClientDto }) {
     { label: t('commune'), value: client.commune },
     { label: t('wilaya'), value: client.wilaya },
     { label: t('priceLevel'), value: level?.name ?? t('defaultPriceLevel') },
+    // Sales force (phase 14): empty rows are not shown, so nothing appears without it.
+    { label: t('sector'), value: client.sector?.name ?? null },
+    { label: t('assignedSeller'), value: client.assignedSeller?.fullName ?? null },
     { label: t('rc'), value: client.rc, ltr: true },
     { label: t('nif'), value: client.nif, ltr: true },
     { label: t('nis'), value: client.nis, ltr: true },
