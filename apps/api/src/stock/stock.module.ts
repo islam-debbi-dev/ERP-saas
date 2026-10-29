@@ -7,6 +7,7 @@ import { StockOperationsService } from './stock-operations.service';
 import { StockQueriesService } from './stock-queries.service';
 import { StockTransfersService } from './stock-transfers.service';
 import { StockService } from './stock.service';
+import { WarehouseBackfillService } from './warehouse-backfill.service';
 import { StockTransfersController, WarehousesController } from './warehouses.controllers';
 import { WarehousesService } from './warehouses.service';
 
@@ -29,6 +30,7 @@ import { WarehousesService } from './warehouses.service';
     InventoriesService,
     WarehousesService,
     StockTransfersService,
+    WarehouseBackfillService,
   ],
   exports: [StockService, StockQueriesService, WarehousesService, StockTransfersService],
 })

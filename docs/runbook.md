@@ -245,6 +245,29 @@ docker compose -p erp-production -f /srv/erp/deploy/compose.yml --env-file /srv/
 
 It posts, dated at the original validation, the BR's TTC, minus what was paid at reception, minus its retours. Cancelled BRs post nothing. Then run the reconcile above: it must report no supplier difference.
 
+### Warehouse backfill (once, after the phase 15 deploy, **staging first**)
+
+Rows written before phase 15 have no dépôt. The app already treats them as the main dépôt (the first stock write of a product creates its main-dépôt row from `ProductStock`), so nothing is wrong in the meantime; the backfill makes it explicit before the contract release turns the columns `NOT NULL`.
+
+Per tenant, in one transaction, it locks the tenant's stock rows, creates the main dépôt, sets it on every movement, validated or cancelled sale and BR, retour and inventaire that has none (drafts keep none: their dépôt is chosen at validation), creates the main dépôt's stock rows from `ProductStock`, then checks: the split sums to `ProductStock`, each dépôt equals its ledger, no movement is left without a dépôt, and the company stock total did not move. **Any mismatch rolls that tenant back and stops the run** (exit code 1, the tenant and product ids in the log). Safe with the app running, safe to run twice.
+
+1. On **staging** (restore last night's production backup there first, see Restore):
+   ```bash
+   docker compose -p erp-staging -f /srv/erp/deploy/compose.yml --env-file /srv/erp/staging.env \
+     exec api node dist/reconcile/reconcile.cli.js            # must be clean before
+   docker compose -p erp-staging -f /srv/erp/deploy/compose.yml --env-file /srv/erp/staging.env \
+     exec api node dist/stock/warehouse-backfill.cli.js       # "Company stock before X, after X"
+   docker compose -p erp-staging -f /srv/erp/deploy/compose.yml --env-file /srv/erp/staging.env \
+     exec api node dist/stock/warehouse-backfill.cli.js       # second run: 0 rows filled, 0 created
+   docker compose -p erp-staging -f /srv/erp/deploy/compose.yml --env-file /srv/erp/staging.env \
+     exec api node dist/reconcile/reconcile.cli.js            # must still be clean
+   ```
+   Also compare the stock value on the dashboard of two pilot tenants before and after: it must not change.
+2. Only then the same three commands on **production** (`-p erp-production`, `production.env`).
+3. A mismatch means the tenant's `ProductStock` already disagreed with its ledger (the reconcile would have said so): fix that first (see "A grossiste says a balance is wrong"), then run the backfill again.
+
+**Contract release (later, not with phase 15):** once the backfill has run cleanly in production, move `apps/api/prisma/contract/phase-15-warehouses-contract.sql` into a new migration folder. It makes the dépôt required (`NOT NULL` on movements, retours and inventaires; a `CHECK` on sales and BRs, whose drafts may still have none) and puts back the strict append-only trigger on `stock_movements`. Its first statement fails if any row was missed, so it can't be applied before the backfill.
+
 ## Database roles
 
 | Role | Used by | RLS |
