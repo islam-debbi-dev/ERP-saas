@@ -27,13 +27,19 @@ export const num = (v: string | number | undefined | null): number =>
 let seq = 0;
 export const uniq = (prefix: string): string => `${prefix}${Date.now().toString(36)}${(seq += 1).toString(36)}`;
 
-export async function makeTenant(label = 'Audit'): Promise<Session> {
+export async function makeTenant(
+  label = 'Audit',
+  activity?: 'GROSSISTE' | 'IMPORTATEUR' | 'DISTRIBUTEUR',
+): Promise<Session> {
   const tag = uniq('e2e');
-  return register(`${label} ${tag}`, `Owner ${tag}`, `${tag}@audit.local`, 'Audit1234!');
+  return register(`${label} ${tag}`, `Owner ${tag}`, `${tag}@audit.local`, 'Audit1234!', activity);
 }
 
-export async function buildFixture(label = 'Audit'): Promise<Fixture> {
-  const session = await makeTenant(label);
+export async function buildFixture(
+  label = 'Audit',
+  activity?: 'GROSSISTE' | 'IMPORTATEUR' | 'DISTRIBUTEUR',
+): Promise<Fixture> {
+  const session = await makeTenant(label, activity);
   const { token, tenantId } = session;
 
   const units = (await call<{ id: string; code: string }[]>('/units', { token })).body;

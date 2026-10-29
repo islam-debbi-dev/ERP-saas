@@ -303,6 +303,36 @@ for (const locale of LOCALES) {
         await page.keyboard.press('Escape');
       });
 
+      await test.step('bulk assign: select a client, the assign sheet and its button on screen', async () => {
+        const path = '/clients';
+        await page.evaluate((to) => {
+          (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push(to);
+        }, path);
+        await page.waitForURL((url) => url.pathname === path);
+        await settle(page);
+        await page.locator('input[type="checkbox"]').first().check();
+        // The selection bar is sticky at the bottom of a phone.
+        await expectOnScreen(page, '[data-slot="sticky-actions"] button:last-child');
+        await check(page, '/clients/selection', locale, results, { fullPage: false });
+        await page.getByRole('button', { name: m['clients']?.['assign'], exact: true }).click();
+        await page.locator('#assign-sector').waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
+        await check(page, '/clients/affecter', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+      });
+
+      await test.step('team tree: the users page with the manager column and the teams', async () => {
+        const path = '/parametres/utilisateurs';
+        await page.evaluate((to) => {
+          (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push(to);
+        }, path);
+        await page.waitForURL((url) => url.pathname === path);
+        await settle(page);
+        await page.getByRole('heading', { name: m['team']?.['title'] }).waitFor();
+        await check(page, '/parametres/utilisateurs/equipes', locale, results);
+      });
+
       await test.step('dashboard: the onboarding checklist fits', async () => {
         const path = '/tableau-de-bord';
         await page.evaluate((to) => {
