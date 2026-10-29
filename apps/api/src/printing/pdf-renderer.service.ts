@@ -1,8 +1,16 @@
+import { copyFile, mkdir } from 'node:fs/promises';
+import { join } from 'node:path';
 import { Inject, Injectable, Logger, type OnModuleDestroy } from '@nestjs/common';
 import { type PrintFormat } from '@erp/shared';
-import type { Browser } from 'puppeteer';
+import type { Browser, LaunchOptions } from 'puppeteer';
 import { APP_CONFIG, type AppConfig } from '../config/app-config';
 import { escapeHtml } from './templates/html';
+
+/**
+ * The serverless Chromium ships Open Sans only (Latin): this one prints Arabic names.
+ * Same path from src/ and dist/; static, so Vercel's file tracing bundles it.
+ */
+const ARABIC_FONT = join(__dirname, '..', '..', 'assets', 'fonts', 'NotoNaskhArabic.ttf');
 
 /** Chromium's footer: its own tiny document, styled inline (page CSS does not apply). */
 function footerTemplate(footer: string | null): string {
@@ -57,16 +65,10 @@ export class PdfRendererService implements OnModuleDestroy {
     if (!this.browser) {
       // puppeteer is ESM-only: a static import becomes a require(), which Jest on
       // Node < 24.9 cannot load. import() works everywhere.
-      const launching = import('puppeteer').then(({ default: puppeteer }) =>
-        puppeteer.launch({
-          // Puppeteer's download is chrome-headless-shell; a system Chromium runs headless.
-          headless: this.config.CHROMIUM_PATH ? true : 'shell',
-          executablePath: this.config.CHROMIUM_PATH,
-          // The API container runs as a non-root user without user namespaces.
-          args: ['--no-sandbox', '--disable-dev-shm-usage', '--font-render-hinting=none'],
+      const launching = Promise.all([import('puppeteer'), this.launchOptions()]).then(
+        ([{ default: puppeteer }, options]) =>
           // A stuck browser fails the request instead of hanging it.
-          protocolTimeout: 20_000,
-        }),
+          puppeteer.launch({ ...options, protocolTimeout: 20_000 }),
       );
       this.browser = launching;
       launching
@@ -81,5 +83,27 @@ export class PdfRendererService implements OnModuleDestroy {
         });
     }
     return this.browser;
+  }
+
+  private async launchOptions(): Promise<LaunchOptions> {
+    if (this.config.VERCEL === '1' && !this.config.CHROMIUM_PATH) {
+      // Vercel functions have no Chromium: a build made for Lambda-like runtimes,
+      // unpacked to /tmp on the first print of each instance (a few seconds).
+      const { default: chromium } = await import('@sparticuz/chromium');
+      const executablePath = await chromium.executablePath();
+      // The fonts were unpacked to /tmp/fonts, which fontconfig reads.
+      await mkdir('/tmp/fonts', { recursive: true });
+      await copyFile(ARABIC_FONT, '/tmp/fonts/NotoNaskhArabic.ttf').catch((err: unknown) =>
+        this.logger.warn({ err }, 'Arabic font missing: Arabic names will not print'),
+      );
+      return { executablePath, args: chromium.args, headless: 'shell' };
+    }
+    return {
+      // Puppeteer's download is chrome-headless-shell; a system Chromium runs headless.
+      headless: this.config.CHROMIUM_PATH ? true : 'shell',
+      executablePath: this.config.CHROMIUM_PATH,
+      // The API container runs as a non-root user without user namespaces.
+      args: ['--no-sandbox', '--disable-dev-shm-usage', '--font-render-hinting=none'],
+    };
   }
 }

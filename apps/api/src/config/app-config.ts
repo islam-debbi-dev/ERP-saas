@@ -32,6 +32,11 @@ const envSchema = z.object({
     .default(''),
   /** Chromium used to render PDFs; unset = the browser puppeteer downloaded. */
   CHROMIUM_PATH: z.string().min(1).optional(),
+  /**
+   * Set to `1` by Vercel in its functions. They have no Chromium: PDFs then use the
+   * serverless build of @sparticuz/chromium (unless CHROMIUM_PATH is set).
+   */
+  VERCEL: z.string().optional(),
 });
 
 export type AppConfig = z.infer<typeof envSchema>;

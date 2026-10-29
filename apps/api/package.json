@@ -30,6 +30,7 @@
     "@prisma/adapter-pg": "7.10.1",
     "@prisma/client": "7.10.1",
     "@sentry/nestjs": "^11.8.0",
+    "@sparticuz/chromium": "153.0.0",
     "argon2": "^0.45.1",
     "cookie-parser": "^1.4.7",
     "decimal.js": "^10.6.0",
