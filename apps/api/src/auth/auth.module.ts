@@ -6,6 +6,7 @@ import { CatalogModule } from '../catalog/catalog.module';
 import { APP_CONFIG, type AppConfig } from '../config/app-config';
 import { AuthController, SessionsController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { FeatureGuard } from './feature.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { LoginLimiter } from './login-limiter';
 import { RolesGuard } from './roles.guard';
@@ -29,9 +30,10 @@ import { TokenService } from './token.service';
     AuthService,
     TokenService,
     LoginLimiter,
-    // Order matters: authenticate first, then check roles.
+    // Order matters: authenticate first, then check roles, then the plan's modules.
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: FeatureGuard },
   ],
   exports: [AuthService, LoginLimiter, TokenService],
 })

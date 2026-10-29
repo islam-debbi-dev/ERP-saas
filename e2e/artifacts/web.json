@@ -4,8 +4,12 @@
       "/opt/homebrew/Cellar/node/26.10.0_2/bin/node",
       "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/node_modules/@playwright/test/cli.js",
       "test",
-      "--config",
-      "web/playwright.config.ts"
+      "-c",
+      "web/playwright.config.ts",
+      "--project",
+      "mobile",
+      "--project",
+      "mobile-360"
     ],
     "configFile": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/playwright.config.ts",
     "rootDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
@@ -30,12 +34,44 @@
         "metadata": {
           "actualWorkers": 1
         },
-        "id": "",
-        "name": "",
+        "id": "desktop",
+        "name": "desktop",
         "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
         "testIgnore": [],
         "testMatch": [
-          "/.*\\.spec\\.ts/"
+          "/web\\.spec\\.ts/"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/mobile\\.spec\\.ts/"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile-360",
+        "name": "mobile-360",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/mobile\\.spec\\.ts/"
         ],
         "timeout": 60000
       }
@@ -50,22 +86,74 @@
         "metadata": {
           "actualWorkers": 1
         },
-        "name": "",
+        "name": "mobile",
         "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
         "snapshotDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
         "testIgnore": [],
         "testMatch": {},
         "timeout": 60000,
         "use": {
-          "baseURL": "http://localhost:3005",
+          "baseURL": "http://localhost:3000",
           "actionTimeout": 20000,
           "navigationTimeout": 30000,
           "trace": "retain-on-failure",
-          "storageState": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/.auth/state.json"
+          "storageState": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/.auth/state.json",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 393,
+            "height": 727
+          },
+          "screen": {
+            "width": 393,
+            "height": 851
+          },
+          "deviceScaleFactor": 2.75,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium"
         },
         "dependencies": [],
         "ignoreSnapshots": false,
-        "__projectId": ""
+        "__projectId": "mobile"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "mobile-360",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "snapshotDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": {},
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://localhost:3000",
+          "actionTimeout": 20000,
+          "navigationTimeout": 30000,
+          "trace": "retain-on-failure",
+          "storageState": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/.auth/state.json",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 360,
+            "height": 640
+          },
+          "screen": {
+            "width": 360,
+            "height": 640
+          },
+          "deviceScaleFactor": 2.75,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "mobile-360"
       }
     ],
     "quiet": false,
@@ -95,369 +183,1091 @@
   },
   "suites": [
     {
-      "title": "web.spec.ts",
-      "file": "web.spec.ts",
+      "title": "mobile.spec.ts",
+      "file": "mobile.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [
         {
-          "title": "the session survives a reload (the refresh cookie is used)",
+          "title": "every signed-in screen fits the phone (ar)",
           "ok": true,
           "tags": [],
           "tests": [
             {
-              "timeout": 60000,
+              "timeout": 600000,
               "annotations": [],
               "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
+              "projectId": "mobile",
+              "projectName": "mobile",
               "results": [
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1609,
+                  "duration": 46751,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-21T21:47:19.408Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "2948388c6448a8e5345d-27a33f108494a05c915d",
-          "file": "web.spec.ts",
-          "line": 110,
-          "column": 1
-        },
-        {
-          "title": "the token stays out of the browser storage and the cookie is httpOnly",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 849,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T21:47:21.025Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "2948388c6448a8e5345d-f36ccda0dc6b28c062b2",
-          "file": "web.spec.ts",
-          "line": 120,
-          "column": 1
-        },
-        {
-          "title": "the balance of a client is shown exactly, in DA",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1001,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T21:47:21.881Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "2948388c6448a8e5345d-b40ba2870bf9ddd880e8",
-          "file": "web.spec.ts",
-          "line": 136,
-          "column": 1
-        },
-        {
-          "title": "a hostile client name is shown as text, not executed",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 875,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T21:47:22.889Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "2948388c6448a8e5345d-ff8e3c1d2a883bd2de74",
-          "file": "web.spec.ts",
-          "line": 145,
-          "column": 1
-        },
-        {
-          "title": "a hostile id in the URL gives a message, not a crash",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 849,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T21:47:23.774Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "2948388c6448a8e5345d-3eb2e4193bddbca4290a",
-          "file": "web.spec.ts",
-          "line": 161,
-          "column": 1
-        },
-        {
-          "title": "a payment made from the screen carries an idempotency key",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1480,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T21:47:24.632Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "2948388c6448a8e5345d-5b3c4f75dbec1252c343",
-          "file": "web.spec.ts",
-          "line": 170,
-          "column": 1
-        },
-        {
-          "title": "logging out ends the session for good",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1852,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-21T21:47:26.120Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "2948388c6448a8e5345d-2bcba406483fcc2c11a3",
-          "file": "web.spec.ts",
-          "line": 186,
-          "column": 1
-        }
-      ],
-      "suites": [
-        {
-          "title": "the login itself",
-          "file": "web.spec.ts",
-          "line": 75,
-          "column": 6,
-          "specs": [
-            {
-              "title": "an anonymous visitor is sent to the login page",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 60000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
+                  "steps": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 776,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-21T21:47:17.222Z",
-                      "annotations": [],
-                      "attachments": []
+                      "title": "/achats",
+                      "duration": 1768
+                    },
+                    {
+                      "title": "/achats/[id]",
+                      "duration": 3335
+                    },
+                    {
+                      "title": "/achats/fournisseurs",
+                      "duration": 2566
+                    },
+                    {
+                      "title": "/achats/nouveau",
+                      "duration": 974
+                    },
+                    {
+                      "title": "/clients",
+                      "duration": 803
+                    },
+                    {
+                      "title": "/clients/[id]",
+                      "duration": 1527
+                    },
+                    {
+                      "title": "/clients/[id]/modifier",
+                      "duration": 1439
+                    },
+                    {
+                      "title": "/clients/nouveau",
+                      "duration": 877
+                    },
+                    {
+                      "title": "/mot-de-passe",
+                      "duration": 798
+                    },
+                    {
+                      "title": "/parametres",
+                      "duration": 2043
+                    },
+                    {
+                      "title": "/parametres/abonnement",
+                      "duration": 1409
+                    },
+                    {
+                      "title": "/parametres/import",
+                      "duration": 795
+                    },
+                    {
+                      "title": "/parametres/journal",
+                      "duration": 822
+                    },
+                    {
+                      "title": "/parametres/sessions",
+                      "duration": 715
+                    },
+                    {
+                      "title": "/parametres/utilisateurs",
+                      "duration": 640
+                    },
+                    {
+                      "title": "/produits",
+                      "duration": 626
+                    },
+                    {
+                      "title": "/produits/[id]",
+                      "duration": 2987
+                    },
+                    {
+                      "title": "/produits/categories",
+                      "duration": 978
+                    },
+                    {
+                      "title": "/produits/nouveau",
+                      "duration": 862
+                    },
+                    {
+                      "title": "/rapports",
+                      "duration": 743
+                    },
+                    {
+                      "title": "/stock",
+                      "duration": 1518
+                    },
+                    {
+                      "title": "/stock/[productId]",
+                      "duration": 1424
+                    },
+                    {
+                      "title": "/stock/inventaires",
+                      "duration": 691
+                    },
+                    {
+                      "title": "/stock/inventaires/[id]",
+                      "duration": 1045
+                    },
+                    {
+                      "title": "/tableau-de-bord",
+                      "duration": 823
+                    },
+                    {
+                      "title": "/ventes",
+                      "duration": 983
+                    },
+                    {
+                      "title": "/ventes/[id]",
+                      "duration": 1413
+                    },
+                    {
+                      "title": "/ventes/nouvelle",
+                      "duration": 960
+                    },
+                    {
+                      "title": "/versements",
+                      "duration": 3385
+                    },
+                    {
+                      "title": "new versement opens as a sheet with its save button on screen",
+                      "duration": 1053
+                    },
+                    {
+                      "title": "dashboard: the onboarding checklist fits",
+                      "duration": 650
+                    },
+                    {
+                      "title": "fast sale: a line, then the total and the validate button on screen",
+                      "duration": 853
                     }
                   ],
-                  "status": "expected"
-                }
-              ],
-              "id": "2948388c6448a8e5345d-8a3ce47a3c5f91a8ebae",
-              "file": "web.spec.ts",
-              "line": 79,
-              "column": 3
-            },
-            {
-              "title": "a wrong password is refused and says nothing about the secret",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 60000,
+                  "startTime": "2026-10-29T10:30:01.841Z",
                   "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 326,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-21T21:47:18.113Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
+                  "attachments": []
                 }
               ],
-              "id": "2948388c6448a8e5345d-eb1279bec8946f8d17f8",
-              "file": "web.spec.ts",
-              "line": 86,
-              "column": 3
-            },
-            {
-              "title": "the right credentials open the dashboard",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 60000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 951,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-21T21:47:18.449Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "2948388c6448a8e5345d-b437241ccae3175f8eea",
-              "file": "web.spec.ts",
-              "line": 99,
-              "column": 3
+              "status": "expected"
             }
-          ]
+          ],
+          "id": "e79c838550b25e92508e-c363fb8506d445ccb8af",
+          "file": "mobile.spec.ts",
+          "line": 232,
+          "column": 3
+        },
+        {
+          "title": "every public screen fits the phone (ar)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15889,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "/admin/login",
+                      "duration": 5222
+                    },
+                    {
+                      "title": "/inscription",
+                      "duration": 5309
+                    },
+                    {
+                      "title": "/invitation/[token]",
+                      "duration": 2372
+                    },
+                    {
+                      "title": "/login",
+                      "duration": 1499
+                    },
+                    {
+                      "title": "/support",
+                      "duration": 1483
+                    }
+                  ],
+                  "startTime": "2026-10-29T10:30:49.614Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-310943156c06c1ecdfac",
+          "file": "mobile.spec.ts",
+          "line": 306,
+          "column": 3
+        },
+        {
+          "title": "every signed-in screen fits the phone (fr)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 600000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 29907,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "/achats",
+                      "duration": 729
+                    },
+                    {
+                      "title": "/achats/[id]",
+                      "duration": 826
+                    },
+                    {
+                      "title": "/achats/fournisseurs",
+                      "duration": 781
+                    },
+                    {
+                      "title": "/achats/nouveau",
+                      "duration": 616
+                    },
+                    {
+                      "title": "/clients",
+                      "duration": 1027
+                    },
+                    {
+                      "title": "/clients/[id]",
+                      "duration": 1960
+                    },
+                    {
+                      "title": "/clients/[id]/modifier",
+                      "duration": 1914
+                    },
+                    {
+                      "title": "/clients/nouveau",
+                      "duration": 1828
+                    },
+                    {
+                      "title": "/mot-de-passe",
+                      "duration": 2314
+                    },
+                    {
+                      "title": "/parametres",
+                      "duration": 1720
+                    },
+                    {
+                      "title": "/parametres/abonnement",
+                      "duration": 618
+                    },
+                    {
+                      "title": "/parametres/import",
+                      "duration": 604
+                    },
+                    {
+                      "title": "/parametres/journal",
+                      "duration": 695
+                    },
+                    {
+                      "title": "/parametres/sessions",
+                      "duration": 562
+                    },
+                    {
+                      "title": "/parametres/utilisateurs",
+                      "duration": 492
+                    },
+                    {
+                      "title": "/produits",
+                      "duration": 445
+                    },
+                    {
+                      "title": "/produits/[id]",
+                      "duration": 661
+                    },
+                    {
+                      "title": "/produits/categories",
+                      "duration": 458
+                    },
+                    {
+                      "title": "/produits/nouveau",
+                      "duration": 511
+                    },
+                    {
+                      "title": "/rapports",
+                      "duration": 504
+                    },
+                    {
+                      "title": "/stock",
+                      "duration": 1253
+                    },
+                    {
+                      "title": "/stock/[productId]",
+                      "duration": 508
+                    },
+                    {
+                      "title": "/stock/inventaires",
+                      "duration": 483
+                    },
+                    {
+                      "title": "/stock/inventaires/[id]",
+                      "duration": 513
+                    },
+                    {
+                      "title": "/tableau-de-bord",
+                      "duration": 503
+                    },
+                    {
+                      "title": "/ventes",
+                      "duration": 548
+                    },
+                    {
+                      "title": "/ventes/[id]",
+                      "duration": 591
+                    },
+                    {
+                      "title": "/ventes/nouvelle",
+                      "duration": 508
+                    },
+                    {
+                      "title": "/versements",
+                      "duration": 499
+                    },
+                    {
+                      "title": "new versement opens as a sheet with its save button on screen",
+                      "duration": 1030
+                    },
+                    {
+                      "title": "dashboard: the onboarding checklist fits",
+                      "duration": 534
+                    },
+                    {
+                      "title": "fast sale: a line, then the total and the validate button on screen",
+                      "duration": 612
+                    }
+                  ],
+                  "startTime": "2026-10-29T10:31:05.519Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-3f644165a2f8eca7f86c",
+          "file": "mobile.spec.ts",
+          "line": 232,
+          "column": 3
+        },
+        {
+          "title": "every public screen fits the phone (fr)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8520,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "/admin/login",
+                      "duration": 2537
+                    },
+                    {
+                      "title": "/inscription",
+                      "duration": 1930
+                    },
+                    {
+                      "title": "/invitation/[token]",
+                      "duration": 1426
+                    },
+                    {
+                      "title": "/login",
+                      "duration": 1316
+                    },
+                    {
+                      "title": "/support",
+                      "duration": 1309
+                    }
+                  ],
+                  "startTime": "2026-10-29T10:31:35.443Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-3f576c7c859908d62308",
+          "file": "mobile.spec.ts",
+          "line": 306,
+          "column": 3
+        },
+        {
+          "title": "every admin screen fits the phone (ar)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12872,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "/admin",
+                      "duration": 5888
+                    },
+                    {
+                      "title": "/admin/societes/[id]",
+                      "duration": 3668
+                    },
+                    {
+                      "title": "record payment opens as a sheet with its button on screen",
+                      "duration": 916
+                    }
+                  ],
+                  "startTime": "2026-10-29T10:31:43.974Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-8923eb9d1ef2bcc1c11d",
+          "file": "mobile.spec.ts",
+          "line": 336,
+          "column": 3
+        },
+        {
+          "title": "every admin screen fits the phone (fr)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8993,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "/admin",
+                      "duration": 5239
+                    },
+                    {
+                      "title": "/admin/societes/[id]",
+                      "duration": 496
+                    },
+                    {
+                      "title": "record payment opens as a sheet with its button on screen",
+                      "duration": 674
+                    }
+                  ],
+                  "startTime": "2026-10-29T10:31:56.855Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-d8170968548e2dbe780a",
+          "file": "mobile.spec.ts",
+          "line": 336,
+          "column": 3
+        },
+        {
+          "title": "every signed-in screen fits the phone (ar)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 600000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-360",
+              "projectName": "mobile-360",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18911,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "/achats",
+                      "duration": 576
+                    },
+                    {
+                      "title": "/achats/[id]",
+                      "duration": 627
+                    },
+                    {
+                      "title": "/achats/fournisseurs",
+                      "duration": 510
+                    },
+                    {
+                      "title": "/achats/nouveau",
+                      "duration": 601
+                    },
+                    {
+                      "title": "/clients",
+                      "duration": 459
+                    },
+                    {
+                      "title": "/clients/[id]",
+                      "duration": 499
+                    },
+                    {
+                      "title": "/clients/[id]/modifier",
+                      "duration": 495
+                    },
+                    {
+                      "title": "/clients/nouveau",
+                      "duration": 512
+                    },
+                    {
+                      "title": "/mot-de-passe",
+                      "duration": 500
+                    },
+                    {
+                      "title": "/parametres",
+                      "duration": 667
+                    },
+                    {
+                      "title": "/parametres/abonnement",
+                      "duration": 449
+                    },
+                    {
+                      "title": "/parametres/import",
+                      "duration": 433
+                    },
+                    {
+                      "title": "/parametres/journal",
+                      "duration": 650
+                    },
+                    {
+                      "title": "/parametres/sessions",
+                      "duration": 442
+                    },
+                    {
+                      "title": "/parametres/utilisateurs",
+                      "duration": 395
+                    },
+                    {
+                      "title": "/produits",
+                      "duration": 414
+                    },
+                    {
+                      "title": "/produits/[id]",
+                      "duration": 521
+                    },
+                    {
+                      "title": "/produits/categories",
+                      "duration": 422
+                    },
+                    {
+                      "title": "/produits/nouveau",
+                      "duration": 494
+                    },
+                    {
+                      "title": "/rapports",
+                      "duration": 381
+                    },
+                    {
+                      "title": "/stock",
+                      "duration": 1189
+                    },
+                    {
+                      "title": "/stock/[productId]",
+                      "duration": 413
+                    },
+                    {
+                      "title": "/stock/inventaires",
+                      "duration": 385
+                    },
+                    {
+                      "title": "/stock/inventaires/[id]",
+                      "duration": 396
+                    },
+                    {
+                      "title": "/tableau-de-bord",
+                      "duration": 444
+                    },
+                    {
+                      "title": "/ventes",
+                      "duration": 418
+                    },
+                    {
+                      "title": "/ventes/[id]",
+                      "duration": 443
+                    },
+                    {
+                      "title": "/ventes/nouvelle",
+                      "duration": 453
+                    },
+                    {
+                      "title": "/versements",
+                      "duration": 417
+                    },
+                    {
+                      "title": "new versement opens as a sheet with its save button on screen",
+                      "duration": 878
+                    },
+                    {
+                      "title": "dashboard: the onboarding checklist fits",
+                      "duration": 426
+                    },
+                    {
+                      "title": "fast sale: a line, then the total and the validate button on screen",
+                      "duration": 626
+                    }
+                  ],
+                  "startTime": "2026-10-29T10:32:06.709Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-64139fae68b2d0f06c9d",
+          "file": "mobile.spec.ts",
+          "line": 232,
+          "column": 3
+        },
+        {
+          "title": "every public screen fits the phone (ar)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-360",
+              "projectName": "mobile-360",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6999,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "/admin/login",
+                      "duration": 1745
+                    },
+                    {
+                      "title": "/inscription",
+                      "duration": 1376
+                    },
+                    {
+                      "title": "/invitation/[token]",
+                      "duration": 1394
+                    },
+                    {
+                      "title": "/login",
+                      "duration": 1188
+                    },
+                    {
+                      "title": "/support",
+                      "duration": 1295
+                    }
+                  ],
+                  "startTime": "2026-10-29T10:32:26.403Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-a76434bf256ee6188cae",
+          "file": "mobile.spec.ts",
+          "line": 306,
+          "column": 3
+        },
+        {
+          "title": "every signed-in screen fits the phone (fr)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 600000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-360",
+              "projectName": "mobile-360",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15009,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "/achats",
+                      "duration": 381
+                    },
+                    {
+                      "title": "/achats/[id]",
+                      "duration": 422
+                    },
+                    {
+                      "title": "/achats/fournisseurs",
+                      "duration": 307
+                    },
+                    {
+                      "title": "/achats/nouveau",
+                      "duration": 384
+                    },
+                    {
+                      "title": "/clients",
+                      "duration": 329
+                    },
+                    {
+                      "title": "/clients/[id]",
+                      "duration": 396
+                    },
+                    {
+                      "title": "/clients/[id]/modifier",
+                      "duration": 416
+                    },
+                    {
+                      "title": "/clients/nouveau",
+                      "duration": 349
+                    },
+                    {
+                      "title": "/mot-de-passe",
+                      "duration": 308
+                    },
+                    {
+                      "title": "/parametres",
+                      "duration": 617
+                    },
+                    {
+                      "title": "/parametres/abonnement",
+                      "duration": 340
+                    },
+                    {
+                      "title": "/parametres/import",
+                      "duration": 377
+                    },
+                    {
+                      "title": "/parametres/journal",
+                      "duration": 533
+                    },
+                    {
+                      "title": "/parametres/sessions",
+                      "duration": 397
+                    },
+                    {
+                      "title": "/parametres/utilisateurs",
+                      "duration": 358
+                    },
+                    {
+                      "title": "/produits",
+                      "duration": 367
+                    },
+                    {
+                      "title": "/produits/[id]",
+                      "duration": 463
+                    },
+                    {
+                      "title": "/produits/categories",
+                      "duration": 298
+                    },
+                    {
+                      "title": "/produits/nouveau",
+                      "duration": 379
+                    },
+                    {
+                      "title": "/rapports",
+                      "duration": 295
+                    },
+                    {
+                      "title": "/stock",
+                      "duration": 623
+                    },
+                    {
+                      "title": "/stock/[productId]",
+                      "duration": 339
+                    },
+                    {
+                      "title": "/stock/inventaires",
+                      "duration": 283
+                    },
+                    {
+                      "title": "/stock/inventaires/[id]",
+                      "duration": 326
+                    },
+                    {
+                      "title": "/tableau-de-bord",
+                      "duration": 539
+                    },
+                    {
+                      "title": "/ventes",
+                      "duration": 389
+                    },
+                    {
+                      "title": "/ventes/[id]",
+                      "duration": 385
+                    },
+                    {
+                      "title": "/ventes/nouvelle",
+                      "duration": 388
+                    },
+                    {
+                      "title": "/versements",
+                      "duration": 373
+                    },
+                    {
+                      "title": "new versement opens as a sheet with its save button on screen",
+                      "duration": 909
+                    },
+                    {
+                      "title": "dashboard: the onboarding checklist fits",
+                      "duration": 471
+                    },
+                    {
+                      "title": "fast sale: a line, then the total and the validate button on screen",
+                      "duration": 548
+                    }
+                  ],
+                  "startTime": "2026-10-29T10:32:33.408Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-3ae71ed9887b579dcab9",
+          "file": "mobile.spec.ts",
+          "line": 232,
+          "column": 3
+        },
+        {
+          "title": "every public screen fits the phone (fr)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-360",
+              "projectName": "mobile-360",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5964,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "/admin/login",
+                      "duration": 1287
+                    },
+                    {
+                      "title": "/inscription",
+                      "duration": 1133
+                    },
+                    {
+                      "title": "/invitation/[token]",
+                      "duration": 1268
+                    },
+                    {
+                      "title": "/login",
+                      "duration": 1166
+                    },
+                    {
+                      "title": "/support",
+                      "duration": 1108
+                    }
+                  ],
+                  "startTime": "2026-10-29T10:32:48.425Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-a9b60ff6dea3a938e427",
+          "file": "mobile.spec.ts",
+          "line": 306,
+          "column": 3
+        },
+        {
+          "title": "every admin screen fits the phone (ar)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-360",
+              "projectName": "mobile-360",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7863,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "/admin",
+                      "duration": 5033
+                    },
+                    {
+                      "title": "/admin/societes/[id]",
+                      "duration": 720
+                    },
+                    {
+                      "title": "record payment opens as a sheet with its button on screen",
+                      "duration": 762
+                    }
+                  ],
+                  "startTime": "2026-10-29T10:32:54.397Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-336c727c12a3cd6e471b",
+          "file": "mobile.spec.ts",
+          "line": 336,
+          "column": 3
+        },
+        {
+          "title": "every admin screen fits the phone (fr)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-360",
+              "projectName": "mobile-360",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6420,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "/admin",
+                      "duration": 3732
+                    },
+                    {
+                      "title": "/admin/societes/[id]",
+                      "duration": 583
+                    },
+                    {
+                      "title": "record payment opens as a sheet with its button on screen",
+                      "duration": 792
+                    }
+                  ],
+                  "startTime": "2026-10-29T10:33:02.266Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-0e878b8d9f0337c6d555",
+          "file": "mobile.spec.ts",
+          "line": 336,
+          "column": 3
         }
       ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-21T21:47:15.014Z",
-    "duration": 13026.311,
-    "expected": 10,
+    "startTime": "2026-10-29T10:29:49.491Z",
+    "duration": 199336.542,
+    "expected": 12,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

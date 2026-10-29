@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { type Role } from '../enums';
+import { ACTIVITIES, Activity, type Edition, type Feature } from '../features';
 import { type Permission } from '../permissions';
 
 export const emailField = z.string().trim().toLowerCase().max(254).pipe(z.email());
@@ -13,6 +14,8 @@ export const registerSchema = z.object({
   fullName: z.string().trim().min(2).max(120),
   email,
   password,
+  /** Picks the edition of the trial. Older clients send nothing: grossiste. */
+  activity: z.enum(ACTIVITIES as [Activity, ...Activity[]]).default(Activity.GROSSISTE),
   deviceName: z.string().trim().max(100).optional(),
 });
 export type RegisterInput = z.infer<typeof registerSchema>;
@@ -65,6 +68,9 @@ export interface AuthUser {
   tenantName: string;
   /** Role defaults plus grants minus revokes (the OWNER has them all). */
   permissions: Permission[];
+  /** The company's edition and its effective modules (phase 13b), read on every call. */
+  edition: Edition;
+  features: Feature[];
   /** Set by a temporary password: every other route answers PASSWORD_CHANGE_REQUIRED. */
   mustChangePassword: boolean;
   /** A super-admin viewing the company read-only (phase 13). */

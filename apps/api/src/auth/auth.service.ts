@@ -1,6 +1,9 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import {
+  ACTIVITY_EDITION,
+  Edition,
+  effectiveFeatures,
   type AcceptInvitationInput,
   type AuthResponse,
   type AuthUser,
@@ -18,6 +21,7 @@ import {
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import { BillingService } from '../billing/billing.service';
+import { FeaturesService } from '../billing/features.service';
 import { CatalogService } from '../catalog/catalog.service';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
@@ -43,8 +47,26 @@ interface UserForToken {
   permissionGrants: string[];
   permissionRevokes: string[];
   mustChangePassword: boolean;
-  tenant: { name: string };
+  tenant: {
+    name: string;
+    featureGrants: string[];
+    featureRevokes: string[];
+    subscription: { edition: Edition } | null;
+  };
 }
+
+/**
+ * What a login response needs from the tenant. Read inside the caller's transaction, so a
+ * company being registered already has its edition (the cache would not see it yet).
+ */
+const TENANT_FOR_TOKEN = {
+  select: {
+    name: true,
+    featureGrants: true,
+    featureRevokes: true,
+    subscription: { select: { edition: true } },
+  },
+} as const;
 
 /** Wrong passwords in a row before the account is locked, and for how long. */
 export const MAX_FAILED_LOGINS = 5;
@@ -70,6 +92,7 @@ export class AuthService {
     private readonly catalog: CatalogService,
     private readonly limiter: LoginLimiter,
     private readonly billing: BillingService,
+    private readonly features: FeaturesService,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
@@ -83,7 +106,7 @@ export class AuthService {
             data: { name: input.companyName, raisonSociale: input.companyName },
           });
           await this.catalog.initTenant(tx, tenant.id, tenant.priceLevelCount);
-          await this.billing.createTrial(tx, tenant.id);
+          await this.billing.createTrial(tx, tenant.id, ACTIVITY_EDITION[input.activity]);
           const user = await tx.user.create({
             data: {
               tenantId: tenant.id,
@@ -92,7 +115,7 @@ export class AuthService {
               fullName: input.fullName,
               role: Role.OWNER,
             },
-            include: { tenant: { select: { name: true } } },
+            include: { tenant: TENANT_FOR_TOKEN },
           });
           const issued = await this.openSession(tx, user, {
             ...meta,
@@ -105,7 +128,7 @@ export class AuthService {
             action: 'TENANT_REGISTERED',
             entity: 'Tenant',
             entityId: tenant.id,
-            after: { name: tenant.name, ownerEmail: user.email },
+            after: { name: tenant.name, ownerEmail: user.email, activity: input.activity },
           });
           return issued.tokens;
         });
@@ -136,7 +159,7 @@ export class AuthService {
         : { phone: normalizePhone(input.identifier) ?? '' };
       const user = await this.prisma.db.user.findFirst({
         where,
-        include: { tenant: { select: { name: true } } },
+        include: { tenant: TENANT_FOR_TOKEN },
       });
       const now = new Date();
       if (!user || user.deletedAt) {
@@ -307,7 +330,7 @@ export class AuthService {
             failedLoginCount: 0,
             lockedUntil: null,
           },
-          include: { tenant: { select: { name: true } } },
+          include: { tenant: TENANT_FOR_TOKEN },
         });
         const issued = await this.openSession(tx, user, { ...meta, deviceName: input.deviceName });
         await this.audit.log(tx, {
@@ -327,7 +350,7 @@ export class AuthService {
     return tenantContext.runAsSystem(async () => {
       const inv = await this.prisma.db.userInvitation.findUnique({
         where: { tokenHash: TokenService.hash(token) },
-        include: { user: { include: { tenant: { select: { name: true } } } } },
+        include: { user: { include: { tenant: TENANT_FOR_TOKEN } } },
       });
       if (!inv || inv.usedAt || inv.expiresAt <= new Date() || inv.user.deletedAt) {
         throw new AppException(ErrorCode.INVITATION_INVALID, 'This link is invalid or expired');
@@ -347,7 +370,7 @@ export class AuthService {
     return tenantContext.runAsSystem(async () => {
       const session = await this.prisma.db.session.findUnique({
         where: { id: parsed.sessionId },
-        include: { user: { include: { tenant: { select: { name: true } } } } },
+        include: { user: { include: { tenant: TENANT_FOR_TOKEN } } },
       });
       if (!session) throw new AppException(ErrorCode.INVALID_TOKEN, 'Invalid refresh token');
       if (session.revokedAt) throw new AppException(ErrorCode.SESSION_REVOKED, 'Session revoked');
@@ -476,10 +499,13 @@ export class AuthService {
   }
 
   async me(user: CurrentUserInfo): Promise<AuthUser> {
-    const tenant = await this.prisma.db.tenant.findUniqueOrThrow({
-      where: { id: user.tenantId },
-      select: { name: true },
-    });
+    const [tenant, { edition, features }] = await Promise.all([
+      this.prisma.db.tenant.findUniqueOrThrow({
+        where: { id: user.tenantId },
+        select: { name: true },
+      }),
+      this.features.of(user.tenantId),
+    ]);
     return {
       id: user.id,
       email: user.email,
@@ -489,6 +515,8 @@ export class AuthService {
       tenantId: user.tenantId,
       tenantName: tenant.name,
       permissions: user.permissions,
+      edition,
+      features,
       mustChangePassword: user.mustChangePassword,
       ...(user.impersonatedBy ? { impersonating: true } : {}),
     };
@@ -547,6 +575,7 @@ export class AuthService {
       sid: sessionId,
       role: user.role,
     });
+    const edition = user.tenant.subscription?.edition ?? Edition.ESSENTIEL;
     return {
       accessToken,
       expiresIn: this.tokens.accessTtlSeconds,
@@ -560,6 +589,8 @@ export class AuthService {
         tenantId: user.tenantId,
         tenantName: user.tenant.name,
         permissions: effectivePermissions(user.role, user.permissionGrants, user.permissionRevokes),
+        edition,
+        features: effectiveFeatures(edition, user.tenant.featureGrants, user.tenant.featureRevokes),
         mustChangePassword: user.mustChangePassword,
       },
     };

@@ -53,6 +53,12 @@ The API and the web app can also run as two Vercel projects (root directories `a
 
 New companies get a **30-day trial** on the Pro plan. After the period end they are `PAST_DUE` for 7 days (banner, everything still works), then `SUSPENDED`: read-only, they can still view, print and export, but every write answers `SUBSCRIPTION_SUSPENDED`. The status is computed from the dates on each request; there is no scheduled job. Plans and prices (Starter 2 500 DA, Pro 4 500 DA, Business 8 000 DA per month) are rows of the `plans` table, inserted by the migration and the seed; change a price there. Companies that existed before phase 13 are **free (pilot)**.
 
+### Editions and modules (phase 13b)
+
+A subscription has two parts: the **plan** (Starter / Pro / Business) sets the price and the limits, the **edition** (Essentiel / Import / Distribution / Entreprise) sets the modules on top of the core (`packages/shared/src/features.ts`). Price = plan price + the edition's supplement, a row of the `edition_prices` table (0 DA until you set the real supplements there). Signup asks the company's activity and starts the trial on the matching edition; pilots are on Entreprise.
+
+From the super-admin tenant page you change the edition and switch single modules on or off for one company (stored as `featureGrants` / `featureRevokes` on the tenant, audited). A module's routes carry `@RequireFeature(Feature.X)` and answer `403 FEATURE_NOT_IN_PLAN` when the company does not have it; its reports and exports stay readable and its data is never deleted. The API reads the modules on each request through a 60-second cache, so a change applies without a new login: at once on the instance that handled it, within 60 s on the others.
+
 Payments are recorded by hand by the super-admin at `/admin` (BaridiMob, virement, espèces), which extends the period. The super-admin is not a company user: create one, once, with the owner database connection (`DATABASE_URL_MIGRATE`, or `DATABASE_URL` locally):
 
 ```bash

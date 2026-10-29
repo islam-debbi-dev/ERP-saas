@@ -1,8 +1,13 @@
 'use client';
 
-import { CircleAlert, MessageCircle, ReceiptText } from 'lucide-react';
+import { Check, CircleAlert, MessageCircle, ReceiptText } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
-import type { SubscriptionPaymentInfo, SubscriptionSummary } from '@erp/shared';
+import {
+  money,
+  type SubscriptionPaymentInfo,
+  type SubscriptionSummary,
+  toMoneyString,
+} from '@erp/shared';
 import { Amount } from '@/components/shared/amount';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
@@ -52,6 +57,7 @@ export function SubscriptionPage() {
 
 function Content({ s }: { s: SubscriptionSummary }) {
   const t = useTranslations('billing');
+  const tf = useTranslations('features');
   const format = useFormatter();
   const { state } = useAuth();
   const day = (iso: string) => format.dateTime(new Date(iso), { dateStyle: 'long' });
@@ -79,9 +85,16 @@ function Content({ s }: { s: SubscriptionSummary }) {
               </CardTitle>
               <SubscriptionStatusBadge status={s.status} isFree={s.isFree} />
             </div>
+            <p className="text-sm text-muted-foreground">
+              {tf('yourEdition', { edition: tf(`edition${s.edition.edition}`) })}
+            </p>
             {s.isFree ? null : (
               <p className="text-2xl font-semibold">
-                <Amount value={s.plan.monthlyPrice} />{' '}
+                <Amount
+                  value={toMoneyString(
+                    money(s.plan.monthlyPrice).plus(s.edition.monthlySupplement),
+                  )}
+                />{' '}
                 <span className="text-sm font-normal text-muted-foreground">{t('perMonth')}</span>
               </p>
             )}
@@ -105,6 +118,27 @@ function Content({ s }: { s: SubscriptionSummary }) {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader className="gap-1.5">
+          <CardTitle role="heading" aria-level={2}>
+            {tf('included')}
+          </CardTitle>
+          <CardDescription>{tf('coreOnly')}</CardDescription>
+        </CardHeader>
+        {s.features.length > 0 ? (
+          <CardContent>
+            <ul className="grid gap-2 text-sm sm:grid-cols-2">
+              {s.features.map((f) => (
+                <li key={f} className="flex items-start gap-2">
+                  <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                  <span>{tf(`feature${f}`)}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        ) : null}
+      </Card>
 
       {s.docsOverLimit ? (
         <Alert>

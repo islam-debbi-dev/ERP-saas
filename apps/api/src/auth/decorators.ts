@@ -1,11 +1,12 @@
 import { createParamDecorator, type ExecutionContext, SetMetadata } from '@nestjs/common';
-import type { Role } from '@erp/shared';
+import type { Feature, Role } from '@erp/shared';
 import type { AuthenticatedRequest, CurrentUserInfo } from './auth.types';
 
 export const IS_PUBLIC_KEY = 'erp:isPublic';
 export const ROLES_KEY = 'erp:roles';
 export const ALLOW_PASSWORD_CHANGE_KEY = 'erp:allowPasswordChange';
 export const ALLOW_WHEN_SUSPENDED_KEY = 'erp:allowWhenSuspended';
+export const FEATURE_KEY = 'erp:feature';
 /** Super-admin routes: the tenant guard skips them, AdminAuthGuard checks them. */
 export const ADMIN_ROUTE_KEY = 'erp:adminRoute';
 
@@ -29,6 +30,15 @@ export const AllowPendingPasswordChange = (): MethodDecorator & ClassDecorator =
  */
 export const AllowWhenSuspended = (): MethodDecorator & ClassDecorator =>
   SetMetadata(ALLOW_WHEN_SUSPENDED_KEY, true);
+
+/**
+ * Route of a module outside the core (phase 13b): a tenant whose edition and grants do not
+ * include it gets FEATURE_NOT_IN_PLAN. Put it on the module's screens and writes, never on
+ * the reports and Excel exports of its data: turning a module off must keep that data
+ * readable.
+ */
+export const RequireFeature = (feature: Feature): MethodDecorator & ClassDecorator =>
+  SetMetadata(FEATURE_KEY, feature);
 
 /** The authenticated user, as loaded by JwtAuthGuard. */
 export const CurrentUser = createParamDecorator(

@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import {
   algiersDay,
+  type Edition,
+  EDITION_FEATURES,
+  type EditionInfo,
+  effectiveFeatures,
+  FEATURES,
+  type Feature,
   daysUntil,
   effectiveSubscriptionStatus,
   ErrorCode,
@@ -21,7 +27,7 @@ import { algiersMidnight } from '../common/algiers';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { ClockService } from '../clock/clock.service';
-import type { Plan, SubscriptionPayment } from '../generated/prisma/client';
+import type { EditionPrice, Plan, SubscriptionPayment } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { TRIAL_PLAN_CODE } from './plans';
 
@@ -32,6 +38,7 @@ export type LimitedResource = 'users' | 'products';
 
 export interface LoadedSubscription {
   plan: Plan;
+  edition: Edition;
   status: StoredSubscriptionStatus;
   isFree: boolean;
   trialEndsAt: Date | null;
@@ -40,10 +47,21 @@ export interface LoadedSubscription {
 
 type Db = Pick<Tx, 'subscription' | 'plan' | 'tenant' | '$queryRaw'>;
 
+/** Only known module names: a stored list may hold a feature removed from the code. */
+function knownFeatures(list: readonly string[]): Feature[] {
+  return FEATURES.filter((f) => list.includes(f));
+}
+
 /** Plain values for the audit log's before/after. */
-function snapshot(sub: LoadedSubscription) {
+function snapshot(
+  sub: LoadedSubscription,
+  tenant: { featureGrants: string[]; featureRevokes: string[] },
+) {
   return {
     plan: sub.plan.code,
+    edition: sub.edition,
+    featureGrants: tenant.featureGrants,
+    featureRevokes: tenant.featureRevokes,
     status: sub.status,
     isFree: sub.isFree,
     currentPeriodEnd: sub.currentPeriodEnd.toISOString(),
@@ -64,6 +82,17 @@ export function toPlanInfo(plan: Plan): PlanInfo {
     maxUsers: plan.maxUsers,
     maxProducts: plan.maxProducts,
     maxDocumentsPerMonth: plan.maxDocumentsPerMonth,
+    maxMobileSellers: plan.maxMobileSellers,
+  };
+}
+
+export function toEditionInfo(
+  row: Pick<EditionPrice, 'edition' | 'monthlySupplement'>,
+): EditionInfo {
+  return {
+    edition: row.edition,
+    monthlySupplement: row.monthlySupplement.toFixed(2),
+    features: [...EDITION_FEATURES[row.edition]],
   };
 }
 
@@ -83,12 +112,22 @@ export class BillingService {
     return this.clock.now();
   }
 
-  /** A 30-day trial on the trial plan, inside the registration transaction. */
-  async createTrial(tx: Tx, tenantId: string): Promise<void> {
+  /**
+   * A 30-day trial on the trial plan and the edition picked from the company's activity,
+   * inside the registration transaction.
+   */
+  async createTrial(tx: Tx, tenantId: string, edition: Edition): Promise<void> {
     const plan = await tx.plan.findUniqueOrThrow({ where: { code: TRIAL_PLAN_CODE } });
     const end = new Date(this.now().getTime() + TRIAL_DAYS * DAY_MS);
     await tx.subscription.create({
-      data: { tenantId, planId: plan.id, status: 'TRIAL', trialEndsAt: end, currentPeriodEnd: end },
+      data: {
+        tenantId,
+        planId: plan.id,
+        edition,
+        status: 'TRIAL',
+        trialEndsAt: end,
+        currentPeriodEnd: end,
+      },
     });
   }
 
@@ -106,6 +145,7 @@ export class BillingService {
     const end = new Date(tenant.createdAt.getTime() + TRIAL_DAYS * DAY_MS);
     return {
       plan: await db.plan.findUniqueOrThrow({ where: { code: TRIAL_PLAN_CODE } }),
+      edition: 'ESSENTIEL',
       status: 'TRIAL',
       isFree: false,
       trialEndsAt: end,
@@ -226,17 +266,33 @@ export class BillingService {
     const sub = await this.load(this.prisma.db, tenantId);
     const status = effectiveSubscriptionStatus(sub, now);
     const grace = graceEndsAt(sub.currentPeriodEnd);
-    const [usage, payments] = await Promise.all([
+    const [usage, payments, tenant, editionPrice] = await Promise.all([
       this.usage(tenantId),
       this.prisma.db.subscriptionPayment.findMany({
         where: { tenantId },
         orderBy: { createdAt: 'desc' },
         take: 24,
       }),
+      this.prisma.db.tenant.findUniqueOrThrow({
+        where: { id: tenantId },
+        select: { featureGrants: true, featureRevokes: true },
+      }),
+      this.prisma.db.editionPrice.findUnique({ where: { edition: sub.edition } }),
     ]);
     const maxDocs = sub.plan.maxDocumentsPerMonth;
     return {
       plan: toPlanInfo(sub.plan),
+      // No price row: the edition was added in code before its row (supplement 0).
+      edition: editionPrice
+        ? toEditionInfo(editionPrice)
+        : {
+            edition: sub.edition,
+            monthlySupplement: '0.00',
+            features: [...EDITION_FEATURES[sub.edition]],
+          },
+      featureGrants: knownFeatures(tenant.featureGrants),
+      featureRevokes: knownFeatures(tenant.featureRevokes),
+      features: effectiveFeatures(sub.edition, tenant.featureGrants, tenant.featureRevokes),
       status,
       storedStatus: sub.status,
       isFree: sub.isFree,
@@ -273,6 +329,7 @@ export class BillingService {
       create: {
         tenantId,
         planId: virtual.plan.id,
+        edition: virtual.edition,
         status: virtual.status,
         isFree: virtual.isFree,
         trialEndsAt: virtual.trialEndsAt,
@@ -296,6 +353,7 @@ export class BillingService {
     idempotencyKey: string,
   ): Promise<SubscriptionChange & { payment: SubscriptionPayment }> {
     const before = await this.lockForUpdate(tx, tenantId);
+    const modules = await this.modulesOf(tx, tenantId);
     const period = extendPeriod(before.currentPeriodEnd, input.months, this.now());
     await tx.subscription.update({
       where: { tenantId },
@@ -316,18 +374,23 @@ export class BillingService {
       },
     });
     const after = await this.load(tx, tenantId);
-    return { before: snapshot(before), after: snapshot(after), payment };
+    return { before: snapshot(before, modules), after: snapshot(after, modules), payment };
   }
 
-  /** Change plan, switch free (pilot) on or off, or give more trial days. */
+  /**
+   * Change plan or edition, grant or revoke modules, switch free (pilot) on or off, or
+   * give more trial days. The caller clears the features cache after commit.
+   */
   async update(
     tx: Tx,
     tenantId: string,
     input: UpdateSubscriptionInput,
   ): Promise<SubscriptionChange> {
     const before = await this.lockForUpdate(tx, tenantId);
+    const modulesBefore = await this.modulesOf(tx, tenantId);
     const data: {
       planId?: string;
+      edition?: Edition;
       isFree?: boolean;
       trialEndsAt?: Date;
       currentPeriodEnd?: Date;
@@ -337,6 +400,7 @@ export class BillingService {
       if (!plan || !plan.active) throw new AppException(ErrorCode.NOT_FOUND, 'Plan not found');
       data.planId = plan.id;
     }
+    if (input.edition !== undefined) data.edition = input.edition;
     if (input.isFree !== undefined) data.isFree = input.isFree;
     if (input.extendTrialDays !== undefined) {
       if (before.status !== 'TRIAL') {
@@ -351,8 +415,34 @@ export class BillingService {
       data.currentPeriodEnd = end;
     }
     await tx.subscription.update({ where: { tenantId }, data });
+    if (input.featureGrants !== undefined || input.featureRevokes !== undefined) {
+      const featureGrants = input.featureGrants ?? modulesBefore.featureGrants;
+      const featureRevokes = input.featureRevokes ?? modulesBefore.featureRevokes;
+      if (featureGrants.some((f) => featureRevokes.includes(f))) {
+        throw new AppException(
+          ErrorCode.VALIDATION_FAILED,
+          'A module cannot be granted and revoked',
+          { field: 'featureRevokes', rule: 'grant_and_revoke' },
+        );
+      }
+      await tx.tenant.update({ where: { id: tenantId }, data: { featureGrants, featureRevokes } });
+    }
     const after = await this.load(tx, tenantId);
-    return { before: snapshot(before), after: snapshot(after) };
+    const modulesAfter = await this.modulesOf(tx, tenantId);
+    return { before: snapshot(before, modulesBefore), after: snapshot(after, modulesAfter) };
+  }
+
+  private modulesOf(db: Db, tenantId: string) {
+    return db.tenant.findUniqueOrThrow({
+      where: { id: tenantId },
+      select: { featureGrants: true, featureRevokes: true },
+    });
+  }
+
+  /** Every edition with its supplement, in menu order. */
+  async editions(): Promise<EditionInfo[]> {
+    const rows = await this.prisma.db.editionPrice.findMany({ orderBy: { sortOrder: 'asc' } });
+    return rows.map(toEditionInfo);
   }
 
   /** Active plans, cheapest first. */

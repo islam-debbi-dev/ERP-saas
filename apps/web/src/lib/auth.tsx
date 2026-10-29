@@ -2,7 +2,14 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import type { AuthResponse, AuthUser, LoginInput, Permission, RegisterInput } from '@erp/shared';
+import type {
+  AuthResponse,
+  AuthUser,
+  Feature,
+  LoginInput,
+  Permission,
+  RegisterInput,
+} from '@erp/shared';
 import { api, ApiError } from './api-client';
 import { impersonation } from './impersonation';
 import { sessionHint } from './session-hint';
@@ -137,4 +144,20 @@ export function useAuth(): AuthContextValue {
 export function usePermission(permission: Permission): boolean {
   const { state } = useAuth();
   return state.status === 'authenticated' && state.user.permissions.includes(permission);
+}
+
+const NO_FEATURES: readonly Feature[] = [];
+
+/** The company's modules (edition + grants − revokes), as of the last /auth/me. */
+export function useFeatures(): readonly Feature[] {
+  const { state } = useAuth();
+  return state.status === 'authenticated' ? state.user.features : NO_FEATURES;
+}
+
+/**
+ * Whether the company has this module. Only hides menus and screens: the API answers
+ * FEATURE_NOT_IN_PLAN and stays the guard.
+ */
+export function useFeature(feature: Feature): boolean {
+  return useFeatures().includes(feature);
 }

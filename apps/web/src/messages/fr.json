@@ -76,7 +76,9 @@
     "goToLogin": "Se connecter",
     "sessionExpired": "Votre session a expiré. Reconnectez-vous.",
     "identifier": "E-mail ou téléphone",
-    "identifierHint": "Votre e-mail, ou votre numéro de téléphone comme 0550 12 34 56."
+    "identifierHint": "Votre e-mail, ou votre numéro de téléphone comme 0550 12 34 56.",
+    "activity": "Quelle est votre activité ?",
+    "activityHint": "Elle choisit les modules de votre essai. Vous pourrez changer plus tard."
   },
   "dashboard": {
     "welcome": "Bonjour {name}",
@@ -307,7 +309,8 @@
     "SUBSCRIPTION_SUSPENDED": "Abonnement suspendu : vous pouvez consulter et exporter vos données, mais plus les modifier. Renouvelez pour continuer.",
     "IMPERSONATION_READ_ONLY": "Vue support en lecture seule : aucune modification possible.",
     "PLAN_LIMIT_REACHED": "Limite de votre formule atteinte. Passez à la formule supérieure pour en ajouter.",
-    "ADMIN_TOTP_INVALID": "Code incorrect ou expiré. Saisissez le code affiché maintenant."
+    "ADMIN_TOTP_INVALID": "Code incorrect ou expiré. Saisissez le code affiché maintenant.",
+    "FEATURE_NOT_IN_PLAN": "Ce module n’est pas inclus dans votre édition. Contactez-nous pour l’ajouter."
   },
   "units": {
     "PIECE": "Pièce",
@@ -1371,7 +1374,17 @@
     "viewAs": "Voir en lecture seule",
     "viewAsHelp": "Ouvre la société dans un nouvel onglet pour 30 minutes, sans rien pouvoir modifier. La société voit cette consultation dans son journal.",
     "notFound": "Société introuvable.",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "colEdition": "Édition",
+    "edition": "Édition",
+    "changeEdition": "Changer l’édition",
+    "supplement": "+ {amount} par mois",
+    "modules": "Modules",
+    "modulesHelp": "Ajoutez ou retirez un module pour cette société seulement, en plus de son édition. Les données d’un module retiré restent en base.",
+    "moduleAdded": "Ajouté",
+    "moduleRemoved": "Retiré",
+    "saveModules": "Enregistrer les modules",
+    "resetModules": "Revenir à l’édition"
   },
   "support": {
     "title": "Vue support",
@@ -1379,5 +1392,35 @@
     "ended": "La vue support est terminée.",
     "endedHelp": "Elle dure 30 minutes et se ferme avec la session administrateur. Vous pouvez fermer cet onglet.",
     "missing": "Aucune vue support dans cet onglet. Ouvrez-la depuis l’espace administrateur."
+  },
+  "features": {
+    "activityGROSSISTE": "Grossiste",
+    "activityGROSSISTEHelp": "J’achète chez des distributeurs et je vends en gros.",
+    "activityIMPORTATEUR": "Importateur",
+    "activityIMPORTATEURHelp": "J’importe (Chine, Turquie…) et je vends en gros.",
+    "activityDISTRIBUTEUR": "Distributeur de marque",
+    "activityDISTRIBUTEURHelp": "J’ai des vendeurs et des camions sur la route.",
+    "editionESSENTIEL": "Essentiel",
+    "editionIMPORT": "Import",
+    "editionDISTRIBUTION": "Distribution",
+    "editionENTREPRISE": "Entreprise",
+    "featureSALES_FORCE": "Force de vente",
+    "featureWAREHOUSES": "Multi-dépôts",
+    "featureTOURNEES": "Tournées",
+    "featureGEO_CHECK": "Contrôle GPS",
+    "featureINCENTIVES": "Objectifs et primes",
+    "featureMOBILE_APP": "Application mobile vendeurs",
+    "featurePROMOTIONS": "Promotions et UG",
+    "featurePACKAGING": "Emballages consignés",
+    "featureIMPORT_COSTS": "Dossiers d’importation et coût de revient",
+    "yourEdition": "Édition {edition}",
+    "included": "Modules inclus",
+    "coreOnly": "Ventes, stock, achats, clients et crédit : tout le nécessaire du grossiste.",
+    "lockedTitle": "Module non inclus",
+    "lockedBody": "« {feature} » est disponible dans l’édition {editions}. Vos données ne sont jamais supprimées : elles reviennent dès que le module est activé.",
+    "or": " ou ",
+    "lockedContact": "Demander ce module sur WhatsApp",
+    "lockedWhatsappMessage": "Bonjour, je voudrais ajouter le module « {feature} » pour {company}.",
+    "lockedBack": "Retour au tableau de bord"
   }
 }

@@ -6,6 +6,9 @@ import { type FormEvent, useState } from 'react';
 import { toast } from 'sonner';
 import {
   type AdminTenantDetail,
+  type Edition,
+  type Feature,
+  FEATURES,
   money,
   parseDA,
   SUBSCRIPTION_PAYMENT_METHODS,
@@ -15,6 +18,7 @@ import {
 import { PaymentsList, UsageMeters } from '@/components/billing/subscription-page';
 import { SubscriptionStatusBadge } from '@/components/billing/subscription-status-badge';
 import { Amount } from '@/components/shared/amount';
+import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/shared/page-header';
 import { StickyActions } from '@/components/shared/sticky-actions';
 import { Button } from '@/components/ui/button';
@@ -125,6 +129,7 @@ export function AdminTenantPage({ id }: { id: string }) {
 function Detail({ d }: { d: AdminTenantDetail }) {
   const t = useTranslations('admin');
   const tb = useTranslations('billing');
+  const tf = useTranslations('features');
   const format = useFormatter();
   const day = (iso: string) => format.dateTime(new Date(iso), { dateStyle: 'long' });
 
@@ -135,12 +140,14 @@ function Detail({ d }: { d: AdminTenantDetail }) {
           <CardHeader className="gap-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <CardTitle role="heading" aria-level={2} className="text-lg">
-                {d.plan.name}
+                {d.plan.name} · {tf(`edition${d.edition.edition}`)}
               </CardTitle>
               <SubscriptionStatusBadge status={d.status} isFree={d.isFree} />
             </div>
             <p className="text-sm">
-              <Amount value={d.plan.monthlyPrice} />{' '}
+              <Amount
+                value={toMoneyString(money(d.plan.monthlyPrice).plus(d.edition.monthlySupplement))}
+              />{' '}
               <span className="text-muted-foreground">{tb('perMonth')}</span>
             </p>
           </CardHeader>
@@ -205,6 +212,7 @@ function Detail({ d }: { d: AdminTenantDetail }) {
       </div>
 
       <ManageCard d={d} />
+      <ModulesCard key={`${d.edition.edition}:${d.features.join(',')}`} d={d} />
 
       <section aria-labelledby="admin-payments" className="space-y-3">
         <h2 id="admin-payments" className="text-base font-semibold">
@@ -216,12 +224,14 @@ function Detail({ d }: { d: AdminTenantDetail }) {
   );
 }
 
-/** Plan, free (pilot) and extra trial days: each saved on its own, each audited. */
+/** Plan, edition, free (pilot) and extra trial days: each saved on its own, each audited. */
 function ManageCard({ d }: { d: AdminTenantDetail }) {
   const t = useTranslations('admin');
+  const tf = useTranslations('features');
   const errorMessage = useErrorMessage();
   const update = useUpdateSubscription(d.id);
   const [planId, setPlanId] = useState(d.plan.id);
+  const [edition, setEdition] = useState<Edition>(d.edition.edition);
   const [days, setDays] = useState('7');
   const save = (body: Parameters<typeof update.mutate>[0], after?: () => void) =>
     update.mutate(body, {
@@ -240,7 +250,7 @@ function ManageCard({ d }: { d: AdminTenantDetail }) {
           {t('subscription')}
         </CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-6 md:grid-cols-3">
+      <CardContent className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         <form
           className="grid content-start gap-2"
           onSubmit={(e) => {
@@ -263,6 +273,38 @@ function ManageCard({ d }: { d: AdminTenantDetail }) {
             disabled={planId === d.plan.id || update.isPending}
           >
             {t('changePlan')}
+          </Button>
+        </form>
+
+        <form
+          className="grid content-start gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (edition !== d.edition.edition) save({ edition });
+          }}
+        >
+          <Label htmlFor="admin-edition">{t('edition')}</Label>
+          <NativeSelect
+            id="admin-edition"
+            value={edition}
+            onChange={(e) => setEdition(e.target.value as Edition)}
+          >
+            {d.editions.map((e) => (
+              <option key={e.edition} value={e.edition}>
+                {tf(`edition${e.edition}`)}
+                {money(e.monthlySupplement).gt(0)
+                  ? ` (${t('supplement', { amount: `${e.monthlySupplement} DA` })})`
+                  : ''}
+              </option>
+            ))}
+          </NativeSelect>
+          <Button
+            type="submit"
+            variant="outline"
+            className="min-h-11"
+            disabled={edition === d.edition.edition || update.isPending}
+          >
+            {t('changeEdition')}
           </Button>
         </form>
 
@@ -312,6 +354,102 @@ function ManageCard({ d }: { d: AdminTenantDetail }) {
   );
 }
 
+/**
+ * One switch per module: on by default when the edition has it. What differs from the
+ * edition is saved as grants (on) and revokes (off), so a later edition change keeps
+ * those overrides.
+ */
+function ModulesCard({ d }: { d: AdminTenantDetail }) {
+  const t = useTranslations('admin');
+  const tf = useTranslations('features');
+  const errorMessage = useErrorMessage();
+  const update = useUpdateSubscription(d.id);
+  const defaults = d.edition.features;
+  const [on, setOn] = useState<ReadonlySet<Feature>>(() => new Set(d.features));
+  const grants = FEATURES.filter((f) => on.has(f) && !defaults.includes(f));
+  const revokes = FEATURES.filter((f) => !on.has(f) && defaults.includes(f));
+  const dirty = FEATURES.some((f) => on.has(f) !== d.features.includes(f));
+  const overridden = d.featureGrants.length + d.featureRevokes.length > 0;
+
+  const save = (body: { featureGrants: Feature[]; featureRevokes: Feature[] }) =>
+    update.mutate(body, {
+      onSuccess: () => toast.success(t('saved')),
+      onError: (err) => toast.error(errorMessage(err)),
+    });
+  const toggle = (f: Feature, checked: boolean) =>
+    setOn((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(f);
+      else next.delete(f);
+      return next;
+    });
+
+  return (
+    <Card>
+      <CardHeader className="gap-1.5">
+        <CardTitle role="heading" aria-level={2}>
+          {t('modules')}
+        </CardTitle>
+        <p className="text-sm text-muted-foreground">{t('modulesHelp')}</p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <ul className="grid gap-x-6 sm:grid-cols-2">
+          {FEATURES.map((f) => {
+            const id = `module-${f}`;
+            const state = grants.includes(f)
+              ? 'moduleAdded'
+              : revokes.includes(f)
+                ? 'moduleRemoved'
+                : null;
+            return (
+              <li
+                key={f}
+                className="flex min-h-11 items-center justify-between gap-3 border-b py-1"
+              >
+                <Label htmlFor={id} className="min-w-0 flex-1 flex-wrap gap-x-2 leading-snug">
+                  <span>{tf(`feature${f}`)}</span>
+                  {state ? (
+                    <Badge variant={state === 'moduleAdded' ? 'default' : 'secondary'}>
+                      {t(state)}
+                    </Badge>
+                  ) : null}
+                </Label>
+                <Switch
+                  id={id}
+                  checked={on.has(f)}
+                  disabled={update.isPending}
+                  onCheckedChange={(checked) => toggle(f, checked)}
+                />
+              </li>
+            );
+          })}
+        </ul>
+        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <Button
+            type="button"
+            variant="ghost"
+            className="min-h-11"
+            disabled={!overridden || update.isPending}
+            onClick={() => save({ featureGrants: [], featureRevokes: [] })}
+          >
+            {t('resetModules')}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="min-h-11"
+            disabled={!dirty || update.isPending}
+            onClick={() => save({ featureGrants: grants, featureRevokes: revokes })}
+          >
+            {update.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
+            {t('saveModules')}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function PaymentDialog({
   d,
   open,
@@ -330,8 +468,10 @@ function PaymentDialog({
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState<SubscriptionPaymentMethod>('BARIDIMOB');
   const [reference, setReference] = useState('');
-  // Until the admin types an amount, it is the plan price times the months.
-  const suggested = toMoneyString(money(d.plan.monthlyPrice).mul(months));
+  // Until the admin types an amount, it is (plan price + edition supplement) × months.
+  const suggested = toMoneyString(
+    money(d.plan.monthlyPrice).plus(d.edition.monthlySupplement).mul(months),
+  );
   const value = amount.trim() === '' ? suggested : amount;
   const parsed = parseDA(value);
   const valid = parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 2;
