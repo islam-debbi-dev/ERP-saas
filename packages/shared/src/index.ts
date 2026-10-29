@@ -1,3 +1,4 @@
+export * from './aging';
 export * from './amount-in-words';
 export * from './documents';
 export * from './imports';

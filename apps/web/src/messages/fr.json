@@ -226,7 +226,9 @@
     "auditLink": "Journal d'audit",
     "auditLinkHelp": "Qui a fait quoi, quand, depuis quel appareil.",
     "subscriptionLink": "Abonnement",
-    "subscriptionLinkHelp": "Formule, échéance, utilisation et paiements."
+    "subscriptionLinkHelp": "Formule, échéance, utilisation et paiements.",
+    "reminderDays": "Relance après (jours)",
+    "reminderDaysHint": "Un client apparaît dans « À relancer » quand sa plus ancienne dette dépasse ce nombre de jours."
   },
   "validation": {
     "required": "Ce champ est obligatoire.",
@@ -310,7 +312,11 @@
     "IMPERSONATION_READ_ONLY": "Vue support en lecture seule : aucune modification possible.",
     "PLAN_LIMIT_REACHED": "Limite de votre formule atteinte. Passez à la formule supérieure pour en ajouter.",
     "ADMIN_TOTP_INVALID": "Code incorrect ou expiré. Saisissez le code affiché maintenant.",
-    "FEATURE_NOT_IN_PLAN": "Ce module n’est pas inclus dans votre édition. Contactez-nous pour l’ajouter."
+    "FEATURE_NOT_IN_PLAN": "Ce module n’est pas inclus dans votre édition. Contactez-nous pour l’ajouter.",
+    "SUPPLIER_CODE_TAKEN": "Ce code fournisseur est déjà utilisé.",
+    "SUPPLIER_OPENING_ALREADY_SET": "Ce fournisseur a déjà un solde initial.",
+    "SUPPLIER_PAYMENT_NOT_VALID": "Ce règlement est déjà annulé.",
+    "SHARE_LINK_INVALID": "Ce lien n'est plus valide."
   },
   "units": {
     "PIECE": "Pièce",
@@ -988,12 +994,14 @@
     "types": {
       "PRODUCTS": "Produits",
       "OPENING_STOCK": "Stock initial",
-      "CLIENTS": "Clients et soldes"
+      "CLIENTS": "Clients et soldes",
+      "SUPPLIERS": "Fournisseurs et soldes"
     },
     "typesHelp": {
       "PRODUCTS": "Référence, désignation, unités, colisage, codes-barres, prix, TVA.",
       "OPENING_STOCK": "Quantité et coût de départ des produits déjà créés.",
-      "CLIENTS": "Code, nom, téléphone, plafond et solde initial (crédit)."
+      "CLIENTS": "Code, nom, téléphone, plafond et solde initial (crédit).",
+      "SUPPLIERS": "Code, nom, téléphone et solde initial (ce que vous devez au fournisseur)."
     },
     "template": "Télécharger le modèle",
     "file": "Fichier",
@@ -1042,7 +1050,8 @@
     "countOpening": {
       "PRODUCTS": "{n, plural, one {# ligne d'ouverture} other {# lignes d'ouverture}}",
       "OPENING_STOCK": "{n, plural, one {# stock initial enregistré} other {# stocks initiaux enregistrés}}",
-      "CLIENTS": "{n, plural, one {# solde initial enregistré} other {# soldes initiaux enregistrés}}"
+      "CLIENTS": "{n, plural, one {# solde initial enregistré} other {# soldes initiaux enregistrés}}",
+      "SUPPLIERS": "{n, plural, one {# solde fournisseur enregistré} other {# soldes fournisseurs enregistrés}}"
     },
     "again": "Nouvel import",
     "history": "Historique des imports",
@@ -1114,7 +1123,9 @@
       "tva_defaulted": "TVA vide : 0 % sera appliqué",
       "no_changes": "aucune modification",
       "stock_not_empty": "le produit a déjà {qty} en stock ; le stock initial s'y ajoutera",
-      "zero_cost": "coût à zéro : la marge de ce produit sera faussée"
+      "zero_cost": "coût à zéro : la marge de ce produit sera faussée",
+      "supplier_archived": "fournisseur archivé",
+      "invalid_supplier": "fournisseur invalide ({rule})"
     }
   },
   "users": {

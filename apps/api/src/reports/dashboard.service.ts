@@ -16,6 +16,7 @@ import type { CurrentUserInfo } from '../auth/auth.types';
 import { can } from '../auth/permissions';
 import { ClientsService } from '../clients/clients.service';
 import { algiersRange } from '../common/algiers';
+import { AgingService } from '../credit/aging.service';
 import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
 import { PaymentsService } from '../payments/payments.service';
@@ -39,6 +40,7 @@ export class DashboardService {
     private readonly clients: ClientsService,
     private readonly payments: PaymentsService,
     private readonly stock: StockQueriesService,
+    private readonly aging: AgingService,
   ) {}
 
   /**
@@ -54,12 +56,13 @@ export class DashboardService {
       sellerId: user.role === Role.SELLER ? user.id : null,
     };
     const seesCost = can(user, Permission.VIEW_COST_AND_MARGIN);
-    const [sales, cash, credit, debtors, stock] = await Promise.all([
+    const [sales, cash, credit, debtors, stock, cheques] = await Promise.all([
       seesSales ? this.sales(scope, date, seesCost) : null,
       manager ? this.payments.summary(date) : null,
       manager ? this.clients.creditSummary(TOP_DEBTORS) : null,
       manager ? this.clients.debtors(TOP_DEBTORS) : null,
       seesStock ? this.stock.dashboardSummary(seesCost) : null,
+      manager ? this.aging.dueCheques(date) : null,
     ]);
     return {
       date,
@@ -76,6 +79,7 @@ export class DashboardService {
             }
           : null,
       stock,
+      cheques,
     };
   }
 

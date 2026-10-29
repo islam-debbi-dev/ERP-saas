@@ -7,15 +7,29 @@ import { TenantsModule } from '../tenants/tenants.module';
 import { PdfRendererService } from './pdf-renderer.service';
 import {
   DocumentsPrintController,
+  PublicShareController,
   ReceiptPrintController,
+  ShareLinksController,
   StatementPrintController,
+  SupplierStatementPrintController,
 } from './printing.controller';
 import { PrintingService } from './printing.service';
+import { ShareLinksService } from './share-links.service';
 
-/** Printed documents (PDF A4/A5). Reads documents only through their modules' services. */
+/**
+ * Printed documents (PDF A4/A5) and their share links (phase 21). Reads documents only
+ * through their modules' services.
+ */
 @Module({
   imports: [TenantsModule, SalesModule, PurchasesModule, PaymentsModule, ClientsModule],
-  controllers: [DocumentsPrintController, StatementPrintController, ReceiptPrintController],
-  providers: [PrintingService, PdfRendererService],
+  controllers: [
+    DocumentsPrintController,
+    StatementPrintController,
+    ReceiptPrintController,
+    SupplierStatementPrintController,
+    ShareLinksController,
+    PublicShareController,
+  ],
+  providers: [PrintingService, PdfRendererService, ShareLinksService],
 })
 export class PrintingModule {}

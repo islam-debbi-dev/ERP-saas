@@ -20,6 +20,8 @@ export const DocType = {
   INV: 'INV',
   /** Retour fournisseur (partial return of a bon de réception). */
   RF: 'RF',
+  /** Règlement fournisseur (payment to a supplier). */
+  RGF: 'RGF',
 } as const;
 export type DocType = (typeof DocType)[keyof typeof DocType];
 export const DOC_TYPES = Object.values(DocType);
@@ -120,6 +122,32 @@ export const ClientLedgerType = {
   REVERSAL: 'REVERSAL',
 } as const;
 export type ClientLedgerType = (typeof ClientLedgerType)[keyof typeof ClientLedgerType];
+
+/** Supplier account entries (phase 21). Positive amounts mean we owe the supplier more. */
+export const SupplierLedgerType = {
+  OPENING: 'OPENING',
+  PURCHASE: 'PURCHASE',
+  PAYMENT: 'PAYMENT',
+  RETURN: 'RETURN',
+  ADJUST: 'ADJUST',
+  REVERSAL: 'REVERSAL',
+} as const;
+export type SupplierLedgerType = (typeof SupplierLedgerType)[keyof typeof SupplierLedgerType];
+
+export const SupplierPaymentStatus = {
+  VALID: 'VALID',
+  CANCELLED: 'CANCELLED',
+} as const;
+export type SupplierPaymentStatus =
+  (typeof SupplierPaymentStatus)[keyof typeof SupplierPaymentStatus];
+
+/** Documents a share link can open (phase 21). */
+export const ShareDocType = {
+  /** Relevé de compte of a client. */
+  RELEVE: 'RELEVE',
+  FACTURE: 'FACTURE',
+} as const;
+export type ShareDocType = (typeof ShareDocType)[keyof typeof ShareDocType];
 
 export const SaleType = {
   /** Bon de livraison: the everyday sale document. */

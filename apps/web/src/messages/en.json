@@ -226,7 +226,9 @@
     "auditLink": "Audit log",
     "auditLinkHelp": "Who did what, when, from which device.",
     "subscriptionLink": "Subscription",
-    "subscriptionLinkHelp": "Plan, renewal date, usage and payments."
+    "subscriptionLinkHelp": "Plan, renewal date, usage and payments.",
+    "reminderDays": "Remind after (days)",
+    "reminderDaysHint": "A customer shows in \"To remind\" when their oldest unpaid amount is older than this."
   },
   "validation": {
     "required": "This field is required.",
@@ -310,7 +312,11 @@
     "IMPERSONATION_READ_ONLY": "Read-only support view: nothing can be changed.",
     "PLAN_LIMIT_REACHED": "Your plan’s limit is reached. Move to a bigger plan to add more.",
     "ADMIN_TOTP_INVALID": "Wrong or expired code. Enter the code shown now.",
-    "FEATURE_NOT_IN_PLAN": "This module is not in your edition. Contact us to add it."
+    "FEATURE_NOT_IN_PLAN": "This module is not in your edition. Contact us to add it.",
+    "SUPPLIER_CODE_TAKEN": "This supplier code is already used.",
+    "SUPPLIER_OPENING_ALREADY_SET": "This supplier already has an opening balance.",
+    "SUPPLIER_PAYMENT_NOT_VALID": "This payment is already cancelled.",
+    "SHARE_LINK_INVALID": "This link is no longer valid."
   },
   "units": {
     "PIECE": "Piece",
@@ -988,12 +994,14 @@
     "types": {
       "PRODUCTS": "Products",
       "OPENING_STOCK": "Opening stock",
-      "CLIENTS": "Clients and balances"
+      "CLIENTS": "Clients and balances",
+      "SUPPLIERS": "Suppliers and balances"
     },
     "typesHelp": {
       "PRODUCTS": "Reference, name, units, packaging, barcodes, prices, VAT.",
       "OPENING_STOCK": "Starting quantity and cost of existing products.",
-      "CLIENTS": "Code, name, phone, credit limit and opening balance."
+      "CLIENTS": "Code, name, phone, credit limit and opening balance.",
+      "SUPPLIERS": "Code, name, phone and opening balance (what you owe the supplier)."
     },
     "template": "Download template",
     "file": "File",
@@ -1042,7 +1050,8 @@
     "countOpening": {
       "PRODUCTS": "{n, plural, one {# opening row} other {# opening rows}}",
       "OPENING_STOCK": "{n, plural, one {# opening stock saved} other {# opening stocks saved}}",
-      "CLIENTS": "{n, plural, one {# opening balance saved} other {# opening balances saved}}"
+      "CLIENTS": "{n, plural, one {# opening balance saved} other {# opening balances saved}}",
+      "SUPPLIERS": "{n, plural, one {# supplier balance recorded} other {# supplier balances recorded}}"
     },
     "again": "New import",
     "history": "Import history",
@@ -1114,7 +1123,9 @@
       "tva_defaulted": "empty VAT: 0% will be used",
       "no_changes": "no changes",
       "stock_not_empty": "the product already has {qty} in stock; the opening stock will add to it",
-      "zero_cost": "zero cost: this product's margin will be wrong"
+      "zero_cost": "zero cost: this product's margin will be wrong",
+      "supplier_archived": "supplier archived",
+      "invalid_supplier": "invalid supplier ({rule})"
     }
   },
   "users": {

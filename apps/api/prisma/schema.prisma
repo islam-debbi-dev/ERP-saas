@@ -38,6 +38,8 @@ enum DocType {
   VER
   INV
   RF
+  /// Règlement fournisseur (phase 21).
+  RGF
 }
 
 enum PrintFormat {
@@ -88,6 +90,9 @@ model Tenant {
   documentFooter     String?     @db.VarChar(500)
   tvaMention         String      @default("Non assujetti à la TVA") @db.VarChar(120)
 
+  /// "Clients à relancer": oldest unpaid document older than this many days (phase 21).
+  reminderDays Int @default(30) @db.SmallInt
+
   /// The owner hid the dashboard onboarding checklist (phase 13).
   onboardingDismissedAt DateTime? @db.Timestamptz(3)
 
@@ -132,6 +137,10 @@ model Tenant {
   importJobs           ImportJob[]
   subscription         Subscription?
   subscriptionPayments SubscriptionPayment[]
+  supplierLedger       SupplierLedgerEntry[]
+  supplierBalances     SupplierBalance[]
+  supplierPayments     SupplierPayment[]
+  shareLinks           ShareLink[]
 
   @@map("tenants")
 }
@@ -565,6 +574,8 @@ enum PurchaseStatus {
 model Supplier {
   id        String    @id @default(uuid()) @db.Uuid
   tenantId  String    @db.Uuid
+  /// Matches the Excel import (phase 21). Optional: suppliers created before have none.
+  code      String?   @db.VarChar(30)
   name      String    @db.VarChar(120)
   phone     String?   @db.VarChar(40)
   address   String?   @db.VarChar(255)
@@ -577,12 +588,105 @@ model Supplier {
   createdAt DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt DateTime  @updatedAt @db.Timestamptz(3)
 
-  tenant    Tenant           @relation(fields: [tenantId], references: [id])
+  tenant    Tenant                @relation(fields: [tenantId], references: [id])
   purchases Purchase[]
   returns   PurchaseReturn[]
+  ledger    SupplierLedgerEntry[]
+  balance   SupplierBalance?
+  payments  SupplierPayment[]
 
+  @@unique([tenantId, code])
   @@index([tenantId, name])
   @@map("suppliers")
+}
+
+/// Supplier account entries (phase 21). Positive amounts mean we owe the supplier more.
+enum SupplierLedgerType {
+  OPENING
+  PURCHASE
+  PAYMENT
+  RETURN
+  ADJUST
+  REVERSAL
+}
+
+/// Dettes fournisseurs: append-only, like client_ledger_entries.
+model SupplierLedgerEntry {
+  id         String             @id @default(uuid()) @db.Uuid
+  /// Insertion order (createdAt is shared by a transaction).
+  seq        BigInt             @unique @default(autoincrement())
+  tenantId   String             @db.Uuid
+  supplierId String             @db.Uuid
+  type       SupplierLedgerType
+  amount     Decimal            @db.Decimal(14, 2)
+  label      String             @db.VarChar(160)
+  reason     String?            @db.VarChar(255)
+  refType    String?            @db.VarChar(30)
+  refId      String?            @db.Uuid
+  createdBy  String?            @db.Uuid
+  createdAt  DateTime           @default(now()) @db.Timestamptz(3)
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+
+  @@index([tenantId, supplierId, seq])
+  @@index([tenantId, refType, refId])
+  @@map("supplier_ledger_entries")
+}
+
+/// Cached sum of a supplier's ledger, updated in the same transaction as each entry.
+model SupplierBalance {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @db.Uuid
+  supplierId String   @unique @db.Uuid
+  balance    Decimal  @default(0) @db.Decimal(14, 2)
+  hasOpening Boolean  @default(false)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(3)
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+
+  @@index([tenantId, balance])
+  @@map("supplier_balances")
+}
+
+enum SupplierPaymentStatus {
+  VALID
+  CANCELLED
+}
+
+/// Règlement fournisseur (RGF): money paid to a supplier.
+model SupplierPayment {
+  id           String                @id @default(uuid()) @db.Uuid
+  tenantId     String                @db.Uuid
+  number       String                @db.VarChar(20)
+  supplierId   String                @db.Uuid
+  amount       Decimal               @db.Decimal(14, 2)
+  mode         PaymentMode
+  status       SupplierPaymentStatus @default(VALID)
+  /// Cheque or transfer number.
+  reference    String?               @db.VarChar(80)
+  bank         String?               @db.VarChar(80)
+  /// Cheque due date (échéance).
+  dueDate      DateTime?             @db.Date
+  note         String?               @db.VarChar(255)
+  paidBy       String?               @db.Uuid
+  paidAt       DateTime              @default(now()) @db.Timestamptz(3)
+  cancelReason String?               @db.VarChar(255)
+  cancelledBy  String?               @db.Uuid
+  cancelledAt  DateTime?             @db.Timestamptz(3)
+  version      Int                   @default(1)
+  createdAt    DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime              @updatedAt @db.Timestamptz(3)
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+
+  @@unique([tenantId, number])
+  @@index([tenantId, supplierId])
+  @@index([tenantId, paidAt])
+  @@index([tenantId, mode, status, dueDate])
+  @@map("supplier_payments")
 }
 
 /// Bon de réception. Only validation has effects (stock, CUMP); the number is
@@ -1035,6 +1139,8 @@ enum ImportType {
   PRODUCTS
   OPENING_STOCK
   CLIENTS
+  /// Fournisseurs et soldes (phase 21).
+  SUPPLIERS
 }
 
 enum ImportStatus {
@@ -1228,4 +1334,35 @@ model PlatformAuditLog {
   @@index([createdAt])
   @@index([tenantId, createdAt])
   @@map("platform_audit_logs")
+}
+
+/// What a share link opens (phase 21).
+enum ShareDocType {
+  /// Relevé de compte of a client; the range is in `params`.
+  RELEVE
+  FACTURE
+}
+
+/// A signed, expiring link to one document, opened without login. Only the token's hash is kept.
+model ShareLink {
+  id           String       @id @default(uuid()) @db.Uuid
+  tenantId     String       @db.Uuid
+  docType      ShareDocType
+  docId        String       @db.Uuid
+  /// RELEVE: { from, to }.
+  params       Json         @default("{}")
+  /// SHA-256 of the token, hex.
+  tokenHash    String       @unique @db.VarChar(64)
+  expiresAt    DateTime     @db.Timestamptz(3)
+  revokedAt    DateTime?    @db.Timestamptz(3)
+  revokedBy    String?      @db.Uuid
+  createdBy    String?      @db.Uuid
+  openCount    Int          @default(0)
+  lastOpenedAt DateTime?    @db.Timestamptz(3)
+  createdAt    DateTime     @default(now()) @db.Timestamptz(3)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, docType, docId])
+  @@map("share_links")
 }

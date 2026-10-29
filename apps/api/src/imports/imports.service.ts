@@ -27,11 +27,14 @@ import { chunks } from '../common/chunks';
 import { tenantContext } from '../common/tenant-context';
 import { type ImportJob, Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { SupplierAccountService } from '../purchases/supplier-account.service';
+import { SuppliersService } from '../purchases/suppliers.service';
 import { StockService } from '../stock/stock.service';
 import { type ImportTable, readTable } from './file-reader';
 import { type ClientPlan, validateClients } from './validators/clients';
 import { type OpeningStockPlan, validateOpeningStock } from './validators/opening-stock';
 import { cellText } from './validators/row-reader';
+import { type SupplierPlan, validateSuppliers } from './validators/suppliers';
 import {
   productKeys,
   type ProductPlan,
@@ -52,7 +55,7 @@ export interface UploadedImportFile {
   buffer: Buffer;
 }
 
-type AnyPlan = ProductPlan | OpeningStockPlan | ClientPlan;
+type AnyPlan = ProductPlan | OpeningStockPlan | ClientPlan | SupplierPlan;
 
 interface Validation {
   fields: ImportFieldDef[];
@@ -104,7 +107,7 @@ function toJobDto(j: JobSummary): ImportJobDto {
 /**
  * Excel / CSV imports: preview validates every row and writes nothing but the
  * ImportJob; confirm re-validates against the current data and writes all rows
- * in one transaction through the owning modules (catalog, stock, clients).
+ * in one transaction through the owning modules (catalog, stock, clients, suppliers).
  */
 @Injectable()
 export class ImportsService {
@@ -115,6 +118,8 @@ export class ImportsService {
     private readonly stock: StockService,
     private readonly clients: ClientsService,
     private readonly accounts: ClientAccountService,
+    private readonly suppliers: SuppliersService,
+    private readonly supplierAccounts: SupplierAccountService,
   ) {}
 
   async preview(
@@ -321,6 +326,9 @@ export class ImportsService {
           [...products.values()].map((p) => p.id),
         ),
       });
+    } else if (type === ImportType.SUPPLIERS) {
+      const codes = columnValues(table, mapping, 'code');
+      rows = validateSuppliers(table, mapping, fields, await this.suppliers.byCodes(tx, codes));
     } else {
       const codes = columnValues(table, mapping, 'code');
       rows = validateClients(table, mapping, fields, await this.clients.byCodes(tx, codes));
@@ -340,7 +348,45 @@ export class ImportsService {
     if (job.type === ImportType.OPENING_STOCK) {
       return this.writeOpeningStock(tx, job, plans as OpeningStockPlan[]);
     }
+    if (job.type === ImportType.SUPPLIERS) {
+      return this.writeSuppliers(tx, job, plans as SupplierPlan[]);
+    }
     return this.writeClients(tx, job, plans as ClientPlan[], user);
+  }
+
+  /** Suppliers and their solde initial (OPENING on the supplier account, phase 21). */
+  private async writeSuppliers(tx: Tx, job: ImportJob, plans: SupplierPlan[]) {
+    const openings: { supplierId: string; amount: string }[] = [];
+    let created = 0;
+    let updated = 0;
+    for (const p of plans) {
+      let supplierId: string;
+      if (p.kind === 'CREATE') {
+        supplierId = (await this.suppliers.createInTx(tx, p.input)).id;
+        created++;
+      } else {
+        supplierId = p.id;
+        if (p.input) {
+          await this.suppliers.updateInTx(tx, p.id, p.input);
+          updated++;
+        }
+      }
+      if (p.opening) openings.push({ supplierId, amount: p.opening });
+    }
+    for (const chunk of chunks(openings)) {
+      await this.supplierAccounts.post(
+        tx,
+        chunk.map((o) => ({
+          supplierId: o.supplierId,
+          type: 'OPENING',
+          amount: o.amount,
+          label: 'Solde initial (import)',
+          refType: 'IMPORT',
+          refId: job.id,
+        })),
+      );
+    }
+    return { created, updated, opening: openings.length };
   }
 
   private async writeProducts(tx: Tx, plans: ProductPlan[]) {

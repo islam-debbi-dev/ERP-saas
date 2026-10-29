@@ -25,6 +25,8 @@ const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'invalid_date');
 // ---------------------------------------------------------------- suppliers
 
 export const supplierSchema = z.object({
+  /** Matches the Excel import "Fournisseurs et soldes". Optional. */
+  code: optionalText(30),
   name: z.string().trim().min(1).max(120),
   phone: optionalText(40),
   address: optionalText(255),
@@ -35,11 +37,33 @@ export const supplierSchema = z.object({
   notes: optionalText(500),
 });
 export type SupplierInput = z.infer<typeof supplierSchema>;
-export const updateSupplierSchema = supplierSchema.partial().strict();
+const patchText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .transform((v) => (v === '' ? null : v))
+    .nullable()
+    .optional();
+/** Only the keys sent change (no defaults: a missing key must not clear a stored value). */
+export const updateSupplierSchema = z
+  .object({
+    code: patchText(30),
+    name: z.string().trim().min(1).max(120).optional(),
+    phone: patchText(40),
+    address: patchText(255),
+    rc: patchText(40),
+    nif: patchText(40),
+    nis: patchText(40),
+    ai: patchText(40),
+    notes: patchText(500),
+  })
+  .strict();
 export type UpdateSupplierInput = z.infer<typeof updateSupplierSchema>;
 
 export interface SupplierDto {
   id: string;
+  code: string | null;
   name: string;
   phone: string | null;
   address: string | null;
@@ -49,6 +73,9 @@ export interface SupplierDto {
   ai: string | null;
   notes: string | null;
   archivedAt: string | null;
+  /** Positive = we owe the supplier; negative = credit in our favour. */
+  balance: string;
+  hasOpening: boolean;
 }
 
 export const supplierListQuerySchema = z.object({
@@ -79,7 +106,7 @@ const purchaseFields = {
   documentDate: dateString,
   supplierRef: optionalText(60),
   note: optionalText(255),
-  /** Paid to the supplier at reception (supplier accounts come in v1.1). */
+  /** Paid to the supplier at reception; the rest goes on the supplier account. */
   paidAmount: amountString.transform(normalizeDecimal).default('0'),
   lines: z.array(purchaseLineInputSchema).max(300),
 };

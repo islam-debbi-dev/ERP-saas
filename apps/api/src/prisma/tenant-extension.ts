@@ -39,6 +39,10 @@ export const TENANT_SCOPED_MODELS = new Set<string>([
   'ImportJob',
   'Subscription',
   'SubscriptionPayment',
+  'SupplierLedgerEntry',
+  'SupplierBalance',
+  'SupplierPayment',
+  'ShareLink',
 ]);
 
 /** Append-only models: any update or delete is a bug (AGENTS.md rules 1 and 7). */
@@ -46,6 +50,7 @@ const APPEND_ONLY_MODELS = new Set<string>([
   'AuditLog',
   'StockMovement',
   'ClientLedgerEntry',
+  'SupplierLedgerEntry',
   'DocumentPrint',
   'SubscriptionPayment',
   'PlatformAuditLog',

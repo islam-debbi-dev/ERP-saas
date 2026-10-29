@@ -1,0 +1,224 @@
+import { z } from 'zod';
+import {
+  PAYMENT_MODES,
+  type PaymentMode,
+  ShareDocType,
+  type SupplierLedgerType,
+  type SupplierPaymentStatus,
+} from '../enums';
+import { parseDA } from '../money';
+import { normalizeDecimal } from './common';
+
+/** Phase 21, crédit avancé: supplier accounts, aging, reminders, share links. */
+
+const id = z.uuid();
+const optionalText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .transform((v) => (v === '' ? null : v))
+    .nullable()
+    .default(null);
+const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'invalid_date');
+
+const positiveAmount = z
+  .string()
+  .refine((v) => {
+    const parsed = parseDA(v);
+    return parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 2;
+  }, 'invalid_amount')
+  .transform(normalizeDecimal);
+
+// ---------------------------------------------------------------- règlements fournisseur
+
+export const createSupplierPaymentSchema = z.object({
+  supplierId: id,
+  amount: positiveAmount,
+  mode: z.enum(PAYMENT_MODES).default('ESPECES'),
+  /** Cheque or transfer number. */
+  reference: optionalText(80),
+  bank: optionalText(80),
+  /** Cheque due date (échéance). */
+  dueDate: dateString.nullable().default(null),
+  note: optionalText(255),
+});
+export type CreateSupplierPaymentInput = z.infer<typeof createSupplierPaymentSchema>;
+
+export const cancelSupplierPaymentSchema = z.object({ reason: z.string().trim().min(3).max(255) });
+export type CancelSupplierPaymentInput = z.infer<typeof cancelSupplierPaymentSchema>;
+
+export const supplierPaymentListQuerySchema = z.object({
+  supplierId: id.optional(),
+  cursor: id.optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+});
+export type SupplierPaymentListQuery = z.infer<typeof supplierPaymentListQuerySchema>;
+
+export interface SupplierPaymentPage {
+  items: SupplierPaymentDto[];
+  nextCursor: string | null;
+}
+
+export interface SupplierPaymentDto {
+  id: string;
+  number: string;
+  supplier: { id: string; code: string | null; name: string };
+  amount: string;
+  mode: PaymentMode;
+  status: SupplierPaymentStatus;
+  reference: string | null;
+  bank: string | null;
+  dueDate: string | null;
+  note: string | null;
+  paidBy: { id: string; fullName: string } | null;
+  paidAt: string;
+  cancelReason: string | null;
+  cancelledAt: string | null;
+}
+
+// ---------------------------------------------------------------- supplier ledger
+
+export const supplierLedgerQuerySchema = z.object({
+  /** The id of the last entry of the previous page (newest first). */
+  cursor: id.optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+});
+export type SupplierLedgerQuery = z.infer<typeof supplierLedgerQuerySchema>;
+
+export interface SupplierLedgerEntryDto {
+  id: string;
+  type: SupplierLedgerType;
+  /** Signed: + we owe more, - we owe less. */
+  amount: string;
+  label: string;
+  reason: string | null;
+  refType: string | null;
+  refId: string | null;
+  createdBy: { id: string; fullName: string } | null;
+  createdAt: string;
+  /** The balance right after this entry. */
+  runningBalance: string;
+}
+
+export interface SupplierLedgerPage {
+  balance: string;
+  items: SupplierLedgerEntryDto[];
+  nextCursor: string | null;
+}
+
+export interface SupplierBalanceDto {
+  supplier: { id: string; code: string | null; name: string; phone: string | null };
+  balance: string;
+}
+
+export interface SupplierBalancesDto {
+  /** What we owe (positive balances only). */
+  totalOwed: string;
+  items: SupplierBalanceDto[];
+}
+
+export const supplierStatementQuerySchema = z
+  .object({ from: dateString, to: dateString })
+  .refine((q) => q.from <= q.to, { message: 'invalid_range', path: ['to'] });
+export type SupplierStatementQuery = z.infer<typeof supplierStatementQuerySchema>;
+
+export interface SupplierStatementDto {
+  supplier: { id: string; code: string | null; name: string };
+  from: string;
+  to: string;
+  openingBalance: string;
+  entries: Omit<SupplierLedgerEntryDto, 'createdBy'>[];
+  closingBalance: string;
+  totalDebit: string;
+  totalCredit: string;
+}
+
+// ---------------------------------------------------------------- aging
+
+export const agingQuerySchema = z.object({
+  /** Algiers day the aging is computed at; default today. */
+  asOf: dateString.optional(),
+});
+export type AgingQuery = z.infer<typeof agingQuerySchema>;
+
+/** Days late: 0–30, 31–60, 61–90, over 90. */
+export const AGING_BUCKETS = ['d0_30', 'd31_60', 'd61_90', 'd90'] as const;
+export type AgingBucket = (typeof AGING_BUCKETS)[number];
+
+export interface AgingRowDto {
+  party: { id: string; code: string | null; name: string; phone: string | null };
+  /** The ledger balance; the buckets always sum to it. */
+  balance: string;
+  buckets: Record<AgingBucket, string>;
+  /** Age in days of the oldest amount still owed; null when nothing is owed. */
+  oldestDays: number | null;
+}
+
+export interface AgingReportDto {
+  kind: 'clients' | 'suppliers';
+  asOf: string;
+  rows: AgingRowDto[];
+  totals: { balance: string; buckets: Record<AgingBucket, string> };
+}
+
+export interface ClientToRemindDto {
+  client: { id: string; code: string; name: string; phone: string | null };
+  balance: string;
+  /** Day of the oldest document still unpaid. */
+  oldestDate: string;
+  oldestDays: number;
+}
+
+export interface ClientsToRemindDto {
+  /** The tenant's threshold, in days. */
+  reminderDays: number;
+  items: ClientToRemindDto[];
+}
+
+// ---------------------------------------------------------------- share links
+
+/** Days a share link stays valid. */
+export const SHARE_LINK_TTL_DAYS = 7;
+
+export const createShareLinkSchema = z.discriminatedUnion('docType', [
+  z.object({ docType: z.literal(ShareDocType.FACTURE), docId: id }),
+  z
+    .object({
+      docType: z.literal(ShareDocType.RELEVE),
+      /** The client. */
+      docId: id,
+      from: dateString,
+      to: dateString,
+    })
+    .refine((q) => q.from <= q.to, { message: 'invalid_range', path: ['to'] }),
+]);
+export type CreateShareLinkInput = z.infer<typeof createShareLinkSchema>;
+
+export interface ShareLinkDto {
+  id: string;
+  /** Full URL to send; shown once, never stored in clear. */
+  url: string;
+  expiresAt: string;
+}
+
+// ---------------------------------------------------------------- cheques à échéance
+
+export interface DueChequeDto {
+  id: string;
+  number: string;
+  /** Client (versement) or supplier (règlement). */
+  party: { id: string; name: string } | null;
+  amount: string;
+  reference: string | null;
+  bank: string | null;
+  dueDate: string;
+}
+
+export interface DueChequesDto {
+  /** Today and the 6 days after (Algiers). */
+  from: string;
+  to: string;
+  client: { count: number; total: string; items: DueChequeDto[] };
+  supplier: { count: number; total: string; items: DueChequeDto[] };
+}

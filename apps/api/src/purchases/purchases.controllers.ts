@@ -13,7 +13,11 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  type CancelSupplierPaymentInput,
+  cancelSupplierPaymentSchema,
   type CreatePurchaseInput,
+  type CreateSupplierPaymentInput,
+  createSupplierPaymentSchema,
   createPurchaseSchema,
   type PurchaseDto,
   type PurchaseListQuery,
@@ -22,12 +26,23 @@ import {
   type PurchaseReturnInput,
   purchaseReturnSchema,
   Role,
+  type SupplierBalancesDto,
   type SupplierDto,
   type SupplierInput,
+  type SupplierLedgerPage,
+  type SupplierLedgerQuery,
+  supplierLedgerQuerySchema,
   type SupplierListQuery,
   supplierListQuerySchema,
   type SupplierPage,
+  type SupplierPaymentDto,
+  type SupplierPaymentListQuery,
+  supplierPaymentListQuerySchema,
+  type SupplierPaymentPage,
   supplierSchema,
+  type SupplierStatementDto,
+  type SupplierStatementQuery,
+  supplierStatementQuerySchema,
   type UpdatePurchaseInput,
   updatePurchaseSchema,
   type UpdateSupplierInput,
@@ -35,11 +50,13 @@ import {
   type ValidatePurchaseInput,
   validatePurchaseSchema,
 } from '@erp/shared';
-import { Roles } from '../auth/decorators';
+import type { CurrentUserInfo } from '../auth/auth.types';
+import { CurrentUser, Roles } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { Idempotent } from '../idempotency/idempotent.decorator';
 import { PurchaseWorkflowService } from './purchase-workflow.service';
 import { PurchasesService } from './purchases.service';
+import { SupplierPaymentsService } from './supplier-payments.service';
 import { SuppliersService } from './suppliers.service';
 
 const MANAGERS = [Role.OWNER, Role.MANAGER];
@@ -55,6 +72,31 @@ export class SuppliersController {
     @Query(new ZodValidationPipe(supplierListQuerySchema)) query: SupplierListQuery,
   ): Promise<SupplierPage> {
     return this.suppliers.list(query);
+  }
+
+  // Declared before ':id'. Supplier accounts are for managers (phase 21).
+  @Get('balances')
+  @Roles(...MANAGERS)
+  balances(): Promise<SupplierBalancesDto> {
+    return this.suppliers.balances();
+  }
+
+  @Get(':id/ledger')
+  @Roles(...MANAGERS)
+  ledger(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query(new ZodValidationPipe(supplierLedgerQuerySchema)) query: SupplierLedgerQuery,
+  ): Promise<SupplierLedgerPage> {
+    return this.suppliers.ledger(id, query);
+  }
+
+  @Get(':id/statement')
+  @Roles(...MANAGERS)
+  statement(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query(new ZodValidationPipe(supplierStatementQuerySchema)) query: SupplierStatementQuery,
+  ): Promise<SupplierStatementDto> {
+    return this.suppliers.statement(id, query);
   }
 
   @Get(':id')
@@ -149,5 +191,44 @@ export class PurchasesController {
     @Body(new ZodValidationPipe(purchaseReturnSchema)) body: PurchaseReturnInput,
   ): Promise<PurchaseDto> {
     return this.workflow.createReturn(id, body);
+  }
+}
+
+/** Règlements fournisseur (RGF, phase 21). */
+@Controller('supplier-payments')
+@Roles(...MANAGERS)
+export class SupplierPaymentsController {
+  constructor(private readonly payments: SupplierPaymentsService) {}
+
+  @Get()
+  list(
+    @Query(new ZodValidationPipe(supplierPaymentListQuerySchema)) query: SupplierPaymentListQuery,
+  ): Promise<SupplierPaymentPage> {
+    return this.payments.list(query);
+  }
+
+  @Get(':id')
+  get(@Param('id', ParseUUIDPipe) id: string): Promise<SupplierPaymentDto> {
+    return this.payments.get(id);
+  }
+
+  @Post()
+  @Idempotent()
+  create(
+    @Body(new ZodValidationPipe(createSupplierPaymentSchema)) body: CreateSupplierPaymentInput,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<SupplierPaymentDto> {
+    return this.payments.create(body, user);
+  }
+
+  @Post(':id/cancel')
+  @Idempotent()
+  @HttpCode(HttpStatus.OK)
+  cancel(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(cancelSupplierPaymentSchema)) body: CancelSupplierPaymentInput,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<SupplierPaymentDto> {
+    return this.payments.cancel(id, body.reason, user);
   }
 }

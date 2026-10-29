@@ -18,6 +18,9 @@ import {
   type SaleDto,
   SaleStatus,
   SaleType,
+  type SupplierDto,
+  SupplierLedgerType,
+  type SupplierStatementDto,
   type TenantSettingsResponse,
   toMoneyString,
 } from '@erp/shared';
@@ -68,6 +71,20 @@ const LEDGER_TYPES: Record<string, string> = {
   [ClientLedgerType.RETURN]: 'Avoir',
   [ClientLedgerType.ADJUSTMENT]: 'Ajustement',
   [ClientLedgerType.REVERSAL]: 'Annulation',
+};
+
+const SUPPLIER_LEDGER_TYPES: Record<string, string> = {
+  [SupplierLedgerType.OPENING]: "Solde d'ouverture",
+  [SupplierLedgerType.PURCHASE]: 'Achat',
+  [SupplierLedgerType.PAYMENT]: 'Règlement',
+  [SupplierLedgerType.RETURN]: 'Retour',
+  [SupplierLedgerType.ADJUST]: 'Ajustement',
+  [SupplierLedgerType.REVERSAL]: 'Annulation',
+};
+
+/** Ledger reasons stored as codes, printed in French. */
+const LEDGER_REASONS: Record<string, string> = {
+  paid_at_reception: 'payé à la réception',
 };
 
 function linesTable(lines: PrintLine[], withTva: boolean): SafeHtml {
@@ -347,16 +364,31 @@ export function purchaseDocument(p: PurchaseDto, ctx: PrintContext): string {
 
 // ---------------------------------------------------------------- relevé de compte
 
-export function statementDocument(
-  st: ClientStatementDto,
-  client: ClientDto,
-  ctx: Omit<PrintContext, 'duplicate'>,
-): string {
+type StatementLike = Pick<
+  ClientStatementDto,
+  'from' | 'openingBalance' | 'closingBalance' | 'totalDebit' | 'totalCredit'
+> & {
+  entries: {
+    type: string;
+    amount: string;
+    label: string;
+    reason: string | null;
+    createdAt: string;
+    runningBalance: string;
+  }[];
+};
+
+/** The table of a relevé: opening line, entries with running balance, totals. */
+function statementBody(
+  st: StatementLike,
+  types: Record<string, string>,
+  creditLabel: string,
+): SafeHtml {
   const debitCredit = (amount: string) => {
     const a = money(amount);
     return a.gte(0) ? [da(amount), ''] : ['', da(a.abs().toString())];
   };
-  const body = html`
+  return html`
     <table class="lines">
       <thead>
         <tr>
@@ -378,8 +410,8 @@ export function statementDocument(
           const [debit, credit] = debitCredit(e.amount);
           return html`<tr>
             <td>${dayOf(e.createdAt)}</td>
-            <td>${LEDGER_TYPES[e.type] ?? e.type}</td>
-            <td>${e.label}${e.reason ? html` — ${e.reason}` : ''}</td>
+            <td>${types[e.type] ?? e.type}</td>
+            <td>${e.label}${e.reason ? html` — ${LEDGER_REASONS[e.reason] ?? e.reason}` : ''}</td>
             <td class="num">${debit}</td>
             <td class="num">${credit}</td>
             <td class="num">${da(e.runningBalance)}</td>
@@ -402,13 +434,22 @@ export function statementDocument(
         ['Total débit', st.totalDebit],
         ['Total crédit', st.totalCredit],
         [
-          money(st.closingBalance).lt(0) ? 'Solde en faveur du client' : 'Solde dû',
+          money(st.closingBalance).lt(0) ? creditLabel : 'Solde dû',
           money(st.closingBalance).abs().toFixed(2),
           true,
         ],
       ])}
     </div>
   `;
+
+}
+
+export function statementDocument(
+  st: ClientStatementDto,
+  client: ClientDto,
+  ctx: Omit<PrintContext, 'duplicate'>,
+): string {
+  const body = statementBody(st, LEDGER_TYPES, 'Solde en faveur du client');
 
   return layout({
     format: ctx.format,
@@ -429,6 +470,32 @@ export function statementDocument(
     },
     meta: [['Période', `du ${day(st.from)} au ${day(st.to)}`]],
     body,
+    cancelled: false,
+    duplicate: false,
+  });
+}
+
+/** Relevé fournisseur (phase 21): what we owe the supplier, entry by entry. */
+export function supplierStatementDocument(
+  st: SupplierStatementDto,
+  supplier: SupplierDto,
+  ctx: Omit<PrintContext, 'duplicate'>,
+): string {
+  return layout({
+    format: ctx.format,
+    title: 'RELEVÉ FOURNISSEUR',
+    number: null,
+    date: dayOf(new Date().toISOString()),
+    seller: ctx.seller,
+    party: {
+      label: 'Fournisseur',
+      name: supplier.name,
+      code: supplier.code,
+      lines: [supplier.address, supplier.phone ? `Tél. : ${supplier.phone}` : null],
+      legal: clientLegal(supplier),
+    },
+    meta: [['Période', `du ${day(st.from)} au ${day(st.to)}`]],
+    body: statementBody(st, SUPPLIER_LEDGER_TYPES, 'Solde en notre faveur'),
     cancelled: false,
     duplicate: false,
   });
