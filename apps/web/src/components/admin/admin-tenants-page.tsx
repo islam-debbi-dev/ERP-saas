@@ -29,6 +29,7 @@ const STATUSES = Object.values(SubscriptionStatus);
 export function AdminTenantsPage() {
   const t = useTranslations('admin');
   const tb = useTranslations('billing');
+  const tf = useTranslations('features');
   const format = useFormatter();
   const errorMessage = useErrorMessage();
   const { state } = useAdminAuth();
@@ -118,7 +119,7 @@ export function AdminTenantsPage() {
                     >
                       <span className="block truncate">{r.name}</span>
                       <span className="block text-xs font-normal text-muted-foreground">
-                        {r.planName}
+                        {r.planName} · {tf(`edition${r.edition}`)}
                       </span>
                     </Link>
                   </TableCell>

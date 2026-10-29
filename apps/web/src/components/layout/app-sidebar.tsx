@@ -4,7 +4,7 @@ import { ChevronsUpDown, CirclePlay, LogOut, MessageCircle, Settings, X } from '
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { BrandMark } from '@/components/shared/brand-mark';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,32 +28,38 @@ import {
   SidebarRail,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { useAuth } from '@/lib/auth';
+import { useAuth, useFeatures } from '@/lib/auth';
 import { tutorials, whatsappLink } from '@/lib/support';
-import { isActive, NAV_GROUPS, NAV_ITEMS } from './navigation';
+import { isActive, type NavItem, visibleNavGroups } from './navigation';
 
-/** Alt + 1…9 jumps to a module. Uses `code` so it works with AZERTY and macOS Option. */
-function useNavShortcuts() {
+/**
+ * Alt + 1…9 jumps to a module, in the order of the visible menu. Uses `code` so it works
+ * with AZERTY and macOS Option.
+ */
+function useNavShortcuts(items: readonly NavItem[]) {
   const router = useRouter();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!e.altKey || e.ctrlKey || e.metaKey) return;
       const match = /^Digit([1-9])$/.exec(e.code);
-      const item = match ? NAV_ITEMS[Number(match[1]) - 1] : undefined;
+      const item = match ? items[Number(match[1]) - 1] : undefined;
       if (!item) return;
       e.preventDefault();
       router.push(item.url);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [router]);
+  }, [router, items]);
 }
 
 export function AppSidebar() {
   const t = useTranslations();
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
-  useNavShortcuts();
+  const features = useFeatures();
+  const groups = useMemo(() => visibleNavGroups(features), [features]);
+  const items = useMemo(() => groups.flatMap((g) => g.items), [groups]);
+  useNavShortcuts(items);
 
   useEffect(() => {
     if (isMobile) setOpenMobile(false);
@@ -84,7 +90,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <nav aria-label={t('nav.mainNavigation')} className="contents">
-          {NAV_GROUPS.map((group) => (
+          {groups.map((group) => (
             <SidebarGroup key={group.key}>
               <SidebarGroupLabel>{t(`nav.${group.key}`)}</SidebarGroupLabel>
               <SidebarMenu>

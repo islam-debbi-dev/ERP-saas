@@ -76,7 +76,9 @@
     "goToLogin": "تسجيل الدخول",
     "sessionExpired": "انتهت صلاحية الجلسة. سجّل الدخول من جديد.",
     "identifier": "البريد الإلكتروني أو الهاتف",
-    "identifierHint": "بريدك الإلكتروني، أو رقم هاتفك مثل 0550 12 34 56."
+    "identifierHint": "بريدك الإلكتروني، أو رقم هاتفك مثل 0550 12 34 56.",
+    "activity": "ما هو نشاطك؟",
+    "activityHint": "يحدد وحدات الفترة التجريبية. يمكنك تغييره لاحقاً."
   },
   "dashboard": {
     "welcome": "مرحبًا {name}",
@@ -307,7 +309,8 @@
     "SUBSCRIPTION_SUSPENDED": "الاشتراك موقوف: يمكنك عرض بياناتك وتصديرها، لكن لا يمكنك تعديلها. جدّد الاشتراك للمتابعة.",
     "IMPERSONATION_READ_ONLY": "عرض الدعم للقراءة فقط: لا يمكن تعديل أي شيء.",
     "PLAN_LIMIT_REACHED": "بلغت حدّ باقتك. انتقل إلى باقة أكبر لإضافة المزيد.",
-    "ADMIN_TOTP_INVALID": "الرمز غير صحيح أو منتهي الصلاحية. أدخل الرمز المعروض الآن."
+    "ADMIN_TOTP_INVALID": "الرمز غير صحيح أو منتهي الصلاحية. أدخل الرمز المعروض الآن.",
+    "FEATURE_NOT_IN_PLAN": "هذه الوحدة غير مشمولة في نسختك. تواصل معنا لإضافتها."
   },
   "units": {
     "PIECE": "قطعة",
@@ -1371,7 +1374,17 @@
     "viewAs": "عرض للقراءة فقط",
     "viewAsHelp": "يفتح الشركة في علامة تبويب جديدة لمدة 30 دقيقة دون إمكانية التعديل. ترى الشركة هذه الزيارة في سجلها.",
     "notFound": "الشركة غير موجودة.",
-    "cancel": "إلغاء"
+    "cancel": "إلغاء",
+    "colEdition": "النسخة",
+    "edition": "النسخة",
+    "changeEdition": "تغيير النسخة",
+    "supplement": "+ {amount} شهرياً",
+    "modules": "الوحدات",
+    "modulesHelp": "أضف أو احذف وحدة لهذه الشركة فقط، فوق نسختها. بيانات الوحدة المحذوفة تبقى محفوظة.",
+    "moduleAdded": "مضافة",
+    "moduleRemoved": "محذوفة",
+    "saveModules": "حفظ الوحدات",
+    "resetModules": "العودة إلى النسخة"
   },
   "support": {
     "title": "عرض الدعم",
@@ -1379,5 +1392,35 @@
     "ended": "انتهى عرض الدعم.",
     "endedHelp": "يدوم 30 دقيقة ويُغلق مع جلسة المدير. يمكنك إغلاق علامة التبويب هذه.",
     "missing": "لا يوجد عرض دعم في علامة التبويب هذه. افتحه من فضاء المدير."
+  },
+  "features": {
+    "activityGROSSISTE": "تاجر جملة",
+    "activityGROSSISTEHelp": "أشتري من الموزعين وأبيع بالجملة.",
+    "activityIMPORTATEUR": "مستورد",
+    "activityIMPORTATEURHelp": "أستورد (الصين، تركيا…) وأبيع بالجملة.",
+    "activityDISTRIBUTEUR": "موزع علامة تجارية",
+    "activityDISTRIBUTEURHelp": "لدي بائعون وشاحنات في الطريق.",
+    "editionESSENTIEL": "الأساسية",
+    "editionIMPORT": "الاستيراد",
+    "editionDISTRIBUTION": "التوزيع",
+    "editionENTREPRISE": "المؤسسة",
+    "featureSALES_FORCE": "فريق المبيعات",
+    "featureWAREHOUSES": "عدة مستودعات",
+    "featureTOURNEES": "الجولات",
+    "featureGEO_CHECK": "التحقق بنظام GPS",
+    "featureINCENTIVES": "الأهداف والمكافآت",
+    "featureMOBILE_APP": "تطبيق الهاتف للبائعين",
+    "featurePROMOTIONS": "العروض والوحدات المجانية",
+    "featurePACKAGING": "العبوات المسترجعة",
+    "featureIMPORT_COSTS": "ملفات الاستيراد وسعر التكلفة",
+    "yourEdition": "نسخة {edition}",
+    "included": "الوحدات المشمولة",
+    "coreOnly": "المبيعات، المخزون، المشتريات، الزبائن والكريدي: كل ما يحتاجه تاجر الجملة.",
+    "lockedTitle": "وحدة غير مشمولة",
+    "lockedBody": "«{feature}» متوفرة في نسخة {editions}. بياناتك لا تُحذف أبداً: تعود بمجرد تفعيل الوحدة.",
+    "or": " أو ",
+    "lockedContact": "اطلب هذه الوحدة عبر واتساب",
+    "lockedWhatsappMessage": "السلام عليكم، أريد إضافة وحدة «{feature}» لشركة {company}.",
+    "lockedBack": "العودة إلى لوحة القيادة"
   }
 }

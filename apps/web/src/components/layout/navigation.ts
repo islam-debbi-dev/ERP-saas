@@ -10,6 +10,7 @@ import {
   Users,
   Warehouse,
 } from 'lucide-react';
+import type { Feature } from '@erp/shared';
 
 export type NavKey =
   | 'dashboard'
@@ -26,6 +27,8 @@ export interface NavItem {
   key: NavKey;
   url: string;
   icon: LucideIcon;
+  /** A module outside the core (phase 13b): hidden when the company does not have it. */
+  feature?: Feature;
 }
 
 export interface NavGroup {
@@ -61,8 +64,21 @@ export const NAV_GROUPS: readonly NavGroup[] = [
   },
 ];
 
-/** Flat list in menu order: Alt+1 … Alt+9 follow it. */
+/** Flat list in menu order. */
 export const NAV_ITEMS: readonly NavItem[] = NAV_GROUPS.flatMap((g) => g.items);
+
+/** The menu of a company: items of modules it does not have are left out, then empty groups. */
+export function visibleNavGroups(
+  features: readonly Feature[],
+  groups: readonly NavGroup[] = NAV_GROUPS,
+): NavGroup[] {
+  return groups
+    .map((g) => ({
+      ...g,
+      items: g.items.filter((item) => !item.feature || features.includes(item.feature)),
+    }))
+    .filter((g) => g.items.length > 0);
+}
 
 export function isActive(pathname: string, url: string): boolean {
   return pathname === url || pathname.startsWith(`${url}/`);

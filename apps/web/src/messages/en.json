@@ -76,7 +76,9 @@
     "goToLogin": "Log in",
     "sessionExpired": "Your session expired. Log in again.",
     "identifier": "Email or phone",
-    "identifierHint": "Your email, or your phone number such as 0550 12 34 56."
+    "identifierHint": "Your email, or your phone number such as 0550 12 34 56.",
+    "activity": "What is your business?",
+    "activityHint": "It picks the modules of your trial. You can change it later."
   },
   "dashboard": {
     "welcome": "Hello {name}",
@@ -307,7 +309,8 @@
     "SUBSCRIPTION_SUSPENDED": "Subscription suspended: you can view and export your data but not change it. Renew to continue.",
     "IMPERSONATION_READ_ONLY": "Read-only support view: nothing can be changed.",
     "PLAN_LIMIT_REACHED": "Your plan’s limit is reached. Move to a bigger plan to add more.",
-    "ADMIN_TOTP_INVALID": "Wrong or expired code. Enter the code shown now."
+    "ADMIN_TOTP_INVALID": "Wrong or expired code. Enter the code shown now.",
+    "FEATURE_NOT_IN_PLAN": "This module is not in your edition. Contact us to add it."
   },
   "units": {
     "PIECE": "Piece",
@@ -1371,7 +1374,17 @@
     "viewAs": "View read-only",
     "viewAsHelp": "Opens the company in a new tab for 30 minutes without being able to change anything. The company sees this visit in its journal.",
     "notFound": "Company not found.",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "colEdition": "Edition",
+    "edition": "Edition",
+    "changeEdition": "Change edition",
+    "supplement": "+ {amount} per month",
+    "modules": "Modules",
+    "modulesHelp": "Add or remove a module for this company only, on top of its edition. A removed module keeps its data.",
+    "moduleAdded": "Added",
+    "moduleRemoved": "Removed",
+    "saveModules": "Save modules",
+    "resetModules": "Back to the edition"
   },
   "support": {
     "title": "Support view",
@@ -1379,5 +1392,35 @@
     "ended": "The support view has ended.",
     "endedHelp": "It lasts 30 minutes and closes with the admin session. You can close this tab.",
     "missing": "No support view in this tab. Open it from the admin area."
+  },
+  "features": {
+    "activityGROSSISTE": "Wholesaler",
+    "activityGROSSISTEHelp": "I buy from distributors and sell wholesale.",
+    "activityIMPORTATEUR": "Importer",
+    "activityIMPORTATEURHelp": "I import (China, Turkey…) and sell wholesale.",
+    "activityDISTRIBUTEUR": "Brand distributor",
+    "activityDISTRIBUTEURHelp": "I have sellers and trucks on the road.",
+    "editionESSENTIEL": "Essentiel",
+    "editionIMPORT": "Import",
+    "editionDISTRIBUTION": "Distribution",
+    "editionENTREPRISE": "Entreprise",
+    "featureSALES_FORCE": "Sales force",
+    "featureWAREHOUSES": "Several warehouses",
+    "featureTOURNEES": "Routes",
+    "featureGEO_CHECK": "GPS check",
+    "featureINCENTIVES": "Targets and bonuses",
+    "featureMOBILE_APP": "Sellers’ mobile app",
+    "featurePROMOTIONS": "Promotions and free units",
+    "featurePACKAGING": "Returnable packaging",
+    "featureIMPORT_COSTS": "Import files and landed cost",
+    "yourEdition": "{edition} edition",
+    "included": "Included modules",
+    "coreOnly": "Sales, stock, purchases, clients and credit: everything a wholesaler needs.",
+    "lockedTitle": "Module not included",
+    "lockedBody": "“{feature}” is available in the {editions} edition. Your data is never deleted: it comes back as soon as the module is on.",
+    "or": " or ",
+    "lockedContact": "Ask for this module on WhatsApp",
+    "lockedWhatsappMessage": "Hello, I would like to add the “{feature}” module for {company}.",
+    "lockedBack": "Back to the dashboard"
   }
 }
