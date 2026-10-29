@@ -55,7 +55,9 @@
 - **Essentiel**: grossiste who buys from distributors and sells en gros (core: everything in phases 1–13 and 21).
 - **Import**: importer (e.g. from China) who sells en gros: + dossiers d'importation, devises, coût de revient (phase 22), multi-dépôts.
 - **Distribution**: brand distributor with sellers and trucks: + sales force, vehicles, tournées, GPS check, objectifs & primes, mobile app, promotions, emballages.
-- Turning a module off never deletes its data.
+- Turning a module off never deletes its data: its screens and writes are refused, its reports and exports stay readable, and everything comes back when it is on again.
+- Two axes: the **plan** (Starter / Pro / Business) sets the price and the limits (users, products, documents, mobile sellers); the **edition** sets the modules. Price = plan + edition supplement. The super-admin can add or remove one module for one company on top of its edition.
+- At signup the company says what it does (grossiste, importateur, distributeur de marque); the trial starts on the matching edition.
 
 ## Sales force & distribution (phases 14–20)
 - **Vendeur** (SELLER) sells in the shop or on the road; **superviseur** (SUPERVISOR) and **chef des ventes** manage a team through `User.managerId`; **livreur** (LIVREUR) delivers pre-sale orders.

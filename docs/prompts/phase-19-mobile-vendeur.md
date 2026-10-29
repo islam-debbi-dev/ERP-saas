@@ -2,7 +2,7 @@ Read AGENTS.md and docs/architecture.md (Offline) before doing anything.
 
 ## Task: Phase 19 — Mobile vendeur (Flutter), offline-first
 
-Branch: `phase-19-mobile-vendeur`. Phases 14–18 are merged. Feature flag: `MOBILE_APP` (and the plan's `mobileSellers` limit from phase 13b: the API refuses a new mobile device session over the limit with `MOBILE_SELLER_LIMIT`).
+Branch: `phase-19-mobile-vendeur`. Phases 14–18 are merged. Feature flag: `MOBILE_APP` (and the plan's `maxMobileSellers` limit from phase 13b (`plans` column, null = unlimited): the API refuses a new mobile device session over the limit with `MOBILE_SELLER_LIMIT`).
 
 This phase is big. Run it in **two Claude Code sessions**: Part A, merge, then `/clear` and Part B. Commit after each numbered step.
 
