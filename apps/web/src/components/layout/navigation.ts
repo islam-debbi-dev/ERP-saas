@@ -1,6 +1,7 @@
 import {
   Banknote,
   ClipboardList,
+  MapPinCheck,
   MapPinned,
   Navigation,
   PackageCheck,
@@ -28,6 +29,7 @@ export type NavKey =
   | 'products'
   | 'purchases'
   | 'stock'
+  | 'flagged'
   | 'reports'
   | 'settings';
 
@@ -99,6 +101,13 @@ export const NAV_GROUPS: readonly NavGroup[] = [
   {
     key: 'groupManagement',
     items: [
+      {
+        key: 'flagged',
+        url: '/operations-signalees',
+        icon: MapPinCheck,
+        feature: Feature.GEO_CHECK,
+        roles: PLANNERS,
+      },
       { key: 'reports', url: '/rapports', icon: ChartColumn },
       { key: 'settings', url: '/parametres', icon: Settings },
     ],

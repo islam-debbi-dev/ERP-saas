@@ -35,6 +35,7 @@ import { paymentKeys, useUnpaidDocuments } from '@/lib/payments';
 import { saleKeys } from '@/lib/sales';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { useIdempotencyKey } from '@/lib/use-idempotency-key';
+import { GeoPrivacyNotice, isGeoCancelled, useGeoSubmit } from '@/components/geo/use-geo-submit';
 import { isolateLtr } from '@/lib/utils';
 import { Amount } from '@/components/shared/amount';
 
@@ -89,29 +90,37 @@ export function PaymentDialog({
     }
   }
 
+  const geo = useGeoSubmit();
   const save = useMutation({
     mutationFn: () =>
-      api.request<PaymentDto>('/payments', {
-        method: 'POST',
-        idempotencyKey: key,
-        body: {
-          clientId: client?.id,
-          amount: value?.toString(),
-          mode,
-          reference: reference.trim(),
-          bank: mode === 'CHEQUE' ? bank.trim() : '',
-          dueDate: mode === 'CHEQUE' && dueDate ? dueDate : null,
-          note: note.trim(),
-        },
-      }),
+      // Phase 17: the seller's position goes with the versement (a note if asked).
+      geo.run((g) =>
+        api.request<PaymentDto>('/payments', {
+          method: 'POST',
+          idempotencyKey: key,
+          body: {
+            clientId: client?.id,
+            amount: value?.toString(),
+            mode,
+            reference: reference.trim(),
+            bank: mode === 'CHEQUE' ? bank.trim() : '',
+            dueDate: mode === 'CHEQUE' && dueDate ? dueDate : null,
+            note: note.trim(),
+            ...(g ? { geo: g } : {}),
+          },
+        }),
+      ),
     onSuccess: (p) => {
+      geo.after(p.geoCheck, p.client?.id ?? null);
       void queryClient.invalidateQueries({ queryKey: paymentKeys.all });
       void queryClient.invalidateQueries({ queryKey: clientKeys.all });
       void queryClient.invalidateQueries({ queryKey: saleKeys.all });
       toast.success(t('created', { number: p.number, amount: isolateLtr(formatDA(p.amount)) }));
       onOpenChange(false);
     },
-    onError: (err) => toast.error(errorMessage(err)),
+    onError: (err) => {
+      if (!isGeoCancelled(err)) toast.error(errorMessage(err));
+    },
   });
   const canSave = client !== null && validAmount && (!overpay || confirmOver) && !save.isPending;
 
@@ -280,6 +289,8 @@ export function PaymentDialog({
               </Alert>
             ) : null}
 
+            {geo.on && client ? <GeoPrivacyNotice /> : null}
+
             <ResponsiveDialogFooter>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
                 {t('cancelButton')}
@@ -292,6 +303,7 @@ export function PaymentDialog({
           </form>
         </ResponsiveDialogContent>
       </ResponsiveDialog>
+      {geo.dialog}
       {fixedClient ? null : (
         <ClientPicker
           open={open && pickerOpen}

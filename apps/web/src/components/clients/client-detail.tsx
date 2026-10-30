@@ -63,6 +63,7 @@ import { useErrorMessage } from '@/lib/use-error-message';
 import { PaymentDialog } from '@/components/payments/payment-dialog';
 import { UnpaidDocuments } from '@/components/payments/unpaid-documents';
 import { useUnpaidDocuments } from '@/lib/payments';
+import { ClientLocationCard } from '@/components/geo/client-location-card';
 import { BalanceAmount, PlafondBar } from './balance-amount';
 import { AdjustmentDialog, OpeningBalanceDialog } from './client-dialogs';
 import { Amount } from '@/components/shared/amount';
@@ -140,6 +141,7 @@ export function ClientDetail({ clientId }: { clientId: string }) {
           <Summary client={c} />
           <UnpaidDocuments clientId={c.id} />
           <Info client={c} />
+          <ClientLocationCard client={c} />
           <StatementSection client={c} />
         </>
       ) : (

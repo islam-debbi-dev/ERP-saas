@@ -23,9 +23,11 @@ import {
   type NoSaleReason,
   type OrderDto,
   type TodayStopDto,
+  type VisitDto,
   type VisitOutcome,
 } from '@erp/shared';
 import { BalanceAmount } from '@/components/clients/balance-amount';
+import { GeoPrivacyNotice, isGeoCancelled, useGeoSubmit } from '@/components/geo/use-geo-submit';
 import { PaymentDialog } from '@/components/payments/payment-dialog';
 import { Amount } from '@/components/shared/amount';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -318,6 +320,7 @@ function VisitDialog({ stop, onClose }: { stop: TodayStopDto | null; onClose: ()
     setNote('');
   };
 
+  const geo = useGeoSubmit();
   const save = useMutation({
     mutationFn: () => {
       if (!stop) throw new Error('no stop');
@@ -333,124 +336,139 @@ function VisitDialog({ stop, onClose }: { stop: TodayStopDto | null; onClose: ()
         orderId: current === 'ORDER' ? (docs?.orderId ?? null) : null,
         paymentId: current === 'PAYMENT_ONLY' ? (docs?.paymentId ?? null) : null,
       };
-      return api.request('/visits', { method: 'POST', body, idempotencyKey: key });
+      // Phase 17: the seller's position goes with the visit (a note if asked).
+      return geo.run((g) =>
+        api.request<VisitDto>('/visits', {
+          method: 'POST',
+          body: g ? { ...body, geo: g } : body,
+          idempotencyKey: key,
+        }),
+      );
     },
-    onSuccess: () => {
+    onSuccess: (v) => {
+      geo.after(v.geoCheck, v.client.id);
       void queryClient.invalidateQueries({ queryKey: tourneeKeys.today });
       toast.success(t('visitSaved'));
       reset();
       onClose();
     },
-    onError: (err) => toast.error(errorMessage(err)),
+    onError: (err) => {
+      if (!isGeoCancelled(err)) toast.error(errorMessage(err));
+    },
   });
 
   const valid =
     current !== 'NO_SALE' || (reason !== null && (reason !== 'OTHER' || note.trim().length > 0));
 
   return (
-    <ResponsiveDialog
-      open={open}
-      onOpenChange={(o) => {
-        if (!o) {
-          reset();
-          onClose();
-        }
-      }}
-    >
-      <ResponsiveDialogContent className="md:max-w-md">
-        <form
-          className="grid gap-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (valid) save.mutate();
-          }}
-        >
-          <ResponsiveDialogHeader>
-            <ResponsiveDialogTitle>
-              {t('visitTitle', { name: stop?.client.name ?? '' })}
-            </ResponsiveDialogTitle>
-            <ResponsiveDialogDescription>{t('visitHelp')}</ResponsiveDialogDescription>
-          </ResponsiveDialogHeader>
+    <>
+      <ResponsiveDialog
+        open={open}
+        onOpenChange={(o) => {
+          if (!o) {
+            reset();
+            onClose();
+          }
+        }}
+      >
+        <ResponsiveDialogContent className="md:max-w-md">
+          <form
+            className="grid gap-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (valid) save.mutate();
+            }}
+          >
+            <ResponsiveDialogHeader>
+              <ResponsiveDialogTitle>
+                {t('visitTitle', { name: stop?.client.name ?? '' })}
+              </ResponsiveDialogTitle>
+              <ResponsiveDialogDescription>{t('visitHelp')}</ResponsiveDialogDescription>
+            </ResponsiveDialogHeader>
 
-          <fieldset className="grid gap-2">
-            <legend className="mb-2 text-sm font-medium">{t('outcome')}</legend>
-            {choices.map((c) => (
-              <label
-                key={c.outcome}
-                className={cn(
-                  'flex min-h-11 cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-sm',
-                  current === c.outcome && 'border-primary bg-primary/5',
-                  !c.available && 'cursor-not-allowed opacity-60',
-                )}
-              >
-                <input
-                  type="radio"
-                  name="visit-outcome"
-                  className="size-4 accent-[var(--primary)]"
-                  checked={current === c.outcome}
-                  disabled={!c.available}
-                  onChange={() => setOutcome(c.outcome)}
-                />
-                <span className="flex-1">{t(`outcome${c.outcome}`)}</span>
-                {!c.available ? (
-                  <span className="text-xs text-muted-foreground">{t('noDocumentToday')}</span>
-                ) : null}
-              </label>
-            ))}
-          </fieldset>
-
-          {current === 'NO_SALE' ? (
             <fieldset className="grid gap-2">
-              <legend className="mb-2 text-sm font-medium">{t('reason')}</legend>
-              <div className="grid grid-cols-2 gap-2">
-                {NO_SALE_REASONS.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    aria-pressed={reason === r}
-                    onClick={() => setReason(r)}
-                    className={cn(
-                      'flex min-h-11 items-center justify-center gap-2 rounded-md border px-2 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-                      reason === r
-                        ? 'border-primary bg-primary text-primary-foreground'
-                        : 'bg-background hover:bg-muted',
-                    )}
-                  >
-                    {r === 'CLOSED' ? <UserX className="size-4" aria-hidden /> : null}
-                    {t(`reason${r}`)}
-                  </button>
-                ))}
-              </div>
+              <legend className="mb-2 text-sm font-medium">{t('outcome')}</legend>
+              {choices.map((c) => (
+                <label
+                  key={c.outcome}
+                  className={cn(
+                    'flex min-h-11 cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-sm',
+                    current === c.outcome && 'border-primary bg-primary/5',
+                    !c.available && 'cursor-not-allowed opacity-60',
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="visit-outcome"
+                    className="size-4 accent-[var(--primary)]"
+                    checked={current === c.outcome}
+                    disabled={!c.available}
+                    onChange={() => setOutcome(c.outcome)}
+                  />
+                  <span className="flex-1">{t(`outcome${c.outcome}`)}</span>
+                  {!c.available ? (
+                    <span className="text-xs text-muted-foreground">{t('noDocumentToday')}</span>
+                  ) : null}
+                </label>
+              ))}
             </fieldset>
-          ) : null}
 
-          <div className="space-y-2">
-            <Label htmlFor="visit-note">
-              {t('note')}
-              {current === 'NO_SALE' && reason === 'OTHER' ? null : (
-                <span className="font-normal text-muted-foreground">({tc('optional')})</span>
-              )}
-            </Label>
-            <Textarea
-              id="visit-note"
-              rows={2}
-              maxLength={255}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
-          </div>
+            {current === 'NO_SALE' ? (
+              <fieldset className="grid gap-2">
+                <legend className="mb-2 text-sm font-medium">{t('reason')}</legend>
+                <div className="grid grid-cols-2 gap-2">
+                  {NO_SALE_REASONS.map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      aria-pressed={reason === r}
+                      onClick={() => setReason(r)}
+                      className={cn(
+                        'flex min-h-11 items-center justify-center gap-2 rounded-md border px-2 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                        reason === r
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'bg-background hover:bg-muted',
+                      )}
+                    >
+                      {r === 'CLOSED' ? <UserX className="size-4" aria-hidden /> : null}
+                      {t(`reason${r}`)}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            ) : null}
 
-          <ResponsiveDialogFooter>
-            <Button type="button" variant="ghost" onClick={onClose}>
-              {tc('cancel')}
-            </Button>
-            <Button type="submit" disabled={!valid || save.isPending}>
-              {save.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
-              {t('saveVisit')}
-            </Button>
-          </ResponsiveDialogFooter>
-        </form>
-      </ResponsiveDialogContent>
-    </ResponsiveDialog>
+            <div className="space-y-2">
+              <Label htmlFor="visit-note">
+                {t('note')}
+                {current === 'NO_SALE' && reason === 'OTHER' ? null : (
+                  <span className="font-normal text-muted-foreground">({tc('optional')})</span>
+                )}
+              </Label>
+              <Textarea
+                id="visit-note"
+                rows={2}
+                maxLength={255}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+            </div>
+
+            {geo.on ? <GeoPrivacyNotice /> : null}
+
+            <ResponsiveDialogFooter>
+              <Button type="button" variant="ghost" onClick={onClose}>
+                {tc('cancel')}
+              </Button>
+              <Button type="submit" disabled={!valid || save.isPending}>
+                {save.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
+                {t('saveVisit')}
+              </Button>
+            </ResponsiveDialogFooter>
+          </form>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
+      {geo.dialog}
+    </>
   );
 }
