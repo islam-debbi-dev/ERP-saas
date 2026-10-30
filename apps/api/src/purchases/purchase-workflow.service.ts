@@ -25,6 +25,7 @@ import { StockService } from '../stock/stock.service';
 import { baseUnitCost } from '../stock/unit-conversion';
 import { WarehousesService } from '../stock/warehouses.service';
 import { snapshotLines } from './purchase-lines';
+import { lockImportFile, lockImportFileOpen } from './import-file-lock';
 import { lockPurchase, PurchasesService } from './purchases.service';
 import { SupplierAccountService } from './supplier-account.service';
 
@@ -48,12 +49,19 @@ export class PurchaseWorkflowService {
 
   async validate(id: string, input: ValidatePurchaseInput): Promise<PurchaseDto> {
     await this.prisma.db.$transaction(async (tx) => {
+      // Lock order with the dossier (phase 22): dossier first, then its BRs, as closing does.
+      const peek = await tx.purchase.findUnique({ where: { id }, select: { importFileId: true } });
+      if (peek?.importFileId) await lockImportFileOpen(tx, peek.importFileId);
       const current = await lockPurchase(tx, id);
       if (current.status !== PurchaseStatus.DRAFT) {
         throw new AppException(ErrorCode.PURCHASE_NOT_DRAFT, 'Only a draft can be validated', {
           status: current.status,
         });
       }
+      if (current.importFileId !== (peek?.importFileId ?? null)) {
+        throw new AppException(ErrorCode.PURCHASE_MODIFIED, 'Purchase changed since it was read');
+      }
+      const inTransit = current.importFileId !== null;
       const purchase = await tx.purchase.findUniqueOrThrow({
         where: { id },
         include: { lines: true },
@@ -61,16 +69,31 @@ export class PurchaseWorkflowService {
       if (purchase.lines.length === 0) throw new AppException(ErrorCode.PURCHASE_EMPTY, 'No lines');
       const tenantId = tenantContext.requireTenantId();
       const assujetti = await this.assujettiTva(tx);
+      // The supplier's currency today must still be the draft's (it can only change
+      // while the supplier has nothing, but a draft can be older than the change).
+      const supplierCurrency = await this.account.currencyOf(tx, purchase.supplierId);
+      if (supplierCurrency !== purchase.currency) {
+        throw new AppException(ErrorCode.CURRENCY_MISMATCH, 'Supplier currency changed', {
+          currency: purchase.currency,
+          supplierCurrency,
+        });
+      }
+      const fx =
+        purchase.currency === 'DZD'
+          ? null
+          : { currency: purchase.currency, rate: purchase.exchangeRate.toString() };
 
       // Freeze the lines as the products are today.
-      const { lines, totals } = await snapshotLines(
+      const { lines, totals, totalCurrency } = await snapshotLines(
         tx,
         purchase.lines.map((l) => ({
           productId: l.productId,
           unitId: l.unitId,
           qty: l.qty.toString(),
-          unitCost: l.unitCost.toString(),
+          // A foreign line is re-converted from the supplier's price, never twice.
+          unitCost: (fx ? (l.unitCostCurrency ?? l.unitCost) : l.unitCost).toString(),
         })),
+        fx,
       );
       await tx.purchaseLine.deleteMany({ where: { purchaseId: id } });
       await tx.purchaseLine.createMany({
@@ -80,9 +103,11 @@ export class PurchaseWorkflowService {
       // The dépôt chosen on the BR, else the default one.
       const warehouseId = await this.warehouses.resolve(tx, purchase.warehouseId);
       const number = await this.numbering.next(tx, tenantId, DocType.BR);
+      // In a dossier d'importation the goods are on the way: no stock until it is closed
+      // at the coût de revient (ImportFilesService.close).
       await this.stock.applyMovements(
         tx,
-        lines.map((l) => ({
+        (inTransit ? [] : lines).map((l) => ({
           productId: l.productId,
           warehouseId,
           type: StockMovementType.PURCHASE,
@@ -104,11 +129,12 @@ export class PurchaseWorkflowService {
         where: { id },
         data: {
           number,
-          status: PurchaseStatus.VALIDATED,
+          status: inTransit ? PurchaseStatus.IN_TRANSIT : PurchaseStatus.VALIDATED,
           warehouseId,
           totalHt: totals.totalHt.toString(),
           totalTva: totals.totalTva.toString(),
           totalTtc: totals.totalTtc.toString(),
+          totalCurrency: totalCurrency?.toString() ?? null,
           validatedAt: new Date(),
           validatedBy: tenantContext.get()?.userId ?? null,
           version: { increment: 1 },
@@ -123,6 +149,7 @@ export class PurchaseWorkflowService {
                 supplierId: purchase.supplierId,
                 type: SupplierLedgerType.PURCHASE,
                 amount: totals.totalTtc.toString(),
+                amountCurrency: totalCurrency?.toString() ?? null,
                 label: number,
                 refType: 'Purchase',
                 refId: id,
@@ -150,6 +177,8 @@ export class PurchaseWorkflowService {
         after: {
           number,
           totalTtc: totals.totalTtc.toString(),
+          ...(fx ? { currency: fx.currency, exchangeRate: fx.rate } : {}),
+          ...(inTransit ? { status: PurchaseStatus.IN_TRANSIT } : {}),
           priceUpdates: input.priceUpdates.length,
         },
       });
@@ -163,9 +192,39 @@ export class PurchaseWorkflowService {
    */
   async cancel(id: string): Promise<PurchaseDto> {
     await this.prisma.db.$transaction(async (tx) => {
+      const peek = await tx.purchase.findUnique({ where: { id }, select: { importFileId: true } });
+      if (peek?.importFileId) await lockImportFile(tx, peek.importFileId);
       const current = await lockPurchase(tx, id);
       if (current.status === PurchaseStatus.CANCELLED) {
         throw new AppException(ErrorCode.PURCHASE_NOT_VALIDATED, 'Already cancelled');
+      }
+      // Its stock entered at the dossier's coût de revient: correct with a retour fournisseur.
+      if (current.status === PurchaseStatus.VALIDATED && current.importFileId) {
+        throw new AppException(ErrorCode.PURCHASE_IN_IMPORT_FILE, 'Closed dossier: use a return', {
+          importFileId: current.importFileId,
+        });
+      }
+      if (current.status === PurchaseStatus.IN_TRANSIT) {
+        // No stock yet: only the supplier account goes back.
+        const purchase = await tx.purchase.findUniqueOrThrow({
+          where: { id },
+          select: { supplierId: true, number: true },
+        });
+        const net = await this.account.netWithCurrency(tx, { refType: 'Purchase', refIds: [id] });
+        if (!net.amount.isZero()) {
+          const foreign = (await this.account.currencyOf(tx, purchase.supplierId)) !== 'DZD';
+          await this.account.post(tx, [
+            {
+              supplierId: purchase.supplierId,
+              type: SupplierLedgerType.REVERSAL,
+              amount: net.amount.negated().toString(),
+              amountCurrency: foreign ? net.amountCurrency.negated().toString() : null,
+              label: purchase.number ?? '',
+              refType: 'Purchase',
+              refId: id,
+            },
+          ]);
+        }
       }
       if (current.status === PurchaseStatus.VALIDATED) {
         const purchase = await tx.purchase.findUniqueOrThrow({
@@ -199,15 +258,21 @@ export class PurchaseWorkflowService {
         const returnIds = (
           await tx.purchaseReturn.findMany({ where: { purchaseId: id }, select: { id: true } })
         ).map((r) => r.id);
-        const net = (await this.account.netOf(tx, { refType: 'Purchase', refIds: [id] })).plus(
-          await this.account.netOf(tx, { refType: 'PurchaseReturn', refIds: returnIds }),
-        );
+        const ofBr = await this.account.netWithCurrency(tx, { refType: 'Purchase', refIds: [id] });
+        const ofReturns = await this.account.netWithCurrency(tx, {
+          refType: 'PurchaseReturn',
+          refIds: returnIds,
+        });
+        const net = ofBr.amount.plus(ofReturns.amount);
+        const netCurrency = ofBr.amountCurrency.plus(ofReturns.amountCurrency);
         if (!net.isZero()) {
+          const foreign = (await this.account.currencyOf(tx, purchase.supplierId)) !== 'DZD';
           await this.account.post(tx, [
             {
               supplierId: purchase.supplierId,
               type: SupplierLedgerType.REVERSAL,
               amount: net.negated().toString(),
+              amountCurrency: foreign ? netCurrency.negated().toString() : null,
               label: purchase.number ?? '',
               refType: 'Purchase',
               refId: id,
@@ -304,6 +369,18 @@ export class PurchaseWorkflowService {
         })),
         true,
       );
+      // A foreign BR is returned at the supplier's price too (its account is in currency).
+      const totalCurrency =
+        purchase.currency === 'DZD'
+          ? null
+          : computeTotals(
+              returnLines.map((r) => ({
+                qty: r.qty,
+                unitPrice: (r.line.unitCostCurrency ?? '0').toString(),
+                tvaRate: '0',
+              })),
+              true,
+            ).totalTtc;
       const warehouseId = await this.warehouses.resolve(tx, input.warehouseId, () =>
         Promise.resolve(purchase.warehouseId),
       );
@@ -354,6 +431,7 @@ export class PurchaseWorkflowService {
             supplierId: purchase.supplierId,
             type: SupplierLedgerType.RETURN,
             amount: totals.totalTtc.negated().toString(),
+            amountCurrency: totalCurrency?.negated().toString() ?? null,
             label: number,
             refType: 'PurchaseReturn',
             refId: created.id,

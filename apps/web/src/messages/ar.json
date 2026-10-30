@@ -401,7 +401,16 @@
     "INCENTIVE_PLAN_EMPTY": "أضف قاعدة واحدة على الأقل إلى الخطة.",
     "INCENTIVE_RUN_APPROVED": "تمت المصادقة على مكافآت هذه الفترة مسبقًا: لا إعادة للحساب.",
     "INCENTIVE_RUN_NOT_PREVIEW": "تمت المصادقة على هذا الحساب مسبقًا.",
-    "INCENTIVE_RUN_NOT_APPROVED": "صادق على الحساب قبل تصديره."
+    "INCENTIVE_RUN_NOT_APPROVED": "صادق على الحساب قبل تصديره.",
+    "IMPORT_FILE_NOT_OPEN": "ملف الاستيراد هذا لم يعد مفتوحًا.",
+    "IMPORT_FILE_NOT_CLOSED": "أغلق ملف الاستيراد أولًا.",
+    "IMPORT_FILE_EMPTY": "لا يحتوي الملف على أي وصل استلام في الطريق.",
+    "PURCHASE_IN_IMPORT_FILE": "هذا الوصل جزء من ملف استيراد: صحّح بإرجاع إلى المورد.",
+    "CURRENCY_MISMATCH": "العملة لا تطابق عملة المورد.",
+    "SUPPLIER_CURRENCY_LOCKED": "لهذا المورد عمليات مسجلة: لا يمكن تغيير عملته.",
+    "ALLOCATION_BASIS_MISSING": "التوزيع غير ممكن: أدخل وزن أو حجم المنتجات المعنية.",
+    "MANUAL_SPLIT_INVALID": "يجب أن يساوي التوزيع اليدوي مبلغ المصروف بالضبط.",
+    "IMPORT_COST_NOT_ACTIVE": "هذا المصروف ملغى مسبقًا."
   },
   "units": {
     "PIECE": "قطعة",
@@ -598,7 +607,8 @@
     "ADJUSTMENT": "تسوية",
     "INVENTORY": "جرد",
     "TRANSFER_OUT": "تحويل (خروج)",
-    "TRANSFER_IN": "تحويل (دخول)"
+    "TRANSFER_IN": "تحويل (دخول)",
+    "COST_ADJUST": "تعديل التكلفة"
   },
   "adjustmentReasons": {
     "CASSE": "كسر",
@@ -732,7 +742,8 @@
     "readOnlyCancelled": "الوصل ملغى.",
     "cancel": "إلغاء",
     "warehouse": "مستودع الاستلام",
-    "mainWarehouse": "المستودع الرئيسي"
+    "mainWarehouse": "المستودع الرئيسي",
+    "statusIN_TRANSIT": "في الطريق"
   },
   "suppliers": {
     "title": "الموردون",
@@ -1252,7 +1263,8 @@
       "stock_not_empty": "المنتج لديه {qty} في المخزون؛ سيُضاف المخزون الافتتاحي إليه",
       "zero_cost": "تكلفة صفر: سيكون هامش هذا المنتج خاطئًا",
       "supplier_archived": "مورد مؤرشف",
-      "invalid_supplier": "مورد غير صالح ({rule})"
+      "invalid_supplier": "مورد غير صالح ({rule})",
+      "foreign_currency_supplier": "مورد بعملة أجنبية: لا يُستورد رصيده بالدينار"
     }
   },
   "users": {
@@ -1633,7 +1645,8 @@
     "PAYMENT": "تسوية",
     "RETURN": "إرجاع",
     "ADJUST": "تعديل",
-    "REVERSAL": "إلغاء"
+    "REVERSAL": "إلغاء",
+    "IMPORT_COST": "مصاريف الاستيراد"
   },
   "aging": {
     "title": "أعمار الديون",

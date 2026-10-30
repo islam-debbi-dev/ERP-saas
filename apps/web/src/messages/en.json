@@ -401,7 +401,16 @@
     "INCENTIVE_PLAN_EMPTY": "Add at least one rule to the plan.",
     "INCENTIVE_RUN_APPROVED": "This period’s bonuses are already approved: no recalculation.",
     "INCENTIVE_RUN_NOT_PREVIEW": "This calculation is already approved.",
-    "INCENTIVE_RUN_NOT_APPROVED": "Approve the calculation before exporting it."
+    "INCENTIVE_RUN_NOT_APPROVED": "Approve the calculation before exporting it.",
+    "IMPORT_FILE_NOT_OPEN": "This import file is no longer open.",
+    "IMPORT_FILE_NOT_CLOSED": "Close the import file first.",
+    "IMPORT_FILE_EMPTY": "The file has no goods receipt in transit.",
+    "PURCHASE_IN_IMPORT_FILE": "This receipt belongs to an import file: correct it with a supplier return.",
+    "CURRENCY_MISMATCH": "The currency does not match the supplier's.",
+    "SUPPLIER_CURRENCY_LOCKED": "This supplier already has entries: its currency cannot change.",
+    "ALLOCATION_BASIS_MISSING": "Cannot allocate: fill in the weight or volume of the products concerned.",
+    "MANUAL_SPLIT_INVALID": "The manual split must add up exactly to the cost amount.",
+    "IMPORT_COST_NOT_ACTIVE": "This cost is already cancelled."
   },
   "units": {
     "PIECE": "Piece",
@@ -598,7 +607,8 @@
     "ADJUSTMENT": "Adjustment",
     "INVENTORY": "Stock count",
     "TRANSFER_OUT": "Transfer (out)",
-    "TRANSFER_IN": "Transfer (in)"
+    "TRANSFER_IN": "Transfer (in)",
+    "COST_ADJUST": "Cost adjustment"
   },
   "adjustmentReasons": {
     "CASSE": "Breakage",
@@ -732,7 +742,8 @@
     "readOnlyCancelled": "Receipt cancelled.",
     "cancel": "Cancel",
     "warehouse": "Receiving warehouse",
-    "mainWarehouse": "Main warehouse"
+    "mainWarehouse": "Main warehouse",
+    "statusIN_TRANSIT": "In transit"
   },
   "suppliers": {
     "title": "Suppliers",
@@ -1252,7 +1263,8 @@
       "stock_not_empty": "the product already has {qty} in stock; the opening stock will add to it",
       "zero_cost": "zero cost: this product's margin will be wrong",
       "supplier_archived": "supplier archived",
-      "invalid_supplier": "invalid supplier ({rule})"
+      "invalid_supplier": "invalid supplier ({rule})",
+      "foreign_currency_supplier": "foreign-currency supplier: its balance is not imported in DZD"
     }
   },
   "users": {
@@ -1633,7 +1645,8 @@
     "PAYMENT": "Payment",
     "RETURN": "Return",
     "ADJUST": "Adjustment",
-    "REVERSAL": "Reversal"
+    "REVERSAL": "Reversal",
+    "IMPORT_COST": "Import cost"
   },
   "aging": {
     "title": "Aged balance",

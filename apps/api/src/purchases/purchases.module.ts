@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
+import { BillingModule } from '../billing/billing.module';
 import { CatalogModule } from '../catalog/catalog.module';
 import { DocumentsModule } from '../documents/documents.module';
 import { StockModule } from '../stock/stock.module';
+import { ImportCostsGate } from './import-costs-gate';
 import { PurchaseWorkflowService } from './purchase-workflow.service';
 import {
   PurchasesController,
@@ -19,7 +21,7 @@ import { SuppliersService } from './suppliers.service';
  * StockService only; supplier account entries through SupplierAccountService only.
  */
 @Module({
-  imports: [StockModule, CatalogModule, DocumentsModule],
+  imports: [StockModule, CatalogModule, DocumentsModule, BillingModule],
   controllers: [SuppliersController, PurchasesController, SupplierPaymentsController],
   providers: [
     SuppliersService,
@@ -28,7 +30,14 @@ import { SuppliersService } from './suppliers.service';
     SupplierAccountService,
     SupplierPaymentsService,
     SupplierBackfillService,
+    ImportCostsGate,
   ],
-  exports: [PurchasesService, SuppliersService, SupplierAccountService],
+  exports: [
+    PurchasesService,
+    PurchaseWorkflowService,
+    SuppliersService,
+    SupplierAccountService,
+    ImportCostsGate,
+  ],
 })
 export class PurchasesModule {}

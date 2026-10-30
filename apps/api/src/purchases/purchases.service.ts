@@ -16,7 +16,8 @@ import { type Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { WarehousesService } from '../stock/warehouses.service';
 import { fromIsoDate, purchaseInclude, toIsoDate, toPurchaseDto } from './purchase.mapper';
-import { snapshotLines } from './purchase-lines';
+import { ImportCostsGate } from './import-costs-gate';
+import { type ForeignPrices, snapshotLines } from './purchase-lines';
 
 /** Bon de réception drafts and reads. Effects (stock) live in PurchaseWorkflowService. */
 @Injectable()
@@ -25,14 +26,16 @@ export class PurchasesService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly warehouses: WarehousesService,
+    private readonly importCosts: ImportCostsGate,
   ) {}
 
   async create(input: CreatePurchaseInput): Promise<PurchaseDto> {
     const id = await this.prisma.db.$transaction(async (tx) => {
       const tenantId = tenantContext.requireTenantId();
-      await this.checkSupplier(tx, input.supplierId);
-      const { lines, totals } = await snapshotLines(tx, input.lines);
-      this.checkPaid(input.paidAmount, totals.totalTtc.toString());
+      const fx = await this.foreignPrices(tx, input);
+      const importFileId = await this.checkImportFile(tx, input.importFileId);
+      const { lines, totals, totalCurrency } = await snapshotLines(tx, input.lines, fx);
+      this.checkPaid(input.paidAmount, totals.totalTtc.toString(), fx);
       const warehouseId = input.warehouseId
         ? await this.warehouses.resolve(tx, input.warehouseId)
         : null;
@@ -48,6 +51,10 @@ export class PurchasesService {
           totalHt: totals.totalHt.toString(),
           totalTva: totals.totalTva.toString(),
           totalTtc: totals.totalTtc.toString(),
+          currency: fx?.currency ?? 'DZD',
+          exchangeRate: fx?.rate ?? '1',
+          totalCurrency: totalCurrency?.toString() ?? null,
+          importFileId: importFileId ?? null,
           createdBy: tenantContext.get()?.userId ?? null,
         },
       });
@@ -60,7 +67,13 @@ export class PurchasesService {
         action: 'PURCHASE_DRAFT_CREATED',
         entity: 'Purchase',
         entityId: purchase.id,
-        after: { supplierId: input.supplierId, warehouseId, lines: input.lines },
+        after: {
+          supplierId: input.supplierId,
+          warehouseId,
+          ...(fx ? { currency: fx.currency, exchangeRate: fx.rate } : {}),
+          ...(importFileId ? { importFileId } : {}),
+          lines: input.lines,
+        },
       });
       return purchase.id;
     });
@@ -81,9 +94,10 @@ export class PurchasesService {
           currentVersion: current.version,
         });
       }
-      await this.checkSupplier(tx, input.supplierId);
-      const { lines, totals } = await snapshotLines(tx, input.lines);
-      this.checkPaid(input.paidAmount, totals.totalTtc.toString());
+      const fx = await this.foreignPrices(tx, input);
+      const importFileId = await this.checkImportFile(tx, input.importFileId);
+      const { lines, totals, totalCurrency } = await snapshotLines(tx, input.lines, fx);
+      this.checkPaid(input.paidAmount, totals.totalTtc.toString(), fx);
       const warehouseId = input.warehouseId
         ? await this.warehouses.resolve(tx, input.warehouseId)
         : input.warehouseId;
@@ -104,9 +118,13 @@ export class PurchasesService {
           note: input.note,
           paidAmount: input.paidAmount,
           ...(warehouseId !== undefined ? { warehouseId } : {}),
+          ...(importFileId !== undefined ? { importFileId } : {}),
           totalHt: totals.totalHt.toString(),
           totalTva: totals.totalTva.toString(),
           totalTtc: totals.totalTtc.toString(),
+          currency: fx?.currency ?? 'DZD',
+          exchangeRate: fx?.rate ?? '1',
+          totalCurrency: totalCurrency?.toString() ?? null,
           version: { increment: 1 },
         },
       });
@@ -130,6 +148,7 @@ export class PurchasesService {
     const where: Prisma.PurchaseWhereInput = {
       ...(query.status ? { status: query.status } : {}),
       ...(query.supplierId ? { supplierId: query.supplierId } : {}),
+      ...(query.importFileId ? { importFileId: query.importFileId } : {}),
       ...(query.from || query.to
         ? {
             documentDate: {
@@ -158,21 +177,75 @@ export class PurchasesService {
         supplier: p.supplier,
         documentDate: toIsoDate(p.documentDate),
         totalTtc: p.totalTtc.toFixed(2),
+        currency: p.currency,
+        totalCurrency: p.totalCurrency?.toFixed(2) ?? null,
         lineCount: p._count.lines,
       })),
       nextCursor: rows.length > query.limit ? (page.at(-1)?.id ?? null) : null,
     };
   }
 
-  private async checkSupplier(tx: Tx, supplierId: string): Promise<void> {
-    const s = await tx.supplier.findFirst({ where: { id: supplierId, deletedAt: null } });
+  /**
+   * The BR takes its supplier's currency (phase 22): null for DZD, else the bank rate,
+   * which is then required. Foreign currencies need the IMPORT_COSTS module.
+   */
+  private async foreignPrices(
+    tx: Tx,
+    input: { supplierId: string; exchangeRate?: string | undefined },
+  ): Promise<ForeignPrices | null> {
+    const s = await tx.supplier.findFirst({
+      where: { id: input.supplierId, deletedAt: null },
+      select: { currency: true },
+    });
     if (!s)
       throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown supplier', {
         field: 'supplierId',
       });
+    if (s.currency === 'DZD') return null;
+    await this.importCosts.require();
+    if (!input.exchangeRate) {
+      throw new AppException(ErrorCode.VALIDATION_FAILED, 'Exchange rate required', {
+        field: 'exchangeRate',
+        currency: s.currency,
+      });
+    }
+    return { currency: s.currency, rate: input.exchangeRate };
   }
 
-  private checkPaid(paid: string, totalTtc: string): void {
+  /**
+   * A draft can join an OPEN dossier d'importation (phase 22). Undefined = unchanged,
+   * null = leaves it. Validation and closing lock the dossier and check again.
+   */
+  private async checkImportFile(
+    tx: Tx,
+    importFileId: string | null | undefined,
+  ): Promise<string | null | undefined> {
+    if (!importFileId) return importFileId;
+    await this.importCosts.require();
+    const file = await tx.importFile.findUnique({
+      where: { id: importFileId },
+      select: { status: true },
+    });
+    if (!file) {
+      throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown import file', {
+        field: 'importFileId',
+      });
+    }
+    if (file.status !== 'OPEN') {
+      throw new AppException(ErrorCode.IMPORT_FILE_NOT_OPEN, 'The dossier is not open', {
+        status: file.status,
+      });
+    }
+    return importFileId;
+  }
+
+  private checkPaid(paid: string, totalTtc: string, fx: ForeignPrices | null): void {
+    // A foreign supplier is paid by règlements in its currency, never "at reception".
+    if (fx && money(paid).gt(0)) {
+      throw new AppException(ErrorCode.CURRENCY_MISMATCH, 'Pay a foreign supplier by règlement', {
+        field: 'paidAmount',
+      });
+    }
     if (money(paid).gt(totalTtc)) {
       throw new AppException(ErrorCode.VALIDATION_FAILED, 'Paid amount is more than the total', {
         field: 'paidAmount',
@@ -185,9 +258,11 @@ export class PurchasesService {
 export async function lockPurchase(
   tx: Tx,
   id: string,
-): Promise<{ status: string; version: number }> {
-  const rows = await tx.$queryRaw<{ status: string; version: number }[]>`
-    SELECT status, version FROM purchases
+): Promise<{ status: string; version: number; importFileId: string | null }> {
+  const rows = await tx.$queryRaw<
+    { status: string; version: number; importFileId: string | null }[]
+  >`
+    SELECT status, version, "importFileId" FROM purchases
     WHERE id = ${id}::uuid AND "tenantId" = ${tenantContext.requireTenantId()}::uuid
     FOR UPDATE`;
   const row = rows[0];

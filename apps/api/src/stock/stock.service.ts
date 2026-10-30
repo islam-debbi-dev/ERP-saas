@@ -3,6 +3,7 @@ import {
   type AdjustmentReason,
   cump,
   ErrorCode,
+  money,
   NegativeStockMode,
   qty,
   type Qty,
@@ -26,6 +27,12 @@ export interface MovementInput {
   qtyBase: string;
   /** Cost of one base unit. Required for OPENING and PURCHASE entries. */
   unitCost?: string | null;
+  /**
+   * COST_ADJUST only (phase 22): stock value added (or removed) with `qtyBase` "0". The
+   * caller computes it under this lock with `lockedLevels`; the CUMP moves by
+   * valueDelta / stock, so the stock must be > 0.
+   */
+  valueDelta?: string | null;
   reason?: AdjustmentReason | null;
   refType?: string | null;
   refId?: string | null;
@@ -122,6 +129,32 @@ export class StockService {
       const place = places.get(pairKey(m.productId, m.warehouseId));
       if (!place) throw new Error(`warehouse level not locked for ${m.productId}`);
       const delta = qty(m.qtyBase);
+      if (m.type === StockMovementType.COST_ADJUST) {
+        // A value change, not a quantity change: the only movement that is zero.
+        if (!delta.isZero() || !m.valueDelta)
+          throw new Error('COST_ADJUST needs qtyBase 0 and a valueDelta');
+        if (level.qty.lte(0)) throw new Error('COST_ADJUST needs stock on hand');
+        level.avg = roundCost(level.avg.plus(money(m.valueDelta).div(level.qty)));
+        const row = await tx.stockMovement.create({
+          data: {
+            tenantId,
+            productId: m.productId,
+            type: m.type,
+            qtyBase: '0',
+            valueDelta: money(m.valueDelta).toString(),
+            balanceAfter: level.qty.toString(),
+            avgCostAfter: level.avg.toString(),
+            refType: m.refType ?? null,
+            refId: m.refId ?? null,
+            note: m.note ?? null,
+            createdBy: userId,
+            warehouseId: m.warehouseId,
+          },
+          select: { id: true },
+        });
+        movementIds.push(row.id);
+        continue;
+      }
       if (delta.isZero()) throw new Error('A stock movement cannot be zero');
 
       if (m.type === StockMovementType.OPENING) {

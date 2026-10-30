@@ -401,7 +401,16 @@
     "INCENTIVE_PLAN_EMPTY": "Ajoutez au moins une règle au plan.",
     "INCENTIVE_RUN_APPROVED": "Les primes de cette période sont déjà validées : pas de recalcul.",
     "INCENTIVE_RUN_NOT_PREVIEW": "Ce calcul est déjà validé.",
-    "INCENTIVE_RUN_NOT_APPROVED": "Validez le calcul avant de l’exporter."
+    "INCENTIVE_RUN_NOT_APPROVED": "Validez le calcul avant de l’exporter.",
+    "IMPORT_FILE_NOT_OPEN": "Ce dossier d'importation n'est plus ouvert.",
+    "IMPORT_FILE_NOT_CLOSED": "Clôturez d'abord le dossier d'importation.",
+    "IMPORT_FILE_EMPTY": "Le dossier n'a aucun bon de réception en transit.",
+    "PURCHASE_IN_IMPORT_FILE": "Ce bon fait partie d'un dossier d'importation : corrigez par un retour fournisseur.",
+    "CURRENCY_MISMATCH": "La devise ne correspond pas à celle du fournisseur.",
+    "SUPPLIER_CURRENCY_LOCKED": "Ce fournisseur a déjà des opérations : sa devise ne peut plus changer.",
+    "ALLOCATION_BASIS_MISSING": "Répartition impossible : renseignez le poids ou le volume des produits concernés.",
+    "MANUAL_SPLIT_INVALID": "La répartition manuelle doit faire exactement le montant du frais.",
+    "IMPORT_COST_NOT_ACTIVE": "Ce frais est déjà annulé."
   },
   "units": {
     "PIECE": "Pièce",
@@ -598,7 +607,8 @@
     "ADJUSTMENT": "Ajustement",
     "INVENTORY": "Inventaire",
     "TRANSFER_OUT": "Transfert (sortie)",
-    "TRANSFER_IN": "Transfert (entrée)"
+    "TRANSFER_IN": "Transfert (entrée)",
+    "COST_ADJUST": "Ajustement de coût"
   },
   "adjustmentReasons": {
     "CASSE": "Casse",
@@ -732,7 +742,8 @@
     "readOnlyCancelled": "Bon annulé.",
     "cancel": "Annuler",
     "warehouse": "Dépôt de réception",
-    "mainWarehouse": "Dépôt principal"
+    "mainWarehouse": "Dépôt principal",
+    "statusIN_TRANSIT": "En transit"
   },
   "suppliers": {
     "title": "Fournisseurs",
@@ -1252,7 +1263,8 @@
       "stock_not_empty": "le produit a déjà {qty} en stock ; le stock initial s'y ajoutera",
       "zero_cost": "coût à zéro : la marge de ce produit sera faussée",
       "supplier_archived": "fournisseur archivé",
-      "invalid_supplier": "fournisseur invalide ({rule})"
+      "invalid_supplier": "fournisseur invalide ({rule})",
+      "foreign_currency_supplier": "fournisseur en devise : son solde ne s'importe pas en DA"
     }
   },
   "users": {
@@ -1633,7 +1645,8 @@
     "PAYMENT": "Règlement",
     "RETURN": "Retour",
     "ADJUST": "Ajustement",
-    "REVERSAL": "Annulation"
+    "REVERSAL": "Annulation",
+    "IMPORT_COST": "Frais d'importation"
   },
   "aging": {
     "title": "Balance âgée",

@@ -19,3 +19,4 @@ export * from './warehouses';
 export * from './tournees';
 export * from './geo';
 export * from './incentives';
+export * from './import-files';

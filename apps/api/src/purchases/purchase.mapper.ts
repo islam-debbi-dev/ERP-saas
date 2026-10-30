@@ -4,6 +4,7 @@ import { Prisma } from '../generated/prisma/client';
 export const purchaseInclude = {
   supplier: { select: { id: true, name: true } },
   warehouse: { select: { id: true, name: true } },
+  importFile: { select: { id: true, number: true, status: true } },
   lines: { orderBy: { position: 'asc' }, include: { returnLines: { select: { qtyBase: true } } } },
   returns: { orderBy: { createdAt: 'asc' }, include: { lines: true } },
 } satisfies Prisma.PurchaseInclude;
@@ -41,6 +42,10 @@ export function toPurchaseDto(p: PurchaseWithRelations): PurchaseDto {
       tva: toMoneyString(r.tva),
     })),
     paidAmount: toMoneyString(p.paidAmount.toString()),
+    currency: p.currency,
+    exchangeRate: p.exchangeRate.toString(),
+    totalCurrency: p.totalCurrency ? toMoneyString(p.totalCurrency.toString()) : null,
+    importFile: p.importFile,
     version: p.version,
     createdAt: p.createdAt.toISOString(),
     validatedAt: p.validatedAt?.toISOString() ?? null,
@@ -59,6 +64,8 @@ export function toPurchaseDto(p: PurchaseWithRelations): PurchaseDto {
       qtyBase: toQtyString(l.qtyBase.toString()),
       unitCost: l.unitCost.toFixed(4),
       lineHt: toMoneyString(l.lineHt.toString()),
+      unitCostCurrency: l.unitCostCurrency?.toFixed(4) ?? null,
+      landedUnitCostBase: l.landedUnitCostBase?.toFixed(4) ?? null,
       returnedQtyBase: toQtyString(
         l.returnLines.reduce((sum, r) => sum.plus(r.qtyBase), new Prisma.Decimal(0)).toString(),
       ),

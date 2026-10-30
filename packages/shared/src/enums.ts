@@ -52,6 +52,8 @@ export const DocType = {
   TR: 'TR',
   /** Bon de commande: a pre-sale order, no stock or ledger effect (phase 16). */
   BC: 'BC',
+  /** Dossier d'importation: one shipment, its BRs and costs (phase 22). */
+  DI: 'DI',
 } as const;
 export type DocType = (typeof DocType)[keyof typeof DocType];
 export const DOC_TYPES = Object.values(DocType);
@@ -113,6 +115,8 @@ export const StockMovementType = {
   /** Phase 15: the two halves of a transfer between warehouses, at the current CUMP. */
   TRANSFER_OUT: 'TRANSFER_OUT',
   TRANSFER_IN: 'TRANSFER_IN',
+  /** Phase 22: a late import cost; changes the stock value (valueDelta), never the quantity. */
+  COST_ADJUST: 'COST_ADJUST',
 } as const;
 export type StockMovementType = (typeof StockMovementType)[keyof typeof StockMovementType];
 
@@ -162,6 +166,8 @@ export type StockTransferStatus = (typeof StockTransferStatus)[keyof typeof Stoc
 
 export const PurchaseStatus = {
   DRAFT: 'DRAFT',
+  /** Validated inside an open dossier d'importation: on the supplier account, not in stock yet. */
+  IN_TRANSIT: 'IN_TRANSIT',
   VALIDATED: 'VALIDATED',
   CANCELLED: 'CANCELLED',
 } as const;
@@ -192,6 +198,8 @@ export const SupplierLedgerType = {
   RETURN: 'RETURN',
   ADJUST: 'ADJUST',
   REVERSAL: 'REVERSAL',
+  /** A cost line of a dossier d'importation owed to this supplier (phase 22). */
+  IMPORT_COST: 'IMPORT_COST',
 } as const;
 export type SupplierLedgerType = (typeof SupplierLedgerType)[keyof typeof SupplierLedgerType];
 
@@ -265,6 +273,8 @@ export const PrintableDocType = {
   TR: 'TR',
   /** Bon de commande (phase 16). */
   BC: 'BC',
+  /** Fiche de coût de revient of a dossier d'importation (phase 22). */
+  DI: 'DI',
 } as const;
 export type PrintableDocType = (typeof PrintableDocType)[keyof typeof PrintableDocType];
 

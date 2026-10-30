@@ -1,4 +1,12 @@
-import { computeTotals, type DocumentTotals, ErrorCode, type PurchaseLineInput } from '@erp/shared';
+import {
+  computeTotals,
+  type DocumentTotals,
+  ErrorCode,
+  type Money,
+  type PurchaseLineInput,
+  roundCost,
+  toDzd,
+} from '@erp/shared';
 import { AppException } from '../common/app-exception';
 import { type Tx } from '../prisma/prisma.service';
 import { toBaseLines } from '../stock/unit-conversion';
@@ -16,6 +24,13 @@ export interface SnapshotLine {
   qtyBase: string;
   unitCost: string;
   lineHt: string;
+  unitCostCurrency: string | null;
+}
+
+/** A foreign BR (phase 22): prices typed in `currency`, converted at `rate`. */
+export interface ForeignPrices {
+  currency: string;
+  rate: string;
 }
 
 /**
@@ -29,7 +44,8 @@ export interface SnapshotLine {
 export async function snapshotLines(
   tx: Tx,
   lines: PurchaseLineInput[],
-): Promise<{ lines: SnapshotLine[]; totals: DocumentTotals }> {
+  fx: ForeignPrices | null = null,
+): Promise<{ lines: SnapshotLine[]; totals: DocumentTotals; totalCurrency: Money | null }> {
   const converted = await toBaseLines(tx, lines);
   const products = await tx.product.findMany({
     where: { id: { in: lines.map((l) => l.productId) } },
@@ -59,11 +75,14 @@ export async function snapshotLines(
       unitCode: unit.unit.code,
       unitName: unit.unit.name,
       factorToBase: unit.factorToBase.toString(),
-      tvaRate: product.tvaRate.toString(),
+      // A foreign supplier charges no Algerian TVA: import VAT is a cost of the dossier.
+      tvaRate: fx ? '0' : product.tvaRate.toString(),
       qty: l.qty,
       qtyBase: converted[i]?.qtyBase ?? '0',
-      unitCost: l.unitCost,
+      // DZD per unit at the BR rate, 4 decimals like every cost; the typed price is kept.
+      unitCost: fx ? roundCost(toDzd(l.unitCost, fx.rate)).toString() : l.unitCost,
       lineHt: '0',
+      unitCostCurrency: fx ? l.unitCost : null,
     };
   });
   const totals = computeTotals(
@@ -73,5 +92,11 @@ export async function snapshotLines(
   snap.forEach((s, i) => {
     s.lineHt = totals.lines[i]?.lineHt.toString() ?? '0';
   });
-  return { lines: snap, totals };
+  const totalCurrency = fx
+    ? computeTotals(
+        snap.map((s) => ({ qty: s.qty, unitPrice: s.unitCostCurrency ?? '0', tvaRate: '0' })),
+        true,
+      ).totalTtc
+    : null;
+  return { lines: snap, totals, totalCurrency };
 }

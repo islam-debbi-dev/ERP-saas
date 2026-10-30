@@ -7,7 +7,7 @@ import {
   type SupplierPaymentStatus,
 } from '../enums';
 import { parseDA } from '../money';
-import { normalizeDecimal } from './common';
+import { exchangeRateString, normalizeDecimal } from './common';
 
 /** Phase 21, crédit avancé: supplier accounts, aging, reminders, share links. */
 
@@ -34,7 +34,10 @@ const positiveAmount = z
 
 export const createSupplierPaymentSchema = z.object({
   supplierId: id,
+  /** In the supplier's currency: DZD, or its foreign currency (phase 22). */
   amount: positiveAmount,
+  /** Phase 22: required for a foreign supplier (DZD per 1 unit). */
+  exchangeRate: exchangeRateString.optional(),
   mode: z.enum(PAYMENT_MODES).default('ESPECES'),
   /** Cheque or transfer number. */
   reference: optionalText(80),
@@ -64,7 +67,11 @@ export interface SupplierPaymentDto {
   id: string;
   number: string;
   supplier: { id: string; code: string | null; name: string };
+  /** In DZD. */
   amount: string;
+  currency: string;
+  amountCurrency: string | null;
+  exchangeRate: string | null;
   mode: PaymentMode;
   status: SupplierPaymentStatus;
   reference: string | null;
@@ -91,6 +98,9 @@ export interface SupplierLedgerEntryDto {
   type: SupplierLedgerType;
   /** Signed: + we owe more, - we owe less. */
   amount: string;
+  /** Phase 22: the amount in the supplier's currency (foreign entries), else null. */
+  currency: string;
+  amountCurrency: string | null;
   label: string;
   reason: string | null;
   refType: string | null;
@@ -99,10 +109,14 @@ export interface SupplierLedgerEntryDto {
   createdAt: string;
   /** The balance right after this entry. */
   runningBalance: string;
+  /** Same in the supplier's currency ("0.00" for DZD suppliers). */
+  runningBalanceCurrency: string;
 }
 
 export interface SupplierLedgerPage {
   balance: string;
+  currency: string;
+  balanceCurrency: string;
   items: SupplierLedgerEntryDto[];
   nextCursor: string | null;
 }
@@ -124,12 +138,14 @@ export const supplierStatementQuerySchema = z
 export type SupplierStatementQuery = z.infer<typeof supplierStatementQuerySchema>;
 
 export interface SupplierStatementDto {
-  supplier: { id: string; code: string | null; name: string };
+  supplier: { id: string; code: string | null; name: string; currency: string };
   from: string;
   to: string;
   openingBalance: string;
+  openingBalanceCurrency: string;
   entries: Omit<SupplierLedgerEntryDto, 'createdBy'>[];
   closingBalance: string;
+  closingBalanceCurrency: string;
   totalDebit: string;
   totalCredit: string;
 }

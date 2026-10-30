@@ -3,7 +3,6 @@ import {
   type CreateSupplierPaymentInput,
   DocType,
   ErrorCode,
-  money,
   type PaymentMode,
   SupplierLedgerType,
   type SupplierPaymentDto,
@@ -17,6 +16,7 @@ import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
 import { type Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { convert } from './currency';
 import { SupplierAccountService } from './supplier-account.service';
 
 const paymentInclude = {
@@ -33,6 +33,9 @@ function toDto(
     number: p.number,
     supplier: p.supplier,
     amount: toMoneyString(p.amount.toString()),
+    currency: p.currency,
+    amountCurrency: p.amountCurrency ? toMoneyString(p.amountCurrency.toString()) : null,
+    exchangeRate: p.exchangeRate?.toString() ?? null,
     mode: p.mode,
     status: p.status,
     reference: p.reference,
@@ -68,20 +71,25 @@ export class SupplierPaymentsService {
       const tenantId = tenantContext.requireTenantId();
       const supplier = await tx.supplier.findFirst({
         where: { id: input.supplierId, deletedAt: null },
-        select: { id: true },
+        select: { id: true, currency: true },
       });
       if (!supplier) {
         throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown supplier', {
           field: 'supplierId',
         });
       }
+      // The amount is typed in the supplier's currency (phase 22): DZD at the bank rate.
+      const paid = convert(supplier.currency, input.amount, input.exchangeRate);
       const number = await this.numbering.next(tx, tenantId, DocType.RGF);
       const payment = await tx.supplierPayment.create({
         data: {
           tenantId,
           number,
           supplierId: supplier.id,
-          amount: input.amount,
+          amount: paid.dzd.toString(),
+          currency: supplier.currency,
+          amountCurrency: paid.foreign?.toString() ?? null,
+          exchangeRate: paid.foreign ? paid.rate : null,
           mode: input.mode,
           reference: input.reference,
           bank: input.bank,
@@ -94,7 +102,8 @@ export class SupplierPaymentsService {
         {
           supplierId: supplier.id,
           type: SupplierLedgerType.PAYMENT,
-          amount: money(input.amount).negated().toString(),
+          amount: paid.dzd.negated().toString(),
+          amountCurrency: paid.foreign?.negated().toString() ?? null,
           label: number,
           refType: 'SupplierPayment',
           refId: payment.id,
@@ -104,7 +113,15 @@ export class SupplierPaymentsService {
         action: 'SUPPLIER_PAYMENT_CREATED',
         entity: 'SupplierPayment',
         entityId: payment.id,
-        after: { number, supplierId: supplier.id, amount: input.amount, mode: input.mode },
+        after: {
+          number,
+          supplierId: supplier.id,
+          amount: paid.dzd.toString(),
+          ...(paid.foreign
+            ? { currency: supplier.currency, amountCurrency: input.amount, rate: paid.rate }
+            : {}),
+          mode: input.mode,
+        },
       });
       return payment.id;
     });
@@ -120,11 +137,12 @@ export class SupplierPaymentsService {
           number: string;
           status: SupplierPaymentStatus;
           amount: Prisma.Decimal;
+          amountCurrency: Prisma.Decimal | null;
           supplierId: string;
           mode: PaymentMode;
         }[]
       >`
-        SELECT id, number, status, amount, "supplierId", mode FROM supplier_payments
+        SELECT id, number, status, amount, "amountCurrency", "supplierId", mode FROM supplier_payments
         WHERE id = ${id}::uuid AND "tenantId" = ${tenantContext.requireTenantId()}::uuid
         FOR UPDATE`;
       const p = rows[0];
@@ -149,6 +167,7 @@ export class SupplierPaymentsService {
           supplierId: p.supplierId,
           type: SupplierLedgerType.REVERSAL,
           amount: p.amount.toString(),
+          amountCurrency: p.amountCurrency?.toString() ?? null,
           label: p.number,
           reason,
           refType: 'SupplierPayment',
