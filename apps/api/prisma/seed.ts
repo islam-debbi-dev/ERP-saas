@@ -147,6 +147,21 @@ async function main(): Promise<void> {
           },
         });
       }
+      // Géolocalisation demo (phase 17): two of them have a saved point, the third none
+      // (its first visit offers to save it). Only set when missing, so a rerun or a point
+      // moved by hand stays as it is.
+      const demoPoints: Record<string, { lat: number; lng: number }> = {
+        'TRN-001': { lat: 36.7213, lng: 3.1846 },
+        'TRN-002': { lat: 36.7123, lng: 3.2118 },
+      };
+      for (const c of demoClients) {
+        const point = demoPoints[c.code];
+        if (!point) continue;
+        await tx.client.updateMany({
+          where: { id: c.id, lat: null },
+          data: { ...point, geoAccuracyM: 10, geoSetAt: new Date() },
+        });
+      }
       const route = await tx.route.upsert({
         where: { id: '00000000-0000-4000-8000-0000000016a1' },
         update: {},

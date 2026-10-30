@@ -12,6 +12,7 @@ import {
   type VisitOutcome as VisitOutcomeValue,
 } from '../enums';
 import { amountString, normalizeDecimal, quantityString } from './common';
+import { type GeoCheckResultDto, geoInputSchema } from './geo';
 import { saleLineInputSchema, type SaleWarning } from './sales';
 
 const id = z.uuid();
@@ -147,6 +148,8 @@ export const createVisitSchema = z
     paymentId: id.nullable().default(null),
     /** This visit replaces an earlier one (never edited in place). */
     correctsVisitId: id.nullable().default(null),
+    /** Device position (phase 17, GEO_CHECK); ignored when the module is off. */
+    geo: geoInputSchema.optional(),
   })
   .superRefine((v, ctx) => {
     const issue = (path: string, message: string) =>
@@ -194,6 +197,8 @@ export interface VisitDto {
   /** A later visit corrects this one: it no longer counts. */
   corrected: boolean;
   createdAt: string;
+  /** Only on the create response (phase 17). */
+  geoCheck?: GeoCheckResultDto | null;
 }
 
 export interface VisitPage {

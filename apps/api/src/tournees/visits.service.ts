@@ -9,8 +9,10 @@ import {
   type VisitDto,
   type VisitListQuery,
   type VisitPage,
+  GeoRefType,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
+import { GeoCheckService } from '../geo/geo-check.service';
 import { type CurrentUserInfo } from '../auth/auth.types';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
@@ -61,10 +63,11 @@ export class VisitsService {
     private readonly prisma: PrismaService,
     private readonly scope: ScopeService,
     private readonly audit: AuditService,
+    private readonly geo: GeoCheckService,
   ) {}
 
   async create(input: CreateVisitInput, user: CurrentUserInfo): Promise<VisitDto> {
-    const id = await this.prisma.db.$transaction(async (tx) => {
+    const { id, geoCheck } = await this.prisma.db.$transaction(async (tx) => {
       const sellerId = await resolveTourneeSeller(tx, this.scope, user, input.sellerId);
       const client = await tx.client.findFirst({
         where: { id: input.clientId, deletedAt: null },
@@ -95,11 +98,18 @@ export class VisitsService {
         action: input.correctsVisitId ? 'VISIT_CORRECTED' : 'VISIT_RECORDED',
         entity: 'Visit',
         entityId: v.id,
-        after: { ...input, sellerId },
+        after: { ...input, geo: undefined, sellerId },
       });
-      return v.id;
+      const geoCheck = await this.geo.checkInTx(tx, {
+        refType: GeoRefType.VISIT,
+        refId: v.id,
+        clientId: input.clientId,
+        geo: input.geo,
+        user,
+      });
+      return { id: v.id, geoCheck };
     });
-    return this.get(id, user);
+    return { ...(await this.get(id, user)), geoCheck };
   }
 
   async get(id: string, user: CurrentUserInfo): Promise<VisitDto> {

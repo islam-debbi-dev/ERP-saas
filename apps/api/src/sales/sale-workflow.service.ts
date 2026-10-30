@@ -24,6 +24,8 @@ import {
   toQtyString,
   type ValidateSaleInput,
   computeTimbre,
+  type GeoCheckResultDto,
+  GeoRefType,
   Role,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
@@ -33,6 +35,7 @@ import { ClientAccountService, type LedgerEntryInput } from '../clients/client-a
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
+import { GeoCheckService } from '../geo/geo-check.service';
 import { Prisma } from '../generated/prisma/client';
 import { PaymentsService } from '../payments/payments.service';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
@@ -61,6 +64,7 @@ export class SaleWorkflowService {
     private readonly payments: PaymentsService,
     private readonly audit: AuditService,
     private readonly warehouses: WarehousesService,
+    private readonly geo: GeoCheckService,
   ) {}
 
   async validate(
@@ -70,7 +74,8 @@ export class SaleWorkflowService {
   ): Promise<SaleResultDto> {
     const result = await this.prisma.db.$transaction(async (tx) => {
       await this.sales.assertInScope(tx, user, id);
-      return this.validateInTx(tx, id, input, user);
+      const validated = await this.validateInTx(tx, id, input, user);
+      return { ...validated, geoCheck: await this.checkGeoInTx(tx, id, input, user) };
     });
     return { sale: await this.sales.get(id), ...result };
   }
@@ -79,9 +84,35 @@ export class SaleWorkflowService {
   async quick(input: QuickSaleInput, user: CurrentUserInfo): Promise<SaleResultDto> {
     const { id, result } = await this.prisma.db.$transaction(async (tx) => {
       const saleId = await this.sales.createDraftInTx(tx, input, user);
-      return { id: saleId, result: await this.validateInTx(tx, saleId, input, user) };
+      const validated = await this.validateInTx(tx, saleId, input, user);
+      const geoCheck = await this.checkGeoInTx(tx, saleId, input, user);
+      return { id: saleId, result: { ...validated, geoCheck } };
     });
     return { sale: await this.sales.get(id), ...result };
+  }
+
+  /**
+   * The seller's position at validation (phase 17), in the sale's transaction: a refused
+   * check (note missing, BLOCK mode) undoes the whole validation.
+   */
+  private async checkGeoInTx(
+    tx: Tx,
+    saleId: string,
+    input: ValidateSaleInput,
+    user: CurrentUserInfo,
+  ): Promise<GeoCheckResultDto | null> {
+    const sale = await tx.sale.findUniqueOrThrow({
+      where: { id: saleId },
+      select: { number: true, clientId: true },
+    });
+    return this.geo.checkInTx(tx, {
+      refType: GeoRefType.SALE,
+      refId: saleId,
+      refNumber: sale.number,
+      clientId: sale.clientId,
+      geo: input.geo,
+      user,
+    });
   }
 
   /**

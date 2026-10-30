@@ -309,3 +309,61 @@ export const SellerSessionStatus = {
   ADJUST: 'ADJUST',
 } as const;
 export type SellerSessionStatus = (typeof SellerSessionStatus)[keyof typeof SellerSessionStatus];
+
+/** How the tenant treats an operation far from the client (phase 17, GEO_CHECK). */
+export const GeoCheckMode = {
+  OFF: 'OFF',
+  /** Default: saved, flagged, needs a note and a manager review. */
+  FLAG: 'FLAG',
+  /** FAR and MOCKED are refused unless the user has GEO_OVERRIDE. */
+  BLOCK: 'BLOCK',
+} as const;
+export type GeoCheckMode = (typeof GeoCheckMode)[keyof typeof GeoCheckMode];
+export const GEO_CHECK_MODES = Object.values(GeoCheckMode);
+
+/** Result of comparing the device position with the client's point, first match wins. */
+export const GeoStatus = {
+  NO_SIGNAL: 'NO_SIGNAL',
+  MOCKED: 'MOCKED',
+  LOW_ACCURACY: 'LOW_ACCURACY',
+  NO_CLIENT_GPS: 'NO_CLIENT_GPS',
+  OK: 'OK',
+  FAR: 'FAR',
+} as const;
+export type GeoStatus = (typeof GeoStatus)[keyof typeof GeoStatus];
+export const GEO_STATUSES = Object.values(GeoStatus);
+
+/** Extra marks on a GeoCheck, independent of its status. */
+export const GeoFlag = {
+  /** Captured more than 2 h before the server got it (offline replay). */
+  LATE_SYNC: 'LATE_SYNC',
+} as const;
+export type GeoFlag = (typeof GeoFlag)[keyof typeof GeoFlag];
+
+/** The document a GeoCheck belongs to. */
+export const GeoRefType = {
+  SALE: 'SALE',
+  PAYMENT: 'PAYMENT',
+  VISIT: 'VISIT',
+} as const;
+export type GeoRefType = (typeof GeoRefType)[keyof typeof GeoRefType];
+export const GEO_REF_TYPES = Object.values(GeoRefType);
+
+/** A manager's verdict on a flagged operation. */
+export const GeoReviewStatus = {
+  NONE: 'NONE',
+  JUSTIFIED: 'JUSTIFIED',
+  NOT_JUSTIFIED: 'NOT_JUSTIFIED',
+} as const;
+export type GeoReviewStatus = (typeof GeoReviewStatus)[keyof typeof GeoReviewStatus];
+export const GEO_REVIEW_STATUSES = Object.values(GeoReviewStatus);
+
+/** A seller's request to move a client's saved point. */
+export const GeoChangeRequestStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+} as const;
+export type GeoChangeRequestStatus =
+  (typeof GeoChangeRequestStatus)[keyof typeof GeoChangeRequestStatus];
+export const GEO_CHANGE_REQUEST_STATUSES = Object.values(GeoChangeRequestStatus);

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { ClientType, type ClientLedgerType } from '../enums';
 import { parseDA } from '../money';
 import { amountString, normalizeDecimal } from './common';
+import { type ClientLocationDto } from './geo';
 
 const id = z.uuid();
 const optionalText = (max: number) =>
@@ -125,6 +126,8 @@ export interface ClientDto {
   balance: string;
   hasOpening: boolean;
   overLimit: boolean;
+  /** Reference GPS point (phase 17); null until someone saves it. */
+  location: ClientLocationDto | null;
 }
 
 export interface ClientPage {

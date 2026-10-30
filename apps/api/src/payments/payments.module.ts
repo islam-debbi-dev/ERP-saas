@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule } from '../clients/clients.module';
 import { DocumentsModule } from '../documents/documents.module';
+import { GeoModule } from '../geo/geo.module';
 import { SalesForceModule } from '../sales-force/sales-force.module';
 import { ClientPaymentsController, PaymentsController } from './payments.controllers';
 import { PaymentsService } from './payments.service';
 
 /** Versements. Sales record the part paid at sale time through PaymentsService. */
 @Module({
-  imports: [ClientsModule, DocumentsModule, SalesForceModule],
+  imports: [ClientsModule, DocumentsModule, SalesForceModule, GeoModule],
   controllers: [PaymentsController, ClientPaymentsController],
   providers: [PaymentsService],
   exports: [PaymentsService],

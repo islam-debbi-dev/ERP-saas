@@ -7,6 +7,7 @@ import {
   SaleType,
 } from '../enums';
 import { amountString, normalizeDecimal, percentString, quantityString } from './common';
+import { type GeoCheckResultDto, geoInputSchema } from './geo';
 
 const id = z.uuid();
 const optionalText = (max: number) =>
@@ -62,6 +63,8 @@ const paymentFields = {
   paymentMode: paymentMode.default('ESPECES'),
   /** Validate over the plafond in BLOCK mode (managers only). */
   forceCredit: z.boolean().default(false),
+  /** Device position at validation (phase 17, GEO_CHECK); ignored when the module is off. */
+  geo: geoInputSchema.optional(),
 };
 
 export const validateSaleSchema = z.object(paymentFields);
@@ -273,6 +276,8 @@ export interface SaleResultDto {
   warnings: SaleWarning[];
   /** Change given back: what was handed over above the TTC. */
   change: string;
+  /** The position check of this validation (phase 17); absent when not checked. */
+  geoCheck?: GeoCheckResultDto | null;
 }
 
 export interface PricePreviewDto {

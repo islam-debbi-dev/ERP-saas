@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { PAYMENT_MODES, type PaymentMode, type PaymentStatus, type SaleType } from '../enums';
 import { parseDA } from '../money';
 import { amountString, normalizeDecimal } from './common';
+import { type GeoCheckResultDto, geoInputSchema } from './geo';
 
 const id = z.uuid();
 const optionalText = (max: number) =>
@@ -42,6 +43,8 @@ export const createPaymentSchema = z.object({
     .max(100)
     .refine((a) => new Set(a.map((x) => x.saleId)).size === a.length, 'duplicate')
     .optional(),
+  /** Device position (phase 17, GEO_CHECK); ignored when the module is off. */
+  geo: geoInputSchema.optional(),
 });
 export type CreatePaymentInput = z.infer<typeof createPaymentSchema>;
 
@@ -105,6 +108,8 @@ export interface PaymentDto {
   bouncedAt: string | null;
   allocations: PaymentAllocationDto[];
   version: number;
+  /** Only on the create response (phase 17). */
+  geoCheck?: GeoCheckResultDto | null;
 }
 
 export interface PaymentPage {

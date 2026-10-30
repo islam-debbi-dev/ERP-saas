@@ -107,6 +107,11 @@ model Tenant {
 
   sellerScope SellerScope @default(ALL_CLIENTS)
 
+  /// Géolocalisation (phase 17, GEO_CHECK): far operations are flagged (default) or blocked.
+  geoCheckMode    GeoCheckMode @default(FLAG)
+  geoRadiusM      Int          @default(150) @db.SmallInt
+  geoMaxAccuracyM Int          @default(200) @db.SmallInt
+
   /// The owner hid the dashboard onboarding checklist (phase 13).
   onboardingDismissedAt DateTime? @db.Timestamptz(3)
 
@@ -167,6 +172,9 @@ model Tenant {
   orders               Order[]
   orderLines           OrderLine[]
   sellerSessions       SellerSession[]
+  geoChecks            GeoCheck[]
+  geoCheckReviews      GeoCheckReview[]
+  clientGeoRequests    ClientGeoChangeRequest[]
 
   @@map("tenants")
 }
@@ -905,15 +913,21 @@ model Client {
   /// Sales force (phase 14): the client's zone and the seller who follows him.
   sectorId         String?    @db.Uuid
   assignedSellerId String?    @db.Uuid
+  /// Reference GPS point (phase 17). A seller moves it only through an approved request.
+  lat              Decimal?   @db.Decimal(9, 6)
+  lng              Decimal?   @db.Decimal(9, 6)
+  geoAccuracyM     Int?
+  geoSetAt         DateTime?  @db.Timestamptz(3)
+  geoSetBy         String?    @db.Uuid
   version          Int        @default(1)
   deletedAt        DateTime?  @db.Timestamptz(3)
   createdAt        DateTime   @default(now()) @db.Timestamptz(3)
   updatedAt        DateTime   @updatedAt @db.Timestamptz(3)
 
-  tenant         Tenant              @relation(fields: [tenantId], references: [id])
-  priceLevel     PriceLevel?         @relation(fields: [priceLevelId], references: [id], onDelete: Restrict)
-  sector         Sector?             @relation(fields: [sectorId], references: [id], onDelete: Restrict)
-  assignedSeller User?               @relation("ClientSeller", fields: [assignedSellerId], references: [id], onDelete: Restrict)
+  tenant         Tenant                   @relation(fields: [tenantId], references: [id])
+  priceLevel     PriceLevel?              @relation(fields: [priceLevelId], references: [id], onDelete: Restrict)
+  sector         Sector?                  @relation(fields: [sectorId], references: [id], onDelete: Restrict)
+  assignedSeller User?                    @relation("ClientSeller", fields: [assignedSellerId], references: [id], onDelete: Restrict)
   ledger         ClientLedgerEntry[]
   balance        ClientBalance?
   sales          Sale[]
@@ -921,6 +935,8 @@ model Client {
   routeStops     RouteStop[]
   visits         Visit[]
   orders         Order[]
+  geoChecks      GeoCheck[]
+  geoRequests    ClientGeoChangeRequest[]
 
   @@unique([tenantId, code])
   @@index([tenantId, name])
@@ -1843,4 +1859,124 @@ model SellerSession {
   @@index([tenantId, date])
   @@index([tenantId, sellerId, date])
   @@map("seller_sessions")
+}
+
+// ---------------------------------------------------------------- géolocalisation (phase 17)
+
+enum GeoCheckMode {
+  OFF
+  FLAG
+  BLOCK
+}
+
+enum GeoStatus {
+  NO_SIGNAL
+  MOCKED
+  LOW_ACCURACY
+  NO_CLIENT_GPS
+  OK
+  FAR
+}
+
+enum GeoRefType {
+  SALE
+  PAYMENT
+  VISIT
+}
+
+enum GeoReviewStatus {
+  NONE
+  JUSTIFIED
+  NOT_JUSTIFIED
+}
+
+enum GeoChangeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// Where the device was when a sale, versement or visit was saved, and what the API
+/// concluded. One row per document, written in the document's transaction. Only the
+/// cached review fields change, together with a GeoCheckReview row.
+model GeoCheck {
+  id           String          @id @default(uuid()) @db.Uuid
+  tenantId     String          @db.Uuid
+  refType      GeoRefType
+  refId        String          @db.Uuid
+  /// Number of the sale or versement at check time; null for a visit.
+  refNumber    String?         @db.VarChar(20)
+  clientId     String?         @db.Uuid
+  userId       String?         @db.Uuid
+  lat          Decimal?        @db.Decimal(9, 6)
+  lng          Decimal?        @db.Decimal(9, 6)
+  accuracyM    Int?
+  isMocked     Boolean         @default(false)
+  /// Device clock.
+  capturedAt   DateTime?       @db.Timestamptz(3)
+  receivedAt   DateTime        @default(now()) @db.Timestamptz(3)
+  /// The client's point the distance was measured from (it may move later).
+  clientLat    Decimal?        @db.Decimal(9, 6)
+  clientLng    Decimal?        @db.Decimal(9, 6)
+  distanceM    Int?
+  status       GeoStatus
+  flags        String[]        @default([])
+  note         String?         @db.VarChar(255)
+  reviewStatus GeoReviewStatus @default(NONE)
+  reviewedBy   String?         @db.Uuid
+  reviewedAt   DateTime?       @db.Timestamptz(3)
+
+  tenant  Tenant           @relation(fields: [tenantId], references: [id])
+  client  Client?          @relation(fields: [clientId], references: [id])
+  reviews GeoCheckReview[]
+
+  @@unique([tenantId, refType, refId])
+  @@index([tenantId, receivedAt])
+  @@index([tenantId, userId, receivedAt])
+  @@index([tenantId, status, reviewStatus])
+  @@map("geo_checks")
+}
+
+/// A manager's verdict on a GeoCheck. Append-only (tenant extension + DB trigger).
+model GeoCheckReview {
+  id         String          @id @default(uuid()) @db.Uuid
+  tenantId   String          @db.Uuid
+  geoCheckId String          @db.Uuid
+  verdict    GeoReviewStatus
+  note       String?         @db.VarChar(255)
+  reviewedBy String          @db.Uuid
+  createdAt  DateTime        @default(now()) @db.Timestamptz(3)
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  geoCheck GeoCheck @relation(fields: [geoCheckId], references: [id])
+
+  @@index([tenantId, geoCheckId, createdAt])
+  @@map("geo_check_reviews")
+}
+
+/// A seller asks to move a client's saved point; a manager or his supervisor decides.
+model ClientGeoChangeRequest {
+  id           String                 @id @default(uuid()) @db.Uuid
+  tenantId     String                 @db.Uuid
+  clientId     String                 @db.Uuid
+  lat          Decimal                @db.Decimal(9, 6)
+  lng          Decimal                @db.Decimal(9, 6)
+  accuracyM    Int?
+  /// The client's point when the request was made.
+  previousLat  Decimal?               @db.Decimal(9, 6)
+  previousLng  Decimal?               @db.Decimal(9, 6)
+  note         String?                @db.VarChar(255)
+  status       GeoChangeRequestStatus @default(PENDING)
+  requestedBy  String                 @db.Uuid
+  decidedBy    String?                @db.Uuid
+  decidedAt    DateTime?              @db.Timestamptz(3)
+  rejectReason String?                @db.VarChar(255)
+  createdAt    DateTime               @default(now()) @db.Timestamptz(3)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  client Client @relation(fields: [clientId], references: [id])
+
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, clientId, createdAt])
+  @@map("client_geo_change_requests")
 }

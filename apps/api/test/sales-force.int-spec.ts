@@ -30,6 +30,7 @@ import {
   type RegisteredTenant,
   type TenantCatalog,
   type TestApp,
+  withoutGeoCheck,
 } from './helpers';
 
 const TODAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Algiers' }).format(new Date());
@@ -212,6 +213,7 @@ describe('sales force: sellers, teams, brands, sectors (phase 14)', () => {
   beforeAll(async () => {
     t = await createTestApp();
     d = await registerTenant(t, 'Distrib SARL', { activity: Activity.DISTRIBUTEUR });
+    await withoutGeoCheck(t, d);
     e = await registerTenant(t, 'Grossiste SARL');
     catD = await catalogOf(t, d);
     catE = await catalogOf(t, e);

@@ -36,6 +36,7 @@ import {
   type TenantCatalog,
   type TestApp,
   uniqueEmail,
+  withoutGeoCheck,
 } from './helpers';
 
 const errorOf = (res: { body: unknown }) => res.body as ApiError;
@@ -188,6 +189,8 @@ describe('tournées, orders and seller sessions (phase 16)', () => {
     t = await createTestApp();
     d = await registerTenant(t, 'Distrib Tournées', { activity: Activity.DISTRIBUTEUR });
     other = await registerTenant(t, 'Autre Distrib', { activity: Activity.DISTRIBUTEUR });
+    await withoutGeoCheck(t, d);
+    await withoutGeoCheck(t, other);
     essentiel = await registerTenant(t, 'Grossiste Simple');
     cat = await catalogOf(t, d);
     sellerA = await member(d, 'SELLER');

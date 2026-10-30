@@ -23,6 +23,8 @@ export const Permission = {
   EXPORT_DATA: 'EXPORT_DATA',
   /** Change the seller of a validated sale or the collector of a versement (phase 14). */
   SALE_REASSIGN_SELLER: 'SALE_REASSIGN_SELLER',
+  /** Save a far or mocked operation when the tenant blocks them (phase 17). */
+  GEO_OVERRIDE: 'GEO_OVERRIDE',
 } as const;
 export type Permission = (typeof Permission)[keyof typeof Permission];
 export const PERMISSIONS = Object.values(Permission);
