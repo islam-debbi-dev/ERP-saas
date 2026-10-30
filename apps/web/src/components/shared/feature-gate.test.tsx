@@ -2,9 +2,9 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { Package } from 'lucide-react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Feature } from '@erp/shared';
+import { Feature, Role } from '@erp/shared';
 import messages from '@/messages/fr.json';
-import { visibleNavGroups } from '@/components/layout/navigation';
+import { NAV_ITEMS, visibleNavGroups } from '@/components/layout/navigation';
 import { FeatureGate } from './feature-gate';
 
 const auth = vi.hoisted(() => ({ features: [] as string[], status: 'authenticated' }));
@@ -69,8 +69,22 @@ describe('FeatureGate', () => {
 describe('visibleNavGroups', () => {
   it('keeps every core item whatever the modules', () => {
     const keys = (fs: Feature[]) => visibleNavGroups(fs).flatMap((g) => g.items.map((i) => i.key));
-    expect(keys([])).toEqual(keys([...Object.values(Feature)]));
+    const core = NAV_ITEMS.filter((i) => !i.feature).map((i) => i.key);
+    expect(keys([])).toEqual(core);
+    expect(keys([...Object.values(Feature)])).toEqual(expect.arrayContaining(core));
     expect(keys([])).toContain('sales');
+  });
+
+  it('shows the tournée items to the roles that use them (phase 16)', () => {
+    const keys = (role: Role) =>
+      visibleNavGroups([Feature.TOURNEES], undefined, role).flatMap((g) =>
+        g.items.map((i) => i.key),
+      );
+    expect(keys(Role.SELLER)).toEqual(expect.arrayContaining(['today', 'orders', 'deliveries']));
+    expect(keys(Role.SELLER)).not.toContain('tournees');
+    expect(keys(Role.MANAGER)).toEqual(expect.arrayContaining(['tournees', 'orders']));
+    expect(keys(Role.LIVREUR)).toContain('deliveries');
+    expect(keys(Role.LIVREUR)).not.toContain('orders');
   });
 
   it('hides the items of a module the company does not have, then empty groups', () => {

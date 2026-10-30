@@ -6,9 +6,15 @@ export const generateMetadata = titled('sales.newTitle');
 export default async function NewSalePage({
   searchParams,
 }: {
-  searchParams: Promise<{ brouillon?: string }>;
+  searchParams: Promise<{ brouillon?: string; client?: string }>;
 }) {
-  const { brouillon } = await searchParams;
+  const { brouillon, client } = await searchParams;
   // `key` remounts the screen when switching between drafts or a new sale.
-  return <SaleScreenLoader key={brouillon ?? 'new'} draftId={brouillon ?? null} />;
+  return (
+    <SaleScreenLoader
+      key={brouillon ?? `new:${client ?? ''}`}
+      draftId={brouillon ?? null}
+      clientId={client ?? null}
+    />
+  );
 }

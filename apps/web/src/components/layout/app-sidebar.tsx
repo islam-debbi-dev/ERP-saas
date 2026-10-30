@@ -57,7 +57,8 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
   const features = useFeatures();
-  const groups = useMemo(() => visibleNavGroups(features), [features]);
+  const role = useAuth().state.user?.role;
+  const groups = useMemo(() => visibleNavGroups(features, undefined, role), [features, role]);
   const items = useMemo(() => groups.flatMap((g) => g.items), [groups]);
   useNavShortcuts(items);
 

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   DocType,
   ErrorCode,
+  OrderStatus,
   type PrintableDocType,
   type PrintFormat,
   PurchaseStatus,
@@ -24,8 +25,10 @@ import { SuppliersService } from '../purchases/suppliers.service';
 import { SalesService } from '../sales/sales.service';
 import { StockTransfersService } from '../stock/stock-transfers.service';
 import { TenantsService } from '../tenants/tenants.service';
+import { OrdersService } from '../tournees/orders.service';
 import {
   avoirDocument,
+  orderDocument,
   type PrintContext,
   purchaseDocument,
   transferDocument,
@@ -66,6 +69,7 @@ export class PrintingService {
     private readonly clients: ClientsService,
     private readonly suppliers: SuppliersService,
     private readonly transfers: StockTransfersService,
+    private readonly orders: OrdersService,
   ) {}
 
   async document(
@@ -97,6 +101,14 @@ export class PrintingService {
       }
       const duplicate = await this.recordPrint(DocType.TR, id, fmt, user);
       return done(transferDocument(transfer, ctx(duplicate)), transfer.number);
+    }
+    if (type === DocType.BC) {
+      const order = await this.orders.get(id, user);
+      if (order.status === OrderStatus.DRAFT) {
+        throw new AppException(ErrorCode.ORDER_NOT_CONFIRMED, 'A draft order is not printed');
+      }
+      const duplicate = await this.recordPrint(DocType.BC, id, fmt, user);
+      return done(orderDocument(order, ctx(duplicate)), order.number);
     }
     if (type === DocType.BR) {
       const purchase = await this.purchases.get(id);

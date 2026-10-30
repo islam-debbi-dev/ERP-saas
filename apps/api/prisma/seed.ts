@@ -11,6 +11,8 @@ import { PrismaClient } from '../src/generated/prisma/client';
 
 export const DEMO_TENANT_ID = '00000000-0000-4000-8000-00000000d3e0';
 export const DEMO_OWNER_EMAIL = 'demo@grossiste.dz';
+export const DEMO_SELLER_ID = '00000000-0000-4000-8000-0000000016e1';
+export const DEMO_SELLER_EMAIL = 'vendeur@grossiste.dz';
 const DEMO_OWNER_PASSWORD = process.env['SEED_OWNER_PASSWORD'] ?? 'Demo1234!';
 
 async function main(): Promise<void> {
@@ -95,6 +97,75 @@ async function main(): Promise<void> {
           wilaya: 'Alger',
           communes: ['Bab Ezzouar', 'Dar El Beïda', 'El Harrach'],
         },
+      });
+
+      // Tournées demo data (phase 16): a seller, three clients of Alger Est and a route
+      // that runs every day, so "Ma tournée du jour" has stops. Fixed ids: a rerun changes
+      // nothing (the seller's password is never reset).
+      await tx.user.upsert({
+        where: { id: DEMO_SELLER_ID },
+        update: {},
+        create: {
+          id: DEMO_SELLER_ID,
+          tenantId: tenant.id,
+          email: DEMO_SELLER_EMAIL,
+          passwordHash: await argon2.hash(DEMO_OWNER_PASSWORD, { type: argon2.argon2id }),
+          fullName: 'Vendeur Demo',
+          role: 'SELLER',
+        },
+      });
+      const demoClients = [
+        {
+          id: '00000000-0000-4000-8000-0000000016c1',
+          code: 'TRN-001',
+          name: 'Superette El Amel',
+          commune: 'Bab Ezzouar',
+        },
+        {
+          id: '00000000-0000-4000-8000-0000000016c2',
+          code: 'TRN-002',
+          name: 'Alimentation Benali',
+          commune: 'Dar El Beïda',
+        },
+        {
+          id: '00000000-0000-4000-8000-0000000016c3',
+          code: 'TRN-003',
+          name: 'Épicerie du Marché',
+          commune: 'El Harrach',
+        },
+      ];
+      for (const c of demoClients) {
+        await tx.client.upsert({
+          where: { id: c.id },
+          update: {},
+          create: {
+            ...c,
+            tenantId: tenant.id,
+            wilaya: 'Alger',
+            sectorId: '00000000-0000-4000-8000-0000000014c1',
+            assignedSellerId: DEMO_SELLER_ID,
+          },
+        });
+      }
+      const route = await tx.route.upsert({
+        where: { id: '00000000-0000-4000-8000-0000000016a1' },
+        update: {},
+        create: {
+          id: '00000000-0000-4000-8000-0000000016a1',
+          tenantId: tenant.id,
+          name: 'Alger Est',
+          sellerId: DEMO_SELLER_ID,
+          weekdays: [0, 1, 2, 3, 4, 5, 6],
+        },
+      });
+      await tx.routeStop.createMany({
+        data: demoClients.map((c, i) => ({
+          tenantId: tenant.id,
+          routeId: route.id,
+          clientId: c.id,
+          position: i + 1,
+        })),
+        skipDuplicates: true,
       });
 
       const existing = await tx.user.findUnique({ where: { email: DEMO_OWNER_EMAIL } });

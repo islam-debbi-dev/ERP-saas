@@ -58,3 +58,14 @@ export function previousMonthToDate(day: string): DayRange {
 export function rangeLength(range: DayRange): number {
   return Math.round((parse(range.to).getTime() - parse(range.from).getTime()) / 86_400_000) + 1;
 }
+
+/** Day of the week of an Algiers day, 0 = Sunday (the Algerian week starts on Sunday). */
+export function weekdayOf(day: string): number {
+  return parse(day).getUTCDay();
+}
+
+/** The UTC instants an Algiers day runs between: `[start, end)`. */
+export function algiersDayBounds(day: string): { start: Date; end: Date } {
+  const start = new Date(parse(day).getTime() - 60 * 60 * 1000);
+  return { start, end: new Date(start.getTime() + 86_400_000) };
+}

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   AdjustmentReason,
+  type CreateSaleInput,
   ClientLedgerType,
   computeTotals,
   DocType,
@@ -83,11 +84,32 @@ export class SaleWorkflowService {
     return { sale: await this.sales.get(id), ...result };
   }
 
+  /**
+   * The BL of a delivered bon de commande (phase 16), inside the order's transaction: a
+   * draft at the order's frozen prices (checked at confirmation, so no override check
+   * here) and with the order's seller, then the normal validation (stock, ledger, number, credit check, payment).
+   * `collectedBy` is whoever hands over the goods and takes the cash.
+   */
+  async deliverOrderInTx(
+    tx: Tx,
+    draft: CreateSaleInput,
+    payment: ValidateSaleInput,
+    user: CurrentUserInfo,
+    order: { sellerId: string | null; collectedBy: string },
+  ): Promise<{ saleId: string; warnings: SaleWarning[]; change: string }> {
+    const saleId = await this.sales.createDraftInTx(tx, draft, user, { sellerId: order.sellerId });
+    const result = await this.validateInTx(tx, saleId, payment, user, {
+      collectedBy: order.collectedBy,
+    });
+    return { saleId, ...result };
+  }
+
   private async validateInTx(
     tx: Tx,
     id: string,
     input: ValidateSaleInput,
     user: CurrentUserInfo,
+    opts: { collectedBy?: string } = {},
   ): Promise<{ warnings: SaleWarning[]; change: string }> {
     const current = await lockSale(tx, id);
     if (current.status !== SaleStatus.DRAFT) {
@@ -247,7 +269,7 @@ export class SaleWorkflowService {
         mode: input.paymentMode,
         receivedBy: user.id,
         // The money is collected by the sale's seller when he takes it himself.
-        collectedBy: user.role === Role.SELLER ? user.id : null,
+        collectedBy: opts.collectedBy ?? (user.role === Role.SELLER ? user.id : null),
       });
     }
 

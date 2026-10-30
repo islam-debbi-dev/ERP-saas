@@ -96,6 +96,8 @@ interface Ids {
   supplierId: string;
   inventoryId: string;
   transferId: string;
+  routeId: string;
+  orderId: string;
   productReference: string;
   tenantId: string;
 }
@@ -173,6 +175,48 @@ async function prepareIds(f: Fixture): Promise<Ids> {
       },
     })
   ).body;
+  // Phase 16 (TOURNEES): a route of the owner running every day with the long-named client,
+  // so "Ma tournée" has a stop, and a confirmed bon de commande to deliver.
+  const route = (
+    await call<{ id: string }>('/routes', {
+      method: 'POST',
+      token,
+      body: { name: 'Tournée mobile', sellerId: f.session.userId, weekdays: [0, 1, 2, 3, 4, 5, 6] },
+    })
+  ).body;
+  await call(`/routes/${route.id}/stops`, {
+    method: 'PUT',
+    token,
+    body: { clientIds: [client.id, f.clientId] },
+  });
+  const order = (
+    await call<{ id: string }>('/orders', {
+      method: 'POST',
+      token,
+      idempotencyKey: idemKey('bc'),
+      body: {
+        clientId: client.id,
+        lines: [{ productId: f.productId, unitId: f.baseUnitId, qty: '4' }],
+      },
+    })
+  ).body;
+  await call(`/orders/${order.id}/confirm`, {
+    method: 'POST',
+    token,
+    idempotencyKey: idemKey('bcc'),
+    body: {},
+  });
+  // A seller on the road, so "Clôture de caisse" has a day to close.
+  await call('/users/invite', {
+    method: 'POST',
+    token,
+    body: {
+      fullName: 'Vendeur mobile',
+      email: `vendeur-${idemKey('u')}@example.com`,
+      role: 'SELLER',
+      mode: 'LINK',
+    },
+  });
   const product = (await call<{ reference: string }>(`/products/${f.productId}`, { token })).body;
   return {
     productReference: product.reference,
@@ -183,6 +227,8 @@ async function prepareIds(f: Fixture): Promise<Ids> {
     supplierId: supplier.id,
     inventoryId: inventory.id,
     transferId: transfer.id,
+    routeId: route.id,
+    orderId: order.id,
     tenantId: f.tenantId,
   };
 }
@@ -198,6 +244,9 @@ function resolve(pattern: string, v: Ids): string {
       .replace('/stock/transferts/[id]', `/stock/transferts/${v.transferId}`)
       .replace('/stock/[productId]', `/stock/${v.productId}`)
       .replace('/ventes/[id]', `/ventes/${v.saleId}`)
+      .replace('/tournees/[id]', `/tournees/${v.routeId}`)
+      .replace('/commandes/[id]', `/commandes/${v.orderId}`)
+      .replace('/livraisons/[id]', `/livraisons/${v.orderId}`)
       .replace('/admin/societes/[id]', `/admin/societes/${v.tenantId}`)
       // An unknown invitation: the page shows its "invalid link" state.
       .replace('/invitation/[token]', '/invitation/not-a-real-token')
@@ -430,6 +479,50 @@ for (const locale of LOCALES) {
         await settle(page);
         await page.locator('[data-testid="onboarding-card"]').waitFor();
         await check(page, '/tableau-de-bord/onboarding', locale, results);
+      });
+
+      await test.step('tournées: visit sheet, deliver dialog and cash closing on screen', async () => {
+        const go = async (path: string) => {
+          await page.evaluate((to) => {
+            (
+              window as unknown as { next: { router: { push(href: string): void } } }
+            ).next.router.push(to);
+          }, path);
+          await page.waitForURL((url) => url.pathname === path);
+          await settle(page);
+        };
+        // The seller's day: each stop's actions fit, the visit sheet keeps its save on screen.
+        await go('/tournees/aujourdhui');
+        await expectOnScreen(page, `button:has-text("${m['tournees']?.['actionVisit']}")`);
+        await page.getByRole('button', { name: m['tournees']?.['actionVisit'] }).first().click();
+        await page.locator('#visit-note').waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        await page.getByRole('button', { name: m['tournees']?.['reasonCLOSED'] }).click();
+        await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
+        await check(page, '/tournees/aujourdhui/visite', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+
+        // A confirmed order: Livrer is the sticky action; its dialog keeps the submit on screen.
+        await go(resolve('/commandes/[id]', v));
+        await expectOnScreen(
+          page,
+          `[data-slot="sticky-actions"] button:has-text("${m['orders']?.['deliver']}")`,
+        );
+        await page.getByRole('button', { name: m['orders']?.['deliver'], exact: true }).click();
+        await page.locator('#deliver-paid').waitFor();
+        await page.waitForTimeout(400);
+        await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
+        await check(page, '/commandes/[id]/livrer', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+
+        // Clôture: the fixture seller's day, its close dialog keeps the submit on screen.
+        await go('/tournees/cloture');
+        await page.getByRole('button', { name: m['tournees']?.['closeDay'] }).first().click();
+        await page.locator('#close-handed').waitFor();
+        await page.waitForTimeout(400);
+        await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
+        await check(page, '/tournees/cloture/cloturer', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
       });
 
       await test.step('fast sale: a line, then the total and the validate button on screen', async () => {

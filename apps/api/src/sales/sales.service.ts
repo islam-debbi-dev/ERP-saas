@@ -44,10 +44,21 @@ export class SalesService {
   }
 
   /** Also used by the quick sale, which validates in the same transaction. */
-  async createDraftInTx(tx: Tx, input: CreateSaleInput, user: CurrentUserInfo): Promise<string> {
+  async createDraftInTx(
+    tx: Tx,
+    input: CreateSaleInput,
+    user: CurrentUserInfo,
+    /**
+     * Set when the sale is the BL of a delivered bon de commande (phase 16): its prices were
+     * checked at confirmation and its seller is the order's, whoever delivers.
+     */
+    fromOrder?: { sellerId: string | null },
+  ): Promise<string> {
     const tenantId = tenantContext.requireTenantId();
     await this.checkClient(tx, input.clientId, user);
-    const sellerId = (await this.resolveSeller(tx, user, input.sellerId, undefined)) ?? null;
+    const sellerId = fromOrder
+      ? fromOrder.sellerId
+      : ((await this.resolveSeller(tx, user, input.sellerId, undefined)) ?? null);
     // Checked now (exists, module); the final choice is made at validation.
     const warehouseId = input.warehouseId
       ? await this.warehouses.resolve(tx, input.warehouseId)
@@ -60,7 +71,7 @@ export class SalesService {
       priceLevelId,
       assujetti,
     );
-    await this.checkOverrides(tx, overrides, user);
+    if (!fromOrder) await this.checkOverrides(tx, overrides, user);
     const sale = await tx.sale.create({
       data: {
         tenantId,
@@ -352,13 +363,10 @@ export class SalesService {
 
   /**
    * A changed unit price needs PRICE_OVERRIDE. A remise up to the tenant's
-   * `maxDiscountPct` is free; above it needs DISCOUNT_ABOVE_X.
+   * `maxDiscountPct` is free; above it needs DISCOUNT_ABOVE_X. Also run when a bon de
+   * commande is confirmed (phase 16).
    */
-  private async checkOverrides(
-    tx: Tx,
-    overrides: PriceOverride[],
-    user: CurrentUserInfo,
-  ): Promise<void> {
+  async checkOverrides(tx: Tx, overrides: PriceOverride[], user: CurrentUserInfo): Promise<void> {
     if (overrides.length === 0) return;
     const priced = overrides.filter((o) => o.priceChanged);
     if (priced.length > 0 && !can(user, Permission.PRICE_OVERRIDE)) {
@@ -387,7 +395,7 @@ export class SalesService {
     }
   }
 
-  private async checkClient(tx: Tx, clientId: string | null, user: CurrentUserInfo): Promise<void> {
+  async checkClient(tx: Tx, clientId: string | null, user: CurrentUserInfo): Promise<void> {
     if (!clientId) return;
     const c = await tx.client.findFirst({ where: { id: clientId, deletedAt: null } });
     if (!c) {
@@ -401,7 +409,7 @@ export class SalesService {
    * undefined when the stored seller does not change. A SELLER always sells in his own
    * name; office roles pick any seller, a supervisor one of his team.
    */
-  private async resolveSeller(
+  async resolveSeller(
     tx: Tx,
     user: CurrentUserInfo,
     requested: string | null | undefined,
@@ -433,7 +441,7 @@ export class SalesService {
     return requested;
   }
 
-  private async assujettiTva(tx: Tx): Promise<boolean> {
+  async assujettiTva(tx: Tx): Promise<boolean> {
     const t = await tx.tenant.findUniqueOrThrow({
       where: { id: tenantContext.requireTenantId() },
       select: { assujettiTva: true },
