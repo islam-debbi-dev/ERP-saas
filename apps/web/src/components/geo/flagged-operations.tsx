@@ -216,8 +216,9 @@ function CheckRow({ check, onOpen }: { check: GeoCheckDto; onOpen: () => void })
               </span>
             </>
           ) : null}
-          {check.user ? ` · ${check.user.fullName}` : ''}
-          {' · '}
+        </p>
+        <p className="truncate text-xs text-muted-foreground">
+          {check.user ? `${check.user.fullName} · ` : ''}
           {format.dateTime(new Date(check.receivedAt), {
             dateStyle: 'short',
             timeStyle: 'short',
@@ -288,7 +289,7 @@ function CheckDialog({ check, onClose }: { check: GeoCheckDto | null; onClose: (
     >
       <ResponsiveDialogContent className="md:max-w-2xl">
         {check ? (
-          <div className="grid gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <ResponsiveDialogHeader>
               <ResponsiveDialogTitle className="truncate">
                 {check.client?.name ?? t('noClient')}

@@ -1,8 +1,17 @@
 'use client';
 
 import 'leaflet/dist/leaflet.css';
-import { latLngBounds } from 'leaflet';
-import { Circle, CircleMarker, MapContainer, Polyline, TileLayer, Tooltip } from 'react-leaflet';
+import { type LatLngBounds, latLngBounds } from 'leaflet';
+import { useEffect, useMemo } from 'react';
+import {
+  Circle,
+  CircleMarker,
+  MapContainer,
+  Polyline,
+  TileLayer,
+  Tooltip,
+  useMap,
+} from 'react-leaflet';
 import type { GeoMapProps } from './geo-map-lazy';
 
 const CLIENT_COLOR = '#1d4ed8';
@@ -16,8 +25,16 @@ const OPERATION_COLOR = '#b45309';
 export default function GeoMap({ client, operation, labels, className }: GeoMapProps) {
   const points = [client, operation].filter((p): p is NonNullable<typeof p> => !!p);
   const first = points[0];
+  // Keyed on the coordinates: a re-render (typing a note) must not refit the map.
+  const key = points.map((p) => `${p.lat},${p.lng}`).join(';');
+  const bounds = useMemo(
+    () =>
+      key.includes(';')
+        ? latLngBounds(key.split(';').map((p) => p.split(',').map(Number) as [number, number]))
+        : undefined,
+    [key],
+  );
   if (!first) return null;
-  const bounds = points.length > 1 ? latLngBounds(points.map((p) => [p.lat, p.lng])) : undefined;
   return (
     <MapContainer
       className={className}
@@ -28,6 +45,7 @@ export default function GeoMap({ client, operation, labels, className }: GeoMapP
       scrollWheelZoom={false}
       attributionControl
     >
+      <Refit bounds={bounds} />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -73,4 +91,22 @@ export default function GeoMap({ client, operation, labels, className }: GeoMapP
       ) : null}
     </MapContainer>
   );
+}
+
+/**
+ * The map is often created inside a sheet that is still sliding in, so Leaflet measures a
+ * wrong size: measure again whenever the box changes, and fit both points in view.
+ */
+function Refit({ bounds }: { bounds: LatLngBounds | undefined }) {
+  const map = useMap();
+  useEffect(() => {
+    const fit = () => {
+      map.invalidateSize();
+      if (bounds) map.fitBounds(bounds, { padding: [32, 32], maxZoom: 17 });
+    };
+    const observer = new ResizeObserver(fit);
+    observer.observe(map.getContainer());
+    return () => observer.disconnect();
+  }, [map, bounds]);
+  return null;
 }
