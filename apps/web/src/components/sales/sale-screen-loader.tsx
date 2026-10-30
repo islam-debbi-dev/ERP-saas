@@ -14,14 +14,23 @@ import { useTenantSettings } from '@/lib/settings';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { type ScreenLine, SaleScreen } from './sale-screen';
 
-/** Loads what the screen needs (and the draft to resume, if any), then mounts it. */
-export function SaleScreenLoader({ draftId }: { draftId: string | null }) {
+/**
+ * Loads what the screen needs (and the draft to resume, if any), then mounts it.
+ * `clientId` starts a new sale for that client (from a stop of the tournée, phase 16).
+ */
+export function SaleScreenLoader({
+  draftId,
+  clientId = null,
+}: {
+  draftId: string | null;
+  clientId?: string | null;
+}) {
   const t = useTranslations('sales');
   const errorMessage = useErrorMessage();
   const settings = useTenantSettings();
   const levels = usePriceLevels();
   const draft = useSale(draftId ?? '');
-  const client = useClient(draft.data?.client?.id ?? '');
+  const client = useClient(draft.data?.client?.id ?? (draftId ? '' : (clientId ?? '')));
   const productIds = [...new Set(draft.data?.lines.map((l) => l.productId) ?? [])];
   const products = useQuery({
     queryKey: ['sale-draft-products', draftId, productIds],
@@ -30,7 +39,9 @@ export function SaleScreenLoader({ draftId }: { draftId: string | null }) {
   });
 
   const error =
-    settings.error ?? levels.error ?? (draftId ? (draft.error ?? products.error) : null);
+    settings.error ??
+    levels.error ??
+    (draftId ? (draft.error ?? products.error) : clientId ? client.error : null);
   if (error) {
     return (
       <>
@@ -41,7 +52,7 @@ export function SaleScreenLoader({ draftId }: { draftId: string | null }) {
       </>
     );
   }
-  const draftClientId = draft.data?.client?.id;
+  const draftClientId = draft.data?.client?.id ?? (draftId ? undefined : (clientId ?? undefined));
   const ready =
     settings.data &&
     levels.data &&

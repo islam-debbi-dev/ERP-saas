@@ -39,5 +39,11 @@ describe('seed', () => {
       .send({ email: 'demo@grossiste.dz', password: 'Demo1234!' })
       .expect(200);
     expect(res.body).toMatchObject({ user: { tenantName: 'Grossiste Demo' } });
+
+    // Phase 16: one demo route with its three stops, not doubled by the second run.
+    const stops = await tenantContext.runAsSystem(() =>
+      t.prisma.db.routeStop.count({ where: { routeId: '00000000-0000-4000-8000-0000000016a1' } }),
+    );
+    expect(stops).toBe(3);
   });
 });

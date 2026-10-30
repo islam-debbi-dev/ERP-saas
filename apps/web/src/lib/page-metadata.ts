@@ -37,7 +37,14 @@ type TitleKey =
   | 'support.title'
   | 'supplierAccount.title'
   | 'aging.title'
-  | 'reminders.title';
+  | 'reminders.title'
+  | 'tournees.title'
+  | 'tournees.todayTitle'
+  | 'tournees.closingTitle'
+  | 'tournees.reportTitle'
+  | 'orders.title'
+  | 'orders.orderOne'
+  | 'orders.deliveriesTitle';
 
 /** `export const generateMetadata = titled('nav.products')` gives the tab a translated title. */
 export function titled(key: TitleKey): () => Promise<Metadata> {
