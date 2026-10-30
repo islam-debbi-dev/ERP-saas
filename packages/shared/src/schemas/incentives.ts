@@ -192,6 +192,8 @@ export interface ObjectiveDto {
   achieved: string | null;
   target: string | null;
   pct: string | null;
+  /** Every % of the target where the plan pays more (tier markers), ascending. */
+  thresholds: string[];
   /** The next threshold; `remaining` is null when the values are hidden. */
   next: (Omit<ObjectiveStep, 'remaining'> & { remaining: string | null }) | null;
 }

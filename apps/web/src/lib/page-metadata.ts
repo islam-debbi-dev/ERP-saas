@@ -45,7 +45,11 @@ type TitleKey =
   | 'orders.title'
   | 'orders.orderOne'
   | 'orders.deliveriesTitle'
-  | 'geo.title';
+  | 'geo.title'
+  | 'incentives.title'
+  | 'incentives.targetsTitle'
+  | 'incentives.planTitle'
+  | 'incentives.runPageTitle';
 
 /** `export const generateMetadata = titled('nav.products')` gives the tab a translated title. */
 export function titled(key: TitleKey): () => Promise<Metadata> {

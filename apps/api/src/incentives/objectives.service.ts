@@ -123,6 +123,9 @@ export class ObjectivesService {
         achieved: hidden ? null : fixed(achieved, decimals),
         target: hidden ? null : fixed(value, decimals),
         pct: progress.pct,
+        thresholds: [...new Set(thresholds.length ? thresholds : ['100'])].sort(
+          (x, y) => money(x).comparedTo(money(y)),
+        ),
         next: progress.next
           ? { pct: progress.next.pct, remaining: hidden ? null : progress.next.remaining }
           : null,
