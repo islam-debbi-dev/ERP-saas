@@ -7,6 +7,7 @@ import {
   type LandedCostPreviewDto,
   type PurchaseDto,
   type ReconcileReport,
+  type ReportDto,
   type StockLevelDto,
   type SupplierDto,
   type SupplierLedgerPage,
@@ -353,6 +354,25 @@ describe('import files and landed cost (phase 22)', () => {
         .expect(201);
       expect((await level(imp, p2.id)).avgCost).toBe('1146.1898');
       expect(await movementCount(imp, p2.id)).toBe(before);
+    });
+
+    it('the margin report shows the écart de coût and takes it off the margin', async () => {
+      const day = (offset: number) =>
+        new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+      const range = `from=${day(-2)}&to=${day(2)}&groupBy=product`;
+      const report = (await as(imp).get(`/reports/margin?${range}`).expect(200)).body as ReportDto;
+      expect(report.columns.map((c) => c.key)).toContain('ecart');
+      const row = (id: string) => report.rows.find((r) => r.key === id)?.values;
+      expect(row(p1.id)).toMatchObject({ ecart: '600.00', margin: '-600.00' });
+      expect(row(p2.id)).toMatchObject({ ecart: '500.00', margin: '-500.00' });
+      const ess_ = (await as(ess).get(`/reports/margin?${range}`).expect(200)).body as ReportDto;
+      expect(ess_.columns.map((c) => c.key)).not.toContain('ecart');
+    });
+
+    it('prints the fiche de coût de revient (A4 PDF)', async () => {
+      const res = await as(imp).get(`/documents/DI/${file.id}/pdf`).expect(200);
+      expect(res.headers['content-type']).toContain('application/pdf');
+      expect(res.headers['content-disposition']).toContain(`${file.number}.pdf`);
     });
 
     it('the foreign supplier is paid in USD and the account keeps both currencies', async () => {

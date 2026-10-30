@@ -36,6 +36,7 @@ const COLUMN_TITLES: Record<ReportColumnKey, string> = {
   netHt: 'Net HT',
   netTtc: 'Net TTC',
   cost: 'Coût',
+  ecart: 'Écart de coût',
   margin: 'Marge',
   marginPct: 'Marge %',
   total: 'Montant',
