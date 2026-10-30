@@ -98,6 +98,9 @@ interface Ids {
   transferId: string;
   routeId: string;
   orderId: string;
+  planId: string;
+  draftPlanId: string;
+  runId: string;
   productReference: string;
   tenantId: string;
 }
@@ -250,6 +253,59 @@ async function prepareIds(f: Fixture): Promise<Ids> {
       },
     },
   });
+  // Phase 18 (INCENTIVES): an active plan with tiers and a gate, a draft to edit, this
+  // month's targets (the owner's own, so the dashboard shows "Mes objectifs") and a preview.
+  const month = today().slice(0, 7);
+  const tiers = {
+    name: 'Paliers chiffre d’affaires du mois',
+    appliesTo: 'ROLE',
+    roleOrUserId: 'OWNER',
+    params: {
+      type: 'TIERS',
+      metric: 'CA_HT',
+      mode: 'HIGHEST_REACHED',
+      tiers: [
+        { fromPct: '80', amount: '10000' },
+        { fromPct: '100', amount: '25000' },
+        { fromPct: '120', amount: '40000' },
+      ],
+      gates: [{ metric: 'RECOUVREMENT_PCT', min: '70' }],
+      cap: '50000',
+    },
+  };
+  const plan = (
+    await call<{ id: string }>('/incentive-plans', {
+      method: 'POST',
+      token,
+      body: { name: 'Primes vendeurs et superviseurs', period: 'MONTH', validFrom: `${month}-01` },
+    })
+  ).body;
+  await call(`/incentive-plans/${plan.id}/rules`, { method: 'POST', token, body: tiers });
+  await call(`/incentive-plans/${plan.id}/activate`, { method: 'POST', token });
+  const draftPlan = (
+    await call<{ id: string }>('/incentive-plans', {
+      method: 'POST',
+      token,
+      body: { name: 'Brouillon', period: 'MONTH', validFrom: `${month}-01` },
+    })
+  ).body;
+  await call(`/incentive-plans/${draftPlan.id}/rules`, { method: 'POST', token, body: tiers });
+  await call('/sales-targets/bulk', {
+    method: 'PUT',
+    token,
+    body: {
+      period: month,
+      metric: 'CA_HT',
+      rows: [{ userId: f.session.userId, value: '1500000' }],
+    },
+  });
+  const run = (
+    await call<{ id: string }>('/incentive-runs', {
+      method: 'POST',
+      token,
+      body: { planId: plan.id, period: month },
+    })
+  ).body;
   const product = (await call<{ reference: string }>(`/products/${f.productId}`, { token })).body;
   return {
     productReference: product.reference,
@@ -262,6 +318,9 @@ async function prepareIds(f: Fixture): Promise<Ids> {
     transferId: transfer.id,
     routeId: route.id,
     orderId: order.id,
+    planId: plan.id,
+    draftPlanId: draftPlan.id,
+    runId: run.id,
     tenantId: f.tenantId,
   };
 }
@@ -280,6 +339,8 @@ function resolve(pattern: string, v: Ids): string {
       .replace('/tournees/[id]', `/tournees/${v.routeId}`)
       .replace('/commandes/[id]', `/commandes/${v.orderId}`)
       .replace('/livraisons/[id]', `/livraisons/${v.orderId}`)
+      .replace('/primes/plans/[id]', `/primes/plans/${v.planId}`)
+      .replace('/primes/calculs/[id]', `/primes/calculs/${v.runId}`)
       .replace('/admin/societes/[id]', `/admin/societes/${v.tenantId}`)
       // An unknown invitation: the page shows its "invalid link" state.
       .replace('/invitation/[token]', '/invitation/not-a-real-token')
@@ -572,6 +633,36 @@ for (const locale of LOCALES) {
         await page.waitForTimeout(400); // the sheet slides in
         await expectOnScreen(page, `[role="dialog"] button:has-text("${m['geo']?.['justified']}")`);
         await check(page, '/operations-signalees/detail', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+      });
+
+      await test.step('incentives: rule sheet and approve dialog with their buttons on screen', async () => {
+        const go = async (path: string) => {
+          await page.evaluate((to) => {
+            (
+              window as unknown as { next: { router: { push(href: string): void } } }
+            ).next.router.push(to);
+          }, path);
+          await page.waitForURL((url) => url.pathname === path);
+          await settle(page);
+        };
+        await go(`/primes/plans/${v.draftPlanId}`);
+        await expectOnScreen(page, '[data-slot="sticky-actions"] button:not([disabled])');
+        await page.getByRole('button', { name: m['incentives']?.['addRule'] }).click();
+        await page.locator('#rule-name').waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        await check(page, '/primes/plans/[id]/regle', locale, results, { fullPage: false });
+        await page.locator('[role="dialog"] button[type="submit"]').scrollIntoViewIfNeeded();
+        await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
+        await page.keyboard.press('Escape');
+
+        await go(`/primes/calculs/${v.runId}`);
+        await page.locator('button[aria-controls^="run-user-"]').first().click();
+        await check(page, '/primes/calculs/[id]/detail', locale, results);
+        await page.getByRole('button', { name: m['incentives']?.['approve'], exact: true }).click();
+        await page.waitForTimeout(400);
+        await expectOnScreen(page, `[role="dialog"] button:has-text("${m['incentives']?.['approveConfirm']}")`);
+        await check(page, '/primes/calculs/[id]/valider', locale, results, { fullPage: false });
         await page.keyboard.press('Escape');
       });
 
