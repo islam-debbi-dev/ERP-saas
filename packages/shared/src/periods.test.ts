@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, algiersDay, monthToDate, previousMonthToDate, rangeLength } from './periods';
+import {
+  addDays,
+  algiersDay,
+  algiersDayBounds,
+  monthToDate,
+  previousMonthToDate,
+  rangeLength,
+  weekdayOf,
+} from './periods';
 
 describe('algiersDay', () => {
   it('is one hour ahead of UTC', () => {
@@ -38,5 +46,25 @@ describe('month periods', () => {
   it('counts days inclusively', () => {
     expect(rangeLength({ from: '2026-10-01', to: '2026-10-01' })).toBe(1);
     expect(rangeLength({ from: '2026-01-01', to: '2026-12-31' })).toBe(365);
+  });
+});
+
+describe('weekdayOf', () => {
+  it('counts from Sunday = 0', () => {
+    expect(weekdayOf('2026-11-01')).toBe(0); // Sunday
+    expect(weekdayOf('2026-10-30')).toBe(5); // Friday
+  });
+
+  it('follows the Algiers day, not the UTC one', () => {
+    // Saturday 31 Oct 23:30 UTC is already Sunday 00:30 in Algiers.
+    expect(weekdayOf(algiersDay(new Date('2026-10-31T23:30:00Z')))).toBe(0);
+  });
+});
+
+describe('algiersDayBounds', () => {
+  it('runs from 23:00 UTC the day before to 23:00 UTC', () => {
+    const { start, end } = algiersDayBounds('2026-10-30');
+    expect(start.toISOString()).toBe('2026-10-29T23:00:00.000Z');
+    expect(end.toISOString()).toBe('2026-10-30T23:00:00.000Z');
   });
 });

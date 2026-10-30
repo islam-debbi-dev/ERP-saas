@@ -362,7 +362,17 @@
     "VEHICLE_ALREADY_ASSIGNED": "This seller already has a truck.",
     "TRANSFER_NOT_DRAFT": "This transfer is already validated or cancelled.",
     "TRANSFER_NOT_VALIDATED": "This transfer is not validated.",
-    "TRANSFER_EMPTY": "Add at least one product."
+    "TRANSFER_EMPTY": "Add at least one product.",
+    "ROUTE_NOT_FOUND": "Route not found.",
+    "VISIT_INVALID": "This visit does not match this client or seller.",
+    "ORDER_NOT_FOUND": "Order not found.",
+    "ORDER_NOT_DRAFT": "Only a draft can be edited or confirmed.",
+    "ORDER_NOT_CONFIRMED": "This order is not confirmed.",
+    "ORDER_ALREADY_DELIVERED": "This order is already delivered.",
+    "ORDER_EMPTY": "Add at least one product.",
+    "ORDER_DELIVERY_QTY_INVALID": "Invalid delivered quantity: between 0 and the ordered quantity, at least one line delivered.",
+    "SESSION_ALREADY_CLOSED": "This day is already closed.",
+    "SESSION_NOT_CLOSED": "Close the day first."
   },
   "units": {
     "PIECE": "Piece",

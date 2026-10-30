@@ -50,6 +50,8 @@ enum DocType {
   RGF
   /// Transfert de stock: chargement / déchargement (phase 15).
   TR
+  /// Bon de commande: pre-sale order (phase 16).
+  BC
 }
 
 enum PrintFormat {
@@ -159,6 +161,12 @@ model Tenant {
   warehouseStocks      WarehouseStock[]
   stockTransfers       StockTransfer[]
   stockTransferLines   StockTransferLine[]
+  routes               Route[]
+  routeStops           RouteStop[]
+  visits               Visit[]
+  orders               Order[]
+  orderLines           OrderLine[]
+  sellerSessions       SellerSession[]
 
   @@map("tenants")
 }
@@ -200,6 +208,11 @@ model User {
   sales       Sale[]           @relation("SaleSeller")
   collected   Payment[]        @relation("PaymentCollector")
   vehicles    Warehouse[]      @relation("WarehouseDriver")
+  routes      Route[]          @relation("RouteSeller")
+  visits      Visit[]          @relation("VisitSeller")
+  orders      Order[]          @relation("OrderSeller")
+  deliveries  Order[]          @relation("OrderLivreur")
+  sellerDays  SellerSession[]  @relation("SessionSeller")
 
   @@index([tenantId, role])
   @@index([tenantId, managerId])
@@ -416,6 +429,7 @@ model Product {
   saleLines           SaleLine[]
   warehouseStocks     WarehouseStock[]
   stockTransferLines  StockTransferLine[]
+  orderLines          OrderLine[]
 
   @@unique([tenantId, reference])
   @@index([tenantId, designation])
@@ -904,6 +918,9 @@ model Client {
   balance        ClientBalance?
   sales          Sale[]
   payments       Payment[]
+  routeStops     RouteStop[]
+  visits         Visit[]
+  orders         Order[]
 
   @@unique([tenantId, code])
   @@index([tenantId, name])
@@ -1039,6 +1056,7 @@ model Sale {
   returns            SaleReturn[]
   payments           Payment[]
   paymentAllocations PaymentAllocation[]
+  order              Order?
 
   @@unique([tenantId, number])
   @@index([tenantId, createdAt])
@@ -1527,6 +1545,8 @@ model Warehouse {
   inventories     Inventory[]
   transfersOut    StockTransfer[]  @relation("TransferFrom")
   transfersIn     StockTransfer[]  @relation("TransferTo")
+  orders          Order[]
+  sellerSessions  SellerSession[]
 
   @@unique([tenantId, name])
   @@index([tenantId, type])
@@ -1605,4 +1625,222 @@ model StockTransferLine {
   @@unique([transferId, productId])
   @@index([tenantId, transferId])
   @@map("stock_transfer_lines")
+}
+
+// ---------------------------------------------------------------- tournées (phase 16, TOURNEES)
+
+enum VisitOutcome {
+  SALE
+  ORDER
+  PAYMENT_ONLY
+  NO_SALE
+}
+
+enum NoSaleReason {
+  CLOSED
+  HAS_STOCK
+  NO_MONEY
+  REFUSED
+  OTHER
+}
+
+enum OrderStatus {
+  DRAFT
+  CONFIRMED
+  DELIVERED
+  CANCELLED
+}
+
+enum SellerSessionStatus {
+  OPEN
+  CLOSED
+  ADJUST
+}
+
+/// Tournée: the clients a seller visits, in order, on given weekdays (master data).
+model Route {
+  id        String    @id @default(uuid()) @db.Uuid
+  tenantId  String    @db.Uuid
+  name      String    @db.VarChar(80)
+  sellerId  String    @db.Uuid
+  /// 0 = Sunday … 6 = Saturday, Africa/Algiers.
+  weekdays  Int[]     @db.SmallInt
+  active    Boolean   @default(true)
+  deletedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3)
+
+  tenant Tenant      @relation(fields: [tenantId], references: [id])
+  seller User        @relation("RouteSeller", fields: [sellerId], references: [id], onDelete: Restrict)
+  stops  RouteStop[]
+  visits Visit[]
+
+  @@index([tenantId, sellerId])
+  @@map("routes")
+}
+
+model RouteStop {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @db.Uuid
+  routeId   String   @db.Uuid
+  clientId  String   @db.Uuid
+  position  Int      @db.SmallInt
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  route  Route  @relation(fields: [routeId], references: [id])
+  client Client @relation(fields: [clientId], references: [id])
+
+  @@unique([routeId, clientId])
+  @@index([tenantId, routeId, position])
+  @@index([tenantId, clientId])
+  @@map("route_stops")
+}
+
+/// One stop at a client. Append-only: a correction is a new row with `correctsVisitId`.
+model Visit {
+  id              String        @id @default(uuid()) @db.Uuid
+  tenantId        String        @db.Uuid
+  sellerId        String        @db.Uuid
+  clientId        String        @db.Uuid
+  routeId         String?       @db.Uuid
+  startedAt       DateTime      @db.Timestamptz(3)
+  endedAt         DateTime?     @db.Timestamptz(3)
+  outcome         VisitOutcome
+  reason          NoSaleReason?
+  note            String?       @db.VarChar(255)
+  saleId          String?       @db.Uuid
+  orderId         String?       @db.Uuid
+  paymentId       String?       @db.Uuid
+  correctsVisitId String?       @unique @db.Uuid
+  createdBy       String?       @db.Uuid
+  createdAt       DateTime      @default(now()) @db.Timestamptz(3)
+
+  tenant      Tenant @relation(fields: [tenantId], references: [id])
+  seller      User   @relation("VisitSeller", fields: [sellerId], references: [id], onDelete: Restrict)
+  client      Client @relation(fields: [clientId], references: [id])
+  route       Route? @relation(fields: [routeId], references: [id])
+  corrects    Visit? @relation("VisitCorrection", fields: [correctsVisitId], references: [id])
+  correctedBy Visit? @relation("VisitCorrection")
+
+  @@index([tenantId, sellerId, startedAt])
+  @@index([tenantId, clientId, startedAt])
+  @@map("visits")
+}
+
+/// Bon de commande (pré-vente). No stock or ledger effect: delivering it creates the BL.
+model Order {
+  id            String      @id @default(uuid()) @db.Uuid
+  tenantId      String      @db.Uuid
+  /// Given at confirmation (no gaps from drafts).
+  number        String?     @db.VarChar(20)
+  status        OrderStatus @default(DRAFT)
+  clientId      String      @db.Uuid
+  sellerId      String?     @db.Uuid
+  /// Dépôt to deliver from; null = the livreur's truck, else MAIN, decided at delivery.
+  warehouseId   String?     @db.Uuid
+  livreurId     String?     @db.Uuid
+  requestedDate DateTime?   @db.Date
+  priceLevelId  String?     @db.Uuid
+  note          String?     @db.VarChar(255)
+  assujettiTva  Boolean     @default(true)
+  totalHt       Decimal     @default(0) @db.Decimal(14, 2)
+  totalTva      Decimal     @default(0) @db.Decimal(14, 2)
+  totalTtc      Decimal     @default(0) @db.Decimal(14, 2)
+  /// The BL made at delivery; one order gives at most one BL.
+  saleId        String?     @unique @db.Uuid
+  version       Int         @default(1)
+  createdBy     String?     @db.Uuid
+  confirmedBy   String?     @db.Uuid
+  confirmedAt   DateTime?   @db.Timestamptz(3)
+  deliveredBy   String?     @db.Uuid
+  deliveredAt   DateTime?   @db.Timestamptz(3)
+  cancelledBy   String?     @db.Uuid
+  cancelledAt   DateTime?   @db.Timestamptz(3)
+  cancelReason  String?     @db.VarChar(255)
+  createdAt     DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime    @updatedAt @db.Timestamptz(3)
+
+  tenant    Tenant      @relation(fields: [tenantId], references: [id])
+  client    Client      @relation(fields: [clientId], references: [id])
+  seller    User?       @relation("OrderSeller", fields: [sellerId], references: [id], onDelete: Restrict)
+  livreur   User?       @relation("OrderLivreur", fields: [livreurId], references: [id], onDelete: Restrict)
+  warehouse Warehouse?  @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  sale      Sale?       @relation(fields: [saleId], references: [id])
+  lines     OrderLine[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId, status, requestedDate])
+  @@index([tenantId, sellerId, createdAt])
+  @@index([tenantId, livreurId, status])
+  @@index([tenantId, clientId])
+  @@map("orders")
+}
+
+/// Frozen like a sale line at confirmation (rule 9); a draft line is replaced freely.
+model OrderLine {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @db.Uuid
+  orderId         String   @db.Uuid
+  position        Int      @db.SmallInt
+  productId       String   @db.Uuid
+  unitId          String   @db.Uuid
+  designation     String   @db.VarChar(160)
+  unitCode        String   @db.VarChar(40)
+  unitName        String?  @db.VarChar(40)
+  factorToBase    Decimal  @db.Decimal(14, 3)
+  qty             Decimal  @db.Decimal(14, 3)
+  qtyBase         Decimal  @db.Decimal(14, 3)
+  listPriceHt     Decimal? @db.Decimal(14, 2)
+  unitPriceHt     Decimal  @db.Decimal(14, 2)
+  discountPct     Decimal  @default(0) @db.Decimal(5, 2)
+  tvaRate         Decimal  @db.Decimal(5, 2)
+  lineHt          Decimal  @db.Decimal(14, 2)
+  /// Set at delivery, in the line's unit: delivered + not delivered = qty.
+  qtyDelivered    Decimal? @db.Decimal(14, 3)
+  qtyNotDelivered Decimal? @db.Decimal(14, 3)
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([tenantId, orderId])
+  @@index([tenantId, productId])
+  @@map("order_lines")
+}
+
+/// Clôture de tournée: one per seller per day (partial unique index in the migration).
+/// CLOSED is final; an ADJUST row points to it with `adjustsSessionId`.
+model SellerSession {
+  id               String              @id @default(uuid()) @db.Uuid
+  tenantId         String              @db.Uuid
+  sellerId         String              @db.Uuid
+  date             DateTime            @db.Date
+  warehouseId      String?             @db.Uuid
+  status           SellerSessionStatus @default(OPEN)
+  /// Computed by the API at closing, never typed.
+  expectedCash     Decimal?            @db.Decimal(14, 2)
+  cashFromSales    Decimal?            @db.Decimal(14, 2)
+  cashFromPayments Decimal?            @db.Decimal(14, 2)
+  handedCash       Decimal?            @db.Decimal(14, 2)
+  /// handed − expected; negative = cash missing.
+  ecart            Decimal?            @db.Decimal(14, 2)
+  note             String?             @db.VarChar(255)
+  adjustsSessionId String?             @db.Uuid
+  createdBy        String?             @db.Uuid
+  closedBy         String?             @db.Uuid
+  closedAt         DateTime?           @db.Timestamptz(3)
+  createdAt        DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime            @updatedAt @db.Timestamptz(3)
+
+  tenant      Tenant          @relation(fields: [tenantId], references: [id])
+  seller      User            @relation("SessionSeller", fields: [sellerId], references: [id], onDelete: Restrict)
+  warehouse   Warehouse?      @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  adjusts     SellerSession?  @relation("SessionAdjust", fields: [adjustsSessionId], references: [id])
+  adjustments SellerSession[] @relation("SessionAdjust")
+
+  @@index([tenantId, date])
+  @@index([tenantId, sellerId, date])
+  @@map("seller_sessions")
 }

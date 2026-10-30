@@ -50,6 +50,8 @@ export const DocType = {
   RGF: 'RGF',
   /** Transfert de stock: bon de chargement / déchargement (phase 15). */
   TR: 'TR',
+  /** Bon de commande: a pre-sale order, no stock or ledger effect (phase 16). */
+  BC: 'BC',
 } as const;
 export type DocType = (typeof DocType)[keyof typeof DocType];
 export const DOC_TYPES = Object.values(DocType);
@@ -261,5 +263,49 @@ export const PrintableDocType = {
   BR: 'BR',
   /** Bon de chargement / déchargement / transfert (phase 15). */
   TR: 'TR',
+  /** Bon de commande (phase 16). */
+  BC: 'BC',
 } as const;
 export type PrintableDocType = (typeof PrintableDocType)[keyof typeof PrintableDocType];
+
+// ---------------------------------------------------------------- tournées (phase 16, TOURNEES)
+
+/** What came out of a stop. */
+export const VisitOutcome = {
+  SALE: 'SALE',
+  ORDER: 'ORDER',
+  PAYMENT_ONLY: 'PAYMENT_ONLY',
+  NO_SALE: 'NO_SALE',
+} as const;
+export type VisitOutcome = (typeof VisitOutcome)[keyof typeof VisitOutcome];
+export const VISIT_OUTCOMES = Object.values(VisitOutcome);
+
+/** Why a visit ended without a sale (NO_SALE only). */
+export const NoSaleReason = {
+  CLOSED: 'CLOSED',
+  HAS_STOCK: 'HAS_STOCK',
+  NO_MONEY: 'NO_MONEY',
+  REFUSED: 'REFUSED',
+  OTHER: 'OTHER',
+} as const;
+export type NoSaleReason = (typeof NoSaleReason)[keyof typeof NoSaleReason];
+export const NO_SALE_REASONS = Object.values(NoSaleReason);
+
+/** Bon de commande. Only DELIVERED has effects, through the BL it created. */
+export const OrderStatus = {
+  DRAFT: 'DRAFT',
+  CONFIRMED: 'CONFIRMED',
+  DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED',
+} as const;
+export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus];
+export const ORDER_STATUSES = Object.values(OrderStatus);
+
+/** Clôture de tournée. A CLOSED session is final; corrections are ADJUST rows. */
+export const SellerSessionStatus = {
+  OPEN: 'OPEN',
+  CLOSED: 'CLOSED',
+  /** A note on a closed session, written as a new row (`adjustsSessionId`). */
+  ADJUST: 'ADJUST',
+} as const;
+export type SellerSessionStatus = (typeof SellerSessionStatus)[keyof typeof SellerSessionStatus];

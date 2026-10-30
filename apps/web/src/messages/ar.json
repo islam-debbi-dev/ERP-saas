@@ -362,7 +362,17 @@
     "VEHICLE_ALREADY_ASSIGNED": "هذا البائع لديه شاحنة بالفعل.",
     "TRANSFER_NOT_DRAFT": "هذا التحويل مصادق عليه أو ملغى.",
     "TRANSFER_NOT_VALIDATED": "هذا التحويل غير مصادق عليه.",
-    "TRANSFER_EMPTY": "أضف منتجاً واحداً على الأقل."
+    "TRANSFER_EMPTY": "أضف منتجاً واحداً على الأقل.",
+    "ROUTE_NOT_FOUND": "الجولة غير موجودة.",
+    "VISIT_INVALID": "هذه الزيارة لا تخص هذا الزبون أو هذا البائع.",
+    "ORDER_NOT_FOUND": "طلبية الشراء غير موجودة.",
+    "ORDER_NOT_DRAFT": "يمكن تعديل أو تأكيد المسودة فقط.",
+    "ORDER_NOT_CONFIRMED": "هذه الطلبية غير مؤكدة.",
+    "ORDER_ALREADY_DELIVERED": "تم تسليم هذه الطلبية مسبقاً.",
+    "ORDER_EMPTY": "أضف منتجاً واحداً على الأقل.",
+    "ORDER_DELIVERY_QTY_INVALID": "كمية مسلّمة غير صحيحة: بين 0 والكمية المطلوبة، مع تسليم سطر واحد على الأقل.",
+    "SESSION_ALREADY_CLOSED": "تم إغلاق هذه الجولة مسبقاً.",
+    "SESSION_NOT_CLOSED": "أغلق الجولة أولاً."
   },
   "units": {
     "PIECE": "قطعة",

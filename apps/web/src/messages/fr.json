@@ -362,7 +362,17 @@
     "VEHICLE_ALREADY_ASSIGNED": "Ce vendeur a déjà un camion.",
     "TRANSFER_NOT_DRAFT": "Ce transfert est déjà validé ou annulé.",
     "TRANSFER_NOT_VALIDATED": "Ce transfert n’est pas validé.",
-    "TRANSFER_EMPTY": "Ajoutez au moins un article."
+    "TRANSFER_EMPTY": "Ajoutez au moins un article.",
+    "ROUTE_NOT_FOUND": "Tournée introuvable.",
+    "VISIT_INVALID": "Cette visite ne correspond pas à ce client ou à ce vendeur.",
+    "ORDER_NOT_FOUND": "Bon de commande introuvable.",
+    "ORDER_NOT_DRAFT": "Seul un brouillon peut être modifié ou confirmé.",
+    "ORDER_NOT_CONFIRMED": "Ce bon de commande n'est pas confirmé.",
+    "ORDER_ALREADY_DELIVERED": "Ce bon de commande est déjà livré.",
+    "ORDER_EMPTY": "Ajoutez au moins un article.",
+    "ORDER_DELIVERY_QTY_INVALID": "Quantité livrée invalide : entre 0 et la quantité commandée, au moins une ligne livrée.",
+    "SESSION_ALREADY_CLOSED": "Cette tournée est déjà clôturée.",
+    "SESSION_NOT_CLOSED": "Clôturez d'abord la tournée."
   },
   "units": {
     "PIECE": "Pièce",
