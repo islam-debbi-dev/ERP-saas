@@ -16,3 +16,4 @@ export * from './schemas';
 export * from './stock';
 export * from './subscription';
 export * from './timbre';
+export * from './incentives';

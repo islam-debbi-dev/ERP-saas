@@ -14,6 +14,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { SalesModule } from './sales/sales.module';
 import { SalesForceModule } from './sales-force/sales-force.module';
 import { GeoModule } from './geo/geo.module';
+import { IncentivesModule } from './incentives/incentives.module';
 import { AllExceptionsFilter } from './common/all-exceptions.filter';
 import { RequestContextMiddleware } from './common/request-context.middleware';
 import { APP_CONFIG, type AppConfig } from './config/app-config';
@@ -78,6 +79,7 @@ import { UsersModule } from './users/users.module';
     AuditModule,
     SalesForceModule,
     GeoModule,
+    IncentivesModule,
     IdempotencyModule,
     DocumentsModule,
     AuthModule,

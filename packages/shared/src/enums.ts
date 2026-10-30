@@ -367,3 +367,39 @@ export const GeoChangeRequestStatus = {
 export type GeoChangeRequestStatus =
   (typeof GeoChangeRequestStatus)[keyof typeof GeoChangeRequestStatus];
 export const GEO_CHANGE_REQUEST_STATUSES = Object.values(GeoChangeRequestStatus);
+
+// ---------------------------------------------------------------- objectifs & primes (phase 18)
+
+export const IncentivePeriod = {
+  MONTH: 'MONTH',
+  QUARTER: 'QUARTER',
+} as const;
+export type IncentivePeriod = (typeof IncentivePeriod)[keyof typeof IncentivePeriod];
+export const INCENTIVE_PERIODS = Object.values(IncentivePeriod);
+
+/** A DRAFT is edited; an ACTIVE plan never is (a change is a new version). */
+export const IncentivePlanStatus = {
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+export type IncentivePlanStatus = (typeof IncentivePlanStatus)[keyof typeof IncentivePlanStatus];
+export const INCENTIVE_PLAN_STATUSES = Object.values(IncentivePlanStatus);
+
+/** Who a rule applies to: every user of a role, one user, or a manager on his team. */
+export const IncentiveAppliesTo = {
+  ROLE: 'ROLE',
+  USER: 'USER',
+  TEAM_MANAGER: 'TEAM_MANAGER',
+} as const;
+export type IncentiveAppliesTo = (typeof IncentiveAppliesTo)[keyof typeof IncentiveAppliesTo];
+export const INCENTIVE_APPLIES_TO = Object.values(IncentiveAppliesTo);
+
+/** A PREVIEW is recomputed at will; APPROVED and EXPORTED are frozen. */
+export const IncentiveRunStatus = {
+  PREVIEW: 'PREVIEW',
+  APPROVED: 'APPROVED',
+  EXPORTED: 'EXPORTED',
+} as const;
+export type IncentiveRunStatus = (typeof IncentiveRunStatus)[keyof typeof IncentiveRunStatus];
+export const INCENTIVE_RUN_STATUSES = Object.values(IncentiveRunStatus);

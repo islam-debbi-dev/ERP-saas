@@ -4,7 +4,10 @@ import { effectivePermissions, Permission, PERMISSIONS } from './permissions';
 
 describe('effectivePermissions', () => {
   it('uses the role defaults', () => {
-    expect(effectivePermissions(Role.MANAGER)).toEqual(PERMISSIONS);
+    expect(effectivePermissions(Role.MANAGER)).toEqual(
+      PERMISSIONS.filter((p) => p !== Permission.INCENTIVE_APPROVE),
+    );
+    expect(effectivePermissions(Role.MANAGER, [Permission.INCENTIVE_APPROVE])).toEqual(PERMISSIONS);
     expect(effectivePermissions(Role.SELLER)).toEqual([]);
     expect(effectivePermissions(Role.STOREKEEPER)).toEqual([]);
     expect(effectivePermissions(Role.STOREKEEPER, [Permission.STOCK_ADJUST])).toEqual([

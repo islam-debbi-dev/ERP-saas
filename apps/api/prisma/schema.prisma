@@ -175,6 +175,11 @@ model Tenant {
   geoChecks            GeoCheck[]
   geoCheckReviews      GeoCheckReview[]
   clientGeoRequests    ClientGeoChangeRequest[]
+  salesTargets         SalesTarget[]
+  incentivePlans       IncentivePlan[]
+  incentiveRules       IncentiveRule[]
+  incentiveRuns        IncentiveRun[]
+  incentiveLines       IncentiveLine[]
 
   @@map("tenants")
 }
@@ -1979,4 +1984,154 @@ model ClientGeoChangeRequest {
   @@index([tenantId, status, createdAt])
   @@index([tenantId, clientId, createdAt])
   @@map("client_geo_change_requests")
+}
+
+// ---------------------------------------------------------------- objectifs & primes (phase 18)
+
+enum IncentivePeriod {
+  MONTH
+  QUARTER
+}
+
+enum IncentivePlanStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum IncentiveAppliesTo {
+  ROLE
+  USER
+  TEAM_MANAGER
+}
+
+enum IncentiveRunStatus {
+  PREVIEW
+  APPROVED
+  EXPORTED
+}
+
+/// A monthly target of a seller (userId) or of a manager's whole team (teamManagerId),
+/// on one figure, maybe limited to a brand / category / product. One per subject, month,
+/// metric and scope (unique index in the migration).
+model SalesTarget {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @db.Uuid
+  /// First day of the month (Algiers).
+  periodStart   DateTime @db.Date
+  userId        String?  @db.Uuid
+  teamManagerId String?  @db.Uuid
+  /// IncentiveMetric (packages/shared/incentives.ts).
+  metric        String   @db.VarChar(30)
+  /// `scopeKey(scope)`, '' when the target is on the whole figure.
+  scopeKey      String   @default("") @db.VarChar(160)
+  brandId       String?  @db.Uuid
+  categoryId    String?  @db.Uuid
+  productId     String?  @db.Uuid
+  targetValue   Decimal  @db.Decimal(16, 3)
+  createdBy     String?  @db.Uuid
+  updatedBy     String?  @db.Uuid
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(3)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, periodStart])
+  @@map("sales_targets")
+}
+
+/// A bonus plan. An ACTIVE plan is never edited: a change is a new version (same
+/// familyId, version + 1) with its own validFrom; activating it closes the previous one.
+model IncentivePlan {
+  id        String              @id @default(uuid()) @db.Uuid
+  tenantId  String              @db.Uuid
+  familyId  String              @db.Uuid
+  version   Int                 @default(1)
+  name      String              @db.VarChar(80)
+  period    IncentivePeriod     @default(MONTH)
+  validFrom DateTime            @db.Date
+  validTo   DateTime?           @db.Date
+  status    IncentivePlanStatus @default(DRAFT)
+  createdBy String?             @db.Uuid
+  createdAt DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime            @updatedAt @db.Timestamptz(3)
+
+  tenant Tenant          @relation(fields: [tenantId], references: [id])
+  rules  IncentiveRule[]
+  runs   IncentiveRun[]
+
+  @@unique([tenantId, familyId, version])
+  @@index([tenantId, status])
+  @@map("incentive_plans")
+}
+
+/// One rule of a plan. `params` is IncentiveRuleParams (zod union in packages/shared).
+model IncentiveRule {
+  id           String             @id @default(uuid()) @db.Uuid
+  tenantId     String             @db.Uuid
+  planId       String             @db.Uuid
+  position     Int                @db.SmallInt
+  name         String             @db.VarChar(80)
+  appliesTo    IncentiveAppliesTo
+  /// A role for ROLE, a user id for USER / TEAM_MANAGER.
+  roleOrUserId String             @db.VarChar(40)
+  params       Json
+  createdAt    DateTime           @default(now()) @db.Timestamptz(3)
+
+  tenant Tenant          @relation(fields: [tenantId], references: [id])
+  plan   IncentivePlan   @relation(fields: [planId], references: [id])
+  lines  IncentiveLine[]
+
+  @@index([tenantId, planId])
+  @@map("incentive_rules")
+}
+
+/// The bonuses of one plan for one period. A PREVIEW is recomputed at will (its lines are
+/// replaced); APPROVED is frozen (DB trigger) and only moves to EXPORTED.
+model IncentiveRun {
+  id          String             @id @default(uuid()) @db.Uuid
+  tenantId    String             @db.Uuid
+  planId      String             @db.Uuid
+  periodStart DateTime           @db.Date
+  /// Last day included.
+  periodEnd   DateTime           @db.Date
+  status      IncentiveRunStatus @default(PREVIEW)
+  computedAt  DateTime           @db.Timestamptz(3)
+  computedBy  String?            @db.Uuid
+  approvedBy  String?            @db.Uuid
+  approvedAt  DateTime?          @db.Timestamptz(3)
+  exportedAt  DateTime?          @db.Timestamptz(3)
+  createdAt   DateTime           @default(now()) @db.Timestamptz(3)
+
+  tenant Tenant          @relation(fields: [tenantId], references: [id])
+  plan   IncentivePlan   @relation(fields: [planId], references: [id])
+  lines  IncentiveLine[]
+
+  @@index([tenantId, planId, periodStart])
+  @@index([tenantId, status, periodStart])
+  @@map("incentive_runs")
+}
+
+/// What one rule paid one user in a run, with the figures and the explanation.
+model IncentiveLine {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  runId       String   @db.Uuid
+  userId      String   @db.Uuid
+  ruleId      String   @db.Uuid
+  /// The figures read (by metricKey), frozen.
+  metrics     Json
+  target      Decimal? @db.Decimal(16, 3)
+  amount      Decimal  @db.Decimal(14, 2)
+  /// RuleExplanation (packages/shared/incentives.ts).
+  explanation Json
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant Tenant        @relation(fields: [tenantId], references: [id])
+  run    IncentiveRun  @relation(fields: [runId], references: [id])
+  rule   IncentiveRule @relation(fields: [ruleId], references: [id])
+
+  @@index([tenantId, runId])
+  @@index([tenantId, userId])
+  @@map("incentive_lines")
 }
