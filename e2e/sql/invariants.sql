@@ -381,3 +381,14 @@ SELECT le.id, le."tenantId", le.type, le."refType", le."refId"
 FROM client_ledger_entries le
 WHERE le."refType" = 'SALE' AND le."refId" IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM sales s WHERE s.id = le."refId");
+
+-- name: packaging_balance_equals_ledger
+-- Phase 20: each client's cached packaging count equals the sum of its packaging ledger.
+SELECT pb."tenantId", pb."clientId", pb."packagingTypeId", pb.balance,
+       COALESCE(SUM(pe.qty), 0) AS ledger
+FROM client_packaging_balances pb
+LEFT JOIN client_packaging_entries pe
+  ON pe."tenantId" = pb."tenantId" AND pe."clientId" = pb."clientId"
+ AND pe."packagingTypeId" = pb."packagingTypeId"
+GROUP BY pb."tenantId", pb."clientId", pb."packagingTypeId", pb.balance
+HAVING pb.balance <> COALESCE(SUM(pe.qty), 0);

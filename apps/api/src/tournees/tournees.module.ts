@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { DocumentsModule } from '../documents/documents.module';
 import { SalesModule } from '../sales/sales.module';
 import { GeoModule } from '../geo/geo.module';
+import { PromotionsModule } from '../promotions/promotions.module';
 import { SalesForceModule } from '../sales-force/sales-force.module';
 import { StockModule } from '../stock/stock.module';
 import { OrdersService } from './orders.service';
@@ -24,7 +25,14 @@ import { VisitsService } from './visits.service';
  * delivery); sessions only read payments.
  */
 @Module({
-  imports: [SalesModule, StockModule, DocumentsModule, SalesForceModule, GeoModule],
+  imports: [
+    SalesModule,
+    StockModule,
+    DocumentsModule,
+    SalesForceModule,
+    GeoModule,
+    PromotionsModule,
+  ],
   controllers: [
     RoutesController,
     MeTodayController,

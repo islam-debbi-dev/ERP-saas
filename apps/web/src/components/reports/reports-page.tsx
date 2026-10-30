@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarClock, ChartColumn, Download, Loader2 } from 'lucide-react';
+import { CalendarClock, Tags, ChartColumn, Download, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import { type ReactNode, useState } from 'react';
@@ -110,6 +110,14 @@ export function ReportsPage() {
             icon: CalendarClock,
             href: '/rapports/balance-agee',
           },
+          salesForce &&
+            (state.user?.role === 'OWNER' ||
+              state.user?.role === 'MANAGER' ||
+              state.user?.role === 'SUPERVISOR') && {
+              label: t('sellOutLink'),
+              icon: Tags,
+              href: '/rapports/sell-out',
+            },
         ]}
         actions={
           canExport ? (

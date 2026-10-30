@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CatalogModule } from '../catalog/catalog.module';
 import { ClientsModule } from '../clients/clients.module';
+import { PackagingModule } from '../packaging/packaging.module';
 import { PurchasesModule } from '../purchases/purchases.module';
 import { StockModule } from '../stock/stock.module';
 import { ImportFilesJanitor } from './import-files.janitor';
@@ -12,7 +13,7 @@ import { ImportsService } from './imports.service';
  * and suppliers services.
  */
 @Module({
-  imports: [CatalogModule, StockModule, ClientsModule, PurchasesModule],
+  imports: [CatalogModule, StockModule, ClientsModule, PurchasesModule, PackagingModule],
   controllers: [ImportsController],
   providers: [ImportsService, ImportFilesJanitor],
 })

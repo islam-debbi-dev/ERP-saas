@@ -29,8 +29,21 @@ export const saleLineInputSchema = z.object({
   unitPriceHt: amountString.transform(normalizeDecimal).optional(),
   /** Remise in percent. Any discount counts as a price override. */
   discountPct: percentString(2).transform(normalizeDecimal).default('0'),
+  /**
+   * Free units (UG) of this line's promotion, in the promotion's free unit (phase 20).
+   * Omitted = what the promotion gives; another value needs PROMO_OVERRIDE.
+   */
+  freeQty: quantityString({ positive: false }).transform(normalizeDecimal).optional(),
 });
 export type SaleLineInput = z.infer<typeof saleLineInputSchema>;
+
+/** Packaging the client brings back with a sale, entered on the sale screen. */
+export const packagingReturnedSchema = z
+  .array(z.object({ packagingTypeId: id, qty: z.number().int().min(1).max(100_000) }))
+  .max(20)
+  .refine((l) => new Set(l.map((p) => p.packagingTypeId)).size === l.length, 'duplicate')
+  .default([]);
+export type PackagingReturnedInput = z.infer<typeof packagingReturnedSchema>;
 
 const saleFields = {
   type: z.enum([SaleType.BL, SaleType.FACTURE]).default(SaleType.BL),
@@ -65,6 +78,8 @@ const paymentFields = {
   forceCredit: z.boolean().default(false),
   /** Device position at validation (phase 17, GEO_CHECK); ignored when the module is off. */
   geo: geoInputSchema.optional(),
+  /** Empties the client brings back, posted at validation (phase 20, PACKAGING). */
+  packagingReturned: packagingReturnedSchema,
 };
 
 export const validateSaleSchema = z.object(paymentFields);
@@ -151,6 +166,19 @@ export interface SaleLineDto {
   lineHt: string;
   /** Already brought back by the client, in base unit. */
   returnedQtyBase: string;
+  /** A free line (UG), priced 0, that follows the paid line at `freeOfPosition` (phase 20). */
+  isFree: boolean;
+  /** The promotion that gave the free units or the remise, as named at the sale. */
+  promotion: { id: string; name: string } | null;
+  freeOfPosition: number | null;
+}
+
+/** Packaging counted with a sale (phase 20): given with the goods and brought back. */
+export interface SalePackagingDto {
+  packagingTypeId: string;
+  name: string;
+  given: number;
+  returned: number;
 }
 
 export interface SaleReturnDto {
@@ -239,6 +267,8 @@ export interface SaleDto {
   cancelledAt: string | null;
   lines: SaleLineDto[];
   returns: SaleReturnDto[];
+  /** Empty when the module is off or nothing was counted. */
+  packaging: SalePackagingDto[];
   payments: SalePaymentDto[];
 }
 
@@ -269,7 +299,9 @@ export type SaleWarning =
       after: string;
       warehouseId?: string;
     }
-  | { kind: 'CREDIT_LIMIT'; balance: string; limit: string; projected: string; forced: boolean };
+  | { kind: 'CREDIT_LIMIT'; balance: string; limit: string; projected: string; forced: boolean }
+  /** More packaging brought back than the client had on record (phase 20). */
+  | { kind: 'PACKAGING_NEGATIVE'; packagingTypeId: string; balance: number };
 
 export interface SaleResultDto {
   sale: SaleDto;

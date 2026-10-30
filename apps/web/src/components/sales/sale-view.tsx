@@ -44,6 +44,8 @@ import { Amount } from '@/components/shared/amount';
 
 export function SaleView({ id }: { id: string }) {
   const t = useTranslations('sales');
+  const tp = useTranslations('promotions');
+  const tk = useTranslations('packaging');
   const format = useFormatter();
   const unitLabel = useUnitLabel();
   const errorMessage = useErrorMessage();
@@ -343,6 +345,16 @@ export function SaleView({ id }: { id: string }) {
                 <TableRow key={l.id}>
                   <TableCell data-cell="main" className="whitespace-normal font-medium">
                     {l.designation}
+                    {l.isFree || l.promotion ? (
+                      <span className="mt-1 flex flex-wrap gap-1">
+                        {l.isFree ? <Badge>{tp('freeBadge')}</Badge> : null}
+                        {l.promotion ? (
+                          <Badge variant="secondary" className="max-w-full truncate">
+                            {l.promotion.name}
+                          </Badge>
+                        ) : null}
+                      </span>
+                    ) : null}
                   </TableCell>
                   <TableCell data-label={t('colQty')} className="text-end">
                     <span className="num">{formatQty(l.qty)}</span>{' '}
@@ -377,6 +389,28 @@ export function SaleView({ id }: { id: string }) {
           </TableBody>
         </Table>
       </div>
+
+      {s.packaging.length > 0 ? (
+        <Card className="gap-3 py-4">
+          <CardHeader>
+            <CardTitle role="heading" aria-level={2} className="text-base">
+              {tk('saleTitle')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="divide-y text-sm">
+              {s.packaging.map((p) => (
+                <li key={p.packagingTypeId} className="flex justify-between gap-2 py-2">
+                  <span className="truncate">{p.name}</span>
+                  <span className="shrink-0 text-muted-foreground">
+                    {tk('givenReturned', { given: p.given, returned: p.returned })}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {s.payments.length > 0 || s.returns.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2">

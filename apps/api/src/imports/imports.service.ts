@@ -26,6 +26,7 @@ import { AppException } from '../common/app-exception';
 import { chunks } from '../common/chunks';
 import { tenantContext } from '../common/tenant-context';
 import { type ImportJob, Prisma } from '../generated/prisma/client';
+import { PackagingLedgerService } from '../packaging/packaging-ledger.service';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { SupplierAccountService } from '../purchases/supplier-account.service';
 import { SuppliersService } from '../purchases/suppliers.service';
@@ -34,6 +35,10 @@ import { WarehousesService } from '../stock/warehouses.service';
 import { type ImportTable, readTable } from './file-reader';
 import { type ClientPlan, validateClients } from './validators/clients';
 import { type OpeningStockPlan, validateOpeningStock } from './validators/opening-stock';
+import {
+  type PackagingOpeningPlan,
+  validatePackagingOpening,
+} from './validators/packaging-opening';
 import { cellText } from './validators/row-reader';
 import { type SupplierPlan, validateSuppliers } from './validators/suppliers';
 import {
@@ -56,7 +61,7 @@ export interface UploadedImportFile {
   buffer: Buffer;
 }
 
-type AnyPlan = ProductPlan | OpeningStockPlan | ClientPlan | SupplierPlan;
+type AnyPlan = ProductPlan | OpeningStockPlan | ClientPlan | SupplierPlan | PackagingOpeningPlan;
 
 interface Validation {
   fields: ImportFieldDef[];
@@ -122,6 +127,7 @@ export class ImportsService {
     private readonly accounts: ClientAccountService,
     private readonly suppliers: SuppliersService,
     private readonly supplierAccounts: SupplierAccountService,
+    private readonly packaging: PackagingLedgerService,
   ) {}
 
   async preview(
@@ -328,6 +334,22 @@ export class ImportsService {
           [...products.values()].map((p) => p.id),
         ),
       });
+    } else if (type === ImportType.PACKAGING_OPENING) {
+      await this.packaging.requireEnabled();
+      const clients = await this.clients.byCodes(tx, columnValues(table, mapping, 'clientCode'));
+      const types = await tx.packagingType.findMany({
+        where: { deletedAt: null },
+        select: { id: true, name: true },
+      });
+      const opened = await tx.clientPackagingBalance.findMany({
+        where: { hasOpening: true, clientId: { in: [...clients.values()].map((c) => c.id) } },
+        select: { clientId: true, packagingTypeId: true },
+      });
+      rows = validatePackagingOpening(table, mapping, fields, {
+        clients,
+        types: new Map(types.map((t) => [t.name.toLowerCase(), t])),
+        withOpening: new Set(opened.map((o) => `${o.clientId}:${o.packagingTypeId}`)),
+      });
     } else if (type === ImportType.SUPPLIERS) {
       const codes = columnValues(table, mapping, 'code');
       rows = validateSuppliers(table, mapping, fields, await this.suppliers.byCodes(tx, codes));
@@ -352,6 +374,9 @@ export class ImportsService {
     }
     if (job.type === ImportType.SUPPLIERS) {
       return this.writeSuppliers(tx, job, plans as SupplierPlan[]);
+    }
+    if (job.type === ImportType.PACKAGING_OPENING) {
+      return this.writePackagingOpening(tx, job, plans as PackagingOpeningPlan[]);
     }
     return this.writeClients(tx, job, plans as ClientPlan[], user);
   }
@@ -439,6 +464,25 @@ export class ImportsService {
           refType: 'IMPORT',
           refId: job.id,
           note: `Import ${job.fileName}`.slice(0, 255),
+        })),
+      );
+    }
+    return { created: 0, updated: 0, opening: plans.length };
+  }
+
+  /** Opening packaging counts through the packaging ledger (OPENING, refused twice). */
+  private async writePackagingOpening(tx: Tx, job: ImportJob, plans: PackagingOpeningPlan[]) {
+    for (const chunk of chunks(plans)) {
+      await this.packaging.post(
+        tx,
+        chunk.map((p) => ({
+          clientId: p.clientId,
+          packagingTypeId: p.packagingTypeId,
+          type: 'OPENING',
+          qty: p.qty,
+          label: 'Emballages initiaux (import)',
+          refType: 'IMPORT',
+          refId: job.id,
         })),
       );
     }

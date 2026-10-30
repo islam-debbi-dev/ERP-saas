@@ -99,6 +99,35 @@ async function main(): Promise<void> {
         },
       });
 
+      // Distribution demo data (phase 20): a casier and a 5 % remise on the Elio brand for
+      // the year. Fixed ids: a rerun changes nothing.
+      await tx.packagingType.upsert({
+        where: { id: '00000000-0000-4000-8000-0000000020a1' },
+        update: {},
+        create: {
+          id: '00000000-0000-4000-8000-0000000020a1',
+          tenantId: tenant.id,
+          name: 'Casier',
+          depositValue: '300',
+        },
+      });
+      const year = new Date().getUTCFullYear();
+      await tx.promotion.upsert({
+        where: { id: '00000000-0000-4000-8000-0000000020b1' },
+        update: {},
+        create: {
+          id: '00000000-0000-4000-8000-0000000020b1',
+          tenantId: tenant.id,
+          name: 'Elio -5 %',
+          type: 'PERCENT_DISCOUNT',
+          validFrom: new Date(`${year}-01-01T00:00:00.000Z`),
+          validTo: new Date(`${year}-12-31T00:00:00.000Z`),
+          target: 'BRAND',
+          brandId: '00000000-0000-4000-8000-0000000014b1',
+          discountPct: '5',
+        },
+      });
+
       // Tournées demo data (phase 16): a seller, three clients of Alger Est and a route
       // that runs every day, so "Ma tournée du jour" has stops. Fixed ids: a rerun changes
       // nothing (the seller's password is never reset).

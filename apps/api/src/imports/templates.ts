@@ -26,6 +26,8 @@ const HEADERS: Record<string, string> = {
   address: 'Adresse',
   creditLimit: 'Plafond',
   openingBalance: 'Solde initial',
+  clientCode: 'Code client',
+  packaging: 'Emballage',
 };
 
 export function templateHeader(field: ImportFieldDef): string {
@@ -100,6 +102,10 @@ const EXAMPLES: Record<ImportType, Record<string, string | number>[]> = {
       openingBalance: '-15 000,00',
     },
   ],
+  PACKAGING_OPENING: [
+    { clientCode: 'C001', packaging: 'Casier', quantity: 12 },
+    { clientCode: 'C001', packaging: 'Palette', quantity: 2 },
+  ],
 };
 
 export async function buildTemplate(
@@ -127,4 +133,5 @@ export const TEMPLATE_FILE_NAMES: Record<ImportType, string> = {
   [ImportType.OPENING_STOCK]: 'modele-import-stock-initial.xlsx',
   [ImportType.CLIENTS]: 'modele-import-clients.xlsx',
   [ImportType.SUPPLIERS]: 'modele-import-fournisseurs.xlsx',
+  [ImportType.PACKAGING_OPENING]: 'modele-import-emballages.xlsx',
 };

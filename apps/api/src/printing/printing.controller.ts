@@ -75,6 +75,16 @@ export class StatementPrintController {
     const { format, ...range } = query;
     return pdf(this.renderer, await this.printing.statement(id, range, format, user));
   }
+
+  /** Relevé d'emballages (phase 20); readable when the module is off. */
+  @Get(':id/packaging/pdf')
+  async packagingStatement(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query(new ZodValidationPipe(printQuerySchema)) query: PrintQuery,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<StreamableFile> {
+    return pdf(this.renderer, await this.printing.packagingStatement(id, query.format, user));
+  }
 }
 
 @Controller('payments')

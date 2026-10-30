@@ -11,6 +11,8 @@ export const ImportType = {
   CLIENTS: 'CLIENTS',
   /** Fournisseurs et soldes (phase 21). */
   SUPPLIERS: 'SUPPLIERS',
+  /** Emballages chez les clients, opening counts (phase 20, PACKAGING). */
+  PACKAGING_OPENING: 'PACKAGING_OPENING',
 } as const;
 export type ImportType = (typeof ImportType)[keyof typeof ImportType];
 export const IMPORT_TYPES = Object.values(ImportType);
@@ -323,6 +325,20 @@ const SUPPLIER_FIELDS: ImportFieldDef[] = [
   ]),
 ];
 
+/** Emballages chez les clients (phase 20): one row per client and packaging type. */
+const PACKAGING_OPENING_FIELDS: ImportFieldDef[] = [
+  f('clientCode', 'text', true, ['code client', 'code', 'client', 'الرمز', 'الزبون']),
+  f('packaging', 'text', true, [
+    'emballage',
+    'type emballage',
+    'casier',
+    'packaging',
+    'التغليف',
+    'العبوة',
+  ]),
+  f('quantity', 'qty', true, ['quantite', 'qte', 'qty', 'nombre', 'solde', 'quantity', 'الكمية']),
+];
+
 /** The fields of an import type. Products need the tenant's active price levels. */
 export function importFields(
   type: ImportType,
@@ -331,6 +347,7 @@ export function importFields(
   if (type === ImportType.PRODUCTS) return [...PRODUCT_FIELDS, ...priceFields(priceLevels)];
   if (type === ImportType.OPENING_STOCK) return OPENING_STOCK_FIELDS;
   if (type === ImportType.SUPPLIERS) return SUPPLIER_FIELDS;
+  if (type === ImportType.PACKAGING_OPENING) return PACKAGING_OPENING_FIELDS;
   return CLIENT_FIELDS;
 }
 

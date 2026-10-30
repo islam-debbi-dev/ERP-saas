@@ -180,6 +180,13 @@ model Tenant {
   incentiveRules       IncentiveRule[]
   incentiveRuns        IncentiveRun[]
   incentiveLines       IncentiveLine[]
+  promotions           Promotion[]
+  promotionProducts    PromotionProduct[]
+  promotionClients     PromotionClient[]
+  packagingTypes       PackagingType[]
+  productPackagings    ProductPackaging[]
+  clientPackaging      ClientPackagingEntry[]
+  clientPackagingBals  ClientPackagingBalance[]
 
   @@map("tenants")
 }
@@ -443,6 +450,8 @@ model Product {
   warehouseStocks     WarehouseStock[]
   stockTransferLines  StockTransferLine[]
   orderLines          OrderLine[]
+  promotionProducts   PromotionProduct[]
+  packagings          ProductPackaging[]
 
   @@unique([tenantId, reference])
   @@index([tenantId, designation])
@@ -942,6 +951,9 @@ model Client {
   orders         Order[]
   geoChecks      GeoCheck[]
   geoRequests    ClientGeoChangeRequest[]
+  promotions     PromotionClient[]
+  packaging      ClientPackagingEntry[]
+  packagingBals  ClientPackagingBalance[]
 
   @@unique([tenantId, code])
   @@index([tenantId, name])
@@ -1115,6 +1127,13 @@ model SaleLine {
   unitCostBase Decimal  @default(0) @db.Decimal(14, 4)
   /// For facture lines copied from a BL line.
   sourceLineId String?  @db.Uuid
+  /// Promotions (phase 20): a free line (UG) is priced 0 and points to its paid line.
+  isFree         Boolean  @default(false)
+  promotionId    String?  @db.Uuid
+  /// The promotion's name when the line was priced (frozen).
+  promotionName  String?  @db.VarChar(80)
+  /// Position of the paid line a free line comes from, in the same document.
+  freeOfPosition Int?     @db.SmallInt
   createdAt    DateTime @default(now()) @db.Timestamptz(3)
 
   tenant      Tenant           @relation(fields: [tenantId], references: [id])
@@ -1252,6 +1271,8 @@ enum ImportType {
   CLIENTS
   /// Fournisseurs et soldes (phase 21).
   SUPPLIERS
+  /// Emballages chez les clients, opening counts (phase 20).
+  PACKAGING_OPENING
 }
 
 enum ImportStatus {
@@ -1820,6 +1841,13 @@ model OrderLine {
   /// Set at delivery, in the line's unit: delivered + not delivered = qty.
   qtyDelivered    Decimal? @db.Decimal(14, 3)
   qtyNotDelivered Decimal? @db.Decimal(14, 3)
+  /// Promotions (phase 20): a free line (UG) is priced 0 and points to its paid line.
+  isFree         Boolean  @default(false)
+  promotionId    String?  @db.Uuid
+  /// The promotion's name when the line was priced (frozen).
+  promotionName  String?  @db.VarChar(80)
+  /// Position of the paid line a free line comes from, in the same document.
+  freeOfPosition Int?     @db.SmallInt
   createdAt       DateTime @default(now()) @db.Timestamptz(3)
 
   tenant  Tenant  @relation(fields: [tenantId], references: [id])
@@ -2134,4 +2162,194 @@ model IncentiveLine {
   @@index([tenantId, runId])
   @@index([tenantId, userId])
   @@map("incentive_lines")
+}
+
+// ---------------------------------------------------------------- promotions & emballages (phase 20)
+
+enum PromotionType {
+  FREE_UNITS
+  PERCENT_DISCOUNT
+}
+
+enum PromotionClientScope {
+  ALL
+  PRICE_LEVEL
+  SECTOR
+  CLIENTS
+}
+
+enum PromotionTarget {
+  PRODUCTS
+  BRAND
+  CATEGORY
+}
+
+/// Master data (PROMOTIONS): archived with deletedAt. A sale keeps the promotion's name and
+/// values on its lines, so editing a promotion never changes a past document.
+/// Product, unit, brand, category, level and sector ids are checked by the service (master
+/// data is never deleted).
+model Promotion {
+  id            String               @id @default(uuid()) @db.Uuid
+  tenantId      String               @db.Uuid
+  name          String               @db.VarChar(80)
+  type          PromotionType
+  /// Algiers days, both included.
+  validFrom     DateTime             @db.Date
+  validTo       DateTime             @db.Date
+  active        Boolean              @default(true)
+  /// Highest wins when several promotions match a line.
+  priority      Int                  @default(0)
+  clientScope   PromotionClientScope @default(ALL)
+  priceLevelId  String?              @db.Uuid
+  sectorId      String?              @db.Uuid
+  /// FREE_UNITS: buy `buyQty` `buyUnitId` of `buyProductId`, get `freeQty` `freeUnitId` of `freeProductId`.
+  buyProductId  String?              @db.Uuid
+  buyUnitId     String?              @db.Uuid
+  buyQty        Decimal?             @db.Decimal(14, 3)
+  freeProductId String?              @db.Uuid
+  freeUnitId    String?              @db.Uuid
+  freeQty       Decimal?             @db.Decimal(14, 3)
+  /// 10+1 repeatable: 25 bought gives 2 free.
+  repeatable    Boolean              @default(true)
+  /// PERCENT_DISCOUNT on products (PromotionProduct), a brand or a category (with its sub-categories).
+  target        PromotionTarget?
+  brandId       String?              @db.Uuid
+  categoryId    String?              @db.Uuid
+  discountPct   Decimal?             @db.Decimal(5, 2)
+  /// Minimum quantity of the line, in the product's base unit.
+  minQtyBase    Decimal?             @db.Decimal(14, 3)
+  version       Int                  @default(1)
+  createdBy     String?              @db.Uuid
+  deletedAt     DateTime?            @db.Timestamptz(3)
+  createdAt     DateTime             @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime             @updatedAt @db.Timestamptz(3)
+
+  tenant   Tenant             @relation(fields: [tenantId], references: [id])
+  products PromotionProduct[]
+  clients  PromotionClient[]
+
+  @@index([tenantId, validFrom, validTo])
+  @@map("promotions")
+}
+
+model PromotionProduct {
+  id          String @id @default(uuid()) @db.Uuid
+  tenantId    String @db.Uuid
+  promotionId String @db.Uuid
+  productId   String @db.Uuid
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  promotion Promotion @relation(fields: [promotionId], references: [id])
+  product   Product   @relation(fields: [productId], references: [id])
+
+  @@unique([promotionId, productId])
+  @@index([tenantId, productId])
+  @@map("promotion_products")
+}
+
+model PromotionClient {
+  id          String @id @default(uuid()) @db.Uuid
+  tenantId    String @db.Uuid
+  promotionId String @db.Uuid
+  clientId    String @db.Uuid
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  promotion Promotion @relation(fields: [promotionId], references: [id])
+  client    Client    @relation(fields: [clientId], references: [id])
+
+  @@unique([promotionId, clientId])
+  @@index([tenantId, clientId])
+  @@map("promotion_clients")
+}
+
+enum PackagingEntryType {
+  DELIVERY
+  RETURN
+  OPENING
+  ADJUST
+  REVERSAL
+}
+
+/// Emballage consigné (casier, palette, bouteille, bonbonne). Master data (PACKAGING).
+model PackagingType {
+  id           String    @id @default(uuid()) @db.Uuid
+  tenantId     String    @db.Uuid
+  name         String    @db.VarChar(80)
+  /// Deposit value shown to the client; no money is posted in phase 20.
+  depositValue Decimal?  @db.Decimal(14, 2)
+  deletedAt    DateTime? @db.Timestamptz(3)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @db.Timestamptz(3)
+
+  tenant   Tenant                   @relation(fields: [tenantId], references: [id])
+  products ProductPackaging[]
+  entries  ClientPackagingEntry[]
+  balances ClientPackagingBalance[]
+
+  @@index([tenantId, name])
+  @@map("packaging_types")
+}
+
+/// A product travels in a packaging: one casier per 24 bouteilles (`qtyBasePerPackaging` = 24).
+model ProductPackaging {
+  id                  String   @id @default(uuid()) @db.Uuid
+  tenantId            String   @db.Uuid
+  productId           String   @db.Uuid
+  packagingTypeId     String   @db.Uuid
+  qtyBasePerPackaging Decimal  @db.Decimal(14, 3)
+  createdAt           DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant        Tenant        @relation(fields: [tenantId], references: [id])
+  product       Product       @relation(fields: [productId], references: [id])
+  packagingType PackagingType @relation(fields: [packagingTypeId], references: [id])
+
+  @@unique([productId, packagingTypeId])
+  @@index([tenantId, productId])
+  @@map("product_packagings")
+}
+
+/// Packaging count ledger per client. Append-only (tenant extension + DB trigger).
+/// Positive = given to the client, negative = returned. Written only through PackagingLedgerService.
+model ClientPackagingEntry {
+  id              String             @id @default(uuid()) @db.Uuid
+  seq             BigInt             @unique @default(autoincrement())
+  tenantId        String             @db.Uuid
+  clientId        String             @db.Uuid
+  packagingTypeId String             @db.Uuid
+  type            PackagingEntryType
+  qty             Int
+  label           String             @db.VarChar(160)
+  note            String?            @db.VarChar(255)
+  refType         String?            @db.VarChar(30)
+  refId           String?            @db.Uuid
+  createdBy       String?            @db.Uuid
+  createdAt       DateTime           @default(now()) @db.Timestamptz(3)
+
+  tenant        Tenant        @relation(fields: [tenantId], references: [id])
+  client        Client        @relation(fields: [clientId], references: [id])
+  packagingType PackagingType @relation(fields: [packagingTypeId], references: [id])
+
+  @@index([tenantId, clientId, seq])
+  @@index([tenantId, refType, refId])
+  @@map("client_packaging_entries")
+}
+
+/// Cached count per client and packaging, updated in the same transaction as the entries
+/// and reconcilable from them.
+model ClientPackagingBalance {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @db.Uuid
+  clientId        String   @db.Uuid
+  packagingTypeId String   @db.Uuid
+  balance         Int      @default(0)
+  hasOpening      Boolean  @default(false)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(3)
+
+  tenant        Tenant        @relation(fields: [tenantId], references: [id])
+  client        Client        @relation(fields: [clientId], references: [id])
+  packagingType PackagingType @relation(fields: [packagingTypeId], references: [id])
+
+  @@unique([clientId, packagingTypeId])
+  @@index([tenantId, clientId])
+  @@map("client_packaging_balances")
 }

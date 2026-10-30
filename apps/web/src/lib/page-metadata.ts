@@ -49,7 +49,10 @@ type TitleKey =
   | 'incentives.title'
   | 'incentives.targetsTitle'
   | 'incentives.planTitle'
-  | 'incentives.runPageTitle';
+  | 'incentives.runPageTitle'
+  | 'promotions.title'
+  | 'packaging.title'
+  | 'sellOut.title';
 
 /** `export const generateMetadata = titled('nav.products')` gives the tab a translated title. */
 export function titled(key: TitleKey): () => Promise<Metadata> {

@@ -132,4 +132,31 @@ export const RECONCILE_CHECKS: ReconcileCheck[] = [
       WHERE sb.id IS NULL
       GROUP BY le."tenantId", le."supplierId"`,
   },
+  {
+    // Phase 20: each client's packaging count equals the sum of its packaging ledger.
+    name: 'packaging_balance_equals_ledger',
+    entity: 'Client',
+    sql: `
+      SELECT pb."tenantId"::text AS "tenantId", pb."clientId"::text AS "entityId",
+             pb.balance::text AS cached, COALESCE(SUM(pe.qty), 0)::text AS ledger
+      FROM client_packaging_balances pb
+      LEFT JOIN client_packaging_entries pe
+        ON pe."tenantId" = pb."tenantId" AND pe."clientId" = pb."clientId"
+       AND pe."packagingTypeId" = pb."packagingTypeId"
+      GROUP BY pb."tenantId", pb."clientId", pb."packagingTypeId", pb.balance
+      HAVING pb.balance <> COALESCE(SUM(pe.qty), 0)`,
+  },
+  {
+    name: 'packaging_missing_balance',
+    entity: 'Client',
+    sql: `
+      SELECT pe."tenantId"::text AS "tenantId", pe."clientId"::text AS "entityId",
+             NULL AS cached, SUM(pe.qty)::text AS ledger
+      FROM client_packaging_entries pe
+      LEFT JOIN client_packaging_balances pb
+        ON pb."tenantId" = pe."tenantId" AND pb."clientId" = pe."clientId"
+       AND pb."packagingTypeId" = pe."packagingTypeId"
+      WHERE pb.id IS NULL
+      GROUP BY pe."tenantId", pe."clientId", pe."packagingTypeId"`,
+  },
 ];

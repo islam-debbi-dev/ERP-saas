@@ -84,10 +84,13 @@ function Form({
   const [paid, setPaid] = useState('');
   const [mode, setMode] = useState<PaymentMode>('ESPECES');
 
-  const parsed = order.lines.map((l) => {
-    const v = parseDA(qtys[l.id] ?? '0');
-    return { line: l, value: v, ok: v !== null && !v.isNegative() && v.lte(l.qty) };
-  });
+  // Free units (UG) go with their paid line, in proportion: the API computes them.
+  const parsed = order.lines
+    .filter((l) => !l.isFree)
+    .map((l) => {
+      const v = parseDA(qtys[l.id] ?? '0');
+      return { line: l, value: v, ok: v !== null && !v.isNegative() && v.lte(l.qty) };
+    });
   const allOk = parsed.every((p) => p.ok);
   const anyDelivered = parsed.some((p) => p.value?.gt(0));
   const paidValue = paid.trim() === '' ? money(0) : parseDA(paid);

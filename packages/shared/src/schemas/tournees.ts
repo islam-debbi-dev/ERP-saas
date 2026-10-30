@@ -13,7 +13,7 @@ import {
 } from '../enums';
 import { amountString, normalizeDecimal, quantityString } from './common';
 import { type GeoCheckResultDto, geoInputSchema } from './geo';
-import { saleLineInputSchema, type SaleWarning } from './sales';
+import { packagingReturnedSchema, saleLineInputSchema, type SaleWarning } from './sales';
 
 const id = z.uuid();
 const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'invalid_date');
@@ -248,6 +248,8 @@ export const deliverOrderSchema = z.object({
   paidAmount: amountString.transform(normalizeDecimal).default('0'),
   paymentMode: z.enum(PAYMENT_MODES).default('ESPECES'),
   forceCredit: z.boolean().default(false),
+  /** Empties the client hands back at delivery (phase 20, PACKAGING). */
+  packagingReturned: packagingReturnedSchema,
 });
 export type DeliverOrderInput = z.infer<typeof deliverOrderSchema>;
 
@@ -281,6 +283,10 @@ export interface OrderLineDto {
   lineHt: string;
   qtyDelivered: string | null;
   qtyNotDelivered: string | null;
+  /** A free line (UG) of a promotion, priced 0 (phase 20). */
+  isFree: boolean;
+  promotion: { id: string; name: string } | null;
+  freeOfPosition: number | null;
   /** Stock available now in the delivery dépôt (base unit), for information only. */
   availableBase: string;
 }
