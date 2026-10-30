@@ -1,13 +1,22 @@
 'use client';
 
 import { type ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { FolderTree, Loader2, PackageSearch, Plus, ScanBarcode, Tag } from 'lucide-react';
+import {
+  FolderTree,
+  Loader2,
+  PackageOpen,
+  PackageSearch,
+  Plus,
+  ScanBarcode,
+  Tag,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { type BarcodeMatchDto, type ProductDto, qty } from '@erp/shared';
+import { type BarcodeMatchDto, Feature, type ProductDto, qty } from '@erp/shared';
+import { useFeature } from '@/lib/auth';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/table/data-table';
@@ -33,6 +42,7 @@ const looksLikeBarcode = (value: string) => /^[\w\-.]{6,}$/.test(value) && /\d{6
 
 export function ProductsList() {
   const t = useTranslations('products');
+  const packagingOn = useFeature(Feature.PACKAGING);
   const router = useRouter();
   const errorMessage = useErrorMessage();
   const unitLabel = useUnitLabel();
@@ -167,7 +177,14 @@ export function ProductsList() {
       <PageHeader
         title={t('title')}
         description={t('subtitle')}
-        more={[{ label: t('brands'), icon: Tag, href: '/produits/marques' }]}
+        more={[
+          { label: t('brands'), icon: Tag, href: '/produits/marques' },
+          packagingOn && {
+            label: t('packagingTypes'),
+            icon: PackageOpen,
+            href: '/produits/emballages',
+          },
+        ]}
         actions={
           <>
             <Button asChild variant="outline">

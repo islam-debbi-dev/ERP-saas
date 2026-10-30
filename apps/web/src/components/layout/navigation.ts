@@ -1,4 +1,5 @@
 import {
+  BadgePercent,
   Banknote,
   ClipboardList,
   MapPinCheck,
@@ -27,6 +28,7 @@ export type NavKey =
   | 'tournees'
   | 'orders'
   | 'deliveries'
+  | 'promotions'
   | 'products'
   | 'purchases'
   | 'stock'
@@ -89,6 +91,13 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         icon: PackageCheck,
         feature: Feature.TOURNEES,
         roles: [Role.LIVREUR, Role.SELLER],
+      },
+      {
+        key: 'promotions',
+        url: '/promotions',
+        icon: BadgePercent,
+        feature: Feature.PROMOTIONS,
+        roles: [...PLANNERS, Role.SELLER],
       },
     ],
   },

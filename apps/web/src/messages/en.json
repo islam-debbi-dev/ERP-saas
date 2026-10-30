@@ -51,7 +51,8 @@
     "orders": "Orders",
     "deliveries": "Deliveries",
     "flagged": "Flagged operations",
-    "incentives": "Bonuses"
+    "incentives": "Bonuses",
+    "promotions": "Promotions"
   },
   "roles": {
     "OWNER": "Owner",
@@ -202,7 +203,8 @@
     "filterTeam": "Team",
     "allTeams": "All",
     "filterBrand": "Brand",
-    "allBrands": "All"
+    "allBrands": "All",
+    "sellOutLink": "Sell-out by brand"
   },
   "settings": {
     "title": "Settings",
@@ -401,7 +403,12 @@
     "INCENTIVE_PLAN_EMPTY": "Add at least one rule to the plan.",
     "INCENTIVE_RUN_APPROVED": "This period’s bonuses are already approved: no recalculation.",
     "INCENTIVE_RUN_NOT_PREVIEW": "This calculation is already approved.",
-    "INCENTIVE_RUN_NOT_APPROVED": "Approve the calculation before exporting it."
+    "INCENTIVE_RUN_NOT_APPROVED": "Approve the calculation before exporting it.",
+    "PROMO_OVERRIDE_FORBIDDEN": "Only an authorised user can change the free units or discount of a promotion.",
+    "PROMOTION_INVALID": "A product, unit, client or sector of the promotion was not found.",
+    "FREE_LINE_NOT_EDITABLE": "Free units follow their paid line: no promotion applies here.",
+    "PACKAGING_OPENING_ALREADY_SET": "This client’s opening packaging count is already set.",
+    "PACKAGING_TYPE_NAME_TAKEN": "A packaging type already has this name."
   },
   "units": {
     "PIECE": "Piece",
@@ -497,7 +504,9 @@
     },
     "brands": "Brands",
     "brand": "Brand",
-    "noBrand": "No brand"
+    "noBrand": "No brand",
+    "packagingTypes": "Packaging",
+    "packagingSection": "Returnable packaging"
   },
   "categories": {
     "title": "Categories",
@@ -1023,7 +1032,9 @@
     "sellerChanged": "Seller changed",
     "warehouseAuto": "Automatic (seller’s truck, else main warehouse)",
     "returnToSaleWarehouse": "Back to {name}",
-    "returnToMain": "Back to the main warehouse"
+    "returnToMain": "Back to the main warehouse",
+    "warnPackagingNegative": "The client returned more packaging than recorded (count {count}).",
+    "returnFreeHelp": "Free units come back with their line, in proportion."
   },
   "payments": {
     "title": "Payments",
@@ -1120,13 +1131,15 @@
       "PRODUCTS": "Products",
       "OPENING_STOCK": "Opening stock",
       "CLIENTS": "Clients and balances",
-      "SUPPLIERS": "Suppliers and balances"
+      "SUPPLIERS": "Suppliers and balances",
+      "PACKAGING_OPENING": "Packaging at clients"
     },
     "typesHelp": {
       "PRODUCTS": "Reference, name, units, packaging, barcodes, prices, VAT.",
       "OPENING_STOCK": "Starting quantity and cost of existing products.",
       "CLIENTS": "Code, name, phone, credit limit and opening balance.",
-      "SUPPLIERS": "Code, name, phone and opening balance (what you owe the supplier)."
+      "SUPPLIERS": "Code, name, phone and opening balance (what you owe the supplier).",
+      "PACKAGING_OPENING": "Client code, packaging and the quantity each client already holds."
     },
     "template": "Download template",
     "file": "File",
@@ -1176,7 +1189,8 @@
       "PRODUCTS": "{n, plural, one {# opening row} other {# opening rows}}",
       "OPENING_STOCK": "{n, plural, one {# opening stock saved} other {# opening stocks saved}}",
       "CLIENTS": "{n, plural, one {# opening balance saved} other {# opening balances saved}}",
-      "SUPPLIERS": "{n, plural, one {# supplier balance recorded} other {# supplier balances recorded}}"
+      "SUPPLIERS": "{n, plural, one {# supplier balance recorded} other {# supplier balances recorded}}",
+      "PACKAGING_OPENING": "{n, plural, one {# packaging count recorded} other {# packaging counts recorded}}"
     },
     "again": "New import",
     "history": "Import history",
@@ -1217,7 +1231,9 @@
       "address": "Address",
       "creditLimit": "Credit limit",
       "openingBalance": "Opening balance",
-      "brand": "Brand"
+      "brand": "Brand",
+      "clientCode": "Client code",
+      "packaging": "Packaging"
     },
     "issues": {
       "required": "required",
@@ -1252,7 +1268,9 @@
       "stock_not_empty": "the product already has {qty} in stock; the opening stock will add to it",
       "zero_cost": "zero cost: this product's margin will be wrong",
       "supplier_archived": "supplier archived",
-      "invalid_supplier": "invalid supplier ({rule})"
+      "invalid_supplier": "invalid supplier ({rule})",
+      "client_not_found": "no client with this code",
+      "packaging_not_found": "unknown packaging “{value}”"
     }
   },
   "users": {
@@ -1361,6 +1379,10 @@
     "INCENTIVE_APPROVE": {
       "label": "Approve bonuses",
       "help": "Approve the month’s bonus calculation (the owner always can)."
+    },
+    "PROMO_OVERRIDE": {
+      "label": "Change a promotion on a sale",
+      "help": "Change the free units or the discount a promotion gives a line."
     }
   },
   "sessions": {
@@ -2302,5 +2324,171 @@
     "targetsSaved": "Targets saved.",
     "archiveTitle": "Archive the plan?",
     "archiveHelp": "An archived plan is no longer used in calculations and cannot be reactivated. Approved calculations stay."
+  },
+  "promotions": {
+    "title": "Promotions",
+    "subtitle": "Free units and discounts applied to sales automatically.",
+    "new": "New promotion",
+    "edit": "Edit promotion",
+    "saved": "Promotion saved",
+    "created": "Promotion created",
+    "statusFilter": "Period",
+    "statusactive": "Running",
+    "statusupcoming": "Upcoming",
+    "statusended": "Ended",
+    "emptyactive": "No running promotion",
+    "emptyupcoming": "No upcoming promotion",
+    "emptyended": "No ended promotion",
+    "emptyHelp": "Create a promotion: it applies to the sales and orders of its dates.",
+    "priorityBadge": "Priority {n}",
+    "inactive": "Turned off",
+    "actionsOf": "Actions on {name}",
+    "archive": "Delete",
+    "archiveTitle": "Delete this promotion?",
+    "archiveBody": "It will no longer apply. Past sales keep their free units and discount.",
+    "archived": "Promotion deleted",
+    "ruleFreeUnits": "{buy} {product} bought → {free} {freeProduct} free",
+    "repeatableShort": "repeatable",
+    "rulePercent": "−{pct}% on {target}",
+    "ruleMin": "from {qty}",
+    "targetPRODUCTS": "Products",
+    "targetBRAND": "Brand",
+    "targetCATEGORY": "Category",
+    "scopeALL": "All clients",
+    "scopePRICE_LEVEL": "One price level",
+    "scopeSECTOR": "One sector",
+    "scopeCLIENTS": "A list of clients",
+    "clientCount": "{count, plural, one {# client} other {# clients}}",
+    "dates": "From {from} to {to}",
+    "freeUnits": "Free",
+    "freeQtyOf": "Free units of {product}",
+    "freeBadge": "Free",
+    "productSearch": "Search: {field}",
+    "productSearchPlaceholder": "Reference or name",
+    "pickProduct": "Pick a product",
+    "name": "Name",
+    "type": "Type",
+    "typeFREE_UNITS": "Free units (10+1)",
+    "typePERCENT_DISCOUNT": "Discount in %",
+    "priority": "Priority",
+    "priorityHelp": "The highest wins when several promotions target the same line.",
+    "validFrom": "From",
+    "validTo": "To",
+    "freeRule": "Buy… get…",
+    "buyProduct": "Product bought",
+    "buyQty": "Quantity bought",
+    "unit": "Unit",
+    "pickUnit": "Pick a unit",
+    "freeProduct": "Product given",
+    "sameProduct": "The same product",
+    "freeQty": "Quantity given",
+    "repeatable": "Repeatable (25 bought with 10+1 gives 2 free)",
+    "discountRule": "Discount",
+    "target": "On",
+    "discountPct": "Discount %",
+    "products": "Products",
+    "add": "Add",
+    "removeNamed": "Remove {name}",
+    "brand": "Brand",
+    "pickBrand": "Pick a brand",
+    "category": "Category",
+    "pickCategory": "Pick a category",
+    "categoryHelp": "Its sub-categories are included.",
+    "minQtyBase": "Minimum quantity per line (base unit)",
+    "minQtyNone": "No minimum",
+    "clients": "Clients",
+    "clientScope": "Clients",
+    "priceLevel": "Price level",
+    "pickPriceLevel": "Pick a level",
+    "sector": "Sector",
+    "pickSector": "Pick a sector",
+    "addClient": "Add a client",
+    "active": "Active"
+  },
+  "packaging": {
+    "returnedTitle": "Packaging returned",
+    "held": "{count, plural, =0 {None at the client} one {# at the client} other {# at the client}}",
+    "title": "Packaging",
+    "subtitle": "Crates, pallets, bottles: counted at each client.",
+    "new": "New packaging",
+    "edit": "Edit packaging",
+    "saved": "Packaging saved",
+    "created": "Packaging created",
+    "emptyTitle": "No packaging",
+    "emptyHelp": "Create your crates or pallets, then set them on the products.",
+    "productCount": "{count, plural, =0 {No product} one {# product} other {# products}}",
+    "deposit": "Deposit",
+    "editNamed": "Edit {name}",
+    "archiveNamed": "Delete {name}",
+    "name": "Name",
+    "namePlaceholder": "Crate of 24 bottles",
+    "depositValue": "Deposit value (optional)",
+    "depositHelp": "Shown only: no amount goes on the client account.",
+    "archiveTitle": "Delete this packaging?",
+    "archiveBody": "Counts already at clients stay on their statement.",
+    "archived": "Packaging deleted",
+    "archive": "Delete",
+    "noTypesYet": "First create your packaging in Products > Packaging.",
+    "productHelp": "Each sale counts the packaging given to the client by itself.",
+    "type": "Packaging",
+    "pickType": "Pick a packaging",
+    "perPackaging": "{unit} per packaging",
+    "removeRow": "Remove this packaging",
+    "addRow": "Add a packaging",
+    "productSaved": "Product packaging saved",
+    "clientTitle": "Packaging at the client",
+    "newMovement": "Packaging return",
+    "clientEmpty": "No packaging at this client.",
+    "history": "Movements",
+    "entryDELIVERY": "Delivered",
+    "entryRETURN": "Returned",
+    "entryOPENING": "Opening",
+    "entryADJUST": "Adjustment",
+    "entryREVERSAL": "Cancellation",
+    "after": "Count {count}",
+    "loadMore": "Load more",
+    "movementSaved": "Saved. The client now has {count}.",
+    "negativeWarning": "The client returned more than recorded: check his opening count.",
+    "movementType": "Operation",
+    "qtyReturned": "Quantity returned",
+    "qtyAdjust": "Correction (+ or −)",
+    "adjustHelp": "Positive: the client has more. Negative: he has fewer.",
+    "noteRequired": "Reason",
+    "note": "Note (optional)",
+    "saleTitle": "Packaging",
+    "givenReturned": "{given} given · {returned} returned"
+  },
+  "sellOut": {
+    "title": "Sell-out by brand",
+    "subtitle": "Sales to clients by brand, product, sector, seller and client type.",
+    "noBrand": "No brand",
+    "clientTypePARTICULIER": "Individual",
+    "clientTypePROFESSIONNEL": "Business",
+    "counter": "Counter",
+    "sector": "Sector",
+    "allSectors": "All sectors",
+    "clientType": "Client type",
+    "allClientTypes": "All types",
+    "empty": "No sales in this period",
+    "emptyHelp": "Change the dates or the filters.",
+    "truncated": "Only the first 2,000 rows are shown: the Excel export has them all.",
+    "col": {
+      "month": "Month",
+      "brand": "Brand",
+      "reference": "Reference",
+      "designation": "Product",
+      "unit": "Unit",
+      "sector": "Sector",
+      "seller": "Seller",
+      "clientType": "Client type",
+      "qtySold": "Qty sold",
+      "qtyFree": "Free qty",
+      "qtyReturned": "Qty returned",
+      "qtyNet": "Net qty",
+      "salesHt": "Sales excl. VAT",
+      "returnsHt": "Returns excl. VAT",
+      "netHt": "Net excl. VAT",
+      "freeValueHt": "Free goods value"
+    }
   }
 }

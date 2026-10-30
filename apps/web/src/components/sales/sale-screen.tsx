@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Loader2, Minus, Plus, Save, ScanBarcode, Trash2, UserRound } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import {
   type ClientDto,
@@ -54,6 +54,12 @@ import { formatQty, stockKeys } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn, isolateLtr } from '@/lib/utils';
 import { usePrint } from '@/components/shared/print-button';
+import {
+  PackagingReturnedCard,
+  packagingReturnedInput,
+  PromoNote,
+  useSalePromotions,
+} from '@/components/distribution/sale-promotions';
 import { ClientPicker } from './client-picker';
 import { Kbd } from './kbd';
 import { Amount } from '@/components/shared/amount';
@@ -70,6 +76,8 @@ export interface ScreenLine {
   /** Typed price (managers); null = the list price of the client's level. */
   price: string | null;
   discount: string;
+  /** Free units (UG) typed by a user with PROMO_OVERRIDE; null = what the promotion gives. */
+  freeQty: string | null;
 }
 
 /** Numbers typed in the screen, as the API expects them ("1 500,5" -> "1500.5"). */
@@ -130,19 +138,40 @@ export function SaleScreen({
   const warehouseId = warehouseChoice ?? draft?.warehouse?.id ?? '';
 
   const unitPrice = (l: ScreenLine) => l.price ?? listPrice(l.product, l.unitId, levelId);
+  // Phase 20: the API's preview says which promotion each line gets (display only).
+  const promos = useSalePromotions(
+    client?.id ?? null,
+    lines.map((l) => ({
+      productId: l.product.id,
+      unitId: l.unitId,
+      qty: normalized(l.qty),
+      ...(l.price !== null ? { unitPriceHt: normalized(l.price) } : {}),
+      discountPct: normalized(l.discount),
+      ...(l.freeQty !== null ? { freeQty: normalized(l.freeQty) } : {}),
+    })),
+  );
+  /** A remise left at 0 takes the promotion's, as the API will. */
+  const discountOf = (l: ScreenLine, i: number) => {
+    const typed = parseDA(l.discount) ?? money(0);
+    const promo = promos.byIndex.get(i)?.paid;
+    return typed.isZero() && promo?.promotion ? promo.discountPct : typed.toString();
+  };
   const totals = useMemo(
     () =>
       computeTotals(
-        lines.map((l) => ({
+        lines.map((l, i) => ({
           qty: parseDA(l.qty) ?? '0',
           unitPrice: parseDA(l.price ?? listPrice(l.product, l.unitId, levelId) ?? '0') ?? '0',
           tvaRate: l.product.tvaRate,
-          discountPct: parseDA(l.discount) ?? '0',
+          discountPct: discountOf(l, i),
         })),
         settings.assujettiTva,
       ),
-    [lines, levelId, settings.assujettiTva],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- discountOf reads promos.byIndex
+    [lines, levelId, settings.assujettiTva, promos.byIndex],
   );
+  const packagingOn = useFeature(Feature.PACKAGING);
+  const [returned, setReturned] = useState<Record<string, string>>({});
   const ttc = totals.totalTtc;
   // Preview of the timbre the API adds when this facture is paid in cash.
   const cashTimbre = computeTimbre({
@@ -190,7 +219,15 @@ export function SaleScreen({
     } else {
       setLines((ls) => [
         ...ls,
-        { key: crypto.randomUUID(), product, unitId, qty: '1', price: null, discount: '0' },
+        {
+          key: crypto.randomUUID(),
+          product,
+          unitId,
+          qty: '1',
+          price: null,
+          discount: '0',
+          freeQty: null,
+        },
       ]);
       setSelected(lines.length);
     }
@@ -263,6 +300,7 @@ export function SaleScreen({
     setPaid(null);
     setMode('ESPECES');
     setForce(false);
+    setReturned({});
     attempt.current = null;
     if (draft) router.replace('/ventes/nouvelle');
     focusScan();
@@ -281,6 +319,7 @@ export function SaleScreen({
       qty: normalized(l.qty),
       ...(l.price !== null ? { unitPriceHt: normalized(l.price) } : {}),
       discountPct: normalized(l.discount),
+      ...(l.freeQty !== null ? { freeQty: normalized(l.freeQty) } : {}),
     })),
   });
 
@@ -297,6 +336,7 @@ export function SaleScreen({
         paidAmount: normalized(paidText),
         paymentMode: mode,
         forceCredit: force,
+        ...(packagingOn && client ? { packagingReturned: packagingReturnedInput(returned) } : {}),
       };
       const body = { ...header(), ...payment };
       const signature = JSON.stringify({ draft: draftRef, body });
@@ -349,9 +389,11 @@ export function SaleScreen({
         toast.warning(
           w.kind === 'NEGATIVE_STOCK'
             ? t('warnNegative', { after: formatQty(w.after) })
-            : t(w.forced ? 'warnCreditForced' : 'warnCredit', {
-                projected: isolateLtr(formatDA(w.projected)),
-              }),
+            : w.kind === 'PACKAGING_NEGATIVE'
+              ? t('warnPackagingNegative', { count: w.balance })
+              : t(w.forced ? 'warnCreditForced' : 'warnCredit', {
+                  projected: isolateLtr(formatDA(w.projected)),
+                }),
         );
       }
       reset();
@@ -714,6 +756,11 @@ export function SaleScreen({
                             {ed.discount}
                           </div>
                         </div>
+                        <PromoNote
+                          promo={promos.byIndex.get(i)}
+                          freeQty={l.freeQty}
+                          onFreeQty={(v) => patchLine(i, { freeQty: v })}
+                        />
                         <div className="flex items-baseline justify-between gap-2 text-sm">
                           <span className="text-muted-foreground">{t('colLineHt')}</span>
                           {ed.total}
@@ -750,29 +797,42 @@ export function SaleScreen({
                     ) : (
                       lines.map((l, i) => {
                         const ed = lineEditors(l, i);
+                        const promo = promos.byIndex.get(i);
                         return (
-                          <TableRow
-                            key={l.key}
-                            data-state={i === selected ? 'selected' : undefined}
-                            className="data-[state=selected]:bg-primary/10 data-[state=selected]:shadow-[inset_3px_0_0_var(--primary)] rtl:data-[state=selected]:shadow-[inset_-3px_0_0_var(--primary)]"
-                            onClick={() => setSelected(i)}
-                          >
-                            <TableCell className="max-w-56 whitespace-normal">
-                              <p className="font-medium">{l.product.designation}</p>
-                              <p
-                                dir="ltr"
-                                className="text-start text-xs text-muted-foreground rtl:text-end"
-                              >
-                                {l.product.reference}
-                              </p>
-                            </TableCell>
-                            <TableCell>{ed.unit}</TableCell>
-                            <TableCell>{ed.qty}</TableCell>
-                            <TableCell>{ed.price}</TableCell>
-                            <TableCell>{ed.discount}</TableCell>
-                            <TableCell className="text-end">{ed.total}</TableCell>
-                            <TableCell>{ed.remove}</TableCell>
-                          </TableRow>
+                          <Fragment key={l.key}>
+                            <TableRow
+                              data-state={i === selected ? 'selected' : undefined}
+                              className="data-[state=selected]:bg-primary/10 data-[state=selected]:shadow-[inset_3px_0_0_var(--primary)] rtl:data-[state=selected]:shadow-[inset_-3px_0_0_var(--primary)]"
+                              onClick={() => setSelected(i)}
+                            >
+                              <TableCell className="max-w-56 whitespace-normal">
+                                <p className="font-medium">{l.product.designation}</p>
+                                <p
+                                  dir="ltr"
+                                  className="text-start text-xs text-muted-foreground rtl:text-end"
+                                >
+                                  {l.product.reference}
+                                </p>
+                              </TableCell>
+                              <TableCell>{ed.unit}</TableCell>
+                              <TableCell>{ed.qty}</TableCell>
+                              <TableCell>{ed.price}</TableCell>
+                              <TableCell>{ed.discount}</TableCell>
+                              <TableCell className="text-end">{ed.total}</TableCell>
+                              <TableCell>{ed.remove}</TableCell>
+                            </TableRow>
+                            {promo?.paid?.promotion || promo?.free.length ? (
+                              <TableRow className="hover:bg-transparent">
+                                <TableCell colSpan={7} className="pt-0">
+                                  <PromoNote
+                                    promo={promo}
+                                    freeQty={l.freeQty}
+                                    onFreeQty={(v) => patchLine(i, { freeQty: v })}
+                                  />
+                                </TableCell>
+                              </TableRow>
+                            ) : null}
+                          </Fragment>
                         );
                       })
                     )}
@@ -873,6 +933,10 @@ export function SaleScreen({
               {geo.on && client ? <GeoPrivacyNotice /> : null}
             </CardContent>
           </Card>
+
+          {packagingOn && client ? (
+            <PackagingReturnedCard clientId={client.id} value={returned} onChange={setReturned} />
+          ) : null}
 
           <Card className="gap-3 py-4">
             <CardHeader>
