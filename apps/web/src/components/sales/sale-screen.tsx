@@ -10,6 +10,7 @@ import {
   type ClientDto,
   computeTotals,
   computeTimbre,
+  Feature,
   formatDA,
   money,
   parseDA,
@@ -42,6 +43,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { api } from '@/lib/api-client';
+import { useFeature } from '@/lib/auth';
 import { findProductByCode, useUnitLabel } from '@/lib/catalog';
 import { clientKeys, useCanManageCredit, useClient } from '@/lib/clients';
 import { useIsOffice, useSellers } from '@/lib/sales-force';
@@ -55,6 +57,7 @@ import { ClientPicker } from './client-picker';
 import { Kbd } from './kbd';
 import { Amount } from '@/components/shared/amount';
 import { StickyActions } from '@/components/shared/sticky-actions';
+import { WarehouseSelect } from '@/components/stock/warehouse-select';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export interface ScreenLine {
@@ -108,6 +111,9 @@ export function SaleScreen({
   const office = useIsOffice();
   const sellers = useSellers();
   const [sellerChoice, setSellerChoice] = useState<string | null>(null);
+  // The dépôt the goods leave from (phase 15); '' = the seller's truck, else MAIN (API).
+  const warehousesOn = useFeature(Feature.WAREHOUSES);
+  const [warehouseChoice, setWarehouseChoice] = useState<string | null>(null);
   const scanRef = useRef<HTMLInputElement>(null);
   const paidRef = useRef<HTMLInputElement>(null);
   /** Same body = same key (a retry is a replay); any change = a new operation. */
@@ -119,6 +125,7 @@ export function SaleScreen({
   const levelId = effectiveLevel(levels, client?.priceLevelId);
   // Until the user picks one: the draft's seller, else the client's assigned seller.
   const sellerId = sellerChoice ?? draft?.sellerId ?? client?.assignedSeller?.id ?? '';
+  const warehouseId = warehouseChoice ?? draft?.warehouse?.id ?? '';
 
   const unitPrice = (l: ScreenLine) => l.price ?? listPrice(l.product, l.unitId, levelId);
   const totals = useMemo(
@@ -265,6 +272,7 @@ export function SaleScreen({
     documentDate: todayInAlgiers(),
     note: draft?.note ?? '',
     ...(office ? { sellerId: sellerId || null } : {}),
+    ...(warehousesOn ? { warehouseId: warehouseId || null } : {}),
     lines: lines.map((l) => ({
       productId: l.product.id,
       unitId: l.unitId,
@@ -831,6 +839,12 @@ export function SaleScreen({
                   </NativeSelect>
                 </div>
               ) : null}
+              <WarehouseSelect
+                id="sale-warehouse"
+                value={warehouseId}
+                onChange={setWarehouseChoice}
+                defaultLabel={t('warehouseAuto')}
+              />
               {overLimit ? (
                 <Alert variant={blockMode ? 'destructive' : 'default'} role="alert">
                   <AlertDescription className="space-y-2">

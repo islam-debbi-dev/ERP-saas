@@ -120,6 +120,7 @@ export function PurchasePage({ id }: { id: string | null }) {
           supplierId: p?.supplier.id ?? '',
           documentDate: p?.documentDate ?? todayInAlgiers(),
           supplierRef: p?.supplierRef ?? '',
+          warehouseId: p?.warehouse?.id ?? '',
           note: p?.note ?? '',
           paidAmount: p && p.paidAmount !== '0.00' ? p.paidAmount : '',
         }}
