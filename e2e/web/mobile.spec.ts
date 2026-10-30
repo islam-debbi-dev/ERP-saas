@@ -207,14 +207,47 @@ async function prepareIds(f: Fixture): Promise<Ids> {
     body: {},
   });
   // A seller on the road, so "Clôture de caisse" has a day to close.
-  await call('/users/invite', {
-    method: 'POST',
+  const invite = (
+    await call<{ inviteUrl: string }>('/users/invite', {
+      method: 'POST',
+      token,
+      body: {
+        fullName: 'Vendeur mobile',
+        email: `vendeur-${idemKey('u')}@example.com`,
+        role: 'SELLER',
+        mode: 'LINK',
+      },
+    })
+  ).body;
+  // Phase 17 (GEO_CHECK): the long-named client gets a GPS point, and the seller makes a
+  // sale 1 km away with a note, so "Opérations signalées" has an item with a map.
+  await call(`/clients/${client.id}/location`, {
+    method: 'PATCH',
     token,
+    body: { lat: 36.7538, lng: 3.0588, accuracyM: 10 },
+  });
+  const inviteToken = invite.inviteUrl.split('/').pop()!;
+  const seller = (
+    await call<{ accessToken: string }>(`/auth/invitations/${inviteToken}/accept`, {
+      method: 'POST',
+      body: { password: PASSWORD },
+    })
+  ).body;
+  await call('/sales/quick', {
+    method: 'POST',
+    token: seller.accessToken,
+    idempotencyKey: idemKey('geo'),
     body: {
-      fullName: 'Vendeur mobile',
-      email: `vendeur-${idemKey('u')}@example.com`,
-      role: 'SELLER',
-      mode: 'LINK',
+      clientId: client.id,
+      documentDate: new Date().toISOString().slice(0, 10),
+      lines: [{ productId: f.productId, unitId: f.baseUnitId, qty: '1' }],
+      geo: {
+        lat: 36.7628,
+        lng: 3.0588,
+        accuracyM: 20,
+        capturedAt: new Date().toISOString(),
+        note: 'Livré au dépôt du client, à la sortie de la ville',
+      },
     },
   });
   const product = (await call<{ reference: string }>(`/products/${f.productId}`, { token })).body;
@@ -522,6 +555,23 @@ for (const locale of LOCALES) {
         await page.waitForTimeout(400);
         await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
         await check(page, '/tournees/cloture/cloturer', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+      });
+
+      await test.step('flagged operations: the detail sheet, its map and the review buttons', async () => {
+        const path = '/operations-signalees';
+        await page.evaluate((to) => {
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
+        }, path);
+        await page.waitForURL((url) => url.pathname === path);
+        await settle(page);
+        await page.getByText('Établissements Benali').first().click();
+        await page.locator('[role="dialog"] .leaflet-container').waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        await expectOnScreen(page, `[role="dialog"] button:has-text("${m['geo']?.['justified']}")`);
+        await check(page, '/operations-signalees/detail', locale, results, { fullPage: false });
         await page.keyboard.press('Escape');
       });
 

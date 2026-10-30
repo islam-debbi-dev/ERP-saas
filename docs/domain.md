@@ -97,6 +97,10 @@
 - Each client has a reference GPS point. Sellers cannot move it without approval.
 - Sales, versements and visits carry the phone's position at the time of the operation (never continuous tracking, law 18-07). The API computes the distance and stores a `GeoCheck`: OK, FAR, MOCKED, LOW_ACCURACY, NO_CLIENT_GPS, NO_SIGNAL.
 - Default is to **flag, not block**: a far operation needs a note and is reviewed by a manager (justified / not justified). Blocking is a tenant setting.
+- Rules (phase 17), first match wins: no position → `NO_SIGNAL`, mock flag → `MOCKED`, accuracy above `geoMaxAccuracyM` → `LOW_ACCURACY`, client without a point → `NO_CLIENT_GPS`, distance ≤ `geoRadiusM` + accuracy → `OK`, else `FAR`. `LATE_SYNC` is added when the position was taken more than 2 h before the server got it (offline replay). Every status except `OK` and `NO_CLIENT_GPS` needs the seller's note (`GEO_NOTE_REQUIRED`, nothing is saved without it). In `BLOCK` mode `FAR` and `MOCKED` are refused unless the user has `GEO_OVERRIDE`.
+- Who is checked: the field roles (SELLER, LIVREUR), on a sale's **validation** (quick sale or draft validated, not the draft itself), a versement and a visit. Office staff selling at the counter and the client comptoir are not checked. The check is written in the document's transaction: one `GeoCheck` per document, so an idempotent replay creates none. It stores the client's point used for the distance, since that point can move later.
+- The client's point is set once by anyone who stands there; after that a seller asks for a change (`ClientGeoChangeRequest`), which a manager or a supervisor above that seller approves or rejects. Office roles move it directly. Every change is audited with the point before and after.
+- A review is an append-only `GeoCheckReview` row; the latest verdict is cached on the `GeoCheck` in the same transaction. Supervisors see their team's flags, only managers give the verdict.
 
 ### Objectifs & primes
 - Companies set monthly targets per seller or team (CA HT, quantity by brand/product, encaissements, margin, new clients, visits) and bonus rules from five types: fixed on target, tiers (highest reached or progressive), commission %, amount per unit, manager override on the team; with gates (e.g. recouvrement ≥ 70 %) and a cap.
@@ -125,6 +129,9 @@
 | `priceLevelCount` | 1 to 5, default 3 (gros, demi-gros, détail) | products, clients |
 | `reminderDays` | 1 to 365, default 30 | clients à relancer |
 | `sellerScope` | `ALL_CLIENTS` / `ASSIGNED_ONLY`, default `ALL_CLIENTS` | clients, sales, versements seen by sellers (SALES_FORCE) |
+| `geoCheckMode` | `OFF` / `FLAG` / `BLOCK`, default `FLAG` | sales, versements, visits of sellers (GEO_CHECK) |
+| `geoRadiusM` | 20 to 5000 m, default 150 | distance still counted "at the client" (GEO_CHECK) |
+| `geoMaxAccuracyM` | 10 to 5000 m, default 200 | positions less precise are `LOW_ACCURACY` (GEO_CHECK) |
 | Timbre fiscal rule | configurable rate, min, max, threshold; off by default | factures paid in cash |
 
 ## Glossary (French term → meaning in code)
