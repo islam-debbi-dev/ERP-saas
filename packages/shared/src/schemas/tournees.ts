@@ -288,6 +288,8 @@ export interface OrderDto {
   warehouse: { id: string; name: string } | null;
   requestedDate: string | null;
   note: string | null;
+  /** The tenant's TVA regime when the order was last priced. */
+  assujettiTva: boolean;
   totalHt: string;
   totalTva: string;
   totalTtc: string;

@@ -444,6 +444,23 @@ describe('tournées, orders and seller sessions (phase 16)', () => {
       await as(other).get(`/orders/${mine.id}`).expect(404);
     });
 
+    it('prints a confirmed bon de commande, never a draft', async () => {
+      const [c, p] = [await client(), await product()];
+      const draft = (
+        await as(d)
+          .post('/orders', {
+            clientId: c.id,
+            lines: [{ productId: p.id, unitId: p.carton, qty: '1' }],
+          })
+          .expect(201)
+      ).body as OrderDto;
+      await as(d).get(`/documents/BC/${draft.id}/pdf`).expect(409);
+      await as(d).post(`/orders/${draft.id}/confirm`).expect(200);
+      const pdf = await as(d).get(`/documents/BC/${draft.id}/pdf?format=A5`).expect(200);
+      expect(pdf.headers['content-type']).toContain('application/pdf');
+      await as(other).get(`/documents/BC/${draft.id}/pdf`).expect(404);
+    });
+
     it('a cancelled order cannot be delivered, and a delivered one cannot be cancelled', async () => {
       const [c, p] = [await client(), await product()];
       const o = await confirmedOrder(d, c.id, p, '1');

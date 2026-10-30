@@ -613,6 +613,7 @@ export class OrdersService {
       warehouse: o.warehouse,
       requestedDate: o.requestedDate ? toIsoDate(o.requestedDate) : null,
       note: o.note,
+      assujettiTva: o.assujettiTva,
       totalHt: toMoneyString(o.totalHt.toString()),
       totalTva: toMoneyString(o.totalTva.toString()),
       totalTtc: toMoneyString(o.totalTtc.toString()),

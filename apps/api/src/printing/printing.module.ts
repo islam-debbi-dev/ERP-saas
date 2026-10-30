@@ -5,6 +5,7 @@ import { PaymentsModule } from '../payments/payments.module';
 import { PurchasesModule } from '../purchases/purchases.module';
 import { SalesModule } from '../sales/sales.module';
 import { TenantsModule } from '../tenants/tenants.module';
+import { TourneesModule } from '../tournees/tournees.module';
 import { PdfRendererService } from './pdf-renderer.service';
 import {
   DocumentsPrintController,
@@ -29,6 +30,7 @@ import { ShareLinksService } from './share-links.service';
     PaymentsModule,
     ClientsModule,
     StockModule,
+    TourneesModule,
   ],
   controllers: [
     DocumentsPrintController,

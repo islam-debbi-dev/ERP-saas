@@ -8,6 +8,8 @@ import {
   type ClientDto,
   type ClientStatementDto,
   computeTotals,
+  type OrderDto,
+  OrderStatus,
   money,
   numberToFrenchWords,
   PaymentMode,
@@ -419,6 +421,85 @@ export function transferDocument(t: StockTransferDto, ctx: PrintContext): string
     ],
     body,
     cancelled: t.status === StockTransferStatus.CANCELLED,
+    duplicate: ctx.duplicate,
+  });
+}
+
+// ---------------------------------------------------------------- bon de commande
+
+/**
+ * Bon de commande (phase 16): what the client ordered at the prices frozen at
+ * confirmation. Not a sale: no payment, no amount in words. Once delivered, the
+ * quantities not delivered are shown.
+ */
+export function orderDocument(o: OrderDto, ctx: PrintContext): string {
+  const totals = computeTotals(
+    o.lines.map((l) => ({
+      qty: l.qty,
+      unitPrice: l.unitPriceHt,
+      tvaRate: l.tvaRate,
+      discountPct: l.discountPct,
+    })),
+    o.assujettiTva,
+  );
+  const rows = taxRows(
+    {
+      assujettiTva: o.assujettiTva,
+      totalHt: o.totalHt,
+      totalTtc: o.totalTtc,
+      tvaByRate: totals.tvaByRate.map((r) => ({
+        rate: r.rate.toFixed(2),
+        tva: toMoneyString(r.tva),
+      })),
+    },
+    'Total TTC',
+    true,
+  );
+  const short = o.lines.filter((l) => l.qtyNotDelivered && money(l.qtyNotDelivered).gt(0));
+  const meta: [string, string][] = [];
+  if (o.seller) meta.push(['Vendeur', o.seller.fullName]);
+  if (o.requestedDate) meta.push(['Livraison prévue', day(o.requestedDate)]);
+  if (o.sale?.number) meta.push(['Livré par', o.sale.number]);
+  const body = html`
+    ${linesTable(
+      o.lines.map((l) => ({ ...l, unit: UNIT_NAMES[l.unitCode] ?? l.unitCode })),
+      o.assujettiTva,
+    )}
+    <div class="after">
+      <div>${tvaMention(o.assujettiTva, ctx.seller)}</div>
+      ${totalsTable(rows)}
+    </div>
+    ${
+      short.length > 0
+        ? html`<p class="note">
+            Non livré :
+            ${short
+              .map((l) => `${l.designation} (${quantity(l.qtyNotDelivered ?? '0')})`)
+              .join(', ')}
+          </p>`
+        : ''
+    }
+    ${o.note ? html`<p class="note">Note : ${o.note}</p>` : ''}
+    <div class="signatures">
+      <div>Le client</div>
+      <div>Le vendeur</div>
+    </div>
+  `;
+  return layout({
+    format: ctx.format,
+    title: 'BON DE COMMANDE',
+    number: o.number,
+    date: dayOf(o.confirmedAt ?? o.createdAt),
+    seller: ctx.seller,
+    party: {
+      label: 'Client',
+      name: o.client.name,
+      code: o.client.code,
+      lines: [o.client.phone ? `Tél. : ${o.client.phone}` : null],
+    },
+    meta,
+    body,
+    cancelled: o.status === OrderStatus.CANCELLED,
     duplicate: ctx.duplicate,
   });
 }
