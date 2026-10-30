@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ErrorCode, Feature, Role, SELLING_ROLES, SellerScope } from '@erp/shared';
+import { algiersDay, ErrorCode, Feature, Role, SELLING_ROLES, SellerScope } from '@erp/shared';
 import { type CurrentUserInfo } from '../auth/auth.types';
 import { FeaturesService } from '../billing/features.service';
 import { AppException } from '../common/app-exception';
@@ -167,13 +167,27 @@ export class ScopeService {
 
   /**
    * Whether the seller of a validated sale (or the collector of a versement) may still
-   * change. Phase 18 refuses it once the month's incentives are approved; until then
-   * everything is allowed. Called inside the reassign transaction.
+   * change: not once the bonuses of its period are approved (phase 18), since they were
+   * computed on that seller. Called inside the reassign transaction.
    */
-  assertSellerChangeAllowed(
-    _db: Db,
-    _doc: { kind: 'SALE' | 'PAYMENT'; at: Date },
+  async assertSellerChangeAllowed(
+    db: Db,
+    doc: { kind: 'SALE' | 'PAYMENT'; at: Date },
   ): Promise<void> {
-    return Promise.resolve();
+    const day = algiersDay(doc.at);
+    const rows = await db.$queryRaw<{ id: string; periodStart: Date }[]>`
+      SELECT id, "periodStart" FROM incentive_runs
+      WHERE "tenantId" = ${tenantContext.requireTenantId()}::uuid
+        AND status IN ('APPROVED', 'EXPORTED')
+        AND "periodStart" <= ${day}::date AND "periodEnd" >= ${day}::date
+      LIMIT 1`;
+    const run = rows[0];
+    if (run) {
+      throw new AppException(
+        ErrorCode.PERIOD_APPROVED,
+        'The bonuses of this period are approved: the seller can no longer change',
+        { runId: run.id, kind: doc.kind, period: run.periodStart.toISOString().slice(0, 7) },
+      );
+    }
   }
 }

@@ -31,6 +31,7 @@ import { type FigureFilters, NO_FIGURE_FILTERS, useDashboard } from '@/lib/repor
 import { useBrands, useIsOffice, useSellers } from '@/lib/sales-force';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
+import { MyObjectivesCard } from '@/components/incentives/my-objectives-card';
 import { OnboardingCard } from './onboarding-card';
 import { SalesChart } from './sales-chart';
 import { Amount } from '@/components/shared/amount';
@@ -54,6 +55,7 @@ export function DashboardPage() {
         }
       />
       <OnboardingCard />
+      <MyObjectivesCard />
       <FigureFilterBar value={filters} onChange={setFilters} />
       {dashboard.isError ? (
         <p role="alert" className="text-sm text-destructive">

@@ -106,6 +106,14 @@
 - Companies set monthly targets per seller or team (CA HT, quantity by brand/product, encaissements, margin, new clients, visits) and bonus rules from five types: fixed on target, tiers (highest reached or progressive), commission %, amount per unit, manager override on the team; with gates (e.g. recouvrement ≥ 70 %) and a cap.
 - An avoir counts in the month it is validated, so a return after an approved month lowers the next month.
 - Month end: preview → owner approves → frozen → Excel export for payroll. The software computes bonuses; it does not do payroll.
+- Rules (phase 18, module INCENTIVES), so an approved month is never rewritten:
+  - A sale counts in the month it is validated; if it is cancelled later, what was left of it (not returned yet) is taken back in the month of the cancellation. An avoir counts in the month it is made, for the seller of the sale (of the BL when the avoir is on a facture made from BLs). A facture made from BLs never counts: its BLs did.
+  - A versement counts when received; a cancel or a bounce takes it back in its own month. Legacy documents (no seller / collector) count for their creator / receiver.
+  - **Recouvrement %** = versements not paid at the sale ÷ what the period's sales left on credit (TTC − paid at the sale), 100 % when nothing was on credit. **Strike rate** = visits with a sale or an order ÷ visits. **Opérations non justifiées** = GeoChecks reviewed NOT_JUSTIFIED, by the operation's date.
+  - A scope (brand, category with its sub-categories, product) only applies to CA, quantity and margin. "Per unit" counts whole units (in the chosen unit of the product).
+  - A team target covers the manager's whole subtree (`managerId`, any depth); without its own target a team gets the sum of its members' targets. A quarter plan adds up the three months' targets.
+  - An ACTIVE plan is never edited: a change is a new version (DRAFT copy) with its own start month; activating it ends the previous version the day before.
+  - Approving (the owner, or a user granted "Valider les primes") freezes the run and its lines (DB triggers) and locks the period: no seller / collector change on its documents and no target change (`PERIOD_APPROVED`). Margin figures stay hidden without "Voir coûts et marges".
 
 ### Promotions & emballages
 - **UG (unités gratuites)**: "10+1" free units are separate lines at price 0 that leave stock; their cost lowers the margin.

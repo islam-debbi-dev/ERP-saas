@@ -18,3 +18,4 @@ export * from './sales-force';
 export * from './warehouses';
 export * from './tournees';
 export * from './geo';
+export * from './incentives';

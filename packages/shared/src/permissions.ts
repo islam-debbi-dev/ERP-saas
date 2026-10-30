@@ -25,6 +25,8 @@ export const Permission = {
   SALE_REASSIGN_SELLER: 'SALE_REASSIGN_SELLER',
   /** Save a far or mocked operation when the tenant blocks them (phase 17). */
   GEO_OVERRIDE: 'GEO_OVERRIDE',
+  /** Approve the month's bonuses (phase 18). The owner always can; not a manager default. */
+  INCENTIVE_APPROVE: 'INCENTIVE_APPROVE',
 } as const;
 export type Permission = (typeof Permission)[keyof typeof Permission];
 export const PERMISSIONS = Object.values(Permission);
@@ -32,7 +34,8 @@ export const PERMISSIONS = Object.values(Permission);
 /** What each role can do by default. The OWNER always has everything. */
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   [Role.OWNER]: PERMISSIONS,
-  [Role.MANAGER]: PERMISSIONS,
+  // Approving bonuses is the owner's call unless he grants it.
+  [Role.MANAGER]: PERMISSIONS.filter((p) => p !== Permission.INCENTIVE_APPROVE),
   [Role.SELLER]: [],
   // Counts stock but does not adjust it or validate an inventory (AGENTS: MANAGER+).
   [Role.STOREKEEPER]: [],

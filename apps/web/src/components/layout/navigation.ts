@@ -11,6 +11,7 @@ import {
   Package,
   ReceiptText,
   Settings,
+  Trophy,
   Truck,
   Users,
   Warehouse,
@@ -30,6 +31,7 @@ export type NavKey =
   | 'purchases'
   | 'stock'
   | 'flagged'
+  | 'incentives'
   | 'reports'
   | 'settings';
 
@@ -107,6 +109,13 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         icon: MapPinCheck,
         feature: Feature.GEO_CHECK,
         roles: PLANNERS,
+      },
+      {
+        key: 'incentives',
+        url: '/primes',
+        icon: Trophy,
+        feature: Feature.INCENTIVES,
+        roles: [Role.OWNER, Role.MANAGER],
       },
       { key: 'reports', url: '/rapports', icon: ChartColumn },
       { key: 'settings', url: '/parametres', icon: Settings },

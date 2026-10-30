@@ -58,6 +58,32 @@ describe('row-level security', () => {
     expect(res.rows[0]).toEqual({ rolsuper: false, rolbypassrls: false });
   });
 
+  it('every table with a tenantId column has RLS on and the tenant_isolation policy', async () => {
+    // Super-admin tables: their tenantId is only a reference, tenants never see them.
+    const SYSTEM_ONLY = new Set(['platform_audit_logs']);
+    const res = await app.query<{ table: string; rls: boolean; policies: string[] }>(
+      `SELECT c.relname AS table, c.relrowsecurity AS rls,
+              COALESCE((SELECT array_agg(p.policyname::text ORDER BY p.policyname) FROM pg_policies p
+                        WHERE p.schemaname = n.nspname AND p.tablename = c.relname), '{}') AS policies
+       FROM information_schema.columns col
+       JOIN pg_namespace n ON n.nspname = col.table_schema
+       JOIN pg_class c ON c.relnamespace = n.oid AND c.relname = col.table_name
+       WHERE col.table_schema = current_schema() AND col.column_name = 'tenantId'
+         AND c.relkind IN ('r', 'p')
+       ORDER BY c.relname`,
+    );
+    expect(res.rows.length).toBeGreaterThan(40);
+    // A new business table without its policy fails here, not in production.
+    const missing = res.rows
+      .filter(
+        (r) =>
+          !r.rls ||
+          !r.policies.includes(SYSTEM_ONLY.has(r.table) ? 'system_only' : 'tenant_isolation'),
+      )
+      .map((r) => r.table);
+    expect(missing).toEqual([]);
+  });
+
   it('returns nothing without a tenant setting', async () => {
     for (const table of [
       'tenants',
