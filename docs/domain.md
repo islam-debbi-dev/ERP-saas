@@ -82,6 +82,15 @@
 - **Tournée**: the ordered list of clients a seller visits on given weekdays. **Visite**: one stop, with an outcome (sale, order, payment only, no sale + reason).
 - **Vente directe**: the seller sells from his truck and prints the BL on the spot. **Pré-vente**: he takes a bon de commande; a livreur delivers it later and the BL is created at delivery.
 - **Camion = dépôt** (`Warehouse` type VEHICLE). Chargement / déchargement are stock transfers. CUMP stays per product for the whole company.
+
+### Dépôts et camions (phase 15, module WAREHOUSES)
+- Every company has one **dépôt principal** (MAIN, created at signup). Without the module it is the only one and nothing changes. With it: other dépôts (SECONDARY) and trucks (VEHICLE, at most one per seller, one seller per truck).
+- The stock of a product = the sum of its dépôts, always. The **CUMP is per product for the whole company**, never per dépôt: moving goods never changes it.
+- **Transfert** (`TR-YYYY-000001`): **chargement** (dépôt → camion), **déchargement** (camion → dépôt), **transfert** (anything else). The type follows from the two dépôts. A draft has no effect; validation moves the goods at the current CUMP; cancelling a validated one moves them back (never deleted). The bon de chargement prints quantities only, no prices.
+- Where the goods go, by default: a **sale** leaves from the chosen dépôt, else the seller's truck, else the dépôt principal; a **retour client** and the cancel of a sale go back where the sale left from; a **BR** enters the dépôt principal unless another is chosen, and its cancel / retour fournisseur leave from that same dépôt; opening stock, adjustments and the Excel import use the dépôt principal unless one is chosen.
+- **Stock négatif** is judged per dépôt: 10 cartons at the dépôt do not cover a sale from an empty truck (BLOCK refuses it, WARN warns).
+- An **inventaire** counts one dépôt: "expected" is that dépôt's quantity.
+- A dépôt is archived only when empty (move the stock out with a transfer first); the dépôt principal is never archived or deactivated.
 - **Clôture de tournée**: at the end of the day the API computes the cash the seller must hand over; the manager enters what he handed; the écart is stored and audited.
 
 ### Géolocalisation

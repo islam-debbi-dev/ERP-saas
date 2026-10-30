@@ -17,6 +17,9 @@ import {
   type PurchaseDto,
   type SaleDto,
   SaleStatus,
+  type StockTransferDto,
+  StockTransferStatus,
+  StockTransferType,
   SaleType,
   type SupplierDto,
   SupplierLedgerType,
@@ -362,6 +365,64 @@ export function purchaseDocument(p: PurchaseDto, ctx: PrintContext): string {
   });
 }
 
+// ---------------------------------------------------------------- bon de chargement
+
+const TRANSFER_TITLES: Record<StockTransferType, string> = {
+  [StockTransferType.LOAD]: 'BON DE CHARGEMENT',
+  [StockTransferType.UNLOAD]: 'BON DE DÉCHARGEMENT',
+  [StockTransferType.TRANSFER]: 'BON DE TRANSFERT',
+};
+
+/** Quantities only: a transfer moves goods at cost, it has no price for the driver. */
+export function transferDocument(t: StockTransferDto, ctx: PrintContext): string {
+  const body = html`
+    <table class="lines">
+      <thead>
+        <tr>
+          <th>Réf.</th>
+          <th>Désignation</th>
+          <th>Unité</th>
+          <th class="num">Quantité</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${t.lines.map(
+          (l) =>
+            html`<tr>
+              <td>${l.reference}</td>
+              <td>${l.designation}</td>
+              <td>${UNIT_NAMES[l.unitCode] ?? l.unitCode}</td>
+              <td class="num">${quantity(l.qty)}</td>
+            </tr>`,
+        )}
+      </tbody>
+    </table>
+    ${t.note ? html`<p class="note">Note : ${t.note}</p>` : ''}
+    <div class="signatures">
+      <div>Le magasinier</div>
+      <div>
+        ${t.type === StockTransferType.TRANSFER ? 'Le réceptionnaire' : 'Le chauffeur / vendeur'}
+      </div>
+    </div>
+  `;
+  return layout({
+    format: ctx.format,
+    title: TRANSFER_TITLES[t.type],
+    number: t.number,
+    date: dayOf(t.validatedAt ?? t.createdAt),
+    seller: ctx.seller,
+    party: null,
+    meta: [
+      ['De', t.from.name],
+      ['Vers', t.to.name],
+      ['Lignes', String(t.lines.length)],
+    ],
+    body,
+    cancelled: t.status === StockTransferStatus.CANCELLED,
+    duplicate: ctx.duplicate,
+  });
+}
+
 // ---------------------------------------------------------------- relevé de compte
 
 type StatementLike = Pick<
@@ -441,7 +502,6 @@ function statementBody(
       ])}
     </div>
   `;
-
 }
 
 export function statementDocument(

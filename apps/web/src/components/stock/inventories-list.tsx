@@ -7,15 +7,25 @@ import { useRouter } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import type { InventoryDto, InventoryStatus } from '@erp/shared';
+import { Feature, type InventoryDto, type InventoryStatus } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api-client';
-import { stockKeys, useInventories } from '@/lib/stock';
+import { useFeature } from '@/lib/auth';
+import { stockKeys, useInventories, useWarehouses } from '@/lib/stock';
+import { WarehouseSelect } from './warehouse-select';
 import { useErrorMessage } from '@/lib/use-error-message';
 
 export function InventoryStatusBadge({ status }: { status: InventoryStatus }) {
@@ -33,10 +43,20 @@ export function InventoriesList() {
   const queryClient = useQueryClient();
   const inventories = useInventories();
   const [key] = useState(() => crypto.randomUUID());
+  // Phase 15: with several dépôts, the count says which one it is.
+  const warehousesOn = useFeature(Feature.WAREHOUSES);
+  const warehouses = useWarehouses();
+  const [picking, setPicking] = useState(false);
+  const [warehouseId, setWarehouseId] = useState('');
+  const nameOf = (id: string | null) => warehouses.data?.find((w) => w.id === id)?.name;
 
   const create = useMutation({
     mutationFn: () =>
-      api.request<InventoryDto>('/inventories', { method: 'POST', body: {}, idempotencyKey: key }),
+      api.request<InventoryDto>('/inventories', {
+        method: 'POST',
+        body: warehouseId ? { warehouseId } : {},
+        idempotencyKey: key,
+      }),
     onSuccess: (inv) => {
       void queryClient.invalidateQueries({ queryKey: stockKeys.inventories });
       router.push(`/stock/inventaires/${inv.id}`);
@@ -58,7 +78,10 @@ export function InventoriesList() {
                 {ts('back')}
               </Link>
             </Button>
-            <Button onClick={() => create.mutate()} disabled={create.isPending}>
+            <Button
+              onClick={() => (warehousesOn ? setPicking(true) : create.mutate())}
+              disabled={create.isPending}
+            >
               {create.isPending ? (
                 <Loader2 className="animate-spin" aria-hidden />
               ) : (
@@ -99,6 +122,9 @@ export function InventoriesList() {
                         timeStyle: 'short',
                       })}{' '}
                       · {t('lines')}: {inv.lineCount}
+                      {warehousesOn && nameOf(inv.warehouseId)
+                        ? ` · ${nameOf(inv.warehouseId)}`
+                        : ''}
                     </p>
                   </div>
                   <InventoryStatusBadge status={inv.status} />
@@ -108,6 +134,38 @@ export function InventoriesList() {
           </ul>
         )}
       </Card>
+
+      <ResponsiveDialog open={picking} onOpenChange={setPicking}>
+        <ResponsiveDialogContent>
+          <form
+            className="grid gap-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              create.mutate();
+            }}
+          >
+            <ResponsiveDialogHeader>
+              <ResponsiveDialogTitle>{t('new')}</ResponsiveDialogTitle>
+              <ResponsiveDialogDescription>{t('pickWarehouse')}</ResponsiveDialogDescription>
+            </ResponsiveDialogHeader>
+            <WarehouseSelect
+              id="inventory-warehouse"
+              value={warehouseId}
+              onChange={setWarehouseId}
+              defaultLabel={t('mainWarehouse')}
+            />
+            <ResponsiveDialogFooter>
+              <Button type="button" variant="ghost" onClick={() => setPicking(false)}>
+                {ts('cancel')}
+              </Button>
+              <Button type="submit" disabled={create.isPending}>
+                {create.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
+                {t('new')}
+              </Button>
+            </ResponsiveDialogFooter>
+          </form>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     </>
   );
 }

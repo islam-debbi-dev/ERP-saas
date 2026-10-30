@@ -354,7 +354,15 @@
     "MANAGER_CYCLE": "Ce responsable est déjà dans l’équipe de cet utilisateur.",
     "SELLER_NOT_ALLOWED": "Cet utilisateur ne peut pas être vendeur (désactivé ou rôle sans vente).",
     "BRAND_NAME_TAKEN": "Une marque porte déjà ce nom.",
-    "SECTOR_NAME_TAKEN": "Un secteur porte déjà ce nom."
+    "SECTOR_NAME_TAKEN": "Un secteur porte déjà ce nom.",
+    "WAREHOUSE_NOT_FOUND": "Dépôt introuvable.",
+    "WAREHOUSE_NAME_TAKEN": "Un dépôt porte déjà ce nom.",
+    "WAREHOUSE_NOT_EMPTY": "Ce dépôt contient encore du stock. Transférez-le d’abord.",
+    "WAREHOUSE_INVALID": "Ce choix de dépôt n’est pas possible.",
+    "VEHICLE_ALREADY_ASSIGNED": "Ce vendeur a déjà un camion.",
+    "TRANSFER_NOT_DRAFT": "Ce transfert est déjà validé ou annulé.",
+    "TRANSFER_NOT_VALIDATED": "Ce transfert n’est pas validé.",
+    "TRANSFER_EMPTY": "Ajoutez au moins un article."
   },
   "units": {
     "PIECE": "Pièce",
@@ -536,7 +544,11 @@
     "openingDone": "Stock d'ouverture enregistré",
     "cancel": "Annuler",
     "saving": "Enregistrement…",
-    "colActions": "Actions"
+    "colActions": "Actions",
+    "transfers": "Chargements",
+    "warehouses": "Dépôts",
+    "warehouseFilter": "Dépôt",
+    "allWarehouses": "Tous les dépôts"
   },
   "movementTypes": {
     "OPENING": "Ouverture",
@@ -545,7 +557,9 @@
     "SALE": "Vente",
     "SALE_RETURN": "Retour client",
     "ADJUSTMENT": "Ajustement",
-    "INVENTORY": "Inventaire"
+    "INVENTORY": "Inventaire",
+    "TRANSFER_OUT": "Transfert (sortie)",
+    "TRANSFER_IN": "Transfert (entrée)"
   },
   "adjustmentReasons": {
     "CASSE": "Casse",
@@ -590,7 +604,9 @@
     "readOnly": "Cet inventaire est clôturé.",
     "keep": "Continuer le comptage",
     "back": "Retour aux inventaires",
-    "validateNeedsPermission": "La validation demande la permission « Ajuster le stock »."
+    "validateNeedsPermission": "La validation demande la permission « Ajuster le stock ».",
+    "pickWarehouse": "Quel dépôt comptez-vous ?",
+    "mainWarehouse": "Dépôt principal"
   },
   "productCost": {
     "qty": "En stock",
@@ -675,7 +691,9 @@
     "returns": "Retours fournisseur",
     "readOnlyValidated": "Bon validé le {date}.",
     "readOnlyCancelled": "Bon annulé.",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "warehouse": "Dépôt de réception",
+    "mainWarehouse": "Dépôt principal"
   },
   "suppliers": {
     "title": "Fournisseurs",
@@ -963,7 +981,10 @@
     "qtyMore": "Un {product} de plus",
     "noSeller": "Aucun vendeur",
     "changeSeller": "Changer le vendeur",
-    "sellerChanged": "Vendeur changé"
+    "sellerChanged": "Vendeur changé",
+    "warehouseAuto": "Automatique (camion du vendeur, sinon dépôt principal)",
+    "returnToSaleWarehouse": "Retour à {name}",
+    "returnToMain": "Retour au dépôt principal"
   },
   "payments": {
     "title": "Versements",
@@ -1675,5 +1696,87 @@
     "emptyTitle": "Aucune équipe",
     "emptyDescription": "Donnez un responsable à vos vendeurs (Modifier) pour former des équipes.",
     "withoutTeam": "Sans équipe"
+  },
+  "warehouses": {
+    "title": "Dépôts et camions",
+    "subtitle": "Où se trouve votre stock : dépôts et camions des vendeurs.",
+    "field": "Dépôt",
+    "new": "Nouveau dépôt",
+    "edit": "Modifier le dépôt",
+    "transfers": "Chargements",
+    "back": "Retour au stock",
+    "emptyTitle": "Aucun dépôt",
+    "emptyDescription": "Le dépôt principal est créé automatiquement.",
+    "typeMAIN": "Dépôt principal",
+    "typeSECONDARY": "Dépôt",
+    "typeVEHICLE": "Camion",
+    "noDriver": "Sans vendeur",
+    "productCount": "{count, plural, =0 {Vide} one {# article} other {# articles}}",
+    "default": "Principal",
+    "inactive": "Inactif",
+    "editNamed": "Modifier {name}",
+    "archiveNamed": "Archiver {name}",
+    "archiveTitle": "Archiver ce dépôt ?",
+    "archiveBody": "Un dépôt qui contient encore du stock ne peut pas être archivé : transférez-le d’abord.",
+    "archive": "Archiver",
+    "archived": "Dépôt archivé",
+    "help": "Un camion est le stock d’un vendeur sur la route.",
+    "name": "Nom",
+    "type": "Type",
+    "driver": "Vendeur du camion",
+    "driverHint": "Ses ventes partiront de ce camion par défaut.",
+    "active": "Actif",
+    "saved": "Dépôt enregistré",
+    "created": "Dépôt créé"
+  },
+  "transfers": {
+    "title": "Chargements et transferts",
+    "subtitle": "Chargez et déchargez les camions, déplacez le stock entre dépôts.",
+    "new": "Nouveau chargement",
+    "newHelp": "Choisissez d’où part la marchandise et où elle arrive.",
+    "warehouses": "Dépôts",
+    "back": "Retour",
+    "emptyTitle": "Aucun transfert",
+    "emptyDescription": "Un chargement déplace le stock du dépôt vers un camion.",
+    "typeLOAD": "Chargement",
+    "typeUNLOAD": "Déchargement",
+    "typeTRANSFER": "Transfert",
+    "route": "{from} → {to}",
+    "lineCount": "{count, plural, one {# article} other {# articles}}",
+    "statusDRAFT": "Brouillon",
+    "statusVALIDATED": "Validé",
+    "statusCANCELLED": "Annulé",
+    "loadMore": "Voir plus",
+    "from": "De",
+    "to": "Vers",
+    "typeIs": "Ce sera un :",
+    "start": "Commencer",
+    "validated": "Transfert validé",
+    "cancelled": "Transfert annulé",
+    "negativeWarning": "{count, plural, one {# article est passé en stock négatif} other {# articles sont passés en stock négatif}}",
+    "notFound": "Aucun article pour « {code} »",
+    "readOnly": "Ce transfert est clôturé : il ne peut plus être modifié.",
+    "cancelledBecause": "Annulé : {reason}",
+    "scanLabel": "Code-barres ou référence",
+    "scanPlaceholder": "Scannez puis Entrée",
+    "available": "Disponible à {from} :",
+    "unit": "Unité",
+    "qtyIn": "Quantité en {unit}",
+    "add": "Ajouter",
+    "colProduct": "Article",
+    "colQty": "Quantité",
+    "colBase": "En unité de base",
+    "emptyLines": "Scannez un article pour commencer.",
+    "removeNamed": "Retirer {name}",
+    "abandon": "Abandonner",
+    "reverse": "Annuler le transfert",
+    "abandonTitle": "Abandonner ce brouillon ?",
+    "abandonBody": "Rien n’a encore bougé dans le stock.",
+    "reverseTitle": "Annuler ce transfert ?",
+    "reverseBody": "La marchandise repart vers son dépôt d’origine. Le bon reste dans l’historique.",
+    "reason": "Motif",
+    "validate": "Valider",
+    "validateTitle": "Valider le transfert ?",
+    "validateBody": "{count, plural, one {# article} other {# articles}} vont passer de {from} à {to}."
   }
 }

@@ -15,10 +15,12 @@ import { AppException } from '../common/app-exception';
 import { chunks } from '../common/chunks';
 import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
-import { type Tx } from '../prisma/prisma.service';
+import { type PrismaService, type Tx } from '../prisma/prisma.service';
 
 export interface MovementInput {
   productId: string;
+  /** The dépôt the goods enter or leave (phase 15); resolve it with WarehousesService. */
+  warehouseId: string;
   type: StockMovementType;
   /** Signed quantity in the base unit: + enters, - leaves. */
   qtyBase: string;
@@ -47,10 +49,37 @@ interface Level {
   hasOpening: boolean;
 }
 
+/** Quantity of one product in one dépôt (the CUMP stays on the product level). */
+interface WarehouseLevel {
+  qty: Qty;
+  isDefault: boolean;
+}
+
+const pairKey = (productId: string, warehouseId: string) => `${productId}:${warehouseId}`;
+
+/**
+ * Quantity of product `p` in warehouse `w` for reads, with aliases p (products),
+ * w (warehouses), ws (its warehouse_stocks row, LEFT JOIN) and ps (product_stocks, LEFT
+ * JOIN). A default dépôt without a row yet holds what is outside the other dépôts, the
+ * same rule the first write applies (see lockWarehouseLevels).
+ */
+export function warehouseQtySql(tenantId: string, stockAlias = 'ps'): Prisma.Sql {
+  return Prisma.sql`COALESCE(ws."qtyBase", CASE WHEN w."isDefault"
+    THEN COALESCE(${Prisma.raw(`${stockAlias}."qtyBase"`)}, 0) - COALESCE((
+      SELECT SUM(o."qtyBase") FROM warehouse_stocks o
+      WHERE o."tenantId" = ${tenantId}::uuid AND o."productId" = p.id), 0)
+    ELSE 0 END)`;
+}
+
 /**
  * The only way to change stock (AGENTS.md rules 1, 3, 10). Purchases, sales,
- * adjustments and inventories call `applyMovements` inside their own transaction;
- * nothing else writes stock_movements or product_stocks.
+ * adjustments, inventories and transfers call `applyMovements` inside their own
+ * transaction; nothing else writes stock_movements, product_stocks or warehouse_stocks.
+ *
+ * Phase 15: the quantity is also split per dépôt (WarehouseStock), always summing to
+ * ProductStock.qtyBase; the CUMP stays per product. Lock order, in every path:
+ * ProductStock rows by productId, then WarehouseStock rows by (productId, warehouseId).
+ * negativeStockMode applies to the dépôt the goods leave.
  */
 @Injectable()
 export class StockService {
@@ -75,6 +104,11 @@ export class StockService {
     }
 
     const levels = await this.lockLevels(tx, tenantId, productIds);
+    const places = await this.lockWarehouseLevels(
+      tx,
+      tenantId,
+      movements.map((m) => ({ productId: m.productId, warehouseId: m.warehouseId })),
+    );
     const { negativeStockMode } = await tx.tenant.findUniqueOrThrow({
       where: { id: tenantId },
       select: { negativeStockMode: true },
@@ -85,6 +119,8 @@ export class StockService {
     for (const m of movements) {
       const level = levels.get(m.productId);
       if (!level) throw new Error(`stock level not locked for ${m.productId}`);
+      const place = places.get(pairKey(m.productId, m.warehouseId));
+      if (!place) throw new Error(`warehouse level not locked for ${m.productId}`);
       const delta = qty(m.qtyBase);
       if (delta.isZero()) throw new Error('A stock movement cannot be zero');
 
@@ -108,13 +144,19 @@ export class StockService {
         unitCost = roundCost(cost).toString();
         level.avg = cump(level.qty, level.avg, delta, cost);
         level.qty = level.qty.plus(delta);
+        place.qty = place.qty.plus(delta);
       } else {
-        const after = level.qty.plus(delta);
+        // A transfer leaves at the CUMP it enters with (shown on the stock card).
+        if (m.type === StockMovementType.TRANSFER_OUT) unitCost = roundCost(level.avg).toString();
+        // The dépôt decides: 10 cartons in the dépôt do not cover a sale from an empty truck.
+        const after = place.qty.plus(delta);
         if (after.isNegative()) {
-          const warning = {
+          const warning: StockWarning = {
             productId: m.productId,
-            available: toQtyString(level.qty),
+            available: toQtyString(place.qty),
             after: toQtyString(after),
+            // Named only off the main dépôt, so single-dépôt tenants see what they always saw.
+            ...(place.isDefault ? {} : { warehouseId: m.warehouseId }),
           };
           if (negativeStockMode === NegativeStockMode.BLOCK) {
             throw new AppException(ErrorCode.STOCK_INSUFFICIENT, 'Not enough stock', {
@@ -124,7 +166,8 @@ export class StockService {
           }
           if (negativeStockMode === NegativeStockMode.WARN) warnings.push(warning);
         }
-        level.qty = after;
+        place.qty = after;
+        level.qty = level.qty.plus(delta);
       }
 
       const row = await tx.stockMovement.create({
@@ -141,6 +184,7 @@ export class StockService {
           refId: m.refId ?? null,
           note: m.note ?? null,
           createdBy: userId,
+          warehouseId: m.warehouseId,
         },
         select: { id: true },
       });
@@ -156,6 +200,14 @@ export class StockService {
           hasOpening: level.hasOpening,
         },
       });
+    }
+    for (const [key, place] of places) {
+      const [productId, warehouseId] = key.split(':') as [string, string];
+      await tx.$executeRaw`
+        UPDATE warehouse_stocks SET "qtyBase" = ${place.qty.toString()}::numeric,
+               "updatedAt" = CURRENT_TIMESTAMP
+        WHERE "tenantId" = ${tenantId}::uuid AND "productId" = ${productId}::uuid
+          AND "warehouseId" = ${warehouseId}::uuid`;
     }
     return { movementIds, warnings };
   }
@@ -181,9 +233,52 @@ export class StockService {
     return out;
   }
 
-  /** Current level of one product, read under the same lock rules (for read-modify paths). */
-  async lockedLevels(tx: Tx, productIds: string[]): Promise<Map<string, Level>> {
-    return this.lockLevels(tx, tenantContext.requireTenantId(), [...new Set(productIds)].sort());
+  /** Quantities of some products in one dépôt, without locking (display, open inventory). */
+  async warehouseQuantities(
+    db: Tx | PrismaService['db'],
+    warehouseId: string,
+    productIds: string[],
+  ): Promise<Map<string, Qty>> {
+    const out = new Map<string, Qty>();
+    const tenantId = tenantContext.requireTenantId();
+    for (const chunk of chunks([...new Set(productIds)])) {
+      const rows = await db.$queryRaw<{ productId: string; qtyBase: Prisma.Decimal }[]>`
+        SELECT p.id AS "productId", ${warehouseQtySql(tenantId)} AS "qtyBase"
+        FROM products p
+        JOIN warehouses w ON w.id = ${warehouseId}::uuid AND w."tenantId" = ${tenantId}::uuid
+        LEFT JOIN warehouse_stocks ws ON ws."warehouseId" = w.id AND ws."productId" = p.id
+        LEFT JOIN product_stocks ps ON ps."productId" = p.id AND ps."tenantId" = ${tenantId}::uuid
+        WHERE p."tenantId" = ${tenantId}::uuid
+          AND p.id IN (${Prisma.join(chunk.map((id) => Prisma.sql`${id}::uuid`))})`;
+      for (const r of rows) out.set(r.productId, qty(r.qtyBase.toString()));
+    }
+    return out;
+  }
+
+  /**
+   * Current levels, read under the same lock rules (for read-modify paths). With a
+   * warehouseId, `qty` is that dépôt's quantity (inventory per dépôt); `avg` is always
+   * the company CUMP.
+   */
+  async lockedLevels(
+    tx: Tx,
+    productIds: string[],
+    warehouseId?: string,
+  ): Promise<Map<string, Level>> {
+    const tenantId = tenantContext.requireTenantId();
+    const sorted = [...new Set(productIds)].sort();
+    const levels = await this.lockLevels(tx, tenantId, sorted);
+    if (!warehouseId) return levels;
+    const places = await this.lockWarehouseLevels(
+      tx,
+      tenantId,
+      sorted.map((productId) => ({ productId, warehouseId })),
+    );
+    for (const [productId, level] of levels) {
+      const place = places.get(pairKey(productId, warehouseId));
+      if (place) level.qty = place.qty;
+    }
+    return levels;
   }
 
   /**
@@ -222,6 +317,67 @@ export class StockService {
           avg: qty(r.avgCost.toString()),
           hasOpening: r.hasOpening,
         },
+      ]),
+    );
+  }
+
+  /**
+   * Called with the ProductStock rows already locked. Creates the missing dépôt rows,
+   * then locks them all in (productId, warehouseId) order.
+   *
+   * A missing row of the default dépôt starts with what the product holds outside the
+   * other dépôts (ProductStock − their sum): stock that existed before phase 15 is in
+   * the main dépôt, and the sum always equals ProductStock, even before the backfill.
+   * Any other dépôt starts at 0. Safe because the product row lock is held: nobody else
+   * changes ProductStock or this product's dépôt rows meanwhile.
+   */
+  private async lockWarehouseLevels(
+    tx: Tx,
+    tenantId: string,
+    pairs: { productId: string; warehouseId: string }[],
+  ): Promise<Map<string, WarehouseLevel>> {
+    const unique = [
+      ...new Map(pairs.map((p) => [pairKey(p.productId, p.warehouseId), p])).values(),
+    ].sort((a, b) => {
+      const ka = pairKey(a.productId, a.warehouseId);
+      const kb = pairKey(b.productId, b.warehouseId);
+      return ka < kb ? -1 : ka > kb ? 1 : 0;
+    });
+    for (const { productId, warehouseId } of unique) {
+      await tx.$executeRaw`
+        INSERT INTO warehouse_stocks ("id", "tenantId", "warehouseId", "productId", "qtyBase", "updatedAt")
+        SELECT gen_random_uuid(), ${tenantId}::uuid, w.id, ${productId}::uuid,
+               CASE WHEN w."isDefault"
+                    THEN COALESCE(ps."qtyBase", 0) - COALESCE((
+                      SELECT SUM(o."qtyBase") FROM warehouse_stocks o
+                      WHERE o."tenantId" = ${tenantId}::uuid AND o."productId" = ${productId}::uuid), 0)
+                    ELSE 0 END,
+               CURRENT_TIMESTAMP
+        FROM warehouses w
+        LEFT JOIN product_stocks ps
+          ON ps."tenantId" = ${tenantId}::uuid AND ps."productId" = ${productId}::uuid
+        WHERE w.id = ${warehouseId}::uuid AND w."tenantId" = ${tenantId}::uuid
+        ON CONFLICT ("warehouseId", "productId") DO NOTHING`;
+    }
+    const rows = await tx.$queryRaw<
+      { productId: string; warehouseId: string; qtyBase: Prisma.Decimal; isDefault: boolean }[]
+    >`
+      SELECT ws."productId", ws."warehouseId", ws."qtyBase", w."isDefault"
+      FROM warehouse_stocks ws
+      JOIN warehouses w ON w.id = ws."warehouseId"
+      WHERE ws."tenantId" = ${tenantId}::uuid
+        AND (ws."productId", ws."warehouseId") IN (${Prisma.join(
+          unique.map((p) => Prisma.sql`(${p.productId}::uuid, ${p.warehouseId}::uuid)`),
+        )})
+      ORDER BY ws."productId", ws."warehouseId"
+      FOR UPDATE OF ws`;
+    if (rows.length !== unique.length) {
+      throw new AppException(ErrorCode.WAREHOUSE_NOT_FOUND, 'Unknown warehouse');
+    }
+    return new Map(
+      rows.map((r) => [
+        pairKey(r.productId, r.warehouseId),
+        { qty: qty(r.qtyBase.toString()), isDefault: r.isDefault },
       ]),
     );
   }

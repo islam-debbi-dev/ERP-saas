@@ -30,6 +30,7 @@ import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { SupplierAccountService } from '../purchases/supplier-account.service';
 import { SuppliersService } from '../purchases/suppliers.service';
 import { StockService } from '../stock/stock.service';
+import { WarehousesService } from '../stock/warehouses.service';
 import { type ImportTable, readTable } from './file-reader';
 import { type ClientPlan, validateClients } from './validators/clients';
 import { type OpeningStockPlan, validateOpeningStock } from './validators/opening-stock';
@@ -116,6 +117,7 @@ export class ImportsService {
     private readonly audit: AuditService,
     private readonly catalog: CatalogService,
     private readonly stock: StockService,
+    private readonly warehouses: WarehousesService,
     private readonly clients: ClientsService,
     private readonly accounts: ClientAccountService,
     private readonly suppliers: SuppliersService,
@@ -423,11 +425,14 @@ export class ImportsService {
   }
 
   private async writeOpeningStock(tx: Tx, job: ImportJob, plans: OpeningStockPlan[]) {
+    // Opening stock from Excel lands in the main dépôt; trucks are loaded with transfers.
+    const warehouseId = await this.warehouses.defaultId(tx);
     for (const chunk of chunks(plans)) {
       await this.stock.applyMovements(
         tx,
         chunk.map((p) => ({
           productId: p.productId,
+          warehouseId,
           type: StockMovementType.OPENING,
           qtyBase: p.qtyBase,
           unitCost: p.unitCost,

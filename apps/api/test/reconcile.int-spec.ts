@@ -79,6 +79,15 @@ describe('ledger reconcile', () => {
           ledger: '12.000',
         },
         {
+          // Phase 15: the dépôt split no longer sums to the tampered product level either.
+          check: 'warehouse_sum_equals_product',
+          tenantId: a.tenantId,
+          entity: 'Product',
+          entityId: productId,
+          cached: '13.000',
+          ledger: '12.000',
+        },
+        {
           check: 'client_balance_equals_ledger',
           tenantId: a.tenantId,
           entity: 'Client',
@@ -88,12 +97,12 @@ describe('ledger reconcile', () => {
         },
       ]),
     );
-    expect(found).toHaveLength(2);
+    expect(found).toHaveLength(3);
 
     const audit = await tenantContext.run({ tenantId: a.tenantId }, () =>
       t.prisma.db.auditLog.findMany({ where: { action: 'LEDGER_MISMATCH' } }),
     );
-    expect(audit.map((r) => r.entityId).sort()).toEqual([clientId, productId].sort());
+    expect(audit.map((r) => r.entityId).sort()).toEqual([clientId, productId, productId].sort());
 
     // Put the caches back so later runs (and other suites) see clean data.
     await tamper(t)`

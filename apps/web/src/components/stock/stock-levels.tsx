@@ -1,12 +1,20 @@
 'use client';
 
 import { type ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { ClipboardList, Loader2, MoreHorizontal, PackageSearch, ScanBarcode } from 'lucide-react';
+import {
+  ArrowLeftRight,
+  ClipboardList,
+  Loader2,
+  MoreHorizontal,
+  PackageSearch,
+  ScanBarcode,
+  Warehouse,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-import { formatDA, Permission, qty, type StockLevelDto } from '@erp/shared';
+import { Feature, formatDA, Permission, qty, type StockLevelDto } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { Amount } from '@/components/shared/amount';
@@ -22,12 +30,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { NativeSelect } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
-import { formatQty, usePackagingLabel, useStockPages } from '@/lib/stock';
+import { formatQty, usePackagingLabel, useStockPages, useWarehouses } from '@/lib/stock';
 import { useUnitLabel } from '@/lib/catalog';
-import { usePermission } from '@/lib/auth';
+import { useFeature, usePermission } from '@/lib/auth';
 import { AdjustDialog, OpeningDialog } from './stock-dialogs';
 
 type DialogState = { kind: 'adjust' | 'opening'; level: StockLevelDto } | null;
@@ -55,8 +64,16 @@ export function StockLevels() {
   const [lowOnly, setLowOnly] = useState(filtre === 'bas');
   const [outOnly, setOutOnly] = useState(filtre === 'rupture');
   const [dialog, setDialog] = useState<DialogState>(null);
+  // Phase 15: one dépôt, or the company with one column per dépôt.
+  const warehousesOn = useFeature(Feature.WAREHOUSES);
+  const warehouses = useWarehouses();
+  const [warehouseId, setWarehouseId] = useState('');
   const debounced = useDebouncedValue(search.trim(), 300);
-  const pages = useStockPages(debounced, lowOnly, outOnly);
+  const pages = useStockPages(debounced, lowOnly, outOnly, warehouseId);
+  const depots = useMemo(
+    () => (warehousesOn && !warehouseId ? (warehouses.data ?? []) : []),
+    [warehousesOn, warehouseId, warehouses.data],
+  );
   const items = useMemo(() => pages.data?.pages.flatMap((p) => p.items) ?? [], [pages.data]);
   const summary = pages.data?.pages[0]?.summary;
 
@@ -98,9 +115,42 @@ export function StockLevels() {
                 })}
               </p>
             ) : null}
+            {depots.length > 1 ? (
+              // Phone card: the split per dépôt under the total (columns on a computer).
+              <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground md:hidden">
+                {(row.original.byWarehouse ?? [])
+                  .filter((w) => !qty(w.qtyBase).isZero())
+                  .map((w) => (
+                    <li key={w.warehouseId} className="flex justify-end gap-2">
+                      <span className="truncate">
+                        {depots.find((d) => d.id === w.warehouseId)?.name}
+                      </span>
+                      <bdi dir="ltr">{formatQty(w.qtyBase)}</bdi>
+                    </li>
+                  ))}
+              </ul>
+            ) : null}
           </div>
         ),
       },
+      ...(depots.length > 1
+        ? depots.map<ColumnDef<StockLevelDto>>((d) => ({
+            id: `wh-${d.id}`,
+            meta: { card: 'hidden' },
+            header: d.name,
+            cell: ({ row }) => {
+              const q = row.original.byWarehouse?.find((w) => w.warehouseId === d.id)?.qtyBase;
+              return (
+                <span
+                  className={`num whitespace-nowrap ${q && qty(q).isNegative() ? 'text-destructive' : ''}`}
+                  dir="ltr"
+                >
+                  {q ? formatQty(q) : '—'}
+                </span>
+              );
+            },
+          }))
+        : []),
       {
         id: 'cump',
         header: t('colCump'),
@@ -166,7 +216,7 @@ export function StockLevels() {
         ),
       },
     ],
-    [t, packagingLabel, unitLabel, canAdjust],
+    [t, packagingLabel, unitLabel, canAdjust, depots],
   );
 
   const table = useReactTable({ data: items, columns, getCoreRowModel: getCoreRowModel() });
@@ -183,6 +233,14 @@ export function StockLevels() {
               {t('inventories')}
             </Link>
           </Button>
+        }
+        more={
+          warehousesOn
+            ? [
+                { label: t('transfers'), icon: ArrowLeftRight, href: '/stock/transferts' },
+                { label: t('warehouses'), icon: Warehouse, href: '/stock/depots' },
+              ]
+            : undefined
         }
       />
 
@@ -238,6 +296,21 @@ export function StockLevels() {
           />
         </div>
         <div className="flex flex-wrap items-center gap-4">
+          {warehousesOn ? (
+            <NativeSelect
+              aria-label={t('warehouseFilter')}
+              className="w-full sm:w-56"
+              value={warehouseId}
+              onChange={(e) => setWarehouseId(e.target.value)}
+            >
+              <option value="">{t('allWarehouses')}</option>
+              {(warehouses.data ?? []).map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.name}
+                </option>
+              ))}
+            </NativeSelect>
+          ) : null}
           <div className="flex items-center gap-2">
             <Switch id="low-only" checked={lowOnly} onCheckedChange={setLowOnly} />
             <Label htmlFor="low-only" className="font-normal">

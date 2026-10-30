@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cump, splitPackaging, stockValue } from './stock';
+import { cump, roundCost, splitPackaging, stockValue } from './stock';
 
 describe('cump', () => {
   it('first entry: the entry cost becomes the average', () => {
@@ -52,5 +52,19 @@ describe('splitPackaging', () => {
     expect([kg.packs.toString(), kg.rest.toString()]).toEqual(['2', '10.5']);
     const neg = splitPackaging('-30', '24');
     expect([neg.packs.toString(), neg.rest.toString()]).toEqual(['-1', '-6']);
+  });
+});
+
+describe('transfers (phase 15)', () => {
+  // A transfer is an exit then an entry at the current CUMP: the average never moves.
+  it('an entry at the current average keeps the average', () => {
+    const avg = '45.8333';
+    for (const [left, moved] of [
+      ['120', '24'],
+      ['0', '24'],
+      ['-12', '24'],
+    ] as const) {
+      expect(cump(left, avg, moved, avg).toString()).toBe(roundCost(avg).toString());
+    }
   });
 });

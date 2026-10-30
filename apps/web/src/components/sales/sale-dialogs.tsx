@@ -33,6 +33,7 @@ import { formatQty, stockKeys } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { useIdempotencyKey } from '@/lib/use-idempotency-key';
 import { isolateLtr } from '@/lib/utils';
+import { WarehouseSelect } from '@/components/stock/warehouse-select';
 
 interface DialogProps {
   sale: SaleDto;
@@ -128,6 +129,8 @@ export function ReturnDialog({ sale, open, onOpenChange }: DialogProps) {
   const [quantities, setQuantities] = useState<Record<string, string>>({});
   const [disposition, setDisposition] = useState<ReturnDisposition>('RESTOCK');
   const [reason, setReason] = useState('');
+  // Phase 15: '' = back to the dépôt the sale left from.
+  const [warehouseId, setWarehouseId] = useState('');
   const action = useSaleAction(sale, (r) => {
     toast.success(t('returned', { number: r.sale.returns.at(-1)?.number ?? '' }));
     onOpenChange(false);
@@ -157,6 +160,7 @@ export function ReturnDialog({ sale, open, onOpenChange }: DialogProps) {
               path: `/sales/${sale.id}/returns`,
               key,
               body: {
+                ...(warehouseId ? { warehouseId } : {}),
                 disposition,
                 reason: reason.trim(),
                 lines: picked.map((p) => ({ saleLineId: p.line.id, qty: p.qty.toString() })),
@@ -213,6 +217,16 @@ export function ReturnDialog({ sale, open, onOpenChange }: DialogProps) {
                 <option value="DAMAGED">{t('dispositionDAMAGED')}</option>
               </NativeSelect>
             </div>
+            <WarehouseSelect
+              id="return-warehouse"
+              value={warehouseId}
+              onChange={setWarehouseId}
+              defaultLabel={
+                sale.warehouse
+                  ? t('returnToSaleWarehouse', { name: sale.warehouse.name })
+                  : t('returnToMain')
+              }
+            />
             <div className="space-y-2">
               <Label htmlFor="return-reason">{t('reason')}</Label>
               <Input

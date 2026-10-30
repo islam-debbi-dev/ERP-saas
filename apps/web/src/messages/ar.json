@@ -354,7 +354,15 @@
     "MANAGER_CYCLE": "هذا المسؤول ضمن فريق هذا المستخدم أصلًا.",
     "SELLER_NOT_ALLOWED": "لا يمكن أن يكون هذا المستخدم بائعًا (معطّل أو دوره لا يبيع).",
     "BRAND_NAME_TAKEN": "توجد علامة بهذا الاسم.",
-    "SECTOR_NAME_TAKEN": "يوجد قطاع بهذا الاسم."
+    "SECTOR_NAME_TAKEN": "يوجد قطاع بهذا الاسم.",
+    "WAREHOUSE_NOT_FOUND": "المستودع غير موجود.",
+    "WAREHOUSE_NAME_TAKEN": "يوجد مستودع بهذا الاسم.",
+    "WAREHOUSE_NOT_EMPTY": "هذا المستودع ما زال فيه مخزون. حوّله أولاً.",
+    "WAREHOUSE_INVALID": "لا يمكن اختيار هذا المستودع.",
+    "VEHICLE_ALREADY_ASSIGNED": "هذا البائع لديه شاحنة بالفعل.",
+    "TRANSFER_NOT_DRAFT": "هذا التحويل مصادق عليه أو ملغى.",
+    "TRANSFER_NOT_VALIDATED": "هذا التحويل غير مصادق عليه.",
+    "TRANSFER_EMPTY": "أضف منتجاً واحداً على الأقل."
   },
   "units": {
     "PIECE": "قطعة",
@@ -536,7 +544,11 @@
     "openingDone": "تم حفظ المخزون الافتتاحي",
     "cancel": "إلغاء",
     "saving": "جارٍ الحفظ…",
-    "colActions": "الإجراءات"
+    "colActions": "الإجراءات",
+    "transfers": "الشحن",
+    "warehouses": "المستودعات",
+    "warehouseFilter": "المستودع",
+    "allWarehouses": "كل المستودعات"
   },
   "movementTypes": {
     "OPENING": "افتتاح",
@@ -545,7 +557,9 @@
     "SALE": "بيع",
     "SALE_RETURN": "إرجاع من الزبون",
     "ADJUSTMENT": "تسوية",
-    "INVENTORY": "جرد"
+    "INVENTORY": "جرد",
+    "TRANSFER_OUT": "تحويل (خروج)",
+    "TRANSFER_IN": "تحويل (دخول)"
   },
   "adjustmentReasons": {
     "CASSE": "كسر",
@@ -590,7 +604,9 @@
     "readOnly": "هذا الجرد مغلق.",
     "keep": "مواصلة العدّ",
     "back": "العودة إلى عمليات الجرد",
-    "validateNeedsPermission": "المصادقة تتطلب صلاحية «تعديل المخزون»."
+    "validateNeedsPermission": "المصادقة تتطلب صلاحية «تعديل المخزون».",
+    "pickWarehouse": "أي مستودع تجرد؟",
+    "mainWarehouse": "المستودع الرئيسي"
   },
   "productCost": {
     "qty": "في المخزون",
@@ -675,7 +691,9 @@
     "returns": "إرجاعات للمورد",
     "readOnlyValidated": "صودق على الوصل في {date}.",
     "readOnlyCancelled": "الوصل ملغى.",
-    "cancel": "إلغاء"
+    "cancel": "إلغاء",
+    "warehouse": "مستودع الاستلام",
+    "mainWarehouse": "المستودع الرئيسي"
   },
   "suppliers": {
     "title": "الموردون",
@@ -963,7 +981,10 @@
     "qtyMore": "زيادة {product} بواحد",
     "noSeller": "بدون بائع",
     "changeSeller": "تغيير البائع",
-    "sellerChanged": "تم تغيير البائع"
+    "sellerChanged": "تم تغيير البائع",
+    "warehouseAuto": "تلقائي (شاحنة البائع، وإلا المستودع الرئيسي)",
+    "returnToSaleWarehouse": "رجوع إلى {name}",
+    "returnToMain": "رجوع إلى المستودع الرئيسي"
   },
   "payments": {
     "title": "الدفعات",
@@ -1675,5 +1696,87 @@
     "emptyTitle": "لا توجد فرق",
     "emptyDescription": "عيّن مسؤولًا لبائعيك (تعديل) لتكوين الفرق.",
     "withoutTeam": "بدون فريق"
+  },
+  "warehouses": {
+    "title": "المستودعات والشاحنات",
+    "subtitle": "أين يوجد مخزونك: المستودعات وشاحنات البائعين.",
+    "field": "المستودع",
+    "new": "مستودع جديد",
+    "edit": "تعديل المستودع",
+    "transfers": "الشحن",
+    "back": "العودة إلى المخزون",
+    "emptyTitle": "لا يوجد مستودع",
+    "emptyDescription": "يُنشأ المستودع الرئيسي تلقائياً.",
+    "typeMAIN": "المستودع الرئيسي",
+    "typeSECONDARY": "مستودع",
+    "typeVEHICLE": "شاحنة",
+    "noDriver": "بدون بائع",
+    "productCount": "{count, plural, =0 {فارغ} one {# منتج} other {# منتجات}}",
+    "default": "رئيسي",
+    "inactive": "غير نشط",
+    "editNamed": "تعديل {name}",
+    "archiveNamed": "أرشفة {name}",
+    "archiveTitle": "أرشفة هذا المستودع؟",
+    "archiveBody": "لا يمكن أرشفة مستودع ما زال فيه مخزون: حوّله أولاً.",
+    "archive": "أرشفة",
+    "archived": "تمت أرشفة المستودع",
+    "help": "الشاحنة هي مخزون البائع في الطريق.",
+    "name": "الاسم",
+    "type": "النوع",
+    "driver": "بائع الشاحنة",
+    "driverHint": "مبيعاته تخرج من هذه الشاحنة افتراضياً.",
+    "active": "نشط",
+    "saved": "تم حفظ المستودع",
+    "created": "تم إنشاء المستودع"
+  },
+  "transfers": {
+    "title": "الشحن والتحويلات",
+    "subtitle": "شحن وتفريغ الشاحنات، ونقل المخزون بين المستودعات.",
+    "new": "شحن جديد",
+    "newHelp": "اختر من أين تخرج السلعة وإلى أين تذهب.",
+    "warehouses": "المستودعات",
+    "back": "رجوع",
+    "emptyTitle": "لا يوجد تحويل",
+    "emptyDescription": "الشحن ينقل المخزون من المستودع إلى شاحنة.",
+    "typeLOAD": "شحن",
+    "typeUNLOAD": "تفريغ",
+    "typeTRANSFER": "تحويل",
+    "route": "من {from} إلى {to}",
+    "lineCount": "{count, plural, one {# منتج} other {# منتجات}}",
+    "statusDRAFT": "مسودة",
+    "statusVALIDATED": "مصادق عليه",
+    "statusCANCELLED": "ملغى",
+    "loadMore": "عرض المزيد",
+    "from": "من",
+    "to": "إلى",
+    "typeIs": "سيكون:",
+    "start": "ابدأ",
+    "validated": "تمت المصادقة على التحويل",
+    "cancelled": "تم إلغاء التحويل",
+    "negativeWarning": "{count, plural, one {# منتج أصبح مخزونه سالباً} other {# منتجات أصبح مخزونها سالباً}}",
+    "notFound": "لا يوجد منتج بالرمز «{code}»",
+    "readOnly": "هذا التحويل مغلق: لا يمكن تعديله.",
+    "cancelledBecause": "ملغى: {reason}",
+    "scanLabel": "الباركود أو المرجع",
+    "scanPlaceholder": "امسح ثم Entrée",
+    "available": "المتوفر في {from}:",
+    "unit": "الوحدة",
+    "qtyIn": "الكمية بـ {unit}",
+    "add": "إضافة",
+    "colProduct": "المنتج",
+    "colQty": "الكمية",
+    "colBase": "بالوحدة الأساسية",
+    "emptyLines": "امسح منتجاً للبدء.",
+    "removeNamed": "حذف {name}",
+    "abandon": "تخلي",
+    "reverse": "إلغاء التحويل",
+    "abandonTitle": "التخلي عن هذه المسودة؟",
+    "abandonBody": "لم يتحرك أي شيء في المخزون بعد.",
+    "reverseTitle": "إلغاء هذا التحويل؟",
+    "reverseBody": "ترجع السلعة إلى مستودعها الأصلي. يبقى الوصل في السجل.",
+    "reason": "السبب",
+    "validate": "مصادقة",
+    "validateTitle": "المصادقة على التحويل؟",
+    "validateBody": "{count, plural, one {# منتج} other {# منتجات}} ستنتقل من {from} إلى {to}."
   }
 }

@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { WarehouseSelect } from './warehouse-select';
 import { formatQty, useMovementPages, usePackagingLabel, useStockLevel } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
@@ -32,7 +33,9 @@ export function StockCard({ productId }: { productId: string }) {
   const errorMessage = useErrorMessage();
   const packagingLabel = usePackagingLabel();
   const level = useStockLevel(productId);
-  const pages = useMovementPages(productId);
+  // Phase 15: one dépôt's movements, with that dépôt's running balance.
+  const [warehouseId, setWarehouseId] = useState('');
+  const pages = useMovementPages(productId, warehouseId);
   const [dialog, setDialog] = useState<'adjust' | 'opening' | null>(null);
   const canAdjust = usePermission(Permission.STOCK_ADJUST);
   const items = useMemo(() => pages.data?.pages.flatMap((p) => p.items) ?? [], [pages.data]);
@@ -85,7 +88,7 @@ export function StockCard({ productId }: { productId: string }) {
         header: t('colBalance'),
         cell: ({ row }) => (
           <span dir="ltr" className="num">
-            {formatQty(row.original.balanceAfter)}
+            {formatQty(row.original.warehouseBalanceAfter ?? row.original.balanceAfter)}
           </span>
         ),
       },
@@ -176,6 +179,16 @@ export function StockCard({ productId }: { productId: string }) {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      <div className="sm:max-w-xs">
+        <WarehouseSelect
+          id="card-warehouse"
+          label={t('warehouseFilter')}
+          value={warehouseId}
+          onChange={setWarehouseId}
+          defaultLabel={t('allWarehouses')}
+        />
       </div>
 
       <DataTable

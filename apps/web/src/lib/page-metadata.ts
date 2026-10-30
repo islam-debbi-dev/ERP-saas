@@ -21,6 +21,8 @@ type TitleKey =
   | 'brands.title'
   | 'sectors.title'
   | 'stock.inventories'
+  | 'warehouses.title'
+  | 'transfers.title'
   | 'purchases.newTitle'
   | 'purchases.editTitle'
   | 'suppliers.title'

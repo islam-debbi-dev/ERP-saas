@@ -8,6 +8,7 @@ import { useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import {
   computeTotals,
+  Feature,
   formatDA,
   parseDA,
   type PriceLevelDto,
@@ -41,11 +42,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import { api } from '@/lib/api-client';
+import { useFeature } from '@/lib/auth';
 import { findProductByCode, useUnitLabel } from '@/lib/catalog';
 import { purchaseKeys, useSuppliers } from '@/lib/purchases';
 import { stockKeys, formatQty } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { Amount } from '@/components/shared/amount';
+import { WarehouseSelect } from '@/components/stock/warehouse-select';
 
 export interface EditorLine {
   key: string;
@@ -59,6 +62,8 @@ interface Header {
   supplierId: string;
   documentDate: string;
   supplierRef: string;
+  /** Phase 15: '' = the main dépôt. */
+  warehouseId: string;
   note: string;
   paidAmount: string;
 }
@@ -86,6 +91,7 @@ export function PurchaseEditor({
   const queryClient = useQueryClient();
   const suppliers = useSuppliers();
   const [header, setHeader] = useState<Header>(initialHeader);
+  const warehousesOn = useFeature(Feature.WAREHOUSES);
   const [lines, setLines] = useState<EditorLine[]>(initialLines);
   const [code, setCode] = useState('');
   const [looking, setLooking] = useState(false);
@@ -160,6 +166,7 @@ export function PurchaseEditor({
       documentDate: header.documentDate,
       supplierRef: header.supplierRef,
       note: header.note,
+      ...(warehousesOn ? { warehouseId: header.warehouseId || null } : {}),
       paidAmount: (parseDA(header.paidAmount) ?? qty(0)).toString(),
       lines: lines.map((l) => ({
         productId: l.product.id,
@@ -286,6 +293,13 @@ export function PurchaseEditor({
               onChange={(e) => setHeader({ ...header, documentDate: e.target.value })}
             />
           </div>
+          <WarehouseSelect
+            id="br-warehouse"
+            label={t('warehouse')}
+            value={header.warehouseId}
+            onChange={(warehouseId) => setHeader({ ...header, warehouseId })}
+            defaultLabel={t('mainWarehouse')}
+          />
           <div className="space-y-2">
             <Label htmlFor="supplier-ref">{t('supplierRef')}</Label>
             <Input

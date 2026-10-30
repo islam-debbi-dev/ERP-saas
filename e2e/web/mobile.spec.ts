@@ -41,7 +41,9 @@ async function expectOnScreen(page: Page, selector: string): Promise<void> {
   expect.soft(box, `${selector} is rendered`).not.toBeNull();
   if (!box || !vp) return;
   expect.soft(box.x >= 0 && box.x + box.width <= vp.width, `${selector} fits the width`).toBe(true);
-  expect.soft(box.y >= 0 && box.y + box.height <= vp.height, `${selector} is above the fold`).toBe(true);
+  expect
+    .soft(box.y >= 0 && box.y + box.height <= vp.height, `${selector} is above the fold`)
+    .toBe(true);
 }
 
 /** Route groups whose pages need a session; the others are opened anonymous. */
@@ -93,6 +95,7 @@ interface Ids {
   purchaseId: string;
   supplierId: string;
   inventoryId: string;
+  transferId: string;
   productReference: string;
   tenantId: string;
 }
@@ -111,7 +114,11 @@ async function prepareIds(f: Fixture): Promise<Ids> {
       token,
       idempotencyKey: idemKey('cli'),
       // A long name: it must truncate, never push the balance off the screen.
-      body: { code: uniq('M-'), name: 'Établissements Benali et fils — Alimentation générale', type: 'PARTICULIER' },
+      body: {
+        code: uniq('M-'),
+        name: 'Établissements Benali et fils — Alimentation générale',
+        type: 'PARTICULIER',
+      },
     })
   ).body;
   const sale = await makeSale(f, { qty: '3', clientId: client.id });
@@ -143,6 +150,29 @@ async function prepareIds(f: Fixture): Promise<Ids> {
       body: { note: 'mobile count' },
     })
   ).body;
+  // Phase 15 (WAREHOUSES is on for the distributor fixture): a truck and a draft chargement.
+  const warehouses = (await call<{ id: string; isDefault: boolean }[]>('/warehouses', { token }))
+    .body;
+  const truck = (
+    await call<{ id: string }>('/warehouses', {
+      method: 'POST',
+      token,
+      body: { name: uniq('Camion '), type: 'VEHICLE' },
+    })
+  ).body;
+  const transfer = (
+    await call<{ id: string }>('/stock-transfers', {
+      method: 'POST',
+      token,
+      idempotencyKey: idemKey('tr'),
+      body: {
+        type: 'LOAD',
+        fromWarehouseId: warehouses.find((w) => w.isDefault)!.id,
+        toWarehouseId: truck.id,
+        lines: [{ productId: f.productId, unitId: f.baseUnitId, qty: '2' }],
+      },
+    })
+  ).body;
   const product = (await call<{ reference: string }>(`/products/${f.productId}`, { token })).body;
   return {
     productReference: product.reference,
@@ -152,22 +182,26 @@ async function prepareIds(f: Fixture): Promise<Ids> {
     purchaseId: purchase.id,
     supplierId: supplier.id,
     inventoryId: inventory.id,
+    transferId: transfer.id,
     tenantId: f.tenantId,
   };
 }
 
 function resolve(pattern: string, v: Ids): string {
-  return pattern
-    .replace('/achats/fournisseurs/[id]', `/achats/fournisseurs/${v.supplierId}`)
-    .replace('/achats/[id]', `/achats/${v.purchaseId}`)
-    .replace('/clients/[id]', `/clients/${v.clientId}`)
-    .replace('/produits/[id]', `/produits/${v.productId}`)
-    .replace('/stock/inventaires/[id]', `/stock/inventaires/${v.inventoryId}`)
-    .replace('/stock/[productId]', `/stock/${v.productId}`)
-    .replace('/ventes/[id]', `/ventes/${v.saleId}`)
-    .replace('/admin/societes/[id]', `/admin/societes/${v.tenantId}`)
-    // An unknown invitation: the page shows its "invalid link" state.
-    .replace('/invitation/[token]', '/invitation/not-a-real-token');
+  return (
+    pattern
+      .replace('/achats/fournisseurs/[id]', `/achats/fournisseurs/${v.supplierId}`)
+      .replace('/achats/[id]', `/achats/${v.purchaseId}`)
+      .replace('/clients/[id]', `/clients/${v.clientId}`)
+      .replace('/produits/[id]', `/produits/${v.productId}`)
+      .replace('/stock/inventaires/[id]', `/stock/inventaires/${v.inventoryId}`)
+      .replace('/stock/transferts/[id]', `/stock/transferts/${v.transferId}`)
+      .replace('/stock/[productId]', `/stock/${v.productId}`)
+      .replace('/ventes/[id]', `/ventes/${v.saleId}`)
+      .replace('/admin/societes/[id]', `/admin/societes/${v.tenantId}`)
+      // An unknown invitation: the page shows its "invalid link" state.
+      .replace('/invitation/[token]', '/invitation/not-a-real-token')
+  );
 }
 
 /** One login per project (web.spec.ts logs out at its end, so it is not shared). */
@@ -210,7 +244,11 @@ interface Result {
 }
 /** What each screen of one test found, for BASELINE.md (a file per test: a failed test restarts the worker). */
 function saveResults(project: string, name: string, results: Result[]): void {
-  writeFileSync(join(SHOTS_DIR, `results-${project}-${name}.json`), `${JSON.stringify(results, null, 2)}\n`, 'utf8');
+  writeFileSync(
+    join(SHOTS_DIR, `results-${project}-${name}.json`),
+    `${JSON.stringify(results, null, 2)}\n`,
+    'utf8',
+  );
 }
 
 /** Screenshot + overflow check, soft so one broken screen does not hide the next ones. */
@@ -223,7 +261,10 @@ async function check(
 ): Promise<void> {
   await expect.soft(page.locator('html')).toHaveAttribute('lang', locale);
   const width = page.viewportSize()?.width ?? 0;
-  await page.screenshot({ path: join(SHOTS_DIR, shotName(pattern, locale, width)), fullPage: opts.fullPage ?? true });
+  await page.screenshot({
+    path: join(SHOTS_DIR, shotName(pattern, locale, width)),
+    fullPage: opts.fullPage ?? true,
+  });
   const problems = await expectNoHorizontalOverflow(page, { soft: true });
   results.push({ route: pattern, locale, width, problems });
 }
@@ -249,7 +290,9 @@ for (const locale of LOCALES) {
         await test.step(route.pattern, async () => {
           const path = resolve(route.pattern, v);
           await page.evaluate((to) => {
-            (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push(to);
+            (
+              window as unknown as { next: { router: { push(href: string): void } } }
+            ).next.router.push(to);
           }, path);
           await page.waitForURL((url) => url.pathname === path);
           await settle(page);
@@ -261,7 +304,9 @@ for (const locale of LOCALES) {
       await test.step('new versement opens as a sheet with its save button on screen', async () => {
         const path = resolve('/clients/[id]', v);
         await page.evaluate((to) => {
-          (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push(to);
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
         }, path);
         await page.waitForURL((url) => url.pathname === path);
         await settle(page);
@@ -276,7 +321,9 @@ for (const locale of LOCALES) {
       await test.step('new règlement fournisseur opens as a sheet with its save button on screen', async () => {
         const path = resolve('/achats/fournisseurs/[id]', v);
         await page.evaluate((to) => {
-          (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push(to);
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
         }, path);
         await page.waitForURL((url) => url.pathname === path);
         await settle(page);
@@ -284,14 +331,49 @@ for (const locale of LOCALES) {
         await page.locator('#rgf-amount').waitFor();
         await page.waitForTimeout(400); // the sheet slides in
         await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
-        await check(page, '/achats/fournisseurs/[id]/reglement', locale, results, { fullPage: false });
+        await check(page, '/achats/fournisseurs/[id]/reglement', locale, results, {
+          fullPage: false,
+        });
+        await page.keyboard.press('Escape');
+      });
+
+      await test.step('chargement: new transfer sheet, then the entry screen and its Validate', async () => {
+        const go = async (path: string) => {
+          await page.evaluate((to) => {
+            (
+              window as unknown as { next: { router: { push(href: string): void } } }
+            ).next.router.push(to);
+          }, path);
+          await page.waitForURL((url) => url.pathname === path);
+          await settle(page);
+        };
+        await go('/stock/transferts');
+        await page.getByRole('button', { name: m['transfers']?.['new'] }).first().click();
+        await page.locator('#transfer-from').waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
+        await check(page, '/stock/transferts/nouveau', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+
+        await go(resolve('/stock/transferts/[id]', v));
+        await expectOnScreen(page, '#transfer-scan');
+        await expectOnScreen(page, `button:has-text("${m['transfers']?.['validate']}")`);
+
+        await go('/stock/depots');
+        await page.getByRole('button', { name: m['warehouses']?.['new'] }).first().click();
+        await page.locator('#warehouse-name').waitFor();
+        await page.waitForTimeout(400);
+        await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
+        await check(page, '/stock/depots/nouveau', locale, results, { fullPage: false });
         await page.keyboard.press('Escape');
       });
 
       await test.step('share link of the relevé: the link and the WhatsApp button on screen', async () => {
         const path = resolve('/clients/[id]', v);
         await page.evaluate((to) => {
-          (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push(to);
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
         }, path);
         await page.waitForURL((url) => url.pathname === path);
         await settle(page);
@@ -306,7 +388,9 @@ for (const locale of LOCALES) {
       await test.step('bulk assign: select a client, the assign sheet and its button on screen', async () => {
         const path = '/clients';
         await page.evaluate((to) => {
-          (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push(to);
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
         }, path);
         await page.waitForURL((url) => url.pathname === path);
         await settle(page);
@@ -325,7 +409,9 @@ for (const locale of LOCALES) {
       await test.step('team tree: the users page with the manager column and the teams', async () => {
         const path = '/parametres/utilisateurs';
         await page.evaluate((to) => {
-          (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push(to);
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
         }, path);
         await page.waitForURL((url) => url.pathname === path);
         await settle(page);
@@ -336,7 +422,9 @@ for (const locale of LOCALES) {
       await test.step('dashboard: the onboarding checklist fits', async () => {
         const path = '/tableau-de-bord';
         await page.evaluate((to) => {
-          (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push(to);
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
         }, path);
         await page.waitForURL((url) => url.pathname === path);
         await settle(page);
@@ -347,7 +435,9 @@ for (const locale of LOCALES) {
       await test.step('fast sale: a line, then the total and the validate button on screen', async () => {
         const path = '/ventes/nouvelle';
         await page.evaluate((to) => {
-          (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push(to);
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
         }, path);
         await page.waitForURL((url) => url.pathname === path);
         await settle(page);
@@ -426,7 +516,9 @@ for (const locale of LOCALES) {
         await test.step(route.pattern, async () => {
           const path = resolve(route.pattern, v);
           await page.evaluate((to) => {
-            (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push(to);
+            (
+              window as unknown as { next: { router: { push(href: string): void } } }
+            ).next.router.push(to);
           }, path);
           await page.waitForURL((url) => url.pathname === path);
           await settle(page);

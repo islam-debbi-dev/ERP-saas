@@ -45,6 +45,10 @@ export const TENANT_SCOPED_MODELS = new Set<string>([
   'ShareLink',
   'Brand',
   'Sector',
+  'Warehouse',
+  'WarehouseStock',
+  'StockTransfer',
+  'StockTransferLine',
 ]);
 
 /** Append-only models: any update or delete is a bug (AGENTS.md rules 1 and 7). */

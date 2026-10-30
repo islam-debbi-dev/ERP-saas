@@ -48,6 +48,8 @@ export const DocType = {
   RF: 'RF',
   /** Règlement fournisseur (payment to a supplier). */
   RGF: 'RGF',
+  /** Transfert de stock: bon de chargement / déchargement (phase 15). */
+  TR: 'TR',
 } as const;
 export type DocType = (typeof DocType)[keyof typeof DocType];
 export const DOC_TYPES = Object.values(DocType);
@@ -106,6 +108,9 @@ export const StockMovementType = {
   SALE_RETURN: 'SALE_RETURN',
   ADJUSTMENT: 'ADJUSTMENT',
   INVENTORY: 'INVENTORY',
+  /** Phase 15: the two halves of a transfer between warehouses, at the current CUMP. */
+  TRANSFER_OUT: 'TRANSFER_OUT',
+  TRANSFER_IN: 'TRANSFER_IN',
 } as const;
 export type StockMovementType = (typeof StockMovementType)[keyof typeof StockMovementType];
 
@@ -124,6 +129,34 @@ export const InventoryStatus = {
   CANCELLED: 'CANCELLED',
 } as const;
 export type InventoryStatus = (typeof InventoryStatus)[keyof typeof InventoryStatus];
+
+/** Dépôts (phase 15, WAREHOUSES). Without the module a tenant has one implicit MAIN. */
+export const WarehouseType = {
+  MAIN: 'MAIN',
+  SECONDARY: 'SECONDARY',
+  /** A truck: a seller's stock on the road. */
+  VEHICLE: 'VEHICLE',
+} as const;
+export type WarehouseType = (typeof WarehouseType)[keyof typeof WarehouseType];
+export const WAREHOUSE_TYPES = Object.values(WarehouseType);
+
+export const StockTransferType = {
+  /** Chargement: dépôt → camion. */
+  LOAD: 'LOAD',
+  /** Déchargement: camion → dépôt. */
+  UNLOAD: 'UNLOAD',
+  /** Any other move between two dépôts. */
+  TRANSFER: 'TRANSFER',
+} as const;
+export type StockTransferType = (typeof StockTransferType)[keyof typeof StockTransferType];
+export const STOCK_TRANSFER_TYPES = Object.values(StockTransferType);
+
+export const StockTransferStatus = {
+  DRAFT: 'DRAFT',
+  VALIDATED: 'VALIDATED',
+  CANCELLED: 'CANCELLED',
+} as const;
+export type StockTransferStatus = (typeof StockTransferStatus)[keyof typeof StockTransferStatus];
 
 export const PurchaseStatus = {
   DRAFT: 'DRAFT',
@@ -226,5 +259,7 @@ export const PrintableDocType = {
   FAC: 'FAC',
   AV: 'AV',
   BR: 'BR',
+  /** Bon de chargement / déchargement / transfert (phase 15). */
+  TR: 'TR',
 } as const;
 export type PrintableDocType = (typeof PrintableDocType)[keyof typeof PrintableDocType];

@@ -14,6 +14,7 @@ import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { type Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { WarehousesService } from '../stock/warehouses.service';
 import { fromIsoDate, purchaseInclude, toIsoDate, toPurchaseDto } from './purchase.mapper';
 import { snapshotLines } from './purchase-lines';
 
@@ -23,6 +24,7 @@ export class PurchasesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly warehouses: WarehousesService,
   ) {}
 
   async create(input: CreatePurchaseInput): Promise<PurchaseDto> {
@@ -31,9 +33,13 @@ export class PurchasesService {
       await this.checkSupplier(tx, input.supplierId);
       const { lines, totals } = await snapshotLines(tx, input.lines);
       this.checkPaid(input.paidAmount, totals.totalTtc.toString());
+      const warehouseId = input.warehouseId
+        ? await this.warehouses.resolve(tx, input.warehouseId)
+        : null;
       const purchase = await tx.purchase.create({
         data: {
           tenantId,
+          warehouseId,
           supplierId: input.supplierId,
           documentDate: fromIsoDate(input.documentDate),
           supplierRef: input.supplierRef,
@@ -54,7 +60,7 @@ export class PurchasesService {
         action: 'PURCHASE_DRAFT_CREATED',
         entity: 'Purchase',
         entityId: purchase.id,
-        after: { supplierId: input.supplierId, lines: input.lines },
+        after: { supplierId: input.supplierId, warehouseId, lines: input.lines },
       });
       return purchase.id;
     });
@@ -78,6 +84,9 @@ export class PurchasesService {
       await this.checkSupplier(tx, input.supplierId);
       const { lines, totals } = await snapshotLines(tx, input.lines);
       this.checkPaid(input.paidAmount, totals.totalTtc.toString());
+      const warehouseId = input.warehouseId
+        ? await this.warehouses.resolve(tx, input.warehouseId)
+        : input.warehouseId;
       // Draft lines have no effect anywhere, so they are simply replaced.
       await tx.purchaseLine.deleteMany({ where: { purchaseId: id } });
       if (lines.length > 0) {
@@ -94,6 +103,7 @@ export class PurchasesService {
           supplierRef: input.supplierRef,
           note: input.note,
           paidAmount: input.paidAmount,
+          ...(warehouseId !== undefined ? { warehouseId } : {}),
           totalHt: totals.totalHt.toString(),
           totalTva: totals.totalTva.toString(),
           totalTtc: totals.totalTtc.toString(),

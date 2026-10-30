@@ -12,6 +12,7 @@ import { requirePermission } from '../auth/permissions';
 import { PrismaService } from '../prisma/prisma.service';
 import { StockService } from './stock.service';
 import { baseUnitCost, toBaseLines } from './unit-conversion';
+import { WarehousesService } from './warehouses.service';
 
 /** Opening stock and manual adjustments (casse, perte...). */
 @Injectable()
@@ -20,16 +21,19 @@ export class StockOperationsService {
     private readonly prisma: PrismaService,
     private readonly stock: StockService,
     private readonly audit: AuditService,
+    private readonly warehouses: WarehousesService,
   ) {}
 
   /** One-time per product. Corrections afterwards go through adjustments. */
   async opening(input: OpeningStockInput): Promise<StockOperationResult> {
     return this.prisma.db.$transaction(async (tx) => {
+      const warehouseId = await this.warehouses.resolve(tx, input.warehouseId);
       const converted = await toBaseLines(tx, input.lines);
       const result = await this.stock.applyMovements(
         tx,
         converted.map((c, i) => ({
           productId: c.productId,
+          warehouseId,
           type: StockMovementType.OPENING,
           qtyBase: c.qtyBase,
           unitCost: baseUnitCost(input.lines[i]?.unitCost ?? '0', c.factorToBase),
@@ -39,7 +43,7 @@ export class StockOperationsService {
       await this.audit.log(tx, {
         action: 'STOCK_OPENING',
         entity: 'Stock',
-        after: { lines: input.lines, movementIds: result.movementIds },
+        after: { warehouseId, lines: input.lines, movementIds: result.movementIds },
       });
       return { movements: result.movementIds.length, warnings: result.warnings };
     });
@@ -49,11 +53,13 @@ export class StockOperationsService {
   async adjust(input: AdjustmentInput, user: CurrentUserInfo): Promise<StockOperationResult> {
     requirePermission(user, Permission.STOCK_ADJUST, { message: 'You may not adjust the stock' });
     return this.prisma.db.$transaction(async (tx) => {
+      const warehouseId = await this.warehouses.resolve(tx, input.warehouseId);
       const converted = await toBaseLines(tx, input.lines);
       const result = await this.stock.applyMovements(
         tx,
         converted.map((c) => ({
           productId: c.productId,
+          warehouseId,
           type: StockMovementType.ADJUSTMENT,
           qtyBase: c.qtyBase,
           reason: input.reason,
@@ -64,6 +70,7 @@ export class StockOperationsService {
         action: 'STOCK_ADJUSTED',
         entity: 'Stock',
         after: {
+          warehouseId,
           reason: input.reason,
           note: input.note,
           lines: input.lines,

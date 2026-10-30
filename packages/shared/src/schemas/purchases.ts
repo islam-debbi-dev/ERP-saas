@@ -109,6 +109,11 @@ const purchaseFields = {
   /** Paid to the supplier at reception; the rest goes on the supplier account. */
   paidAmount: amountString.transform(normalizeDecimal).default('0'),
   lines: z.array(purchaseLineInputSchema).max(300),
+  /**
+   * The dépôt receiving the goods (phase 15, WAREHOUSES). Omitted = unchanged (none on
+   * create); null = the default MAIN.
+   */
+  warehouseId: id.nullable().optional(),
 };
 
 export const createPurchaseSchema = z.object(purchaseFields);
@@ -137,6 +142,8 @@ export const validatePurchaseSchema = z.object({
 export type ValidatePurchaseInput = z.infer<typeof validatePurchaseSchema>;
 
 export const purchaseReturnSchema = z.object({
+  /** The dépôt the goods leave from; omitted = the one the BR was received into. */
+  warehouseId: id.optional(),
   note: optionalText(255),
   lines: z
     .array(
@@ -202,6 +209,8 @@ export interface PurchaseDto {
   totalTtc: string;
   tvaByRate: { rate: string; baseHt: string; tva: string }[];
   paidAmount: string;
+  /** The dépôt that received (or will receive) the goods. */
+  warehouse: { id: string; name: string } | null;
   version: number;
   createdAt: string;
   validatedAt: string | null;

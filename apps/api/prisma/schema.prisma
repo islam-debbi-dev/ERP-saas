@@ -48,6 +48,8 @@ enum DocType {
   RF
   /// Règlement fournisseur (phase 21).
   RGF
+  /// Transfert de stock: chargement / déchargement (phase 15).
+  TR
 }
 
 enum PrintFormat {
@@ -153,6 +155,10 @@ model Tenant {
   shareLinks           ShareLink[]
   brands               Brand[]
   sectors              Sector[]
+  warehouses           Warehouse[]
+  warehouseStocks      WarehouseStock[]
+  stockTransfers       StockTransfer[]
+  stockTransferLines   StockTransferLine[]
 
   @@map("tenants")
 }
@@ -193,6 +199,7 @@ model User {
   clients     Client[]         @relation("ClientSeller")
   sales       Sale[]           @relation("SaleSeller")
   collected   Payment[]        @relation("PaymentCollector")
+  vehicles    Warehouse[]      @relation("WarehouseDriver")
 
   @@index([tenantId, role])
   @@index([tenantId, managerId])
@@ -407,6 +414,8 @@ model Product {
   purchaseLines       PurchaseLine[]
   purchaseReturnLines PurchaseReturnLine[]
   saleLines           SaleLine[]
+  warehouseStocks     WarehouseStock[]
+  stockTransferLines  StockTransferLine[]
 
   @@unique([tenantId, reference])
   @@index([tenantId, designation])
@@ -474,6 +483,9 @@ enum StockMovementType {
   SALE_RETURN
   ADJUSTMENT
   INVENTORY
+  /// Phase 15: the two halves of a transfer between warehouses, at the current CUMP.
+  TRANSFER_OUT
+  TRANSFER_IN
 }
 
 enum AdjustmentReason {
@@ -512,12 +524,17 @@ model StockMovement {
   refId        String?           @db.Uuid
   note         String?           @db.VarChar(255)
   createdBy    String?           @db.Uuid
+  /// Where the goods are (phase 15). Nullable until the contract release; the backfill
+  /// sets the default MAIN warehouse on older rows (the only update the trigger allows).
+  warehouseId  String?           @db.Uuid
   createdAt    DateTime          @default(now()) @db.Timestamptz(3)
 
-  tenant  Tenant  @relation(fields: [tenantId], references: [id])
-  product Product @relation(fields: [productId], references: [id])
+  tenant    Tenant     @relation(fields: [tenantId], references: [id])
+  product   Product    @relation(fields: [productId], references: [id])
+  warehouse Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
 
   @@index([tenantId, productId, seq])
+  @@index([tenantId, productId, warehouseId, seq])
   @@index([tenantId, refType, refId])
   @@index([tenantId, createdAt])
   @@map("stock_movements")
@@ -548,6 +565,8 @@ model Inventory {
   tenantId    String          @db.Uuid
   number      String          @db.VarChar(20)
   status      InventoryStatus @default(OPEN)
+  /// The dépôt counted (phase 15); nullable until the contract release.
+  warehouseId String?         @db.Uuid
   note        String?         @db.VarChar(255)
   createdBy   String?         @db.Uuid
   validatedBy String?         @db.Uuid
@@ -556,8 +575,9 @@ model Inventory {
   createdAt   DateTime        @default(now()) @db.Timestamptz(3)
   updatedAt   DateTime        @updatedAt @db.Timestamptz(3)
 
-  tenant Tenant          @relation(fields: [tenantId], references: [id])
-  lines  InventoryLine[]
+  tenant    Tenant          @relation(fields: [tenantId], references: [id])
+  warehouse Warehouse?      @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  lines     InventoryLine[]
 
   @@unique([tenantId, number])
   @@index([tenantId, createdAt])
@@ -729,6 +749,8 @@ model Purchase {
   totalTtc     Decimal        @default(0) @db.Decimal(14, 2)
   /// Paid at reception. Supplier accounts come in v1.1.
   paidAmount   Decimal        @default(0) @db.Decimal(14, 2)
+  /// The dépôt the goods enter or leave (phase 15); nullable until the contract release.
+  warehouseId  String?        @db.Uuid
   version      Int            @default(1)
   createdBy    String?        @db.Uuid
   validatedBy  String?        @db.Uuid
@@ -738,10 +760,11 @@ model Purchase {
   createdAt    DateTime       @default(now()) @db.Timestamptz(3)
   updatedAt    DateTime       @updatedAt @db.Timestamptz(3)
 
-  tenant   Tenant           @relation(fields: [tenantId], references: [id])
-  supplier Supplier         @relation(fields: [supplierId], references: [id])
-  lines    PurchaseLine[]
-  returns  PurchaseReturn[]
+  tenant    Tenant           @relation(fields: [tenantId], references: [id])
+  supplier  Supplier         @relation(fields: [supplierId], references: [id])
+  warehouse Warehouse?       @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  lines     PurchaseLine[]
+  returns   PurchaseReturn[]
 
   @@unique([tenantId, number])
   @@index([tenantId, createdAt])
@@ -781,22 +804,25 @@ model PurchaseLine {
 
 /// Retour fournisseur: a partial return of a validated bon de réception.
 model PurchaseReturn {
-  id         String   @id @default(uuid()) @db.Uuid
-  tenantId   String   @db.Uuid
-  number     String   @db.VarChar(20)
-  purchaseId String   @db.Uuid
-  supplierId String   @db.Uuid
-  note       String?  @db.VarChar(255)
-  totalHt    Decimal  @db.Decimal(14, 2)
-  totalTva   Decimal  @db.Decimal(14, 2)
-  totalTtc   Decimal  @db.Decimal(14, 2)
-  createdBy  String?  @db.Uuid
-  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  number      String   @db.VarChar(20)
+  purchaseId  String   @db.Uuid
+  supplierId  String   @db.Uuid
+  /// The dépôt the goods enter or leave (phase 15); nullable until the contract release.
+  warehouseId String?  @db.Uuid
+  note        String?  @db.VarChar(255)
+  totalHt     Decimal  @db.Decimal(14, 2)
+  totalTva    Decimal  @db.Decimal(14, 2)
+  totalTtc    Decimal  @db.Decimal(14, 2)
+  createdBy   String?  @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
 
-  tenant   Tenant               @relation(fields: [tenantId], references: [id])
-  purchase Purchase             @relation(fields: [purchaseId], references: [id])
-  supplier Supplier             @relation(fields: [supplierId], references: [id])
-  lines    PurchaseReturnLine[]
+  tenant    Tenant               @relation(fields: [tenantId], references: [id])
+  purchase  Purchase             @relation(fields: [purchaseId], references: [id])
+  supplier  Supplier             @relation(fields: [supplierId], references: [id])
+  warehouse Warehouse?           @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  lines     PurchaseReturnLine[]
 
   @@unique([tenantId, number])
   @@index([tenantId, purchaseId])
@@ -993,6 +1019,9 @@ model Sale {
   createdBy      String?      @db.Uuid
   /// Who made the sale (phase 14); frozen at validation, changed only through a reassign.
   sellerId       String?      @db.Uuid
+  /// The dépôt the goods enter or leave (phase 15); nullable until the contract release.
+  /// On a draft: the dépôt chosen so far (null = decided at validation).
+  warehouseId    String?      @db.Uuid
   validatedBy    String?      @db.Uuid
   validatedAt    DateTime?    @db.Timestamptz(3)
   cancelledBy    String?      @db.Uuid
@@ -1001,6 +1030,7 @@ model Sale {
   updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
 
   tenant             Tenant              @relation(fields: [tenantId], references: [id])
+  warehouse          Warehouse?          @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
   client             Client?             @relation(fields: [clientId], references: [id])
   seller             User?               @relation("SaleSeller", fields: [sellerId], references: [id], onDelete: Restrict)
   invoice            Sale?               @relation("InvoiceBls", fields: [invoiceId], references: [id])
@@ -1067,15 +1097,18 @@ model SaleReturn {
   clientId    String?           @db.Uuid
   disposition ReturnDisposition
   reason      String            @db.VarChar(255)
+  /// The dépôt the goods enter or leave (phase 15); nullable until the contract release.
+  warehouseId String?           @db.Uuid
   totalHt     Decimal           @db.Decimal(14, 2)
   totalTva    Decimal           @db.Decimal(14, 2)
   totalTtc    Decimal           @db.Decimal(14, 2)
   createdBy   String?           @db.Uuid
   createdAt   DateTime          @default(now()) @db.Timestamptz(3)
 
-  tenant Tenant           @relation(fields: [tenantId], references: [id])
-  sale   Sale             @relation(fields: [saleId], references: [id])
-  lines  SaleReturnLine[]
+  tenant    Tenant           @relation(fields: [tenantId], references: [id])
+  sale      Sale             @relation(fields: [saleId], references: [id])
+  warehouse Warehouse?       @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  lines     SaleReturnLine[]
 
   @@unique([tenantId, number])
   @@index([tenantId, saleId])
@@ -1442,4 +1475,134 @@ model Sector {
 
   @@index([tenantId, name])
   @@map("sectors")
+}
+
+// ---------------------------------------------------------------- warehouses (phase 15)
+
+enum WarehouseType {
+  MAIN
+  SECONDARY
+  /// A truck: a seller's stock on the road (chargement / déchargement).
+  VEHICLE
+}
+
+enum StockTransferType {
+  /// Chargement: dépôt → camion.
+  LOAD
+  /// Déchargement: camion → dépôt.
+  UNLOAD
+  /// Any other move between two dépôts.
+  TRANSFER
+}
+
+enum StockTransferStatus {
+  DRAFT
+  VALIDATED
+  CANCELLED
+}
+
+/// A dépôt or a truck (master data: archived, never deleted). Each tenant has exactly one
+/// default MAIN warehouse (partial unique index), created at signup or on first use.
+model Warehouse {
+  id             String        @id @default(uuid()) @db.Uuid
+  tenantId       String        @db.Uuid
+  name           String        @db.VarChar(80)
+  type           WarehouseType
+  /// The seller who drives this truck (VEHICLE only); one active truck per user.
+  assignedUserId String?       @db.Uuid
+  isDefault      Boolean       @default(false)
+  active         Boolean       @default(true)
+  deletedAt      DateTime?     @db.Timestamptz(3)
+  createdAt      DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime      @updatedAt @db.Timestamptz(3)
+
+  tenant          Tenant           @relation(fields: [tenantId], references: [id])
+  assignedUser    User?            @relation("WarehouseDriver", fields: [assignedUserId], references: [id], onDelete: Restrict)
+  stocks          WarehouseStock[]
+  movements       StockMovement[]
+  purchases       Purchase[]
+  purchaseReturns PurchaseReturn[]
+  sales           Sale[]
+  saleReturns     SaleReturn[]
+  inventories     Inventory[]
+  transfersOut    StockTransfer[]  @relation("TransferFrom")
+  transfersIn     StockTransfer[]  @relation("TransferTo")
+
+  @@unique([tenantId, name])
+  @@index([tenantId, type])
+  @@map("warehouses")
+}
+
+/// Quantity of a product in one warehouse. Written only by StockService.applyMovements,
+/// under the ProductStock lock, in the same transaction as the movement:
+/// SUM(qtyBase) over the warehouses of a product = ProductStock.qtyBase, always.
+/// The CUMP stays on ProductStock (one per product for the whole company).
+model WarehouseStock {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  warehouseId String   @db.Uuid
+  productId   String   @db.Uuid
+  qtyBase     Decimal  @default(0) @db.Decimal(14, 3)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+  product   Product   @relation(fields: [productId], references: [id])
+
+  @@unique([warehouseId, productId])
+  @@index([tenantId, productId])
+  @@map("warehouse_stocks")
+}
+
+/// Bon de chargement / déchargement / transfert (TR-YYYY-000001). Validating writes a
+/// TRANSFER_OUT and a TRANSFER_IN per line; cancelling a validated one writes the
+/// reverse movements. Never deleted.
+model StockTransfer {
+  id              String              @id @default(uuid()) @db.Uuid
+  tenantId        String              @db.Uuid
+  /// Given at validation (no gaps from drafts).
+  number          String?             @db.VarChar(20)
+  type            StockTransferType
+  status          StockTransferStatus @default(DRAFT)
+  fromWarehouseId String              @db.Uuid
+  toWarehouseId   String              @db.Uuid
+  note            String?             @db.VarChar(255)
+  createdBy       String?             @db.Uuid
+  validatedBy     String?             @db.Uuid
+  validatedAt     DateTime?           @db.Timestamptz(3)
+  cancelledBy     String?             @db.Uuid
+  cancelledAt     DateTime?           @db.Timestamptz(3)
+  cancelReason    String?             @db.VarChar(255)
+  createdAt       DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime            @updatedAt @db.Timestamptz(3)
+
+  tenant        Tenant              @relation(fields: [tenantId], references: [id])
+  fromWarehouse Warehouse           @relation("TransferFrom", fields: [fromWarehouseId], references: [id])
+  toWarehouse   Warehouse           @relation("TransferTo", fields: [toWarehouseId], references: [id])
+  lines         StockTransferLine[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, status])
+  @@map("stock_transfers")
+}
+
+model StockTransferLine {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @db.Uuid
+  transferId String   @db.Uuid
+  productId  String   @db.Uuid
+  /// What was typed (e.g. 5 cartons), kept for the printed bon.
+  unitId     String   @db.Uuid
+  qty        Decimal  @db.Decimal(14, 3)
+  qtyBase    Decimal  @db.Decimal(14, 3)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant   Tenant        @relation(fields: [tenantId], references: [id])
+  transfer StockTransfer @relation(fields: [transferId], references: [id])
+  product  Product       @relation(fields: [productId], references: [id])
+
+  @@unique([transferId, productId])
+  @@index([tenantId, transferId])
+  @@map("stock_transfer_lines")
 }

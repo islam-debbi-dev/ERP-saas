@@ -21,11 +21,13 @@ import { DocumentNumberingService } from '../documents/document-numbering.servic
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { StockService } from './stock.service';
 import { toBaseLines } from './unit-conversion';
+import { WarehousesService } from './warehouses.service';
 
 /**
- * Inventaire: count what is on the shelves, then validate. Validation compares the
- * counts with the stock at that moment and writes INVENTORY movements for the
- * differences only. A validated or cancelled count is read-only.
+ * Inventaire: count what is on the shelves of one dépôt, then validate. Validation
+ * compares the counts with that dépôt's stock at that moment and writes INVENTORY
+ * movements for the differences only. A validated or cancelled count is read-only.
+ * Counts opened before phase 15 have no dépôt: they count the default one.
  */
 @Injectable()
 export class InventoriesService {
@@ -34,16 +36,19 @@ export class InventoriesService {
     private readonly stock: StockService,
     private readonly numbering: DocumentNumberingService,
     private readonly audit: AuditService,
+    private readonly warehouses: WarehousesService,
   ) {}
 
   async create(input: CreateInventoryInput): Promise<InventoryDto> {
     const id = await this.prisma.db.$transaction(async (tx) => {
       const tenantId = tenantContext.requireTenantId();
+      const warehouseId = await this.warehouses.resolve(tx, input.warehouseId);
       const number = await this.numbering.next(tx, tenantId, DocType.INV);
       const inv = await tx.inventory.create({
         data: {
           tenantId,
           number,
+          warehouseId,
           note: input.note ?? null,
           createdBy: tenantContext.get()?.userId ?? null,
         },
@@ -52,7 +57,7 @@ export class InventoriesService {
         action: 'INVENTORY_OPENED',
         entity: 'Inventory',
         entityId: inv.id,
-        after: { number },
+        after: { number, warehouseId },
       });
       return inv.id;
     });
@@ -69,6 +74,7 @@ export class InventoriesService {
       id: r.id,
       number: r.number,
       status: r.status,
+      warehouseId: r.warehouseId,
       lineCount: r._count.lines,
       createdAt: r.createdAt.toISOString(),
       validatedAt: r.validatedAt?.toISOString() ?? null,
@@ -82,19 +88,26 @@ export class InventoriesService {
       include: {
         lines: {
           include: {
-            product: {
-              select: { reference: true, designation: true, stock: { select: { qtyBase: true } } },
-            },
+            product: { select: { reference: true, designation: true } },
           },
           orderBy: { createdAt: 'asc' },
         },
       },
     });
     if (!inv) throw new AppException(ErrorCode.NOT_FOUND, 'Inventory not found');
+    const live =
+      inv.status === InventoryStatus.OPEN
+        ? await this.stock.warehouseQuantities(
+            this.prisma.db,
+            inv.warehouseId ?? (await this.warehouses.defaultId()),
+            inv.lines.map((l) => l.productId),
+          )
+        : new Map<string, ReturnType<typeof qty>>();
     return {
       id: inv.id,
       number: inv.number,
       status: inv.status,
+      warehouseId: inv.warehouseId,
       note: inv.note,
       createdAt: inv.createdAt.toISOString(),
       validatedAt: inv.validatedAt?.toISOString() ?? null,
@@ -103,7 +116,7 @@ export class InventoriesService {
         const counted = qty(l.countedQtyBase.toString());
         const expected = l.expectedQtyBase
           ? qty(l.expectedQtyBase.toString())
-          : qty(l.product.stock?.qtyBase.toString() ?? '0');
+          : (live.get(l.productId) ?? qty(0));
         return {
           productId: l.productId,
           reference: l.product.reference,
@@ -152,11 +165,17 @@ export class InventoriesService {
     });
     await this.prisma.db.$transaction(async (tx) => {
       await this.lockOpen(tx, id);
+      const inv = await tx.inventory.findUniqueOrThrow({
+        where: { id },
+        select: { warehouseId: true },
+      });
+      const warehouseId = inv.warehouseId ?? (await this.warehouses.defaultId(tx));
       const lines = await tx.inventoryLine.findMany({ where: { inventoryId: id } });
-      // Lock the levels first so "expected" is exactly the stock the movements apply to.
+      // Lock the levels first so "expected" is exactly the dépôt stock the movements apply to.
       const levels = await this.stock.lockedLevels(
         tx,
         lines.map((l) => l.productId),
+        warehouseId,
       );
       const diffs = lines.map((l) => {
         const expected = levels.get(l.productId)?.qty ?? qty(0);
@@ -168,6 +187,7 @@ export class InventoriesService {
           .filter((d) => !d.diff.isZero())
           .map((d) => ({
             productId: d.line.productId,
+            warehouseId,
             type: StockMovementType.INVENTORY,
             qtyBase: d.diff.toString(),
             refType: 'Inventory',
@@ -184,6 +204,7 @@ export class InventoriesService {
         where: { id },
         data: {
           status: InventoryStatus.VALIDATED,
+          warehouseId,
           validatedAt: new Date(),
           validatedBy: tenantContext.get()?.userId ?? null,
         },
