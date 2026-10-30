@@ -114,6 +114,8 @@ export interface TodayStopDto {
   lastSale: { id: string; number: string | null; totalTtc: string; validatedAt: string } | null;
   /** A visit was recorded for this client today (Algiers day). */
   visitedToday: boolean;
+  /** The caller's latest documents for this client today, to link to the visit. */
+  today: { saleId: string | null; orderId: string | null; paymentId: string | null };
 }
 
 export interface TodayDto {
@@ -322,6 +324,13 @@ export interface OrderSummaryDto {
 export interface OrderPage {
   items: OrderSummaryDto[];
   nextCursor: string | null;
+}
+
+/** Who can be put on an order to deliver it. */
+export interface DelivererDto {
+  id: string;
+  fullName: string;
+  role: 'LIVREUR' | 'SELLER';
 }
 
 export interface DeliverOrderResultDto {

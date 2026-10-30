@@ -4,6 +4,7 @@ import {
   type AssignLivreurInput,
   type CreateOrderInput,
   type DeliverOrderInput,
+  type DelivererDto,
   type DeliverOrderResultDto,
   DocType,
   ErrorCode,
@@ -504,6 +505,16 @@ export class OrdersService {
       }),
       nextCursor: rows.length > query.limit ? (page.at(-1)?.id ?? null) : null,
     };
+  }
+
+  /** Live users an order can be put on: livreurs, and sellers who deliver themselves. */
+  async deliverers(): Promise<DelivererDto[]> {
+    const users = await this.prisma.db.user.findMany({
+      where: { deletedAt: null, role: { in: [...DELIVERING_ROLES] } },
+      select: { id: true, fullName: true, role: true },
+      orderBy: [{ role: 'asc' }, { fullName: 'asc' }],
+    });
+    return users.map((u) => ({ ...u, role: u.role as DelivererDto['role'] }));
   }
 
   // ---------------------------------------------------------------- helpers

@@ -5,7 +5,10 @@ import {
   type CreateRouteInput,
   ErrorCode,
   type NoSaleReason,
+  OrderStatus,
+  PaymentStatus,
   type RouteDto,
+  SaleStatus,
   type RouteListQuery,
   type SetRouteStopsInput,
   type TodayDto,
@@ -246,7 +249,10 @@ export class RoutesService {
       },
     });
     const seen = new Set<string>();
-    const stops: Omit<TodayStopDto, 'balance' | 'lastVisit' | 'lastSale' | 'visitedToday'>[] = [];
+    const stops: Omit<
+      TodayStopDto,
+      'balance' | 'lastVisit' | 'lastSale' | 'visitedToday' | 'today'
+    >[] = [];
     for (const r of routes) {
       for (const s of r.stops) {
         if (s.client.deletedAt || seen.has(s.clientId)) continue;
@@ -256,11 +262,12 @@ export class RoutesService {
       }
     }
     const clientIds = [...seen];
-    const [balances, lastVisits, lastSales, visitedToday] = await Promise.all([
+    const [balances, lastVisits, lastSales, visitedToday, docs] = await Promise.all([
       this.balances(clientIds),
       this.lastVisits(clientIds),
       this.lastSales(clientIds),
       this.visitedOn(user.id, day, clientIds),
+      this.documentsOn(user.id, day, clientIds),
     ]);
     const out: TodayStopDto[] = stops.map((s) => ({
       ...s,
@@ -268,6 +275,7 @@ export class RoutesService {
       lastVisit: lastVisits.get(s.client.id) ?? null,
       lastSale: lastSales.get(s.client.id) ?? null,
       visitedToday: visitedToday.has(s.client.id),
+      today: docs.get(s.client.id) ?? { saleId: null, orderId: null, paymentId: null },
     }));
     return {
       day,
@@ -355,6 +363,63 @@ export class RoutesService {
         },
       ]),
     );
+  }
+
+  /** The seller's latest sale, order and versement of the day per client (visit links). */
+  private async documentsOn(
+    sellerId: string,
+    day: string,
+    clientIds: string[],
+  ): Promise<Map<string, TodayStopDto['today']>> {
+    const out = new Map<string, TodayStopDto['today']>();
+    if (clientIds.length === 0) return out;
+    const { start, end } = algiersDayBounds(day);
+    const [sales, orders, payments] = await Promise.all([
+      this.prisma.db.sale.findMany({
+        where: {
+          clientId: { in: clientIds },
+          sellerId,
+          status: SaleStatus.VALIDATED,
+          validatedAt: { gte: start, lt: end },
+        },
+        orderBy: { validatedAt: 'asc' },
+        select: { id: true, clientId: true },
+      }),
+      this.prisma.db.order.findMany({
+        where: {
+          clientId: { in: clientIds },
+          sellerId,
+          status: { not: OrderStatus.CANCELLED },
+          createdAt: { gte: start, lt: end },
+        },
+        orderBy: { createdAt: 'asc' },
+        select: { id: true, clientId: true },
+      }),
+      this.prisma.db.payment.findMany({
+        where: {
+          clientId: { in: clientIds },
+          collectedBy: sellerId,
+          saleId: null,
+          status: PaymentStatus.VALID,
+          receivedAt: { gte: start, lt: end },
+        },
+        orderBy: { receivedAt: 'asc' },
+        select: { id: true, clientId: true },
+      }),
+    ]);
+    const slot = (clientId: string) => {
+      let d = out.get(clientId);
+      if (!d) {
+        d = { saleId: null, orderId: null, paymentId: null };
+        out.set(clientId, d);
+      }
+      return d;
+    };
+    // Ascending order: the last one written wins.
+    for (const s of sales) if (s.clientId) slot(s.clientId).saleId = s.id;
+    for (const o of orders) slot(o.clientId).orderId = o.id;
+    for (const p of payments) if (p.clientId) slot(p.clientId).paymentId = p.id;
+    return out;
   }
 
   private async visitedOn(

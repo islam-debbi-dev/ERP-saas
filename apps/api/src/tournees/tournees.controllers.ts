@@ -27,6 +27,7 @@ import {
   createRouteSchema,
   type CreateVisitInput,
   createVisitSchema,
+  type DelivererDto,
   type DeliverOrderInput,
   type DeliverOrderResultDto,
   deliverOrderSchema,
@@ -193,6 +194,13 @@ export class OrdersController {
     @CurrentUser() user: CurrentUserInfo,
   ): Promise<OrderPage> {
     return this.orders.list(query, user);
+  }
+
+  // Declared before ':id'.
+  @Get('deliverers')
+  @Roles(...PLANNERS)
+  deliverers(): Promise<DelivererDto[]> {
+    return this.orders.deliverers();
   }
 
   @Get(':id')

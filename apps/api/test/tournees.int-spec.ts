@@ -646,6 +646,13 @@ describe('tournées, orders and seller sessions (phase 16)', () => {
       .put(`/routes/${route.id}/stops`, { clientIds: [c1.id, c2.id] })
       .expect(200);
     const order = await confirmedOrder(seller, c1.id, p, '2');
+    // Today's screen offers that order to link the visit to.
+    const day = (await as(seller).get('/me/today').expect(200)).body as TodayDto;
+    expect(day.stops.find((s) => s.client.id === c1.id)?.today).toEqual({
+      saleId: null,
+      orderId: order.id,
+      paymentId: null,
+    });
     const now = new Date().toISOString();
     await as(seller)
       .post('/visits', {
