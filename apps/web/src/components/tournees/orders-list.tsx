@@ -127,11 +127,7 @@ export function StatusFilter({
   const t = useTranslations('orders');
   const options: (OrderStatus | undefined)[] = [undefined, ...ORDER_STATUSES];
   return (
-    <div
-      className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0"
-      role="group"
-      aria-label={t('filterStatus')}
-    >
+    <div className="flex flex-wrap gap-2" role="group" aria-label={t('filterStatus')}>
       {options.map((s) => (
         <button
           key={s ?? 'all'}
