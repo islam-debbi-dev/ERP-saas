@@ -194,14 +194,17 @@ export class IncentiveMetricsService {
     >`
       SELECT f.seller, SUM(f.ht) AS ht, SUM(f.cost) AS cost, SUM(f.qty) AS qty
       FROM (
-        SELECT ${sellerOf('s')} AS seller, l."productId", l."lineHt" AS ht, l."qtyBase" AS qty,
+        -- Free units (UG, phase 20) are not sold quantity, but their cost lowers the margin.
+        SELECT ${sellerOf('s')} AS seller, l."productId", l."lineHt" AS ht,
+               CASE WHEN l."isFree" THEN 0 ELSE l."qtyBase" END AS qty,
                l."qtyBase" * l."unitCostBase" AS cost
         FROM sale_lines l JOIN sales s ON s.id = l."saleId"
         WHERE s."tenantId" = ${tenantId}::uuid AND s.status IN ('VALIDATED', 'CANCELLED')
           AND ${within('s."validatedAt"', p.start, p.end)} AND l."sourceLineId" IS NULL
         UNION ALL
         SELECT ${sellerOf('s')}, l."productId", -(l."lineHt" - COALESCE(r.ht, 0)),
-               -(l."qtyBase" - COALESCE(r.qty, 0)), -(l."qtyBase" - COALESCE(r.qty, 0)) * l."unitCostBase"
+               CASE WHEN l."isFree" THEN 0 ELSE -(l."qtyBase" - COALESCE(r.qty, 0)) END,
+               -(l."qtyBase" - COALESCE(r.qty, 0)) * l."unitCostBase"
         FROM sale_lines l JOIN sales s ON s.id = l."saleId"
         LEFT JOIN LATERAL (
           SELECT SUM(rl."lineHt") AS ht, SUM(rl."qtyBase") AS qty
@@ -212,7 +215,7 @@ export class IncentiveMetricsService {
           AND l."sourceLineId" IS NULL
         UNION ALL
         SELECT CASE WHEN bs.id IS NOT NULL THEN ${sellerOf('bs')} ELSE ${sellerOf('s')} END,
-               rl."productId", -rl."lineHt", -rl."qtyBase",
+               rl."productId", -rl."lineHt", CASE WHEN sl."isFree" THEN 0 ELSE -rl."qtyBase" END,
                CASE WHEN r.disposition = 'RESTOCK' THEN -rl."qtyBase" * sl."unitCostBase" ELSE 0 END
         FROM sale_return_lines rl
         JOIN sale_returns r ON r.id = rl."returnId"

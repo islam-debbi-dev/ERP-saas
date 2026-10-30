@@ -24,6 +24,7 @@ import {
   toQtyString,
   type ValidateSaleInput,
   computeTimbre,
+  freeToReturn,
   type GeoCheckResultDto,
   GeoRefType,
   Role,
@@ -42,7 +43,8 @@ import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { StockService } from '../stock/stock.service';
 import { timbreRuleOf } from '../tenants/timbre-rule';
 import { fromIsoDate } from './sale.mapper';
-import { snapshotSaleLines } from './sale-lines';
+import { PackagingLedgerService } from '../packaging/packaging-ledger.service';
+import { carryPromotions, type PromotionFields, snapshotSaleLines } from './sale-lines';
 import { lockSale, SalesService } from './sales.service';
 import { WarehousesService } from '../stock/warehouses.service';
 
@@ -65,6 +67,7 @@ export class SaleWorkflowService {
     private readonly audit: AuditService,
     private readonly warehouses: WarehousesService,
     private readonly geo: GeoCheckService,
+    private readonly packaging: PackagingLedgerService,
   ) {}
 
   async validate(
@@ -126,9 +129,16 @@ export class SaleWorkflowService {
     draft: CreateSaleInput,
     payment: ValidateSaleInput,
     user: CurrentUserInfo,
-    order: { sellerId: string | null; collectedBy: string },
+    order: {
+      sellerId: string | null;
+      collectedBy: string;
+      promotions: PromotionFields[];
+    },
   ): Promise<{ saleId: string; warnings: SaleWarning[]; change: string }> {
-    const saleId = await this.sales.createDraftInTx(tx, draft, user, { sellerId: order.sellerId });
+    const saleId = await this.sales.createDraftInTx(tx, draft, user, {
+      sellerId: order.sellerId,
+      promotions: order.promotions,
+    });
     const result = await this.validateInTx(tx, saleId, payment, user, {
       collectedBy: order.collectedBy,
     });
@@ -172,8 +182,9 @@ export class SaleWorkflowService {
       throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown client', { field: 'clientId' });
     }
 
-    // Freeze the product as it is today; the price was decided (and checked) on the draft.
-    const { lines, totals } = await snapshotSaleLines(
+    // Freeze the product as it is today; the price and the promotions were decided (and
+    // checked) on the draft.
+    const { lines: snapped, totals } = await snapshotSaleLines(
       tx,
       sale.lines.map((l) => ({
         productId: l.productId,
@@ -185,6 +196,7 @@ export class SaleWorkflowService {
       sale.priceLevelId,
       tenant.assujettiTva,
     );
+    const lines = carryPromotions(snapped, sale.lines);
     // The chosen dépôt, else the seller's truck, else MAIN (phase 15).
     const warehouseId = await this.warehouses.forSale(tx, sale.warehouseId, sale.sellerId);
     // Locks the stock rows first (see the class comment) and gives the CUMP for margins.
@@ -292,6 +304,14 @@ export class SaleWorkflowService {
       }
       await this.account.post(tx, entries);
     }
+    // Packaging after the client balance (lock order): given with the goods, empties back.
+    warnings.push(
+      ...(await this.packaging.postForSaleInTx(
+        tx,
+        { id, number, clientId: client?.id ?? null, lines },
+        input.packagingReturned ?? [],
+      )),
+    );
     if (paid.gt(0)) {
       await this.payments.recordForSaleInTx(tx, {
         clientId: client?.id ?? null,
@@ -445,6 +465,7 @@ export class SaleWorkflowService {
             }));
           await this.account.post(tx, entries);
         }
+        if (!grouped) await this.packaging.reverseForSaleInTx(tx, sale, reason);
       }
       await tx.sale.update({
         where: { id },
@@ -485,7 +506,7 @@ export class SaleWorkflowService {
         include: {
           lines: {
             include: {
-              returnLines: { select: { qtyBase: true } },
+              returnLines: { select: { qtyBase: true, qty: true } },
               product: { select: { baseUnit: { select: { allowsDecimal: true } } } },
             },
           },
@@ -508,6 +529,13 @@ export class SaleWorkflowService {
           });
         }
         seen.add(r.saleLineId);
+        if (line.isFree) {
+          throw new AppException(
+            ErrorCode.FREE_LINE_NOT_EDITABLE,
+            'Free units come back with their paid line',
+            { saleLineId: line.id },
+          );
+        }
         // The factor frozen on the line, not the product's current one.
         const qtyBase = toBase(r.qty, line.factorToBase.toString());
         if (!line.product.baseUnit.allowsDecimal && !isWholeQuantity(qtyBase)) {
@@ -531,6 +559,7 @@ export class SaleWorkflowService {
         }
         return { line, qty: r.qty, qtyBase };
       });
+      picked.push(...(await this.freeUnitsBack(tx, sale.lines, picked)));
       const totals = computeTotals(
         picked.map((p) => ({
           qty: p.qty,
@@ -631,6 +660,55 @@ export class SaleWorkflowService {
       });
     });
     return { sale: await this.sales.get(id), warnings, change: '0.00' };
+  }
+
+  /**
+   * The free units (UG) that come back with a return, in proportion to the paid units
+   * returned so far (shared `freeToReturn`, docs/domain.md). Priced 0 like on the sale.
+   */
+  private async freeUnitsBack<
+    L extends {
+      id: string;
+      position: number;
+      isFree: boolean;
+      freeOfPosition: number | null;
+      unitId: string;
+      qty: Prisma.Decimal;
+      factorToBase: Prisma.Decimal;
+      returnLines: { qty: Prisma.Decimal }[];
+    },
+  >(
+    tx: Tx,
+    lines: L[],
+    picked: { line: L; qty: string }[],
+  ): Promise<{ line: L; qty: string; qtyBase: ReturnType<typeof toBase> }[]> {
+    const free = lines.filter((l) => l.isFree && l.freeOfPosition !== null);
+    if (free.length === 0) return [];
+    const units = await tx.unit.findMany({
+      where: { id: { in: [...new Set(free.map((l) => l.unitId))] } },
+      select: { id: true, allowsDecimal: true },
+    });
+    const decimalUnit = new Map(units.map((u) => [u.id, u.allowsDecimal]));
+    const returned = (l: L) => l.returnLines.reduce((s, r) => s.plus(r.qty.toString()), qty(0));
+    const out: { line: L; qty: string; qtyBase: ReturnType<typeof toBase> }[] = [];
+    for (const p of picked) {
+      for (const f of free.filter((x) => x.freeOfPosition === p.line.position)) {
+        const back = freeToReturn({
+          freeSold: f.qty.toString(),
+          paidSold: p.line.qty.toString(),
+          paidReturnedAfter: returned(p.line).plus(p.qty),
+          freeReturnedBefore: returned(f),
+          wholeUnits: !(decimalUnit.get(f.unitId) ?? false),
+        });
+        if (back.lte(0)) continue;
+        out.push({
+          line: f,
+          qty: back.toString(),
+          qtyBase: toBase(back, f.factorToBase.toString()),
+        });
+      }
+    }
+    return out;
   }
 
   /**
@@ -761,6 +839,10 @@ export class SaleWorkflowService {
           validatedAt: new Date(),
         },
       });
+      // A free line points to its paid line by position: positions change on the facture.
+      const newPosition = new Map(
+        sourceLines.map(({ line: l }, i) => [`${l.saleId}:${l.position}`, i + 1]),
+      );
       await tx.saleLine.createMany({
         data: sourceLines.map(({ line: l, kept, keptBase }, i) => ({
           tenantId,
@@ -781,6 +863,13 @@ export class SaleWorkflowService {
           lineHt: totals.lines[i]?.lineHt.toString() ?? l.lineHt,
           unitCostBase: l.unitCostBase,
           sourceLineId: l.id,
+          isFree: l.isFree,
+          promotionId: l.promotionId,
+          promotionName: l.promotionName,
+          freeOfPosition:
+            l.freeOfPosition === null
+              ? null
+              : (newPosition.get(`${l.saleId}:${l.freeOfPosition}`) ?? null),
         })),
       });
       await tx.sale.updateMany({ where: { id: { in: ids } }, data: { invoiceId: facture.id } });

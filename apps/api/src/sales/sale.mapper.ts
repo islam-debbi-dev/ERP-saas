@@ -2,6 +2,7 @@ import {
   computeTotals,
   type SaleClientSnapshot,
   type SaleDto,
+  type SalePackagingDto,
   toMoneyString,
   toQtyString,
 } from '@erp/shared';
@@ -28,6 +29,7 @@ const sumBase = (rows: { qtyBase: Prisma.Decimal }[]): string =>
 export function toSaleDto(
   s: SaleWithRelations,
   seller: { id: string; fullName: string } | null,
+  packaging: SalePackagingDto[] = [],
 ): SaleDto {
   const totals = computeTotals(
     s.lines.map((l) => ({
@@ -88,7 +90,12 @@ export function toSaleDto(
       tvaRate: l.tvaRate.toFixed(2),
       lineHt: toMoneyString(l.lineHt.toString()),
       returnedQtyBase: sumBase(l.returnLines),
+      isFree: l.isFree,
+      promotion:
+        l.promotionId && l.promotionName ? { id: l.promotionId, name: l.promotionName } : null,
+      freeOfPosition: l.freeOfPosition,
     })),
+    packaging,
     returns: s.returns.map((r) => ({
       id: r.id,
       number: r.number,

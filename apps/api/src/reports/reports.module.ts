@@ -9,6 +9,7 @@ import { DashboardService } from './dashboard.service';
 import { OnboardingService } from './onboarding.service';
 import { DashboardController, ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
+import { SellOutService } from './sell-out.service';
 
 /**
  * Dashboard and reports. Read-only: the dashboard reuses the clients, payments and
@@ -25,6 +26,6 @@ import { ReportsService } from './reports.service';
     TenantsModule,
   ],
   controllers: [DashboardController, ReportsController],
-  providers: [DashboardService, ReportsService, OnboardingService],
+  providers: [DashboardService, ReportsService, OnboardingService, SellOutService],
 })
 export class ReportsModule {}

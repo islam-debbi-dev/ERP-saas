@@ -25,7 +25,25 @@ export interface SaleSnapshotLine {
   discountPct: string;
   tvaRate: string;
   lineHt: string;
+  /** Phase 20: a free line (UG) of a promotion, priced 0, after its paid line. */
+  isFree: boolean;
+  promotionId: string | null;
+  promotionName: string | null;
+  freeOfPosition: number | null;
 }
+
+/** The promotion fields of a stored line, carried when lines are snapshotted again. */
+export type PromotionFields = Pick<
+  SaleSnapshotLine,
+  'isFree' | 'promotionId' | 'promotionName' | 'freeOfPosition'
+>;
+
+export const NO_PROMOTION: PromotionFields = {
+  isFree: false,
+  promotionId: null,
+  promotionName: null,
+  freeOfPosition: null,
+};
 
 /** A line whose price differs from the client's level (or carries a remise). */
 export interface PriceOverride {
@@ -133,10 +151,17 @@ export async function snapshotSaleLines(
       discountPct: discount.toString(),
       tvaRate: product.tvaRate.toString(),
       lineHt: '0',
+      ...NO_PROMOTION,
     };
   });
+  const totals = totalLines(snap, assujettiTva);
+  return { lines: snap, totals, overrides };
+}
+
+/** Recomputes each line's HT and the document totals (after a remise changed). */
+export function totalLines(lines: SaleSnapshotLine[], assujettiTva: boolean): DocumentTotals {
   const totals = computeTotals(
-    snap.map((s) => ({
+    lines.map((s) => ({
       qty: s.qty,
       unitPrice: s.unitPriceHt,
       tvaRate: s.tvaRate,
@@ -144,8 +169,28 @@ export async function snapshotSaleLines(
     })),
     assujettiTva,
   );
-  snap.forEach((s, i) => {
+  lines.forEach((s, i) => {
     s.lineHt = totals.lines[i]?.lineHt.toString() ?? '0';
   });
-  return { lines: snap, totals, overrides };
+  return totals;
+}
+
+/**
+ * Copies stored promotion fields onto re-snapshotted lines (same order, same positions),
+ * so validating a draft or delivering an order keeps what was decided when it was priced.
+ */
+export function carryPromotions(
+  lines: SaleSnapshotLine[],
+  stored: readonly PromotionFields[],
+): SaleSnapshotLine[] {
+  return lines.map((l, i) => {
+    const p = stored[i] ?? NO_PROMOTION;
+    return {
+      ...l,
+      isFree: p.isFree,
+      promotionId: p.promotionId,
+      promotionName: p.promotionName,
+      freeOfPosition: p.freeOfPosition,
+    };
+  });
 }

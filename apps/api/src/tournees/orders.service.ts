@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  proportionalFree,
   algiersDay,
   type AssignLivreurInput,
   type CreateOrderInput,
@@ -30,7 +31,8 @@ import { DocumentNumberingService } from '../documents/document-numbering.servic
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { fromIsoDate, toIsoDate } from '../sales/sale.mapper';
-import { resolvePriceLevel, snapshotSaleLines } from '../sales/sale-lines';
+import { PricingService } from '../promotions/pricing.service';
+import { type PromotionFields, resolvePriceLevel } from '../sales/sale-lines';
 import { SaleWorkflowService } from '../sales/sale-workflow.service';
 import { SalesService } from '../sales/sales.service';
 import { ScopeService } from '../sales-force/scope.service';
@@ -72,6 +74,7 @@ export class OrdersService {
     private readonly scope: ScopeService,
     private readonly audit: AuditService,
     private readonly clock: ClockService,
+    private readonly pricing: PricingService,
   ) {}
 
   // ---------------------------------------------------------------- drafts
@@ -191,25 +194,29 @@ export class OrdersService {
           field: 'clientId',
         });
       }
-      const input: SaleLineInput[] = order.lines.map((l) => ({
-        productId: l.productId,
-        unitId: l.unitId,
-        qty: l.qty.toString(),
-        // A price typed on the draft stays; a list price follows today's level.
-        ...(l.listPriceHt === null || !l.listPriceHt.eq(l.unitPriceHt)
-          ? { unitPriceHt: l.unitPriceHt.toString() }
-          : {}),
-        discountPct: l.discountPct.toString(),
-      }));
+      // Free lines are not input: the promotions of the confirmation day give them again.
+      const input: SaleLineInput[] = order.lines
+        .filter((l) => !l.isFree)
+        .map((l) => ({
+          productId: l.productId,
+          unitId: l.unitId,
+          qty: l.qty.toString(),
+          // A price typed on the draft stays; a list price follows today's level.
+          ...(l.listPriceHt === null || !l.listPriceHt.eq(l.unitPriceHt)
+            ? { unitPriceHt: l.unitPriceHt.toString() }
+            : {}),
+          // A promotion's remise follows today's promotions too.
+          discountPct: l.promotionId ? '0' : l.discountPct.toString(),
+        }));
       const priceLevelId = await resolvePriceLevel(tx, order.clientId);
       const assujetti = await this.sales.assujettiTva(tx);
-      const { lines, totals, overrides } = await snapshotSaleLines(
+      const { lines, totals, overrides, promoOverrides } = await this.pricing.priceLines(
         tx,
         input,
-        priceLevelId,
-        assujetti,
+        { clientId: order.clientId, priceLevelId, assujettiTva: assujetti },
       );
       await this.sales.checkOverrides(tx, overrides, user);
+      await this.pricing.checkPromoOverrides(tx, promoOverrides, user, { entity: 'Order', id });
       const tenantId = tenantContext.requireTenantId();
       const number = await this.numbering.next(tx, tenantId, DocType.BC);
       await tx.orderLine.deleteMany({ where: { orderId: id } });
@@ -349,6 +356,27 @@ export class OrdersService {
           });
         }
       }
+      // Free units go with their paid line, in proportion (shared `proportionalFree`).
+      const units = await tx.unit.findMany({
+        where: { id: { in: [...new Set(order.lines.map((l) => l.unitId))] } },
+        select: { id: true, allowsDecimal: true },
+      });
+      const decimalUnit = new Map(units.map((u) => [u.id, u.allowsDecimal]));
+      for (const l of order.lines) {
+        if (!l.isFree) continue;
+        const paid = order.lines.find((p) => !p.isFree && p.position === l.freeOfPosition);
+        wanted.set(
+          l.id,
+          paid
+            ? proportionalFree(
+                l.qty.toString(),
+                paid.qty.toString(),
+                wanted.get(paid.id) ?? '0',
+                !(decimalUnit.get(l.unitId) ?? false),
+              ).toString()
+            : '0',
+        );
+      }
       const split = order.lines.map((l) => {
         const delivered = qty(wanted.get(l.id) ?? '0');
         if (delivered.gt(l.qty.toString())) {
@@ -360,6 +388,15 @@ export class OrdersService {
         return { line: l, delivered, notDelivered: qty(l.qty.toString()).minus(delivered) };
       });
       const deliveredLines = split.filter((s) => s.delivered.gt(0));
+      // Positions on the BL, so a free line still points to its paid line.
+      const blPosition = new Map(deliveredLines.map((d, i) => [d.line.position, i + 1]));
+      const promotions: PromotionFields[] = deliveredLines.map(({ line }) => ({
+        isFree: line.isFree,
+        promotionId: line.promotionId,
+        promotionName: line.promotionName,
+        freeOfPosition:
+          line.freeOfPosition === null ? null : (blPosition.get(line.freeOfPosition) ?? null),
+      }));
       if (deliveredLines.length === 0) {
         throw new AppException(ErrorCode.ORDER_DELIVERY_QTY_INVALID, 'Nothing delivered', {
           rule: 'nothing_delivered',
@@ -392,7 +429,7 @@ export class OrdersService {
         },
         input,
         user,
-        { sellerId: order.sellerId, collectedBy },
+        { sellerId: order.sellerId, collectedBy, promotions },
       );
       for (const s of split) {
         await tx.orderLine.update({
@@ -579,7 +616,11 @@ export class OrdersService {
   private async snapshot(tx: Tx, input: CreateOrderInput) {
     const priceLevelId = await resolvePriceLevel(tx, input.clientId);
     const assujetti = await this.sales.assujettiTva(tx);
-    const { lines, totals } = await snapshotSaleLines(tx, input.lines, priceLevelId, assujetti);
+    const { lines, totals } = await this.pricing.priceLines(tx, input.lines, {
+      clientId: input.clientId,
+      priceLevelId,
+      assujettiTva: assujetti,
+    });
     return { lines, totals, assujetti, priceLevelId };
   }
 
@@ -653,6 +694,10 @@ export class OrdersService {
         qtyDelivered: q(l.qtyDelivered),
         qtyNotDelivered: q(l.qtyNotDelivered),
         availableBase: toQtyString(available.get(l.productId) ?? '0'),
+        isFree: l.isFree,
+        promotion:
+          l.promotionId && l.promotionName ? { id: l.promotionId, name: l.promotionName } : null,
+        freeOfPosition: l.freeOfPosition,
       })),
     };
   }

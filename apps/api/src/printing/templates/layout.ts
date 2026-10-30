@@ -90,6 +90,7 @@ table.lines td { border-left: 0.6pt solid #888; border-right: 0.6pt solid #888; 
 table.lines tbody tr:last-child td { border-bottom: 0.6pt solid #888; }
 table.lines tr { break-inside: avoid; }
 table.lines tfoot td { border: 0.6pt solid #888; font-weight: 700; }
+table.lines.packaging { width: auto; min-width: 45%; margin-top: 4mm; }
 .num { text-align: end; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .center { text-align: center; }
 .after { display: flex; justify-content: space-between; gap: 6mm; margin-top: 3mm; break-inside: avoid; }
