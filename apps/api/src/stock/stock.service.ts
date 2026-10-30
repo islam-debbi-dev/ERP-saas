@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   type AdjustmentReason,
   cump,
+  cumpAfterValue,
   ErrorCode,
   money,
   NegativeStockMode,
@@ -134,7 +135,7 @@ export class StockService {
         if (!delta.isZero() || !m.valueDelta)
           throw new Error('COST_ADJUST needs qtyBase 0 and a valueDelta');
         if (level.qty.lte(0)) throw new Error('COST_ADJUST needs stock on hand');
-        level.avg = roundCost(level.avg.plus(money(m.valueDelta).div(level.qty)));
+        level.avg = cumpAfterValue(level.qty, level.avg, m.valueDelta);
         const row = await tx.stockMovement.create({
           data: {
             tenantId,

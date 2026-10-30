@@ -32,6 +32,16 @@ export function cump(
   return roundCost(total.div(before.plus(entering)));
 }
 
+/**
+ * Average cost after a value change with no quantity (phase 22, COST_ADJUST: a late
+ * import cost spread over the stock on hand). Needs stock > 0.
+ */
+export function cumpAfterValue(onHand: QtyInput, avg: MoneyInput, valueDelta: MoneyInput): Money {
+  const q = qty(onHand);
+  if (q.lte(0)) throw new RangeError('cumpAfterValue(): the stock must be > 0');
+  return roundCost(money(avg).plus(money(valueDelta).div(q)));
+}
+
 /** Stock value at CUMP, 2 decimals. Negative stock is valued at 0. */
 export function stockValue(qtyBase: QtyInput, avgCost: MoneyInput): Money {
   const q = qty(qtyBase);

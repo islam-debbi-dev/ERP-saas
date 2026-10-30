@@ -5,7 +5,7 @@
  */
 import { money, type Money, type MoneyInput, round2, sum } from './money';
 import { qty, type QtyInput } from './quantity';
-import { roundCost } from './stock';
+import { cumpAfterValue, roundCost } from './stock';
 
 export const Currency = {
   DZD: 'DZD',
@@ -202,6 +202,6 @@ export function spreadLateCost(
   if (q.lte(0) || r.lte(0)) return { stockValue: money(0), ecart: v, newAvg: roundCost(avg) };
   const covered = q.lt(r) ? q : r;
   const stockValue = round2(v.times(covered).div(r));
-  const newAvg = roundCost(money(avg).plus(stockValue.div(q)));
+  const newAvg = cumpAfterValue(q, avg, stockValue);
   return { stockValue, ecart: v.minus(stockValue), newAvg };
 }

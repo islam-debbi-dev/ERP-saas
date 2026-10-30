@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cump, roundCost, splitPackaging, stockValue } from './stock';
+import { cump, cumpAfterValue, roundCost, splitPackaging, stockValue } from './stock';
 
 describe('cump', () => {
   it('first entry: the entry cost becomes the average', () => {
@@ -66,5 +66,15 @@ describe('transfers (phase 15)', () => {
     ] as const) {
       expect(cump(left, avg, moved, avg).toString()).toBe(roundCost(avg).toString());
     }
+  });
+});
+
+describe('cumpAfterValue', () => {
+  it('spreads a value over the stock on hand', () => {
+    expect(cumpAfterValue('40', '2204.1444', '400').toString()).toBe('2214.1444');
+    expect(cumpAfterValue('3', '10', '1').toString()).toBe('10.3333');
+  });
+  it('needs stock', () => {
+    expect(() => cumpAfterValue('0', '10', '1')).toThrow(RangeError);
   });
 });
