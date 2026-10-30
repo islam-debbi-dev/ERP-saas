@@ -55,6 +55,9 @@ export const TENANT_SCOPED_MODELS = new Set<string>([
   'Order',
   'OrderLine',
   'SellerSession',
+  'GeoCheck',
+  'GeoCheckReview',
+  'ClientGeoChangeRequest',
 ]);
 
 /** Append-only models: any update or delete is a bug (AGENTS.md rules 1 and 7). */
@@ -67,6 +70,7 @@ const APPEND_ONLY_MODELS = new Set<string>([
   'SubscriptionPayment',
   'PlatformAuditLog',
   'Visit',
+  'GeoCheckReview',
 ]);
 
 const WHERE_OPERATIONS = new Set<string>([

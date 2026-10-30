@@ -100,6 +100,14 @@ export async function registerTenant(
   return { auth, email, password, tenantId: auth.user.tenantId };
 }
 
+/**
+ * Turns the position check off (phase 17) for a DISTRIBUTION tenant whose tests are about
+ * something else: without it every seller operation sent without a position needs a note.
+ */
+export async function withoutGeoCheck(t: TestApp, who: RegisteredTenant): Promise<void> {
+  await tamper(t)`UPDATE tenants SET "geoCheckMode" = 'OFF' WHERE id = ${who.tenantId}::uuid`;
+}
+
 /** Runs `fn` as if inside an authenticated request of `tenantId`. */
 export function asTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> {
   return tenantContext.run({ tenantId }, fn);

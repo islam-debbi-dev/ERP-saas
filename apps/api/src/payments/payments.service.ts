@@ -18,6 +18,7 @@ import {
   Role,
   toMoneyString,
   type UnpaidDocumentDto,
+  GeoRefType,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
@@ -26,6 +27,7 @@ import { ClientAccountService } from '../clients/client-account.service';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
+import { GeoCheckService } from '../geo/geo-check.service';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
@@ -101,6 +103,7 @@ export class PaymentsService {
     private readonly numbering: DocumentNumberingService,
     private readonly audit: AuditService,
     private readonly scope: ScopeService,
+    private readonly geo: GeoCheckService,
   ) {}
 
   // ---------------------------------------------------------------- used by sales
@@ -171,7 +174,7 @@ export class PaymentsService {
   // ---------------------------------------------------------------- versements
 
   async create(input: CreatePaymentInput, user: CurrentUserInfo): Promise<PaymentDto> {
-    const id = await this.prisma.db.$transaction(async (tx) => {
+    const { id, geoCheck } = await this.prisma.db.$transaction(async (tx) => {
       const tenantId = tenantContext.requireTenantId();
       const client = await tx.client.findFirst({ where: { id: input.clientId, deletedAt: null } });
       if (!client) {
@@ -237,9 +240,17 @@ export class PaymentsService {
           allocations: allocations.map((a) => ({ saleId: a.saleId, amount: a.amount.toString() })),
         },
       });
-      return payment.id;
+      const geoCheck = await this.geo.checkInTx(tx, {
+        refType: GeoRefType.PAYMENT,
+        refId: payment.id,
+        refNumber: number,
+        clientId: client.id,
+        geo: input.geo,
+        user,
+      });
+      return { id: payment.id, geoCheck };
     });
-    return this.get(id);
+    return { ...(await this.get(id)), geoCheck };
   }
 
   /** Input mistake: the money is taken back off the account. Never deleted. */

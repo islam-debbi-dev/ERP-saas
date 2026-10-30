@@ -72,6 +72,16 @@ function toDto(c: ClientWithBalance): ClientDto {
     balance: toMoneyString(balance),
     hasOpening: c.balance?.hasOpening ?? false,
     overLimit: c.creditLimit !== null && money(balance).gt(c.creditLimit.toString()),
+    location:
+      c.lat !== null && c.lng !== null
+        ? {
+            lat: c.lat.toNumber(),
+            lng: c.lng.toNumber(),
+            accuracyM: c.geoAccuracyM,
+            setAt: c.geoSetAt?.toISOString() ?? null,
+            setById: c.geoSetBy,
+          }
+        : null,
   };
 }
 

@@ -5,6 +5,7 @@ export * from './imports';
 export * from './enums';
 export * from './errors';
 export * from './features';
+export * from './geo';
 export * from './money';
 export * from './periods';
 export * from './permissions';

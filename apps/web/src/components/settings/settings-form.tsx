@@ -58,6 +58,9 @@ function toForm(s: TenantSettingsResponse): FormInput {
     maxDiscountPct: s.maxDiscountPct,
     reminderDays: s.reminderDays,
     sellerScope: s.sellerScope,
+    geoCheckMode: s.geoCheckMode,
+    geoRadiusM: s.geoRadiusM,
+    geoMaxAccuracyM: s.geoMaxAccuracyM,
     timbreEnabled: s.timbreEnabled,
     timbreTranches: s.timbreTranches.map((tr) => ({
       upTo: tr.upTo === null ? null : formatDA(tr.upTo, { currency: false }),
@@ -80,6 +83,8 @@ const ERROR_KEYS: Partial<Record<keyof FormInput, ValidationKey>> = {
   priceLevelCount: 'range',
   maxDiscountPct: 'invalidRate',
   reminderDays: 'range',
+  geoRadiusM: 'range',
+  geoMaxAccuracyM: 'range',
   timbreTranches: 'invalidTranches',
   tvaMention: 'required',
   timbreMin: 'invalidAmount',
@@ -214,6 +219,7 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
     state.status === 'authenticated' &&
     (state.user.role === Role.OWNER || state.user.role === Role.MANAGER);
   const salesForce = useFeature(Feature.SALES_FORCE);
+  const geoCheck = useFeature(Feature.GEO_CHECK);
 
   const form = useForm<FormInput, unknown, TenantSettings>({
     resolver: zodResolver(tenantSettingsSchema),
@@ -407,6 +413,58 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
             </FieldShell>
           ) : null}
         </Section>
+
+        {geoCheck ? (
+          <Section title={t('settings.geoSection')} description={t('settings.geoHelp')}>
+            <FieldShell
+              id="geoCheckMode"
+              label={t('settings.geoCheckMode')}
+              hint={t('settings.geoCheckModeHint')}
+              wide
+            >
+              <NativeSelect id="geoCheckMode" {...form.register('geoCheckMode')}>
+                <option value="FLAG">{t('settings.geoModeFLAG')}</option>
+                <option value="BLOCK">{t('settings.geoModeBLOCK')}</option>
+                <option value="OFF">{t('settings.geoModeOFF')}</option>
+              </NativeSelect>
+            </FieldShell>
+            <FieldShell
+              id="geoRadiusM"
+              label={t('settings.geoRadiusM')}
+              hint={t('settings.geoRadiusMHint')}
+              error={errorFor(errors, 'geoRadiusM')}
+            >
+              <Input
+                {...aria('geoRadiusM', errorFor(errors, 'geoRadiusM'), true)}
+                type="number"
+                min={20}
+                max={5000}
+                dir="ltr"
+                inputMode="numeric"
+                className="num text-end"
+                {...form.register('geoRadiusM', { valueAsNumber: true })}
+              />
+            </FieldShell>
+            <FieldShell
+              id="geoMaxAccuracyM"
+              label={t('settings.geoMaxAccuracyM')}
+              hint={t('settings.geoMaxAccuracyMHint')}
+              error={errorFor(errors, 'geoMaxAccuracyM')}
+            >
+              <Input
+                {...aria('geoMaxAccuracyM', errorFor(errors, 'geoMaxAccuracyM'), true)}
+                type="number"
+                min={10}
+                max={5000}
+                dir="ltr"
+                inputMode="numeric"
+                className="num text-end"
+                {...form.register('geoMaxAccuracyM', { valueAsNumber: true })}
+              />
+            </FieldShell>
+            <p className="text-xs text-muted-foreground sm:col-span-2">{t('geo.privacy')}</p>
+          </Section>
+        ) : null}
 
         <Section title={t('settings.timbreSection')} description={t('settings.timbreHelp')}>
           <SwitchRow id="timbreEnabled" label={t('settings.timbreEnabled')}>

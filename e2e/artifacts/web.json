@@ -188,7 +188,7 @@
       "specs": [
         {
           "title": "every signed-in screen fits the phone (ar)",
-          "ok": true,
+          "ok": false,
           "tags": [],
           "tests": [
             {
@@ -201,245 +201,303 @@
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 24280,
-                  "errors": [],
+                  "status": "failed",
+                  "duration": 29248,
+                  "error": {
+                    "message": "Error: use cards below md, or mark an office table data-scroll-x\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"hides content to the side: div#radix-_r_a9_.bg-background.fixed.z-50 (533px in 391px)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: use cards below md, or mark an office table data-scroll-x\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"hides content to the side: div#radix-_r_a9_.bg-background.fixed.z-50 (533px in 391px)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at expectNoHorizontalOverflow (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts:86:80)\n    at check (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:350:20)\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:574:9\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:561:7",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts",
+                      "column": 80,
+                      "line": 86
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39mmobile-helpers.ts:86\n\n  84 |   const problems = await overflowProblems(page);\n  85 |   const check = opts.soft ? expect.soft : expect;\n> 86 |   check(problems, 'use cards below md, or mark an office table data-scroll-x').toEqual([]);\n     |                                                                                ^\n  87 |   return problems;\n  88 | }\n  89 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts",
+                        "column": 80,
+                        "line": 86
+                      },
+                      "message": "Error: use cards below md, or mark an office table data-scroll-x\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"hides content to the side: div#radix-_r_a9_.bg-background.fixed.z-50 (533px in 391px)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n   at mobile-helpers.ts:86\n\n  84 |   const problems = await overflowProblems(page);\n  85 |   const check = opts.soft ? expect.soft : expect;\n> 86 |   check(problems, 'use cards below md, or mark an office table data-scroll-x').toEqual([]);\n     |                                                                                ^\n  87 |   return problems;\n  88 | }\n  89 |\n    at expectNoHorizontalOverflow (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts:86:80)\n    at check (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:350:20)\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:574:9\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:561:7"
+                    }
+                  ],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
                   "steps": [
                     {
                       "title": "/achats",
-                      "duration": 320
+                      "duration": 380
                     },
                     {
                       "title": "/achats/[id]",
-                      "duration": 331
+                      "duration": 439
                     },
                     {
                       "title": "/achats/fournisseurs",
-                      "duration": 260
+                      "duration": 289
                     },
                     {
                       "title": "/achats/fournisseurs/[id]",
-                      "duration": 277
+                      "duration": 344
                     },
                     {
                       "title": "/achats/nouveau",
-                      "duration": 332
+                      "duration": 373
                     },
                     {
                       "title": "/clients",
-                      "duration": 288
+                      "duration": 323
                     },
                     {
                       "title": "/clients/[id]",
-                      "duration": 312
+                      "duration": 430
                     },
                     {
                       "title": "/clients/[id]/modifier",
-                      "duration": 359
+                      "duration": 421
                     },
                     {
                       "title": "/clients/a-relancer",
-                      "duration": 248
+                      "duration": 283
                     },
                     {
                       "title": "/clients/nouveau",
-                      "duration": 316
+                      "duration": 406
                     },
                     {
                       "title": "/clients/secteurs",
-                      "duration": 241
+                      "duration": 269
                     },
                     {
                       "title": "/commandes",
-                      "duration": 246
-                    },
-                    {
-                      "title": "/commandes/[id]",
-                      "duration": 276
-                    },
-                    {
-                      "title": "/livraisons",
-                      "duration": 253
-                    },
-                    {
-                      "title": "/livraisons/[id]",
-                      "duration": 299
-                    },
-                    {
-                      "title": "/mot-de-passe",
-                      "duration": 253
-                    },
-                    {
-                      "title": "/parametres",
-                      "duration": 492
-                    },
-                    {
-                      "title": "/parametres/abonnement",
-                      "duration": 330
-                    },
-                    {
-                      "title": "/parametres/import",
-                      "duration": 282
-                    },
-                    {
-                      "title": "/parametres/journal",
-                      "duration": 469
-                    },
-                    {
-                      "title": "/parametres/sessions",
-                      "duration": 251
-                    },
-                    {
-                      "title": "/parametres/utilisateurs",
-                      "duration": 291
-                    },
-                    {
-                      "title": "/produits",
-                      "duration": 243
-                    },
-                    {
-                      "title": "/produits/[id]",
-                      "duration": 376
-                    },
-                    {
-                      "title": "/produits/categories",
-                      "duration": 253
-                    },
-                    {
-                      "title": "/produits/marques",
-                      "duration": 252
-                    },
-                    {
-                      "title": "/produits/nouveau",
-                      "duration": 337
-                    },
-                    {
-                      "title": "/rapports",
-                      "duration": 277
-                    },
-                    {
-                      "title": "/rapports/balance-agee",
-                      "duration": 265
-                    },
-                    {
-                      "title": "/stock",
-                      "duration": 1090
-                    },
-                    {
-                      "title": "/stock/[productId]",
                       "duration": 262
                     },
                     {
-                      "title": "/stock/depots",
-                      "duration": 236
+                      "title": "/commandes/[id]",
+                      "duration": 333
                     },
                     {
-                      "title": "/stock/inventaires",
-                      "duration": 254
+                      "title": "/livraisons",
+                      "duration": 263
                     },
                     {
-                      "title": "/stock/inventaires/[id]",
-                      "duration": 261
+                      "title": "/livraisons/[id]",
+                      "duration": 320
                     },
                     {
-                      "title": "/stock/transferts",
-                      "duration": 242
+                      "title": "/mot-de-passe",
+                      "duration": 274
                     },
                     {
-                      "title": "/stock/transferts/[id]",
-                      "duration": 268
+                      "title": "/operations-signalees",
+                      "duration": 283
                     },
                     {
-                      "title": "/tableau-de-bord",
-                      "duration": 402
+                      "title": "/parametres",
+                      "duration": 750
                     },
                     {
-                      "title": "/tournees",
-                      "duration": 250
+                      "title": "/parametres/abonnement",
+                      "duration": 392
                     },
                     {
-                      "title": "/tournees/[id]",
-                      "duration": 281
+                      "title": "/parametres/import",
+                      "duration": 341
                     },
                     {
-                      "title": "/tournees/aujourdhui",
-                      "duration": 258
+                      "title": "/parametres/journal",
+                      "duration": 695
                     },
                     {
-                      "title": "/tournees/cloture",
-                      "duration": 275
+                      "title": "/parametres/sessions",
+                      "duration": 327
                     },
                     {
-                      "title": "/tournees/rapports",
-                      "duration": 265
-                    },
-                    {
-                      "title": "/ventes",
-                      "duration": 281
-                    },
-                    {
-                      "title": "/ventes/[id]",
-                      "duration": 312
-                    },
-                    {
-                      "title": "/ventes/nouvelle",
+                      "title": "/parametres/utilisateurs",
                       "duration": 329
                     },
                     {
-                      "title": "/versements",
+                      "title": "/produits",
+                      "duration": 302
+                    },
+                    {
+                      "title": "/produits/[id]",
+                      "duration": 439
+                    },
+                    {
+                      "title": "/produits/categories",
+                      "duration": 281
+                    },
+                    {
+                      "title": "/produits/marques",
+                      "duration": 269
+                    },
+                    {
+                      "title": "/produits/nouveau",
+                      "duration": 425
+                    },
+                    {
+                      "title": "/rapports",
+                      "duration": 315
+                    },
+                    {
+                      "title": "/rapports/balance-agee",
+                      "duration": 301
+                    },
+                    {
+                      "title": "/stock",
+                      "duration": 1137
+                    },
+                    {
+                      "title": "/stock/[productId]",
+                      "duration": 322
+                    },
+                    {
+                      "title": "/stock/depots",
+                      "duration": 320
+                    },
+                    {
+                      "title": "/stock/inventaires",
+                      "duration": 275
+                    },
+                    {
+                      "title": "/stock/inventaires/[id]",
+                      "duration": 306
+                    },
+                    {
+                      "title": "/stock/transferts",
                       "duration": 290
                     },
                     {
+                      "title": "/stock/transferts/[id]",
+                      "duration": 305
+                    },
+                    {
+                      "title": "/tableau-de-bord",
+                      "duration": 504
+                    },
+                    {
+                      "title": "/tournees",
+                      "duration": 283
+                    },
+                    {
+                      "title": "/tournees/[id]",
+                      "duration": 343
+                    },
+                    {
+                      "title": "/tournees/aujourdhui",
+                      "duration": 303
+                    },
+                    {
+                      "title": "/tournees/cloture",
+                      "duration": 295
+                    },
+                    {
+                      "title": "/tournees/rapports",
+                      "duration": 302
+                    },
+                    {
+                      "title": "/ventes",
+                      "duration": 303
+                    },
+                    {
+                      "title": "/ventes/[id]",
+                      "duration": 356
+                    },
+                    {
+                      "title": "/ventes/nouvelle",
+                      "duration": 408
+                    },
+                    {
+                      "title": "/versements",
+                      "duration": 330
+                    },
+                    {
                       "title": "new versement opens as a sheet with its save button on screen",
-                      "duration": 784
+                      "duration": 893
                     },
                     {
                       "title": "new règlement fournisseur opens as a sheet with its save button on screen",
-                      "duration": 760
+                      "duration": 810
                     },
                     {
                       "title": "chargement: new transfer sheet, then the entry screen and its Validate",
-                      "duration": 1662
+                      "duration": 1747
                     },
                     {
                       "title": "share link of the relevé: the link and the WhatsApp button on screen",
-                      "duration": 826
+                      "duration": 882
                     },
                     {
                       "title": "bulk assign: select a client, the assign sheet and its button on screen",
-                      "duration": 925
+                      "duration": 987
                     },
                     {
                       "title": "team tree: the users page with the manager column and the teams",
-                      "duration": 282
+                      "duration": 326
                     },
                     {
                       "title": "dashboard: the onboarding checklist fits",
-                      "duration": 389
+                      "duration": 500
                     },
                     {
                       "title": "tournées: visit sheet, deliver dialog and cash closing on screen",
-                      "duration": 2290
+                      "duration": 2454
+                    },
+                    {
+                      "title": "flagged operations: the detail sheet, its map and the review buttons",
+                      "duration": 877,
+                      "error": {
+                        "message": "Error: use cards below md, or mark an office table data-scroll-x\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"hides content to the side: div#radix-_r_a9_.bg-background.fixed.z-50 (533px in 391px)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                        "stack": "Error: use cards below md, or mark an office table data-scroll-x\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"hides content to the side: div#radix-_r_a9_.bg-background.fixed.z-50 (533px in 391px)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at expectNoHorizontalOverflow (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts:86:80)\n    at check (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:350:20)\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:574:9\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:561:7",
+                        "location": {
+                          "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts",
+                          "column": 80,
+                          "line": 86
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mmobile-helpers.ts:86\n\n  84 |   const problems = await overflowProblems(page);\n  85 |   const check = opts.soft ? expect.soft : expect;\n> 86 |   check(problems, 'use cards below md, or mark an office table data-scroll-x').toEqual([]);\n     |                                                                                ^\n  87 |   return problems;\n  88 | }\n  89 |"
+                      }
                     },
                     {
                       "title": "fast sale: a line, then the total and the validate button on screen",
-                      "duration": 543
+                      "duration": 592
                     }
                   ],
-                  "startTime": "2026-10-30T01:54:58.661Z",
+                  "startTime": "2026-10-30T05:02:28.290Z",
                   "annotations": [],
-                  "attachments": []
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/mobile-every-signed-in-screen-fits-the-phone-ar--mobile/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/mobile-every-signed-in-screen-fits-the-phone-ar--mobile/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/mobile-every-signed-in-screen-fits-the-phone-ar--mobile/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts",
+                    "column": 80,
+                    "line": 86
+                  }
                 }
               ],
-              "status": "expected"
+              "status": "unexpected"
             }
           ],
           "id": "e79c838550b25e92508e-c363fb8506d445ccb8af",
           "file": "mobile.spec.ts",
-          "line": 320,
+          "line": 358,
           "column": 3
         },
         {
@@ -455,10 +513,10 @@
               "projectName": "mobile",
               "results": [
                 {
-                  "workerIndex": 0,
+                  "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4880,
+                  "duration": 5582,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -466,26 +524,26 @@
                   "steps": [
                     {
                       "title": "/admin/login",
-                      "duration": 963
+                      "duration": 1095
                     },
                     {
                       "title": "/inscription",
-                      "duration": 1049
+                      "duration": 1214
                     },
                     {
                       "title": "/invitation/[token]",
-                      "duration": 975
+                      "duration": 1140
                     },
                     {
                       "title": "/login",
-                      "duration": 1021
+                      "duration": 1167
                     },
                     {
                       "title": "/support",
-                      "duration": 871
+                      "duration": 963
                     }
                   ],
-                  "startTime": "2026-10-30T01:55:23.485Z",
+                  "startTime": "2026-10-30T05:02:59.804Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -495,12 +553,12 @@
           ],
           "id": "e79c838550b25e92508e-310943156c06c1ecdfac",
           "file": "mobile.spec.ts",
-          "line": 544,
+          "line": 602,
           "column": 3
         },
         {
           "title": "every signed-in screen fits the phone (fr)",
-          "ok": true,
+          "ok": false,
           "tags": [],
           "tests": [
             {
@@ -511,247 +569,305 @@
               "projectName": "mobile",
               "results": [
                 {
-                  "workerIndex": 0,
+                  "workerIndex": 1,
                   "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 24186,
-                  "errors": [],
+                  "status": "failed",
+                  "duration": 30270,
+                  "error": {
+                    "message": "Error: use cards below md, or mark an office table data-scroll-x\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"hides content to the side: div#radix-_r_b6_.bg-background.fixed.z-50 (533px in 391px)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: use cards below md, or mark an office table data-scroll-x\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"hides content to the side: div#radix-_r_b6_.bg-background.fixed.z-50 (533px in 391px)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at expectNoHorizontalOverflow (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts:86:80)\n    at check (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:350:20)\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:574:9\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:561:7",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts",
+                      "column": 80,
+                      "line": 86
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39mmobile-helpers.ts:86\n\n  84 |   const problems = await overflowProblems(page);\n  85 |   const check = opts.soft ? expect.soft : expect;\n> 86 |   check(problems, 'use cards below md, or mark an office table data-scroll-x').toEqual([]);\n     |                                                                                ^\n  87 |   return problems;\n  88 | }\n  89 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts",
+                        "column": 80,
+                        "line": 86
+                      },
+                      "message": "Error: use cards below md, or mark an office table data-scroll-x\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"hides content to the side: div#radix-_r_b6_.bg-background.fixed.z-50 (533px in 391px)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n   at mobile-helpers.ts:86\n\n  84 |   const problems = await overflowProblems(page);\n  85 |   const check = opts.soft ? expect.soft : expect;\n> 86 |   check(problems, 'use cards below md, or mark an office table data-scroll-x').toEqual([]);\n     |                                                                                ^\n  87 |   return problems;\n  88 | }\n  89 |\n    at expectNoHorizontalOverflow (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts:86:80)\n    at check (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:350:20)\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:574:9\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:561:7"
+                    }
+                  ],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
                   "steps": [
                     {
                       "title": "/achats",
-                      "duration": 314
+                      "duration": 371
                     },
                     {
                       "title": "/achats/[id]",
-                      "duration": 347
+                      "duration": 445
                     },
                     {
                       "title": "/achats/fournisseurs",
-                      "duration": 262
+                      "duration": 295
                     },
                     {
                       "title": "/achats/fournisseurs/[id]",
-                      "duration": 293
+                      "duration": 340
                     },
                     {
                       "title": "/achats/nouveau",
-                      "duration": 363
+                      "duration": 438
                     },
                     {
                       "title": "/clients",
-                      "duration": 292
+                      "duration": 361
                     },
                     {
                       "title": "/clients/[id]",
-                      "duration": 308
+                      "duration": 456
                     },
                     {
                       "title": "/clients/[id]/modifier",
-                      "duration": 366
+                      "duration": 435
                     },
                     {
                       "title": "/clients/a-relancer",
-                      "duration": 251
+                      "duration": 275
                     },
                     {
                       "title": "/clients/nouveau",
-                      "duration": 311
+                      "duration": 405
                     },
                     {
                       "title": "/clients/secteurs",
-                      "duration": 239
+                      "duration": 297
                     },
                     {
                       "title": "/commandes",
-                      "duration": 247
+                      "duration": 287
                     },
                     {
                       "title": "/commandes/[id]",
-                      "duration": 276
+                      "duration": 330
                     },
                     {
                       "title": "/livraisons",
-                      "duration": 252
-                    },
-                    {
-                      "title": "/livraisons/[id]",
-                      "duration": 301
-                    },
-                    {
-                      "title": "/mot-de-passe",
-                      "duration": 258
-                    },
-                    {
-                      "title": "/parametres",
-                      "duration": 498
-                    },
-                    {
-                      "title": "/parametres/abonnement",
-                      "duration": 298
-                    },
-                    {
-                      "title": "/parametres/import",
-                      "duration": 292
-                    },
-                    {
-                      "title": "/parametres/journal",
-                      "duration": 467
-                    },
-                    {
-                      "title": "/parametres/sessions",
-                      "duration": 290
-                    },
-                    {
-                      "title": "/parametres/utilisateurs",
-                      "duration": 301
-                    },
-                    {
-                      "title": "/produits",
-                      "duration": 263
-                    },
-                    {
-                      "title": "/produits/[id]",
-                      "duration": 378
-                    },
-                    {
-                      "title": "/produits/categories",
-                      "duration": 254
-                    },
-                    {
-                      "title": "/produits/marques",
-                      "duration": 239
-                    },
-                    {
-                      "title": "/produits/nouveau",
-                      "duration": 347
-                    },
-                    {
-                      "title": "/rapports",
-                      "duration": 272
-                    },
-                    {
-                      "title": "/rapports/balance-agee",
                       "duration": 265
                     },
                     {
-                      "title": "/stock",
-                      "duration": 1074
+                      "title": "/livraisons/[id]",
+                      "duration": 325
                     },
                     {
-                      "title": "/stock/[productId]",
-                      "duration": 258
+                      "title": "/mot-de-passe",
+                      "duration": 287
                     },
                     {
-                      "title": "/stock/depots",
-                      "duration": 248
-                    },
-                    {
-                      "title": "/stock/inventaires",
-                      "duration": 250
-                    },
-                    {
-                      "title": "/stock/inventaires/[id]",
-                      "duration": 266
-                    },
-                    {
-                      "title": "/stock/transferts",
-                      "duration": 236
-                    },
-                    {
-                      "title": "/stock/transferts/[id]",
-                      "duration": 263
-                    },
-                    {
-                      "title": "/tableau-de-bord",
-                      "duration": 392
-                    },
-                    {
-                      "title": "/tournees",
-                      "duration": 242
-                    },
-                    {
-                      "title": "/tournees/[id]",
+                      "title": "/operations-signalees",
                       "duration": 303
                     },
                     {
-                      "title": "/tournees/aujourdhui",
-                      "duration": 251
+                      "title": "/parametres",
+                      "duration": 821
                     },
                     {
-                      "title": "/tournees/cloture",
-                      "duration": 262
+                      "title": "/parametres/abonnement",
+                      "duration": 396
                     },
                     {
-                      "title": "/tournees/rapports",
-                      "duration": 266
+                      "title": "/parametres/import",
+                      "duration": 366
                     },
                     {
-                      "title": "/ventes",
-                      "duration": 272
+                      "title": "/parametres/journal",
+                      "duration": 1022
                     },
                     {
-                      "title": "/ventes/[id]",
-                      "duration": 316
+                      "title": "/parametres/sessions",
+                      "duration": 417
                     },
                     {
-                      "title": "/ventes/nouvelle",
-                      "duration": 309
+                      "title": "/parametres/utilisateurs",
+                      "duration": 380
                     },
                     {
-                      "title": "/versements",
+                      "title": "/produits",
+                      "duration": 293
+                    },
+                    {
+                      "title": "/produits/[id]",
+                      "duration": 495
+                    },
+                    {
+                      "title": "/produits/categories",
+                      "duration": 271
+                    },
+                    {
+                      "title": "/produits/marques",
+                      "duration": 274
+                    },
+                    {
+                      "title": "/produits/nouveau",
+                      "duration": 422
+                    },
+                    {
+                      "title": "/rapports",
+                      "duration": 306
+                    },
+                    {
+                      "title": "/rapports/balance-agee",
+                      "duration": 327
+                    },
+                    {
+                      "title": "/stock",
+                      "duration": 1140
+                    },
+                    {
+                      "title": "/stock/[productId]",
+                      "duration": 333
+                    },
+                    {
+                      "title": "/stock/depots",
                       "duration": 276
                     },
                     {
+                      "title": "/stock/inventaires",
+                      "duration": 272
+                    },
+                    {
+                      "title": "/stock/inventaires/[id]",
+                      "duration": 288
+                    },
+                    {
+                      "title": "/stock/transferts",
+                      "duration": 286
+                    },
+                    {
+                      "title": "/stock/transferts/[id]",
+                      "duration": 296
+                    },
+                    {
+                      "title": "/tableau-de-bord",
+                      "duration": 514
+                    },
+                    {
+                      "title": "/tournees",
+                      "duration": 269
+                    },
+                    {
+                      "title": "/tournees/[id]",
+                      "duration": 347
+                    },
+                    {
+                      "title": "/tournees/aujourdhui",
+                      "duration": 339
+                    },
+                    {
+                      "title": "/tournees/cloture",
+                      "duration": 311
+                    },
+                    {
+                      "title": "/tournees/rapports",
+                      "duration": 297
+                    },
+                    {
+                      "title": "/ventes",
+                      "duration": 370
+                    },
+                    {
+                      "title": "/ventes/[id]",
+                      "duration": 355
+                    },
+                    {
+                      "title": "/ventes/nouvelle",
+                      "duration": 389
+                    },
+                    {
+                      "title": "/versements",
+                      "duration": 318
+                    },
+                    {
                       "title": "new versement opens as a sheet with its save button on screen",
-                      "duration": 803
+                      "duration": 888
                     },
                     {
                       "title": "new règlement fournisseur opens as a sheet with its save button on screen",
-                      "duration": 770
+                      "duration": 833
                     },
                     {
                       "title": "chargement: new transfer sheet, then the entry screen and its Validate",
-                      "duration": 1637
+                      "duration": 1758
                     },
                     {
                       "title": "share link of the relevé: the link and the WhatsApp button on screen",
-                      "duration": 805
+                      "duration": 842
                     },
                     {
                       "title": "bulk assign: select a client, the assign sheet and its button on screen",
-                      "duration": 889
+                      "duration": 1036
                     },
                     {
                       "title": "team tree: the users page with the manager column and the teams",
-                      "duration": 302
+                      "duration": 376
                     },
                     {
                       "title": "dashboard: the onboarding checklist fits",
-                      "duration": 392
+                      "duration": 511
                     },
                     {
                       "title": "tournées: visit sheet, deliver dialog and cash closing on screen",
-                      "duration": 2293
+                      "duration": 2451
+                    },
+                    {
+                      "title": "flagged operations: the detail sheet, its map and the review buttons",
+                      "duration": 797,
+                      "error": {
+                        "message": "Error: use cards below md, or mark an office table data-scroll-x\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"hides content to the side: div#radix-_r_b6_.bg-background.fixed.z-50 (533px in 391px)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                        "stack": "Error: use cards below md, or mark an office table data-scroll-x\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"hides content to the side: div#radix-_r_b6_.bg-background.fixed.z-50 (533px in 391px)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at expectNoHorizontalOverflow (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts:86:80)\n    at check (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:350:20)\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:574:9\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:561:7",
+                        "location": {
+                          "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts",
+                          "column": 80,
+                          "line": 86
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mmobile-helpers.ts:86\n\n  84 |   const problems = await overflowProblems(page);\n  85 |   const check = opts.soft ? expect.soft : expect;\n> 86 |   check(problems, 'use cards below md, or mark an office table data-scroll-x').toEqual([]);\n     |                                                                                ^\n  87 |   return problems;\n  88 | }\n  89 |"
+                      }
                     },
                     {
                       "title": "fast sale: a line, then the total and the validate button on screen",
-                      "duration": 479
+                      "duration": 602
                     }
                   ],
-                  "startTime": "2026-10-30T01:55:28.370Z",
+                  "startTime": "2026-10-30T05:03:06.337Z",
                   "annotations": [],
-                  "attachments": []
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/mobile-every-signed-in-screen-fits-the-phone-fr--mobile/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/mobile-every-signed-in-screen-fits-the-phone-fr--mobile/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/mobile-every-signed-in-screen-fits-the-phone-fr--mobile/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts",
+                    "column": 80,
+                    "line": 86
+                  }
                 }
               ],
-              "status": "expected"
+              "status": "unexpected"
             }
           ],
           "id": "e79c838550b25e92508e-3f644165a2f8eca7f86c",
           "file": "mobile.spec.ts",
-          "line": 320,
+          "line": 358,
           "column": 3
         },
         {
@@ -767,10 +883,10 @@
               "projectName": "mobile",
               "results": [
                 {
-                  "workerIndex": 0,
+                  "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4824,
+                  "duration": 5391,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -778,26 +894,26 @@
                   "steps": [
                     {
                       "title": "/admin/login",
-                      "duration": 966
+                      "duration": 1118
                     },
                     {
                       "title": "/inscription",
-                      "duration": 988
+                      "duration": 1090
                     },
                     {
                       "title": "/invitation/[token]",
-                      "duration": 954
+                      "duration": 1085
                     },
                     {
                       "title": "/login",
-                      "duration": 1017
+                      "duration": 1154
                     },
                     {
                       "title": "/support",
-                      "duration": 898
+                      "duration": 939
                     }
                   ],
-                  "startTime": "2026-10-30T01:55:52.570Z",
+                  "startTime": "2026-10-30T05:03:38.028Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -807,7 +923,7 @@
           ],
           "id": "e79c838550b25e92508e-3f576c7c859908d62308",
           "file": "mobile.spec.ts",
-          "line": 544,
+          "line": 602,
           "column": 3
         },
         {
@@ -823,10 +939,10 @@
               "projectName": "mobile",
               "results": [
                 {
-                  "workerIndex": 0,
+                  "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 6371,
+                  "duration": 12595,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -834,18 +950,18 @@
                   "steps": [
                     {
                       "title": "/admin",
-                      "duration": 3896
+                      "duration": 9470
                     },
                     {
                       "title": "/admin/societes/[id]",
-                      "duration": 576
+                      "duration": 885
                     },
                     {
                       "title": "record payment opens as a sheet with its button on screen",
-                      "duration": 815
+                      "duration": 1020
                     }
                   ],
-                  "startTime": "2026-10-30T01:55:57.399Z",
+                  "startTime": "2026-10-30T05:03:44.281Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -855,7 +971,7 @@
           ],
           "id": "e79c838550b25e92508e-8923eb9d1ef2bcc1c11d",
           "file": "mobile.spec.ts",
-          "line": 574,
+          "line": 632,
           "column": 3
         },
         {
@@ -871,10 +987,10 @@
               "projectName": "mobile",
               "results": [
                 {
-                  "workerIndex": 0,
+                  "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 7102,
+                  "duration": 10127,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -882,18 +998,18 @@
                   "steps": [
                     {
                       "title": "/admin",
-                      "duration": 4610
+                      "duration": 6936
                     },
                     {
                       "title": "/admin/societes/[id]",
-                      "duration": 580
+                      "duration": 972
                     },
                     {
                       "title": "record payment opens as a sheet with its button on screen",
-                      "duration": 784
+                      "duration": 977
                     }
                   ],
-                  "startTime": "2026-10-30T01:56:03.778Z",
+                  "startTime": "2026-10-30T05:03:56.884Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -903,12 +1019,12 @@
           ],
           "id": "e79c838550b25e92508e-d8170968548e2dbe780a",
           "file": "mobile.spec.ts",
-          "line": 574,
+          "line": 632,
           "column": 3
         },
         {
           "title": "every signed-in screen fits the phone (ar)",
-          "ok": true,
+          "ok": false,
           "tags": [],
           "tests": [
             {
@@ -919,251 +1035,383 @@
               "projectName": "mobile-360",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 3,
                   "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 24128,
-                  "errors": [],
+                  "status": "failed",
+                  "duration": 30073,
+                  "error": {
+                    "message": "Error: use cards below md, or mark an office table data-scroll-x\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"hides content to the side: div#radix-_r_bv_.bg-background.fixed.z-50 (533px in 358px)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: use cards below md, or mark an office table data-scroll-x\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"hides content to the side: div#radix-_r_bv_.bg-background.fixed.z-50 (533px in 358px)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at expectNoHorizontalOverflow (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts:86:80)\n    at check (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:350:20)\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:574:9\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:561:7",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts",
+                      "column": 80,
+                      "line": 86
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39mmobile-helpers.ts:86\n\n  84 |   const problems = await overflowProblems(page);\n  85 |   const check = opts.soft ? expect.soft : expect;\n> 86 |   check(problems, 'use cards below md, or mark an office table data-scroll-x').toEqual([]);\n     |                                                                                ^\n  87 |   return problems;\n  88 | }\n  89 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts",
+                        "column": 80,
+                        "line": 86
+                      },
+                      "message": "Error: use cards below md, or mark an office table data-scroll-x\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"hides content to the side: div#radix-_r_bv_.bg-background.fixed.z-50 (533px in 358px)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n   at mobile-helpers.ts:86\n\n  84 |   const problems = await overflowProblems(page);\n  85 |   const check = opts.soft ? expect.soft : expect;\n> 86 |   check(problems, 'use cards below md, or mark an office table data-scroll-x').toEqual([]);\n     |                                                                                ^\n  87 |   return problems;\n  88 | }\n  89 |\n    at expectNoHorizontalOverflow (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts:86:80)\n    at check (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:350:20)\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:574:9\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:561:7"
+                    }
+                  ],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
                   "steps": [
                     {
                       "title": "/achats",
-                      "duration": 336
+                      "duration": 386
                     },
                     {
                       "title": "/achats/[id]",
-                      "duration": 342
+                      "duration": 408
                     },
                     {
                       "title": "/achats/fournisseurs",
-                      "duration": 260
-                    },
-                    {
-                      "title": "/achats/fournisseurs/[id]",
-                      "duration": 273
-                    },
-                    {
-                      "title": "/achats/nouveau",
-                      "duration": 296
-                    },
-                    {
-                      "title": "/clients",
-                      "duration": 303
-                    },
-                    {
-                      "title": "/clients/[id]",
-                      "duration": 323
-                    },
-                    {
-                      "title": "/clients/[id]/modifier",
-                      "duration": 339
-                    },
-                    {
-                      "title": "/clients/a-relancer",
-                      "duration": 257
-                    },
-                    {
-                      "title": "/clients/nouveau",
-                      "duration": 320
-                    },
-                    {
-                      "title": "/clients/secteurs",
-                      "duration": 258
-                    },
-                    {
-                      "title": "/commandes",
-                      "duration": 258
-                    },
-                    {
-                      "title": "/commandes/[id]",
-                      "duration": 274
-                    },
-                    {
-                      "title": "/livraisons",
-                      "duration": 250
-                    },
-                    {
-                      "title": "/livraisons/[id]",
-                      "duration": 270
-                    },
-                    {
-                      "title": "/mot-de-passe",
-                      "duration": 248
-                    },
-                    {
-                      "title": "/parametres",
-                      "duration": 449
-                    },
-                    {
-                      "title": "/parametres/abonnement",
-                      "duration": 323
-                    },
-                    {
-                      "title": "/parametres/import",
-                      "duration": 281
-                    },
-                    {
-                      "title": "/parametres/journal",
-                      "duration": 631
-                    },
-                    {
-                      "title": "/parametres/sessions",
-                      "duration": 290
-                    },
-                    {
-                      "title": "/parametres/utilisateurs",
-                      "duration": 308
-                    },
-                    {
-                      "title": "/produits",
-                      "duration": 250
-                    },
-                    {
-                      "title": "/produits/[id]",
-                      "duration": 364
-                    },
-                    {
-                      "title": "/produits/categories",
-                      "duration": 242
-                    },
-                    {
-                      "title": "/produits/marques",
-                      "duration": 245
-                    },
-                    {
-                      "title": "/produits/nouveau",
-                      "duration": 325
-                    },
-                    {
-                      "title": "/rapports",
-                      "duration": 267
-                    },
-                    {
-                      "title": "/rapports/balance-agee",
-                      "duration": 274
-                    },
-                    {
-                      "title": "/stock",
-                      "duration": 1064
-                    },
-                    {
-                      "title": "/stock/[productId]",
-                      "duration": 274
-                    },
-                    {
-                      "title": "/stock/depots",
-                      "duration": 256
-                    },
-                    {
-                      "title": "/stock/inventaires",
-                      "duration": 247
-                    },
-                    {
-                      "title": "/stock/inventaires/[id]",
-                      "duration": 261
-                    },
-                    {
-                      "title": "/stock/transferts",
-                      "duration": 235
-                    },
-                    {
-                      "title": "/stock/transferts/[id]",
-                      "duration": 264
-                    },
-                    {
-                      "title": "/tableau-de-bord",
-                      "duration": 379
-                    },
-                    {
-                      "title": "/tournees",
-                      "duration": 238
-                    },
-                    {
-                      "title": "/tournees/[id]",
-                      "duration": 281
-                    },
-                    {
-                      "title": "/tournees/aujourdhui",
-                      "duration": 269
-                    },
-                    {
-                      "title": "/tournees/cloture",
-                      "duration": 270
-                    },
-                    {
-                      "title": "/tournees/rapports",
-                      "duration": 262
-                    },
-                    {
-                      "title": "/ventes",
                       "duration": 287
                     },
                     {
+                      "title": "/achats/fournisseurs/[id]",
+                      "duration": 317
+                    },
+                    {
+                      "title": "/achats/nouveau",
+                      "duration": 357
+                    },
+                    {
+                      "title": "/clients",
+                      "duration": 363
+                    },
+                    {
+                      "title": "/clients/[id]",
+                      "duration": 409
+                    },
+                    {
+                      "title": "/clients/[id]/modifier",
+                      "duration": 417
+                    },
+                    {
+                      "title": "/clients/a-relancer",
+                      "duration": 288
+                    },
+                    {
+                      "title": "/clients/nouveau",
+                      "duration": 365
+                    },
+                    {
+                      "title": "/clients/secteurs",
+                      "duration": 279
+                    },
+                    {
+                      "title": "/commandes",
+                      "duration": 281
+                    },
+                    {
+                      "title": "/commandes/[id]",
+                      "duration": 330
+                    },
+                    {
+                      "title": "/livraisons",
+                      "duration": 257
+                    },
+                    {
+                      "title": "/livraisons/[id]",
+                      "duration": 327
+                    },
+                    {
+                      "title": "/mot-de-passe",
+                      "duration": 262
+                    },
+                    {
+                      "title": "/operations-signalees",
+                      "duration": 327
+                    },
+                    {
+                      "title": "/parametres",
+                      "duration": 632
+                    },
+                    {
+                      "title": "/parametres/abonnement",
+                      "duration": 383
+                    },
+                    {
+                      "title": "/parametres/import",
+                      "duration": 333
+                    },
+                    {
+                      "title": "/parametres/journal",
+                      "duration": 1397
+                    },
+                    {
+                      "title": "/parametres/sessions",
+                      "duration": 451
+                    },
+                    {
+                      "title": "/parametres/utilisateurs",
+                      "duration": 416
+                    },
+                    {
+                      "title": "/produits",
+                      "duration": 292
+                    },
+                    {
+                      "title": "/produits/[id]",
+                      "duration": 442
+                    },
+                    {
+                      "title": "/produits/categories",
+                      "duration": 267
+                    },
+                    {
+                      "title": "/produits/marques",
+                      "duration": 262
+                    },
+                    {
+                      "title": "/produits/nouveau",
+                      "duration": 395
+                    },
+                    {
+                      "title": "/rapports",
+                      "duration": 312
+                    },
+                    {
+                      "title": "/rapports/balance-agee",
+                      "duration": 350
+                    },
+                    {
+                      "title": "/stock",
+                      "duration": 1102
+                    },
+                    {
+                      "title": "/stock/[productId]",
+                      "duration": 345
+                    },
+                    {
+                      "title": "/stock/depots",
+                      "duration": 290
+                    },
+                    {
+                      "title": "/stock/inventaires",
+                      "duration": 275
+                    },
+                    {
+                      "title": "/stock/inventaires/[id]",
+                      "duration": 299
+                    },
+                    {
+                      "title": "/stock/transferts",
+                      "duration": 274
+                    },
+                    {
+                      "title": "/stock/transferts/[id]",
+                      "duration": 307
+                    },
+                    {
+                      "title": "/tableau-de-bord",
+                      "duration": 467
+                    },
+                    {
+                      "title": "/tournees",
+                      "duration": 288
+                    },
+                    {
+                      "title": "/tournees/[id]",
+                      "duration": 339
+                    },
+                    {
+                      "title": "/tournees/aujourdhui",
+                      "duration": 394
+                    },
+                    {
+                      "title": "/tournees/cloture",
+                      "duration": 336
+                    },
+                    {
+                      "title": "/tournees/rapports",
+                      "duration": 289
+                    },
+                    {
+                      "title": "/ventes",
+                      "duration": 433
+                    },
+                    {
                       "title": "/ventes/[id]",
-                      "duration": 305
+                      "duration": 352
                     },
                     {
                       "title": "/ventes/nouvelle",
-                      "duration": 310
+                      "duration": 394
                     },
                     {
                       "title": "/versements",
-                      "duration": 273
+                      "duration": 317
                     },
                     {
                       "title": "new versement opens as a sheet with its save button on screen",
-                      "duration": 782
+                      "duration": 875
                     },
                     {
                       "title": "new règlement fournisseur opens as a sheet with its save button on screen",
-                      "duration": 776
+                      "duration": 823
                     },
                     {
                       "title": "chargement: new transfer sheet, then the entry screen and its Validate",
-                      "duration": 1617
+                      "duration": 1744
                     },
                     {
                       "title": "share link of the relevé: the link and the WhatsApp button on screen",
-                      "duration": 820
+                      "duration": 905
                     },
                     {
                       "title": "bulk assign: select a client, the assign sheet and its button on screen",
-                      "duration": 889
+                      "duration": 1022
                     },
                     {
                       "title": "team tree: the users page with the manager column and the teams",
-                      "duration": 315
+                      "duration": 392
                     },
                     {
                       "title": "dashboard: the onboarding checklist fits",
-                      "duration": 372
+                      "duration": 473
                     },
                     {
                       "title": "tournées: visit sheet, deliver dialog and cash closing on screen",
-                      "duration": 2259
+                      "duration": 2458
+                    },
+                    {
+                      "title": "flagged operations: the detail sheet, its map and the review buttons",
+                      "duration": 833,
+                      "error": {
+                        "message": "Error: use cards below md, or mark an office table data-scroll-x\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"hides content to the side: div#radix-_r_bv_.bg-background.fixed.z-50 (533px in 358px)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                        "stack": "Error: use cards below md, or mark an office table data-scroll-x\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"hides content to the side: div#radix-_r_bv_.bg-background.fixed.z-50 (533px in 358px)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at expectNoHorizontalOverflow (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts:86:80)\n    at check (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:350:20)\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:574:9\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:561:7",
+                        "location": {
+                          "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts",
+                          "column": 80,
+                          "line": 86
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39mmobile-helpers.ts:86\n\n  84 |   const problems = await overflowProblems(page);\n  85 |   const check = opts.soft ? expect.soft : expect;\n> 86 |   check(problems, 'use cards below md, or mark an office table data-scroll-x').toEqual([]);\n     |                                                                                ^\n  87 |   return problems;\n  88 | }\n  89 |"
+                      }
                     },
                     {
                       "title": "fast sale: a line, then the total and the validate button on screen",
-                      "duration": 493
+                      "duration": 534
                     }
                   ],
-                  "startTime": "2026-10-30T01:56:11.568Z",
+                  "startTime": "2026-10-30T05:04:07.601Z",
                   "annotations": [],
-                  "attachments": []
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/mobile-every-signed-in-screen-fits-the-phone-ar--mobile-360/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/mobile-every-signed-in-screen-fits-the-phone-ar--mobile-360/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/mobile-every-signed-in-screen-fits-the-phone-ar--mobile-360/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile-helpers.ts",
+                    "column": 80,
+                    "line": 86
+                  }
                 }
               ],
-              "status": "expected"
+              "status": "unexpected"
             }
           ],
           "id": "e79c838550b25e92508e-64139fae68b2d0f06c9d",
           "file": "mobile.spec.ts",
-          "line": 320,
+          "line": 358,
           "column": 3
         },
         {
           "title": "every public screen fits the phone (ar)",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-360",
+              "projectName": "mobile-360",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 0,
+                  "error": {
+                    "message": "Error: HTTP 409 PLAN_LIMIT_REACHED Your plan allows 5 users (/users/invite)",
+                    "stack": "Error: HTTP 409 PLAN_LIMIT_REACHED Your plan allows 5 users (/users/invite)\n    at call (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/lib/http.ts:68:11)\n    at prepareIds (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:211:5)\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:301:9",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/lib/http.ts",
+                      "column": 11,
+                      "line": 68
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39m../lib/http.ts:68\n\n  66 |     const code = (res.body as { code?: string })?.code ?? 'n/a';\n  67 |     const message = (res.body as { message?: string })?.message ?? res.raw.slice(0, 200);\n> 68 |     throw new ApiError(res.status, res.body, `HTTP ${res.status} ${code} ${message} (${path})`);\n     |           ^\n  69 |   }\n  70 |   return res;\n  71 | }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/lib/http.ts",
+                        "column": 11,
+                        "line": 68
+                      },
+                      "message": "Error: HTTP 409 PLAN_LIMIT_REACHED Your plan allows 5 users (/users/invite)\n\n   at ../lib/http.ts:68\n\n  66 |     const code = (res.body as { code?: string })?.code ?? 'n/a';\n  67 |     const message = (res.body as { message?: string })?.message ?? res.raw.slice(0, 200);\n> 68 |     throw new ApiError(res.status, res.body, `HTTP ${res.status} ${code} ${message} (${path})`);\n     |           ^\n  69 |   }\n  70 |   return res;\n  71 | }\n    at call (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/lib/http.ts:68:11)\n    at prepareIds (/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:211:5)\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/mobile.spec.ts:301:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-30T05:04:39.809Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/mobile-every-public-screen-fits-the-phone-ar--mobile-360/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/mobile-every-public-screen-fits-the-phone-ar--mobile-360/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/mobile-every-public-screen-fits-the-phone-ar--mobile-360/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/lib/http.ts",
+                    "column": 11,
+                    "line": 68
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-a76434bf256ee6188cae",
+          "file": "mobile.spec.ts",
+          "line": 602,
+          "column": 3
+        },
+        {
+          "title": "every signed-in screen fits the phone (fr)",
           "ok": true,
           "tags": [],
           "tests": [
@@ -1175,303 +1423,25 @@
               "projectName": "mobile-360",
               "results": [
                 {
-                  "workerIndex": 1,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 4773,
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "steps": [
-                    {
-                      "title": "/admin/login",
-                      "duration": 952
-                    },
-                    {
-                      "title": "/inscription",
-                      "duration": 948
-                    },
-                    {
-                      "title": "/invitation/[token]",
-                      "duration": 981
-                    },
-                    {
-                      "title": "/login",
-                      "duration": 1026
-                    },
-                    {
-                      "title": "/support",
-                      "duration": 864
-                    }
-                  ],
-                  "startTime": "2026-10-30T01:56:36.432Z",
+                  "startTime": "2026-10-30T05:04:40.462Z",
                   "annotations": [],
                   "attachments": []
                 }
               ],
-              "status": "expected"
-            }
-          ],
-          "id": "e79c838550b25e92508e-a76434bf256ee6188cae",
-          "file": "mobile.spec.ts",
-          "line": 544,
-          "column": 3
-        },
-        {
-          "title": "every signed-in screen fits the phone (fr)",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 600000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "mobile-360",
-              "projectName": "mobile-360",
-              "results": [
-                {
-                  "workerIndex": 1,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 24498,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "steps": [
-                    {
-                      "title": "/achats",
-                      "duration": 320
-                    },
-                    {
-                      "title": "/achats/[id]",
-                      "duration": 330
-                    },
-                    {
-                      "title": "/achats/fournisseurs",
-                      "duration": 254
-                    },
-                    {
-                      "title": "/achats/fournisseurs/[id]",
-                      "duration": 274
-                    },
-                    {
-                      "title": "/achats/nouveau",
-                      "duration": 349
-                    },
-                    {
-                      "title": "/clients",
-                      "duration": 284
-                    },
-                    {
-                      "title": "/clients/[id]",
-                      "duration": 299
-                    },
-                    {
-                      "title": "/clients/[id]/modifier",
-                      "duration": 326
-                    },
-                    {
-                      "title": "/clients/a-relancer",
-                      "duration": 238
-                    },
-                    {
-                      "title": "/clients/nouveau",
-                      "duration": 289
-                    },
-                    {
-                      "title": "/clients/secteurs",
-                      "duration": 250
-                    },
-                    {
-                      "title": "/commandes",
-                      "duration": 251
-                    },
-                    {
-                      "title": "/commandes/[id]",
-                      "duration": 295
-                    },
-                    {
-                      "title": "/livraisons",
-                      "duration": 253
-                    },
-                    {
-                      "title": "/livraisons/[id]",
-                      "duration": 291
-                    },
-                    {
-                      "title": "/mot-de-passe",
-                      "duration": 239
-                    },
-                    {
-                      "title": "/parametres",
-                      "duration": 495
-                    },
-                    {
-                      "title": "/parametres/abonnement",
-                      "duration": 308
-                    },
-                    {
-                      "title": "/parametres/import",
-                      "duration": 288
-                    },
-                    {
-                      "title": "/parametres/journal",
-                      "duration": 715
-                    },
-                    {
-                      "title": "/parametres/sessions",
-                      "duration": 309
-                    },
-                    {
-                      "title": "/parametres/utilisateurs",
-                      "duration": 317
-                    },
-                    {
-                      "title": "/produits",
-                      "duration": 263
-                    },
-                    {
-                      "title": "/produits/[id]",
-                      "duration": 378
-                    },
-                    {
-                      "title": "/produits/categories",
-                      "duration": 266
-                    },
-                    {
-                      "title": "/produits/marques",
-                      "duration": 246
-                    },
-                    {
-                      "title": "/produits/nouveau",
-                      "duration": 346
-                    },
-                    {
-                      "title": "/rapports",
-                      "duration": 270
-                    },
-                    {
-                      "title": "/rapports/balance-agee",
-                      "duration": 279
-                    },
-                    {
-                      "title": "/stock",
-                      "duration": 1081
-                    },
-                    {
-                      "title": "/stock/[productId]",
-                      "duration": 277
-                    },
-                    {
-                      "title": "/stock/depots",
-                      "duration": 258
-                    },
-                    {
-                      "title": "/stock/inventaires",
-                      "duration": 258
-                    },
-                    {
-                      "title": "/stock/inventaires/[id]",
-                      "duration": 266
-                    },
-                    {
-                      "title": "/stock/transferts",
-                      "duration": 238
-                    },
-                    {
-                      "title": "/stock/transferts/[id]",
-                      "duration": 252
-                    },
-                    {
-                      "title": "/tableau-de-bord",
-                      "duration": 403
-                    },
-                    {
-                      "title": "/tournees",
-                      "duration": 244
-                    },
-                    {
-                      "title": "/tournees/[id]",
-                      "duration": 304
-                    },
-                    {
-                      "title": "/tournees/aujourdhui",
-                      "duration": 282
-                    },
-                    {
-                      "title": "/tournees/cloture",
-                      "duration": 277
-                    },
-                    {
-                      "title": "/tournees/rapports",
-                      "duration": 272
-                    },
-                    {
-                      "title": "/ventes",
-                      "duration": 281
-                    },
-                    {
-                      "title": "/ventes/[id]",
-                      "duration": 305
-                    },
-                    {
-                      "title": "/ventes/nouvelle",
-                      "duration": 323
-                    },
-                    {
-                      "title": "/versements",
-                      "duration": 285
-                    },
-                    {
-                      "title": "new versement opens as a sheet with its save button on screen",
-                      "duration": 804
-                    },
-                    {
-                      "title": "new règlement fournisseur opens as a sheet with its save button on screen",
-                      "duration": 751
-                    },
-                    {
-                      "title": "chargement: new transfer sheet, then the entry screen and its Validate",
-                      "duration": 1648
-                    },
-                    {
-                      "title": "share link of the relevé: the link and the WhatsApp button on screen",
-                      "duration": 860
-                    },
-                    {
-                      "title": "bulk assign: select a client, the assign sheet and its button on screen",
-                      "duration": 883
-                    },
-                    {
-                      "title": "team tree: the users page with the manager column and the teams",
-                      "duration": 315
-                    },
-                    {
-                      "title": "dashboard: the onboarding checklist fits",
-                      "duration": 400
-                    },
-                    {
-                      "title": "tournées: visit sheet, deliver dialog and cash closing on screen",
-                      "duration": 2308
-                    },
-                    {
-                      "title": "fast sale: a line, then the total and the validate button on screen",
-                      "duration": 469
-                    }
-                  ],
-                  "startTime": "2026-10-30T01:56:41.213Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
+              "status": "skipped"
             }
           ],
           "id": "e79c838550b25e92508e-3ae71ed9887b579dcab9",
           "file": "mobile.spec.ts",
-          "line": 320,
+          "line": 358,
           "column": 3
         },
         {
@@ -1487,47 +1457,25 @@
               "projectName": "mobile-360",
               "results": [
                 {
-                  "workerIndex": 1,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 4766,
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "steps": [
-                    {
-                      "title": "/admin/login",
-                      "duration": 948
-                    },
-                    {
-                      "title": "/inscription",
-                      "duration": 958
-                    },
-                    {
-                      "title": "/invitation/[token]",
-                      "duration": 972
-                    },
-                    {
-                      "title": "/login",
-                      "duration": 1028
-                    },
-                    {
-                      "title": "/support",
-                      "duration": 860
-                    }
-                  ],
-                  "startTime": "2026-10-30T01:57:05.724Z",
+                  "startTime": "2026-10-30T05:04:40.462Z",
                   "annotations": [],
                   "attachments": []
                 }
               ],
-              "status": "expected"
+              "status": "skipped"
             }
           ],
           "id": "e79c838550b25e92508e-a9b60ff6dea3a938e427",
           "file": "mobile.spec.ts",
-          "line": 544,
+          "line": 602,
           "column": 3
         },
         {
@@ -1543,39 +1491,25 @@
               "projectName": "mobile-360",
               "results": [
                 {
-                  "workerIndex": 1,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 7198,
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "steps": [
-                    {
-                      "title": "/admin",
-                      "duration": 4970
-                    },
-                    {
-                      "title": "/admin/societes/[id]",
-                      "duration": 500
-                    },
-                    {
-                      "title": "record payment opens as a sheet with its button on screen",
-                      "duration": 680
-                    }
-                  ],
-                  "startTime": "2026-10-30T01:57:10.497Z",
+                  "startTime": "2026-10-30T05:04:40.462Z",
                   "annotations": [],
                   "attachments": []
                 }
               ],
-              "status": "expected"
+              "status": "skipped"
             }
           ],
           "id": "e79c838550b25e92508e-336c727c12a3cd6e471b",
           "file": "mobile.spec.ts",
-          "line": 574,
+          "line": 632,
           "column": 3
         },
         {
@@ -1591,39 +1525,25 @@
               "projectName": "mobile-360",
               "results": [
                 {
-                  "workerIndex": 1,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 6724,
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "steps": [
-                    {
-                      "title": "/admin",
-                      "duration": 4328
-                    },
-                    {
-                      "title": "/admin/societes/[id]",
-                      "duration": 523
-                    },
-                    {
-                      "title": "record payment opens as a sheet with its button on screen",
-                      "duration": 748
-                    }
-                  ],
-                  "startTime": "2026-10-30T01:57:17.700Z",
+                  "startTime": "2026-10-30T05:04:40.462Z",
                   "annotations": [],
                   "attachments": []
                 }
               ],
-              "status": "expected"
+              "status": "skipped"
             }
           ],
           "id": "e79c838550b25e92508e-0e878b8d9f0337c6d555",
           "file": "mobile.spec.ts",
-          "line": 574,
+          "line": 632,
           "column": 3
         }
       ]
@@ -1631,11 +1551,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-30T01:54:55.589Z",
-    "duration": 148958.20500000002,
-    "expected": 12,
-    "skipped": 0,
-    "unexpected": 0,
+    "startTime": "2026-10-30T05:02:22.167Z",
+    "duration": 138304.976,
+    "expected": 4,
+    "skipped": 4,
+    "unexpected": 4,
     "flaky": 0
   }
 }

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   CreditLimitMode,
+  GEO_CHECK_MODES,
   NegativeStockMode,
   PrintFormat,
   SELLER_SCOPES,
@@ -67,6 +68,12 @@ export const tenantSettingsSchema = z.object({
   reminderDays: z.number().int().min(1).max(365),
   /** Which clients a seller sees when SALES_FORCE is on (phase 14). */
   sellerScope: z.enum(SELLER_SCOPES as [SellerScope, ...SellerScope[]]),
+  /** Géolocalisation (phase 17, GEO_CHECK): what happens to a far operation. */
+  geoCheckMode: z.enum(GEO_CHECK_MODES),
+  /** Distance from the client's point still counted as "at the client", in metres. */
+  geoRadiusM: z.number().int().min(20).max(5000),
+  /** A position less precise than this is LOW_ACCURACY, in metres. */
+  geoMaxAccuracyM: z.number().int().min(10).max(5000),
   // Timbre fiscal rule: off by default; values come from the current loi de finances.
   timbreEnabled: z.boolean(),
   timbreTranches: timbreTranchesSchema,

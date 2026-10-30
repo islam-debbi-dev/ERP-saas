@@ -23,6 +23,7 @@ import {
   type SaleResultDto,
   SaleType,
   type TenantSettingsResponse,
+  type GeoInput,
 } from '@erp/shared';
 import { BalanceAmount, PlafondBar } from '@/components/clients/balance-amount';
 import { PageHeader } from '@/components/shared/page-header';
@@ -58,6 +59,7 @@ import { Kbd } from './kbd';
 import { Amount } from '@/components/shared/amount';
 import { StickyActions } from '@/components/shared/sticky-actions';
 import { WarehouseSelect } from '@/components/stock/warehouse-select';
+import { GeoPrivacyNotice, isGeoCancelled, useGeoSubmit } from '@/components/geo/use-geo-submit';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export interface ScreenLine {
@@ -288,6 +290,7 @@ export function SaleScreen({
     void queryClient.invalidateQueries({ queryKey: clientKeys.all });
   };
 
+  const geo = useGeoSubmit();
   const validate = useMutation({
     mutationFn: async () => {
       const payment = {
@@ -301,26 +304,33 @@ export function SaleScreen({
         attempt.current = { body: signature, key: crypto.randomUUID() };
       }
       const key = attempt.current.key;
+      // Phase 17: the seller's position goes with the validation (a note if asked).
+      const withGeo = (b: object, g: GeoInput | undefined) => (g ? { ...b, geo: g } : b);
       if (!draftRef) {
-        return api.request<SaleResultDto>('/sales/quick', {
-          method: 'POST',
-          body,
-          idempotencyKey: key,
-        });
+        return geo.run((g) =>
+          api.request<SaleResultDto>('/sales/quick', {
+            method: 'POST',
+            body: withGeo(body, g),
+            idempotencyKey: key,
+          }),
+        );
       }
       const saved = await api.request<SaleDto>(`/sales/${draftRef.id}`, {
         method: 'PUT',
         body: { ...header(), version: draftRef.version },
       });
       setDraftRef({ id: saved.id, version: saved.version });
-      return api.request<SaleResultDto>(`/sales/${saved.id}/validate`, {
-        method: 'POST',
-        body: payment,
-        idempotencyKey: key,
-      });
+      return geo.run((g) =>
+        api.request<SaleResultDto>(`/sales/${saved.id}/validate`, {
+          method: 'POST',
+          body: withGeo(payment, g),
+          idempotencyKey: key,
+        }),
+      );
     },
     onSuccess: (result) => {
       invalidate();
+      geo.after(result.geoCheck, result.sale.client?.id ?? null);
       const docType = result.sale.type === SaleType.FACTURE ? 'FAC' : 'BL';
       toast.success(t('validatedToast', { number: result.sale.number ?? '' }), {
         duration: 10000,
@@ -346,7 +356,9 @@ export function SaleScreen({
       }
       reset();
     },
-    onError: (err) => toast.error(errorMessage(err)),
+    onError: (err) => {
+      if (!isGeoCancelled(err)) toast.error(errorMessage(err));
+    },
   });
 
   const saveDraft = useMutation({
@@ -858,6 +870,7 @@ export function SaleScreen({
                   </AlertDescription>
                 </Alert>
               ) : null}
+              {geo.on && client ? <GeoPrivacyNotice /> : null}
             </CardContent>
           </Card>
 
@@ -1018,6 +1031,7 @@ export function SaleScreen({
         </div>
       </div>
 
+      {geo.dialog}
       <ClientPicker
         open={pickerOpen}
         onOpenChange={(o) => {

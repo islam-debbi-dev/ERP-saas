@@ -17,3 +17,4 @@ export * from './credit';
 export * from './sales-force';
 export * from './warehouses';
 export * from './tournees';
+export * from './geo';
