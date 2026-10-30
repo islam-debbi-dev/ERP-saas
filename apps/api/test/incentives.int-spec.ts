@@ -341,7 +341,9 @@ describe('objectifs & primes (phase 18)', () => {
         { teamManagerId: sup.user.id, value: '1400' },
       ]);
       await bulk('NEW_CLIENTS', [{ userId: a.user.id, value: '1' }]);
-    });
+      // Four staff logins (password hashing), two tenants and a month of documents: well
+      // over Jest's 5 s default on a CI runner.
+    }, 60_000);
 
     const lineOf = (r: IncentiveRunDetailDto, userId: string, rule: string) =>
       r.users.find((u) => u.user.id === userId)?.lines.find((l) => l.ruleName === rule);
@@ -589,7 +591,7 @@ describe('objectifs & primes (phase 18)', () => {
       const cat = await catalogOf(t, d);
       a = await staff(d, 'SELLER');
       item = await product(d, cat, null);
-    });
+    }, 30_000);
 
     const commission = (ratePct: string): RuleInput => ({
       name: 'Commission CA',
