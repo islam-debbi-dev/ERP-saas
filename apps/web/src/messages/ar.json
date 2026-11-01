@@ -508,7 +508,10 @@
     },
     "brands": "العلامات التجارية",
     "brand": "العلامة",
-    "noBrand": "بدون علامة"
+    "noBrand": "بدون علامة",
+    "weightKg": "الوزن (كغ لكل {unit})",
+    "volumeM3": "الحجم (م³ لكل {unit})",
+    "weightHint": "اختياري. يُستعمل لتوزيع مصاريف الاستيراد حسب الوزن أو الحجم."
   },
   "categories": {
     "title": "الفئات",
@@ -1655,7 +1658,9 @@
     "paidAtReception": "مدفوع عند الاستلام",
     "debit": "مدين",
     "credit": "دائن",
-    "loadMore": "عرض المزيد"
+    "loadMore": "عرض المزيد",
+    "amountIn": "المبلغ ({currency})",
+    "exchangeRate": "السعر (دج مقابل 1 {currency})"
   },
   "supplierLedgerTypes": {
     "OPENING": "رصيد افتتاحي",

@@ -405,6 +405,11 @@ describe('import files and landed cost (phase 22)', () => {
         '157000.00',
         '1200.00',
       ]);
+      // The printed relevé carries the USD next to the DZD.
+      const pdf = await as(imp)
+        .get(`/suppliers/${usd.id}/statement/pdf?from=2026-01-01&to=2030-12-31`)
+        .expect(200);
+      expect(pdf.headers['content-type']).toContain('application/pdf');
       await as(imp)
         .post(`/supplier-payments/${pay.id}/cancel`, { reason: 'Erreur de saisie' })
         .expect(200);

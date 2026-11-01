@@ -508,7 +508,10 @@
     },
     "brands": "Marques",
     "brand": "Marque",
-    "noBrand": "Sans marque"
+    "noBrand": "Sans marque",
+    "weightKg": "Poids (kg par {unit})",
+    "volumeM3": "Volume (m³ par {unit})",
+    "weightHint": "Facultatif. Sert à répartir les frais d'importation au poids ou au volume."
   },
   "categories": {
     "title": "Catégories",
@@ -1655,7 +1658,9 @@
     "paidAtReception": "payé à la réception",
     "debit": "Débit",
     "credit": "Crédit",
-    "loadMore": "Voir plus"
+    "loadMore": "Voir plus",
+    "amountIn": "Montant ({currency})",
+    "exchangeRate": "Taux (DA pour 1 {currency})"
   },
   "supplierLedgerTypes": {
     "OPENING": "Solde initial",

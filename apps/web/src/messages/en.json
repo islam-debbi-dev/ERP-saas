@@ -508,7 +508,10 @@
     },
     "brands": "Brands",
     "brand": "Brand",
-    "noBrand": "No brand"
+    "noBrand": "No brand",
+    "weightKg": "Weight (kg per {unit})",
+    "volumeM3": "Volume (m³ per {unit})",
+    "weightHint": "Optional. Used to allocate import costs by weight or volume."
   },
   "categories": {
     "title": "Categories",
@@ -1655,7 +1658,9 @@
     "paidAtReception": "paid at reception",
     "debit": "Debit",
     "credit": "Credit",
-    "loadMore": "Load more"
+    "loadMore": "Load more",
+    "amountIn": "Amount ({currency})",
+    "exchangeRate": "Rate (DA per 1 {currency})"
   },
   "supplierLedgerTypes": {
     "OPENING": "Opening balance",
