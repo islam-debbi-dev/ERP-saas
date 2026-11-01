@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Undo2, XCircle } from 'lucide-react';
+import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -54,6 +55,10 @@ export function PurchaseView({ purchase }: { purchase: PurchaseDto }) {
     ret: crypto.randomUUID(),
   }));
   const validated = purchase.status === 'VALIDATED';
+  const inTransit = purchase.status === 'IN_TRANSIT';
+  // Its stock entered at the dossier's coût de revient: corrected by a return, not a cancel.
+  const cancellable = inTransit || (validated && !purchase.importFile);
+  const foreign = purchase.currency !== 'DZD';
 
   const onDone = (next: PurchaseDto) => {
     queryClient.setQueryData(purchaseKeys.one(next.id), next);
@@ -106,14 +111,16 @@ export function PurchaseView({ purchase }: { purchase: PurchaseDto }) {
       {/* Information, not an error: announced politely. */}
       <Alert role="status">
         <AlertDescription>
-          {validated
-            ? t('readOnlyValidated', {
-                date: format.dateTime(new Date(purchase.validatedAt ?? purchase.createdAt), {
-                  dateStyle: 'medium',
-                  timeStyle: 'short',
-                }),
-              })
-            : t('readOnlyCancelled')}
+          {inTransit
+            ? t('readOnlyInTransit')
+            : validated
+              ? t('readOnlyValidated', {
+                  date: format.dateTime(new Date(purchase.validatedAt ?? purchase.createdAt), {
+                    dateStyle: 'medium',
+                    timeStyle: 'short',
+                  }),
+                })
+              : t('readOnlyCancelled')}
         </AlertDescription>
       </Alert>
 
@@ -124,6 +131,26 @@ export function PurchaseView({ purchase }: { purchase: PurchaseDto }) {
           </CardTitle>
         </CardHeader>
         <CardContent className="grid gap-2 text-sm sm:grid-cols-3">
+          {purchase.importFile ? (
+            <p>
+              <span className="text-muted-foreground">{t('importFile')}: </span>
+              <Link
+                href={`/achats/dossiers/${purchase.importFile.id}`}
+                className="font-medium tabular-nums underline underline-offset-4"
+                dir="ltr"
+              >
+                {purchase.importFile.number}
+              </Link>
+            </p>
+          ) : null}
+          {foreign ? (
+            <p>
+              <span className="text-muted-foreground">{t('currencyRate')}: </span>
+              <span className="num" dir="ltr">
+                {purchase.totalCurrency} {purchase.currency} × {purchase.exchangeRate}
+              </span>
+            </p>
+          ) : null}
           <p>
             <span className="text-muted-foreground">{t('date')}: </span>
             {format.dateTime(new Date(`${purchase.documentDate}T12:00:00Z`), {
@@ -168,6 +195,16 @@ export function PurchaseView({ purchase }: { purchase: PurchaseDto }) {
                 </td>
                 <td data-label={t('colCost')} className="num p-3 text-end whitespace-nowrap">
                   <Amount value={l.unitCost} />
+                  {l.unitCostCurrency ? (
+                    <span className="block text-xs text-muted-foreground" dir="ltr">
+                      {l.unitCostCurrency} {purchase.currency}
+                    </span>
+                  ) : null}
+                  {l.landedUnitCostBase ? (
+                    <span className="block text-xs text-muted-foreground">
+                      {t('landedPerBase')} <Amount value={l.landedUnitCostBase} />
+                    </span>
+                  ) : null}
                 </td>
                 <td
                   data-label={t('colLineHt')}
@@ -239,32 +276,40 @@ export function PurchaseView({ purchase }: { purchase: PurchaseDto }) {
         </Card>
       ) : null}
 
-      {validated ? (
+      {cancellable || validated ? (
         <div className="sticky bottom-0 z-20 -mx-4 flex flex-wrap justify-between gap-2 border-t bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:py-3 backdrop-blur lg:-mx-6 lg:px-6">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" disabled={cancel.isPending}>
-                <XCircle aria-hidden />
-                {t('cancelBr')}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>{t('cancelTitle')}</AlertDialogTitle>
-                <AlertDialogDescription>{t('cancelBodyValidated')}</AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>{t('keep')}</AlertDialogCancel>
-                <AlertDialogAction onClick={() => cancel.mutate()}>
+          {cancellable ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" disabled={cancel.isPending}>
+                  <XCircle aria-hidden />
                   {t('cancelBr')}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          <Button variant="outline" disabled={!anyReturnable} onClick={() => setReturnOpen(true)}>
-            <Undo2 aria-hidden />
-            {t('returnBtn')}
-          </Button>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t('cancelTitle')}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {inTransit ? t('cancelBodyInTransit') : t('cancelBodyValidated')}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t('keep')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => cancel.mutate()}>
+                    {t('cancelBr')}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : (
+            <div />
+          )}
+          {validated ? (
+            <Button variant="outline" disabled={!anyReturnable} onClick={() => setReturnOpen(true)}>
+              <Undo2 aria-hidden />
+              {t('returnBtn')}
+            </Button>
+          ) : null}
         </div>
       ) : null}
 

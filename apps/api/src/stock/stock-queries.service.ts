@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   cump,
+  cumpAfterValue,
   ErrorCode,
   qty,
   type ReconcileReport,
@@ -279,7 +280,14 @@ export class StockQueriesService {
       const movements = await this.prisma.db.stockMovement.findMany({
         where: { productId: level.productId },
         orderBy: { seq: 'asc' },
-        select: { id: true, qtyBase: true, unitCost: true, balanceAfter: true, avgCostAfter: true },
+        select: {
+          id: true,
+          qtyBase: true,
+          unitCost: true,
+          valueDelta: true,
+          balanceAfter: true,
+          avgCostAfter: true,
+        },
       });
       let q = qty(0);
       let avg = qty(0);
@@ -287,6 +295,8 @@ export class StockQueriesService {
       for (const m of movements) {
         const delta = qty(m.qtyBase.toString());
         if (delta.gt(0)) avg = cump(q, avg, delta, m.unitCost?.toString() ?? avg.toString());
+        // COST_ADJUST (phase 22): the value moves, the quantity does not.
+        if (m.valueDelta) avg = cumpAfterValue(q, avg, m.valueDelta.toString());
         q = q.plus(delta);
         if (
           !brokenChainAt &&

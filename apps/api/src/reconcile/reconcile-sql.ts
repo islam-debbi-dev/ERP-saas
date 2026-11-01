@@ -121,6 +121,23 @@ export const RECONCILE_CHECKS: ReconcileCheck[] = [
       HAVING sb.balance <> COALESCE(SUM(le.amount), 0)`,
   },
   {
+    // Phase 22: a foreign supplier's balance in its currency. DZD suppliers only have
+    // currency amounts when something is wrong, so only those rows are aggregated.
+    name: 'supplier_currency_balance_equals_ledger',
+    entity: 'Supplier',
+    sql: `
+      SELECT sb."tenantId"::text AS "tenantId", sb."supplierId"::text AS "entityId",
+             sb."balanceCurrency"::text AS cached,
+             COALESCE(SUM(le."amountCurrency"), 0)::text AS ledger
+      FROM supplier_balances sb
+      JOIN suppliers s ON s.id = sb."supplierId"
+        AND (s.currency <> 'DZD' OR sb."balanceCurrency" <> 0)
+      LEFT JOIN supplier_ledger_entries le
+        ON le."tenantId" = sb."tenantId" AND le."supplierId" = sb."supplierId"
+      GROUP BY sb."tenantId", sb."supplierId", sb."balanceCurrency"
+      HAVING sb."balanceCurrency" <> COALESCE(SUM(le."amountCurrency"), 0)`,
+  },
+  {
     name: 'supplier_missing_balance',
     entity: 'Supplier',
     sql: `

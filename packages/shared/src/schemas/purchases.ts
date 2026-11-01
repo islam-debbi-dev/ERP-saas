@@ -1,7 +1,13 @@
 import { z } from 'zod';
 import { type PurchaseStatus } from '../enums';
 import { parseDA } from '../money';
-import { amountString, normalizeDecimal, quantityString } from './common';
+import {
+  amountString,
+  currencyCode,
+  exchangeRateString,
+  normalizeDecimal,
+  quantityString,
+} from './common';
 
 const id = z.uuid();
 const optionalText = (max: number) =>
@@ -35,6 +41,8 @@ export const supplierSchema = z.object({
   nis: optionalText(40),
   ai: optionalText(40),
   notes: optionalText(500),
+  /** Currency of its BRs and account (phase 22, IMPORT_COSTS). Fixed once it has entries. */
+  currency: currencyCode.default('DZD'),
 });
 export type SupplierInput = z.infer<typeof supplierSchema>;
 const patchText = (max: number) =>
@@ -57,6 +65,7 @@ export const updateSupplierSchema = z
     nis: patchText(40),
     ai: patchText(40),
     notes: patchText(500),
+    currency: currencyCode.optional(),
   })
   .strict();
 export type UpdateSupplierInput = z.infer<typeof updateSupplierSchema>;
@@ -75,6 +84,9 @@ export interface SupplierDto {
   archivedAt: string | null;
   /** Positive = we owe the supplier; negative = credit in our favour. */
   balance: string;
+  currency: string;
+  /** The balance in the supplier's currency (foreign suppliers; "0.00" for DZD). */
+  balanceCurrency: string;
   hasOpening: boolean;
 }
 
@@ -96,7 +108,10 @@ export const purchaseLineInputSchema = z.object({
   productId: id,
   unitId: id,
   qty: quantityString({ positive: true }).transform(normalizeDecimal),
-  /** Cost HT of one `unitId` (e.g. one carton). */
+  /**
+   * Cost HT of one `unitId` (e.g. one carton), in the BR currency: the supplier's
+   * price for a foreign BR (the API converts it at `exchangeRate`).
+   */
   unitCost: costString.transform(normalizeDecimal),
 });
 export type PurchaseLineInput = z.infer<typeof purchaseLineInputSchema>;
@@ -114,6 +129,13 @@ const purchaseFields = {
    * create); null = the default MAIN.
    */
   warehouseId: id.nullable().optional(),
+  /**
+   * Phase 22 (IMPORT_COSTS): DZD per 1 unit of the supplier's currency; required for a
+   * foreign supplier, ignored for DZD. The BR currency is always the supplier's.
+   */
+  exchangeRate: exchangeRateString.optional(),
+  /** Phase 22: the open dossier d'importation this BR belongs to. Omitted = unchanged. */
+  importFileId: id.nullable().optional(),
 };
 
 export const createPurchaseSchema = z.object(purchaseFields);
@@ -158,8 +180,9 @@ export const purchaseReturnSchema = z.object({
 export type PurchaseReturnInput = z.infer<typeof purchaseReturnSchema>;
 
 export const purchaseListQuerySchema = z.object({
-  status: z.enum(['DRAFT', 'VALIDATED', 'CANCELLED']).optional(),
+  status: z.enum(['DRAFT', 'IN_TRANSIT', 'VALIDATED', 'CANCELLED']).optional(),
   supplierId: id.optional(),
+  importFileId: id.optional(),
   from: dateString.optional(),
   to: dateString.optional(),
   cursor: id.optional(),
@@ -181,6 +204,10 @@ export interface PurchaseLineDto {
   qtyBase: string;
   unitCost: string;
   lineHt: string;
+  /** The supplier's price of one unit in the BR currency (foreign BRs only). */
+  unitCostCurrency: string | null;
+  /** Coût de revient of one base unit, once its dossier is closed. */
+  landedUnitCostBase: string | null;
   /** Already returned to the supplier, in base unit. */
   returnedQtyBase: string;
 }
@@ -211,6 +238,11 @@ export interface PurchaseDto {
   paidAmount: string;
   /** The dépôt that received (or will receive) the goods. */
   warehouse: { id: string; name: string } | null;
+  currency: string;
+  exchangeRate: string;
+  /** Total in the BR currency (foreign BRs only). */
+  totalCurrency: string | null;
+  importFile: { id: string; number: string; status: string } | null;
   version: number;
   createdAt: string;
   validatedAt: string | null;
@@ -226,6 +258,8 @@ export interface PurchaseSummaryDto {
   supplier: { id: string; name: string };
   documentDate: string;
   totalTtc: string;
+  currency: string;
+  totalCurrency: string | null;
   lineCount: number;
 }
 

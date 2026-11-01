@@ -52,6 +52,8 @@ enum DocType {
   TR
   /// Bon de commande: pre-sale order (phase 16).
   BC
+  /// Dossier d'importation (phase 22).
+  DI
 }
 
 enum PrintFormat {
@@ -180,6 +182,9 @@ model Tenant {
   incentiveRules       IncentiveRule[]
   incentiveRuns        IncentiveRun[]
   incentiveLines       IncentiveLine[]
+  importFiles          ImportFile[]
+  importCosts          ImportCost[]
+  importAllocations    ImportCostAllocation[]
   promotions           Promotion[]
   promotionProducts    PromotionProduct[]
   promotionClients     PromotionClient[]
@@ -428,6 +433,9 @@ model Product {
   baseUnitId  String    @db.Uuid
   tvaRate     Decimal   @db.Decimal(5, 2)
   minStock    Decimal   @default(0) @db.Decimal(14, 3)
+  /// Per base unit, for import cost allocation by weight / volume (phase 22).
+  weightKg    Decimal?  @db.Decimal(12, 3)
+  volumeM3    Decimal?  @db.Decimal(12, 4)
   active      Boolean   @default(true)
   /// Optimistic lock: every update must send the version it read.
   version     Int       @default(1)
@@ -435,10 +443,10 @@ model Product {
   createdAt   DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
 
-  tenant              Tenant               @relation(fields: [tenantId], references: [id])
-  category            Category?            @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  brand               Brand?               @relation(fields: [brandId], references: [id], onDelete: Restrict)
-  baseUnit            Unit                 @relation(fields: [baseUnitId], references: [id])
+  tenant              Tenant                 @relation(fields: [tenantId], references: [id])
+  category            Category?              @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  brand               Brand?                 @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  baseUnit            Unit                   @relation(fields: [baseUnitId], references: [id])
   units               ProductUnit[]
   prices              ProductPrice[]
   stock               ProductStock?
@@ -450,6 +458,7 @@ model Product {
   warehouseStocks     WarehouseStock[]
   stockTransferLines  StockTransferLine[]
   orderLines          OrderLine[]
+  importAllocations   ImportCostAllocation[]
   promotionProducts   PromotionProduct[]
   packagings          ProductPackaging[]
 
@@ -522,6 +531,8 @@ enum StockMovementType {
   /// Phase 15: the two halves of a transfer between warehouses, at the current CUMP.
   TRANSFER_OUT
   TRANSFER_IN
+  /// Phase 22: a late import cost changes the stock value, not the quantity (qtyBase 0).
+  COST_ADJUST
 }
 
 enum AdjustmentReason {
@@ -551,6 +562,8 @@ model StockMovement {
   qtyBase      Decimal           @db.Decimal(14, 3)
   /// Cost of one base unit for entries (4 decimals, see docs: CUMP precision).
   unitCost     Decimal?          @db.Decimal(14, 4)
+  /// COST_ADJUST only (phase 22): stock value added, CUMP moves by valueDelta / stock.
+  valueDelta   Decimal?          @db.Decimal(14, 2)
   /// Stock and CUMP right after this movement (running balance of the stock card).
   balanceAfter Decimal           @db.Decimal(14, 3)
   avgCostAfter Decimal           @db.Decimal(14, 4)
@@ -645,6 +658,8 @@ model InventoryLine {
 
 enum PurchaseStatus {
   DRAFT
+  /// Phase 22: validated inside an open dossier d'importation; on the supplier account, not in stock yet.
+  IN_TRANSIT
   VALIDATED
   CANCELLED
 }
@@ -663,17 +678,20 @@ model Supplier {
   nis       String?   @db.VarChar(40)
   ai        String?   @db.VarChar(40)
   notes     String?   @db.VarChar(500)
+  /// Currency of its BRs and account (phase 22). Changes only while the ledger is empty.
+  currency  String    @default("DZD") @db.VarChar(3)
   deletedAt DateTime? @db.Timestamptz(3)
   createdAt DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt DateTime  @updatedAt @db.Timestamptz(3)
 
-  tenant    Tenant                @relation(fields: [tenantId], references: [id])
-  purchases Purchase[]
-  returns   PurchaseReturn[]
-  ledger    SupplierLedgerEntry[]
-  balance   SupplierBalance?
-  payments  SupplierPayment[]
-  brands    Brand[]
+  tenant      Tenant                @relation(fields: [tenantId], references: [id])
+  purchases   Purchase[]
+  importCosts ImportCost[]
+  returns     PurchaseReturn[]
+  ledger      SupplierLedgerEntry[]
+  balance     SupplierBalance?
+  payments    SupplierPayment[]
+  brands      Brand[]
 
   @@unique([tenantId, code])
   @@index([tenantId, name])
@@ -688,23 +706,28 @@ enum SupplierLedgerType {
   RETURN
   ADJUST
   REVERSAL
+  /// Phase 22: a cost line of a dossier d'importation (transitaire, transporteur...).
+  IMPORT_COST
 }
 
 /// Dettes fournisseurs: append-only, like client_ledger_entries.
 model SupplierLedgerEntry {
-  id         String             @id @default(uuid()) @db.Uuid
+  id             String             @id @default(uuid()) @db.Uuid
   /// Insertion order (createdAt is shared by a transaction).
-  seq        BigInt             @unique @default(autoincrement())
-  tenantId   String             @db.Uuid
-  supplierId String             @db.Uuid
-  type       SupplierLedgerType
-  amount     Decimal            @db.Decimal(14, 2)
-  label      String             @db.VarChar(160)
-  reason     String?            @db.VarChar(255)
-  refType    String?            @db.VarChar(30)
-  refId      String?            @db.Uuid
-  createdBy  String?            @db.Uuid
-  createdAt  DateTime           @default(now()) @db.Timestamptz(3)
+  seq            BigInt             @unique @default(autoincrement())
+  tenantId       String             @db.Uuid
+  supplierId     String             @db.Uuid
+  type           SupplierLedgerType
+  amount         Decimal            @db.Decimal(14, 2)
+  /// Phase 22: the amount in the supplier's currency, null for DZD entries.
+  currency       String             @default("DZD") @db.VarChar(3)
+  amountCurrency Decimal?           @db.Decimal(14, 2)
+  label          String             @db.VarChar(160)
+  reason         String?            @db.VarChar(255)
+  refType        String?            @db.VarChar(30)
+  refId          String?            @db.Uuid
+  createdBy      String?            @db.Uuid
+  createdAt      DateTime           @default(now()) @db.Timestamptz(3)
 
   tenant   Tenant   @relation(fields: [tenantId], references: [id])
   supplier Supplier @relation(fields: [supplierId], references: [id])
@@ -716,12 +739,14 @@ model SupplierLedgerEntry {
 
 /// Cached sum of a supplier's ledger, updated in the same transaction as each entry.
 model SupplierBalance {
-  id         String   @id @default(uuid()) @db.Uuid
-  tenantId   String   @db.Uuid
-  supplierId String   @unique @db.Uuid
-  balance    Decimal  @default(0) @db.Decimal(14, 2)
-  hasOpening Boolean  @default(false)
-  updatedAt  DateTime @updatedAt @db.Timestamptz(3)
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @db.Uuid
+  supplierId      String   @unique @db.Uuid
+  balance         Decimal  @default(0) @db.Decimal(14, 2)
+  /// Same balance in the supplier's currency (phase 22): sum of amountCurrency, 0 for DZD suppliers.
+  balanceCurrency Decimal  @default(0) @db.Decimal(14, 2)
+  hasOpening      Boolean  @default(false)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(3)
 
   tenant   Tenant   @relation(fields: [tenantId], references: [id])
   supplier Supplier @relation(fields: [supplierId], references: [id])
@@ -737,27 +762,31 @@ enum SupplierPaymentStatus {
 
 /// Règlement fournisseur (RGF): money paid to a supplier.
 model SupplierPayment {
-  id           String                @id @default(uuid()) @db.Uuid
-  tenantId     String                @db.Uuid
-  number       String                @db.VarChar(20)
-  supplierId   String                @db.Uuid
-  amount       Decimal               @db.Decimal(14, 2)
-  mode         PaymentMode
-  status       SupplierPaymentStatus @default(VALID)
+  id             String                @id @default(uuid()) @db.Uuid
+  tenantId       String                @db.Uuid
+  number         String                @db.VarChar(20)
+  supplierId     String                @db.Uuid
+  amount         Decimal               @db.Decimal(14, 2)
+  /// Phase 22: a payment to a foreign supplier, in its currency at the bank rate.
+  currency       String                @default("DZD") @db.VarChar(3)
+  amountCurrency Decimal?              @db.Decimal(14, 2)
+  exchangeRate   Decimal?              @db.Decimal(12, 6)
+  mode           PaymentMode
+  status         SupplierPaymentStatus @default(VALID)
   /// Cheque or transfer number.
-  reference    String?               @db.VarChar(80)
-  bank         String?               @db.VarChar(80)
+  reference      String?               @db.VarChar(80)
+  bank           String?               @db.VarChar(80)
   /// Cheque due date (échéance).
-  dueDate      DateTime?             @db.Date
-  note         String?               @db.VarChar(255)
-  paidBy       String?               @db.Uuid
-  paidAt       DateTime              @default(now()) @db.Timestamptz(3)
-  cancelReason String?               @db.VarChar(255)
-  cancelledBy  String?               @db.Uuid
-  cancelledAt  DateTime?             @db.Timestamptz(3)
-  version      Int                   @default(1)
-  createdAt    DateTime              @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime              @updatedAt @db.Timestamptz(3)
+  dueDate        DateTime?             @db.Date
+  note           String?               @db.VarChar(255)
+  paidBy         String?               @db.Uuid
+  paidAt         DateTime              @default(now()) @db.Timestamptz(3)
+  cancelReason   String?               @db.VarChar(255)
+  cancelledBy    String?               @db.Uuid
+  cancelledAt    DateTime?             @db.Timestamptz(3)
+  version        Int                   @default(1)
+  createdAt      DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime              @updatedAt @db.Timestamptz(3)
 
   tenant   Tenant   @relation(fields: [tenantId], references: [id])
   supplier Supplier @relation(fields: [supplierId], references: [id])
@@ -772,37 +801,44 @@ model SupplierPayment {
 /// Bon de réception. Only validation has effects (stock, CUMP); the number is
 /// assigned at validation so abandoned drafts never consume one.
 model Purchase {
-  id           String         @id @default(uuid()) @db.Uuid
-  tenantId     String         @db.Uuid
-  number       String?        @db.VarChar(20)
-  supplierId   String         @db.Uuid
-  status       PurchaseStatus @default(DRAFT)
-  documentDate DateTime       @db.Date
-  supplierRef  String?        @db.VarChar(60)
-  note         String?        @db.VarChar(255)
-  totalHt      Decimal        @default(0) @db.Decimal(14, 2)
-  totalTva     Decimal        @default(0) @db.Decimal(14, 2)
-  totalTtc     Decimal        @default(0) @db.Decimal(14, 2)
+  id            String         @id @default(uuid()) @db.Uuid
+  tenantId      String         @db.Uuid
+  number        String?        @db.VarChar(20)
+  supplierId    String         @db.Uuid
+  status        PurchaseStatus @default(DRAFT)
+  documentDate  DateTime       @db.Date
+  supplierRef   String?        @db.VarChar(60)
+  note          String?        @db.VarChar(255)
+  totalHt       Decimal        @default(0) @db.Decimal(14, 2)
+  totalTva      Decimal        @default(0) @db.Decimal(14, 2)
+  totalTtc      Decimal        @default(0) @db.Decimal(14, 2)
   /// Paid at reception. Supplier accounts come in v1.1.
-  paidAmount   Decimal        @default(0) @db.Decimal(14, 2)
+  paidAmount    Decimal        @default(0) @db.Decimal(14, 2)
   /// The dépôt the goods enter or leave (phase 15); nullable until the contract release.
-  warehouseId  String?        @db.Uuid
-  version      Int            @default(1)
-  createdBy    String?        @db.Uuid
-  validatedBy  String?        @db.Uuid
-  validatedAt  DateTime?      @db.Timestamptz(3)
-  cancelledBy  String?        @db.Uuid
-  cancelledAt  DateTime?      @db.Timestamptz(3)
-  createdAt    DateTime       @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime       @updatedAt @db.Timestamptz(3)
+  warehouseId   String?        @db.Uuid
+  /// Phase 22: the supplier's currency and the bank rate (DZD per 1 unit). Totals stay in DZD.
+  currency      String         @default("DZD") @db.VarChar(3)
+  exchangeRate  Decimal        @default(1) @db.Decimal(12, 6)
+  totalCurrency Decimal?       @db.Decimal(14, 2)
+  importFileId  String?        @db.Uuid
+  version       Int            @default(1)
+  createdBy     String?        @db.Uuid
+  validatedBy   String?        @db.Uuid
+  validatedAt   DateTime?      @db.Timestamptz(3)
+  cancelledBy   String?        @db.Uuid
+  cancelledAt   DateTime?      @db.Timestamptz(3)
+  createdAt     DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime       @updatedAt @db.Timestamptz(3)
 
-  tenant    Tenant           @relation(fields: [tenantId], references: [id])
-  supplier  Supplier         @relation(fields: [supplierId], references: [id])
-  warehouse Warehouse?       @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
-  lines     PurchaseLine[]
-  returns   PurchaseReturn[]
+  tenant     Tenant           @relation(fields: [tenantId], references: [id])
+  supplier   Supplier         @relation(fields: [supplierId], references: [id])
+  warehouse  Warehouse?       @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  importFile ImportFile?      @relation(fields: [importFileId], references: [id], onDelete: Restrict)
+  lines      PurchaseLine[]
+  returns    PurchaseReturn[]
 
   @@unique([tenantId, number])
+  @@index([tenantId, importFileId])
   @@index([tenantId, createdAt])
   @@index([tenantId, supplierId])
   @@index([tenantId, status, validatedAt])
@@ -811,28 +847,33 @@ model Purchase {
 
 /// A line keeps a frozen copy of the product as it was (AGENTS.md rule 9).
 model PurchaseLine {
-  id           String   @id @default(uuid()) @db.Uuid
-  tenantId     String   @db.Uuid
-  purchaseId   String   @db.Uuid
-  position     Int      @db.SmallInt
-  productId    String   @db.Uuid
-  unitId       String   @db.Uuid
-  designation  String   @db.VarChar(160)
-  unitCode     String   @db.VarChar(40)
-  unitName     String?  @db.VarChar(40)
-  factorToBase Decimal  @db.Decimal(14, 3)
-  tvaRate      Decimal  @db.Decimal(5, 2)
-  qty          Decimal  @db.Decimal(14, 3)
-  qtyBase      Decimal  @db.Decimal(14, 3)
+  id                 String   @id @default(uuid()) @db.Uuid
+  tenantId           String   @db.Uuid
+  purchaseId         String   @db.Uuid
+  position           Int      @db.SmallInt
+  productId          String   @db.Uuid
+  unitId             String   @db.Uuid
+  designation        String   @db.VarChar(160)
+  unitCode           String   @db.VarChar(40)
+  unitName           String?  @db.VarChar(40)
+  factorToBase       Decimal  @db.Decimal(14, 3)
+  tvaRate            Decimal  @db.Decimal(5, 2)
+  qty                Decimal  @db.Decimal(14, 3)
+  qtyBase            Decimal  @db.Decimal(14, 3)
   /// Cost HT of one `unitId`.
-  unitCost     Decimal  @db.Decimal(14, 4)
-  lineHt       Decimal  @db.Decimal(14, 2)
-  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  unitCost           Decimal  @db.Decimal(14, 4)
+  lineHt             Decimal  @db.Decimal(14, 2)
+  /// Phase 22: the supplier's price of one `unitId` in the BR currency (null for DZD BRs).
+  unitCostCurrency   Decimal? @db.Decimal(14, 4)
+  /// Phase 22: coût de revient of one base unit, set when its dossier is closed.
+  landedUnitCostBase Decimal? @db.Decimal(14, 4)
+  createdAt          DateTime @default(now()) @db.Timestamptz(3)
 
-  tenant      Tenant               @relation(fields: [tenantId], references: [id])
-  purchase    Purchase             @relation(fields: [purchaseId], references: [id])
-  product     Product              @relation(fields: [productId], references: [id])
-  returnLines PurchaseReturnLine[]
+  tenant            Tenant                 @relation(fields: [tenantId], references: [id])
+  purchase          Purchase               @relation(fields: [purchaseId], references: [id])
+  product           Product                @relation(fields: [productId], references: [id])
+  returnLines       PurchaseReturnLine[]
+  importAllocations ImportCostAllocation[]
 
   @@index([tenantId, purchaseId])
   @@map("purchase_lines")
@@ -1104,29 +1145,29 @@ model Sale {
 
 /// A line keeps a frozen copy of the product and the price as they were (AGENTS.md rule 9).
 model SaleLine {
-  id           String   @id @default(uuid()) @db.Uuid
-  tenantId     String   @db.Uuid
-  saleId       String   @db.Uuid
-  position     Int      @db.SmallInt
-  productId    String   @db.Uuid
-  unitId       String   @db.Uuid
-  designation  String   @db.VarChar(160)
-  unitCode     String   @db.VarChar(40)
-  unitName     String?  @db.VarChar(40)
-  factorToBase Decimal  @db.Decimal(14, 3)
-  qty          Decimal  @db.Decimal(14, 3)
-  qtyBase      Decimal  @db.Decimal(14, 3)
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @db.Uuid
+  saleId         String   @db.Uuid
+  position       Int      @db.SmallInt
+  productId      String   @db.Uuid
+  unitId         String   @db.Uuid
+  designation    String   @db.VarChar(160)
+  unitCode       String   @db.VarChar(40)
+  unitName       String?  @db.VarChar(40)
+  factorToBase   Decimal  @db.Decimal(14, 3)
+  qty            Decimal  @db.Decimal(14, 3)
+  qtyBase        Decimal  @db.Decimal(14, 3)
   /// Price of the client's level when the line was entered (audit of overrides).
-  listPriceHt  Decimal? @db.Decimal(14, 2)
+  listPriceHt    Decimal? @db.Decimal(14, 2)
   /// Price HT of one `unitId` actually charged.
-  unitPriceHt  Decimal  @db.Decimal(14, 2)
-  discountPct  Decimal  @default(0) @db.Decimal(5, 2)
-  tvaRate      Decimal  @db.Decimal(5, 2)
-  lineHt       Decimal  @db.Decimal(14, 2)
+  unitPriceHt    Decimal  @db.Decimal(14, 2)
+  discountPct    Decimal  @default(0) @db.Decimal(5, 2)
+  tvaRate        Decimal  @db.Decimal(5, 2)
+  lineHt         Decimal  @db.Decimal(14, 2)
   /// CUMP of one base unit at validation (margin, and the value of returns).
-  unitCostBase Decimal  @default(0) @db.Decimal(14, 4)
+  unitCostBase   Decimal  @default(0) @db.Decimal(14, 4)
   /// For facture lines copied from a BL line.
-  sourceLineId String?  @db.Uuid
+  sourceLineId   String?  @db.Uuid
   /// Promotions (phase 20): a free line (UG) is priced 0 and points to its paid line.
   isFree         Boolean  @default(false)
   promotionId    String?  @db.Uuid
@@ -1134,7 +1175,7 @@ model SaleLine {
   promotionName  String?  @db.VarChar(80)
   /// Position of the paid line a free line comes from, in the same document.
   freeOfPosition Int?     @db.SmallInt
-  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
 
   tenant      Tenant           @relation(fields: [tenantId], references: [id])
   sale        Sale             @relation(fields: [saleId], references: [id])
@@ -1842,12 +1883,12 @@ model OrderLine {
   qtyDelivered    Decimal? @db.Decimal(14, 3)
   qtyNotDelivered Decimal? @db.Decimal(14, 3)
   /// Promotions (phase 20): a free line (UG) is priced 0 and points to its paid line.
-  isFree         Boolean  @default(false)
-  promotionId    String?  @db.Uuid
+  isFree          Boolean  @default(false)
+  promotionId     String?  @db.Uuid
   /// The promotion's name when the line was priced (frozen).
-  promotionName  String?  @db.VarChar(80)
+  promotionName   String?  @db.VarChar(80)
   /// Position of the paid line a free line comes from, in the same document.
-  freeOfPosition Int?     @db.SmallInt
+  freeOfPosition  Int?     @db.SmallInt
   createdAt       DateTime @default(now()) @db.Timestamptz(3)
 
   tenant  Tenant  @relation(fields: [tenantId], references: [id])
@@ -2162,6 +2203,122 @@ model IncentiveLine {
   @@index([tenantId, runId])
   @@index([tenantId, userId])
   @@map("incentive_lines")
+}
+
+// ---------------------------------------------------------------- phase 22: importateur
+
+enum ImportFileStatus {
+  OPEN
+  CLOSED
+  CANCELLED
+}
+
+enum ImportCostType {
+  FRET
+  DOUANE
+  /// TVA à l'importation: a cost only for non-assujetti tenants.
+  TVA_IMPORT
+  TRANSITAIRE
+  MAGASINAGE
+  TRANSPORT
+  ASSURANCE
+  AUTRE
+}
+
+enum AllocationMethod {
+  VALUE
+  QUANTITY
+  WEIGHT
+  VOLUME
+  MANUAL
+}
+
+/// Dossier d'importation: one shipment (container) grouping BRs and their costs.
+model ImportFile {
+  id          String           @id @default(uuid()) @db.Uuid
+  tenantId    String           @db.Uuid
+  number      String           @db.VarChar(20)
+  status      ImportFileStatus @default(OPEN)
+  /// B/L, LTA or the importer's own reference.
+  reference   String?          @db.VarChar(60)
+  containerNo String?          @db.VarChar(40)
+  arrivalDate DateTime?        @db.Date
+  note        String?          @db.VarChar(255)
+  version     Int              @default(1)
+  createdBy   String?          @db.Uuid
+  closedBy    String?          @db.Uuid
+  closedAt    DateTime?        @db.Timestamptz(3)
+  cancelledBy String?          @db.Uuid
+  cancelledAt DateTime?        @db.Timestamptz(3)
+  createdAt   DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime         @updatedAt @db.Timestamptz(3)
+
+  tenant    Tenant       @relation(fields: [tenantId], references: [id])
+  purchases Purchase[]
+  costs     ImportCost[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId, status, createdAt])
+  @@map("import_files")
+}
+
+/// A cost of a dossier (fret, douane...). Cancelled, never deleted.
+model ImportCost {
+  id             String           @id @default(uuid()) @db.Uuid
+  tenantId       String           @db.Uuid
+  importFileId   String           @db.Uuid
+  type           ImportCostType
+  label          String?          @db.VarChar(120)
+  /// The transitaire / transporteur we owe it to; its account is posted when the cost is added.
+  supplierId     String?          @db.Uuid
+  currency       String           @default("DZD") @db.VarChar(3)
+  amountCurrency Decimal?         @db.Decimal(14, 2)
+  exchangeRate   Decimal          @default(1) @db.Decimal(12, 6)
+  /// What we owe, in DZD (TVA included).
+  amount         Decimal          @db.Decimal(14, 2)
+  /// The TVA inside `amount`: recoverable when the tenant is assujetti, so not in the cost.
+  tvaAmount      Decimal          @default(0) @db.Decimal(14, 2)
+  method         AllocationMethod
+  /// MANUAL only: { purchaseLineId: amount } summing to the allocated amount.
+  manualSplit    Json?
+  /// Added after the dossier was closed (COST_ADJUST).
+  isLate         Boolean          @default(false)
+  createdBy      String?          @db.Uuid
+  createdAt      DateTime         @default(now()) @db.Timestamptz(3)
+  cancelledBy    String?          @db.Uuid
+  cancelledAt    DateTime?        @db.Timestamptz(3)
+
+  tenant      Tenant                 @relation(fields: [tenantId], references: [id])
+  importFile  ImportFile             @relation(fields: [importFileId], references: [id])
+  supplier    Supplier?              @relation(fields: [supplierId], references: [id])
+  allocations ImportCostAllocation[]
+
+  @@index([tenantId, importFileId])
+  @@map("import_costs")
+}
+
+/// Frozen share of a cost on one BR line, written at close (or with a late cost). Append-only.
+model ImportCostAllocation {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @db.Uuid
+  importCostId   String   @db.Uuid
+  purchaseLineId String   @db.Uuid
+  productId      String   @db.Uuid
+  amount         Decimal  @db.Decimal(14, 2)
+  /// Late costs: the part that went into the stock value (COST_ADJUST) ...
+  stockValue     Decimal  @default(0) @db.Decimal(14, 2)
+  /// ... and the part for units already sold (écart de coût in the margin report).
+  ecart          Decimal  @default(0) @db.Decimal(14, 2)
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id])
+  importCost   ImportCost   @relation(fields: [importCostId], references: [id])
+  purchaseLine PurchaseLine @relation(fields: [purchaseLineId], references: [id])
+  product      Product      @relation(fields: [productId], references: [id])
+
+  @@index([tenantId, importCostId])
+  @@index([tenantId, productId, createdAt])
+  @@map("import_cost_allocations")
 }
 
 // ---------------------------------------------------------------- promotions & emballages (phase 20)

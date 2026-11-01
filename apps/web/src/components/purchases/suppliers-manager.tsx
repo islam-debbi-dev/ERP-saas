@@ -6,7 +6,9 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import type { SupplierDto } from '@erp/shared';
+import { CURRENCIES, Feature, type SupplierDto } from '@erp/shared';
+import { NativeSelect } from '@/components/ui/native-select';
+import { useFeature } from '@/lib/auth';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import {
@@ -65,14 +67,20 @@ export function SuppliersManager() {
   const canManage = useCanManageCredit();
   const [search, setSearch] = useState('');
   const suppliers = useSuppliers(useDebouncedValue(search.trim(), 300));
-  const [editing, setEditing] = useState<{ id: string | null; fields: Fields } | null>(null);
+  const importOn = useFeature(Feature.IMPORT_COSTS);
+  const [editing, setEditing] = useState<{
+    id: string | null;
+    fields: Fields;
+    /** Phase 22: the currency of its BRs and account; fixed once it has entries. */
+    currency: string;
+  } | null>(null);
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['suppliers'] });
   const save = useMutation({
-    mutationFn: (e: { id: string | null; fields: Fields }) =>
+    mutationFn: (e: { id: string | null; fields: Fields; currency: string }) =>
       api.request<SupplierDto>(e.id ? `/suppliers/${e.id}` : '/suppliers', {
         method: e.id ? 'PATCH' : 'POST',
-        body: e.fields,
+        body: { ...e.fields, ...(importOn ? { currency: e.currency } : {}) },
       }),
     onSuccess: (_s, e) => {
       void refresh();
@@ -104,7 +112,7 @@ export function SuppliersManager() {
                 {tp('back')}
               </Link>
             </Button>
-            <Button onClick={() => setEditing({ id: null, fields: EMPTY })}>
+            <Button onClick={() => setEditing({ id: null, fields: EMPTY, currency: 'DZD' })}>
               <Plus aria-hidden />
               {t('new')}
             </Button>
@@ -154,6 +162,7 @@ export function SuppliersManager() {
                         fields: Object.fromEntries(
                           (Object.keys(EMPTY) as (keyof Fields)[]).map((k) => [k, s[k] ?? '']),
                         ) as Fields,
+                        currency: s.currency,
                       })
                     }
                   >
@@ -202,9 +211,7 @@ export function SuppliersManager() {
                 <div
                   key={k}
                   className={
-                    k === 'address' || k === 'notes'
-                      ? 'space-y-2 sm:col-span-2'
-                      : 'space-y-2'
+                    k === 'address' || k === 'notes' ? 'space-y-2 sm:col-span-2' : 'space-y-2'
                   }
                 >
                   <Label htmlFor={`supplier-${k}`}>{t(k)}</Label>
@@ -224,6 +231,28 @@ export function SuppliersManager() {
                   />
                 </div>
               ))}
+              {importOn ? (
+                <div className="space-y-2">
+                  <Label htmlFor="supplier-currency">{t('currency')}</Label>
+                  <NativeSelect
+                    id="supplier-currency"
+                    aria-describedby="supplier-currency-hint"
+                    value={editing?.currency ?? 'DZD'}
+                    onChange={(e) =>
+                      setEditing((cur) => (cur ? { ...cur, currency: e.target.value } : cur))
+                    }
+                  >
+                    {CURRENCIES.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                  <p id="supplier-currency-hint" className="text-xs text-muted-foreground">
+                    {t('currencyHint')}
+                  </p>
+                </div>
+              ) : null}
             </div>
             <ResponsiveDialogFooter>
               <Button type="button" variant="ghost" onClick={() => setEditing(null)}>

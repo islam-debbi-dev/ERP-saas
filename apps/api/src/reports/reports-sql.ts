@@ -149,6 +149,24 @@ export function saleLineFacts(scope: Scope, start: Date, end: Date): Prisma.Sql 
 }
 
 /**
+ * `saleLineFacts` plus a column `ecart`: the écart de coût of late import costs (phase
+ * 22), dated when the late cost was entered, for the units already sold. It belongs to
+ * nobody's sales, so a report limited to sellers leaves it out.
+ */
+export function marginFacts(scope: Scope, start: Date, end: Date): Prisma.Sql {
+  const ecart = scope.sellerIds
+    ? Prisma.empty
+    : Prisma.sql`
+    UNION ALL
+    SELECT a."createdAt", a."productId", p."brandId", NULL, 0, 0, 0, 0, 0, 0, a.ecart
+    FROM import_cost_allocations a JOIN products p ON p.id = a."productId"
+    WHERE a."tenantId" = ${scope.tenantId}::uuid AND a.ecart <> 0
+      AND ${within('a."createdAt"', start, end)} ${brandFilter(scope, 'p')}`;
+  return Prisma.sql`
+    SELECT f.*, 0::numeric AS ecart FROM (${saleLineFacts(scope, start, end)}) f ${ecart}`;
+}
+
+/**
  * Each user's team (phase 14): his nearest SUPERVISOR going up `managerId`, himself
  * included. Users under no supervisor have no row. Use as a CTE named `team_of`.
  */

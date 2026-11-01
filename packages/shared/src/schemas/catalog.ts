@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { parseDA } from '../money';
 import { qty } from '../quantity';
 import { amountString, normalizeDecimal, percentString, quantityString } from './common';
 
@@ -98,6 +99,20 @@ const productFields = {
   baseUnitId: id,
   tvaRate: percentString(2).transform(normalizeDecimal),
   minStock: quantityString({ positive: false }).transform(normalizeDecimal).default('0'),
+  /**
+   * Per base unit, for import costs allocated by weight / volume (phase 22).
+   * Omitted = unchanged on update (none on create); null clears it.
+   */
+  weightKg: quantityString({ positive: true }).transform(normalizeDecimal).nullable().optional(),
+  volumeM3: z
+    .string()
+    .refine((v) => {
+      const parsed = parseDA(v);
+      return parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 4;
+    }, 'invalid_quantity')
+    .transform(normalizeDecimal)
+    .nullable()
+    .optional(),
   active: z.boolean().default(true),
   units: z.array(productUnitInputSchema).min(1).max(10),
   prices: z.array(productPriceInputSchema).max(50).default([]),
@@ -197,6 +212,8 @@ export interface ProductDto {
   baseUnitId: string;
   tvaRate: string;
   minStock: string;
+  weightKg: string | null;
+  volumeM3: string | null;
   active: boolean;
   version: number;
   archivedAt: string | null;

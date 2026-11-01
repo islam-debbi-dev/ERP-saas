@@ -27,6 +27,7 @@ import {
   algiersDayOf,
   algiersMonthOf,
   saleDocumentFacts,
+  marginFacts,
   saleLineFacts,
   type Scope,
   teamOfCte,
@@ -85,7 +86,10 @@ export class ReportsService {
       brandId: query.brandId ?? null,
     };
     const { start, end } = algiersRange(query.from, query.to);
-    const spec = this.spec(name, groupBy, scope, start, end);
+    // The écart de coût column (phase 22) only for companies that have had late import
+    // costs; like every module's data it stays readable when IMPORT_COSTS is off.
+    const withEcart = name === 'margin' && (await this.hasEcart());
+    const spec = this.spec(name, groupBy, scope, start, end, withEcart);
     const raw = await this.prisma.db.$queryRaw<SqlRow[]>(spec.sql);
     const rows = raw.map((r) => toRow(r, spec));
     return {
@@ -105,6 +109,7 @@ export class ReportsService {
     scope: Scope,
     start: Date,
     end: Date,
+    withEcart = false,
   ): Spec {
     switch (name) {
       case 'sales':
@@ -112,7 +117,7 @@ export class ReportsService {
         if (groupBy === 'brand') return salesByBrand(scope, start, end);
         return salesByDocument(groupBy, scope, start, end);
       case 'margin':
-        return margin(groupBy, scope, start, end);
+        return margin(groupBy, scope, start, end, withEcart);
       case 'stock-movements':
         return stockMovements(groupBy, scope, start, end);
       case 'payments':
@@ -120,6 +125,14 @@ export class ReportsService {
       case 'purchases':
         return purchases(groupBy, scope, start, end);
     }
+  }
+
+  private async hasEcart(): Promise<boolean> {
+    const row = await this.prisma.db.importCostAllocation.findFirst({
+      where: { ecart: { not: 0 } },
+      select: { id: true },
+    });
+    return row !== null;
   }
 }
 
@@ -240,16 +253,23 @@ function salesByBrand(scope: Scope, start: Date, end: Date): Spec {
   };
 }
 
-function margin(groupBy: ReportGroupBy, scope: Scope, start: Date, end: Date): Spec {
+function margin(
+  groupBy: ReportGroupBy,
+  scope: Scope,
+  start: Date,
+  end: Date,
+  withEcart: boolean,
+): Spec {
   const values = Prisma.sql`SUM(f.ht - f."retHt") AS "netHt", SUM(f.cost) AS cost,
-    SUM(f.ht - f."retHt") - SUM(f.cost) AS margin`;
+    SUM(f.ecart) AS ecart, SUM(f.ht - f."retHt") - SUM(f.cost) - SUM(f.ecart) AS margin`;
   const valueColumns = [
     col('netHt', 'money'),
     col('cost', 'money'),
+    ...(withEcart ? [col('ecart', 'money')] : []),
     col('margin', 'money'),
     col('marginPct', 'percent'),
   ];
-  const facts = saleLineFacts(scope, start, end);
+  const facts = marginFacts(scope, start, end);
   if (groupBy === 'category') {
     return {
       columns: [col('category', 'text'), ...valueColumns],

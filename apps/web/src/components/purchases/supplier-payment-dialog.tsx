@@ -56,9 +56,18 @@ export function SupplierPaymentDialog({
   const [dueDate, setDueDate] = useState('');
   const [note, setNote] = useState('');
 
+  // Phase 22: a foreign supplier is paid in its currency, at the bank rate of the day.
+  const foreign = supplier.currency !== 'DZD';
+  const [rate, setRate] = useState('');
+  const rateValue = parseDA(rate);
+  const validRate =
+    !foreign || (rateValue !== null && rateValue.gt(0) && rateValue.decimalPlaces() <= 6);
+
   const value = parseDA(amount);
   const validAmount = value !== null && value.gt(0) && value.decimalPlaces() <= 2;
-  const after = validAmount ? money(supplier.balance).minus(value) : null;
+  const after = validAmount
+    ? money(foreign ? supplier.balanceCurrency : supplier.balance).minus(value)
+    : null;
 
   const save = useMutation({
     mutationFn: () =>
@@ -68,6 +77,7 @@ export function SupplierPaymentDialog({
         body: {
           supplierId: supplier.id,
           amount: value?.toString(),
+          ...(foreign && rateValue ? { exchangeRate: rateValue.toString() } : {}),
           mode,
           reference: mode === 'ESPECES' ? '' : reference.trim(),
           bank: mode === 'CHEQUE' ? bank.trim() : '',
@@ -85,7 +95,7 @@ export function SupplierPaymentDialog({
     },
     onError: (err) => toast.error(errorMessage(err)),
   });
-  const canSave = validAmount && !save.isPending;
+  const canSave = validAmount && validRate && !save.isPending;
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
@@ -105,13 +115,19 @@ export function SupplierPaymentDialog({
           <div className="min-w-0 rounded-md border p-3">
             <p className="truncate font-medium">{supplier.name}</p>
             <p className="flex flex-wrap items-baseline gap-2 text-sm text-muted-foreground">
-              {t('balance')} <SupplierBalance value={supplier.balance} />
+              {t('balance')}{' '}
+              <SupplierBalance
+                value={foreign ? supplier.balanceCurrency : supplier.balance}
+                currency={supplier.currency}
+              />
             </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="rgf-amount">{tp('amount')}</Label>
+              <Label htmlFor="rgf-amount">
+                {foreign ? t('amountIn', { currency: supplier.currency }) : tp('amount')}
+              </Label>
               <Input
                 id="rgf-amount"
                 dir="ltr"
@@ -123,6 +139,22 @@ export function SupplierPaymentDialog({
                 onChange={(e) => setAmount(e.target.value)}
               />
             </div>
+            {foreign ? (
+              <div className="space-y-2">
+                <Label htmlFor="rgf-rate">
+                  {t('exchangeRate', { currency: supplier.currency })}
+                </Label>
+                <Input
+                  id="rgf-rate"
+                  dir="ltr"
+                  inputMode="decimal"
+                  className="num"
+                  aria-invalid={rate !== '' && !validRate}
+                  value={rate}
+                  onChange={(e) => setRate(e.target.value)}
+                />
+              </div>
+            ) : null}
             <div className="space-y-2">
               <Label htmlFor="rgf-mode">{tp('mode')}</Label>
               <NativeSelect
@@ -189,7 +221,7 @@ export function SupplierPaymentDialog({
           {after !== null ? (
             <p className="flex flex-wrap items-baseline gap-2 text-sm">
               <span className="text-muted-foreground">{t('balanceAfter')}</span>
-              <SupplierBalance value={after.toString()} />
+              <SupplierBalance value={after.toString()} currency={supplier.currency} />
             </p>
           ) : null}
 

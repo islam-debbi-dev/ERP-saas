@@ -105,6 +105,8 @@ export const REPORT_COLUMN_KEYS = [
   'netHt',
   'netTtc',
   'cost',
+  /** Écart de coût: late import costs for units already sold (phase 22). */
+  'ecart',
   'margin',
   'marginPct',
   'total',

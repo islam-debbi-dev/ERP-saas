@@ -751,6 +751,25 @@ export function supplierStatementDocument(
   supplier: SupplierDto,
   ctx: Omit<PrintContext, 'duplicate'>,
 ): string {
+  // Phase 22: a foreign supplier's statement shows its currency next to the DZD.
+  const cur = st.supplier.currency;
+  const foreign = cur !== 'DZD';
+  const meta: [string, string][] = [['Période', `du ${day(st.from)} au ${day(st.to)}`]];
+  if (foreign) {
+    meta.push(
+      ['Devise', cur],
+      [`Solde initial (${cur})`, da(st.openingBalanceCurrency)],
+      [`Solde final (${cur})`, da(st.closingBalanceCurrency)],
+    );
+  }
+  const shown = foreign
+    ? {
+        ...st,
+        entries: st.entries.map((e) =>
+          e.amountCurrency ? { ...e, label: `${e.label} (${da(e.amountCurrency)} ${cur})` } : e,
+        ),
+      }
+    : st;
   return layout({
     format: ctx.format,
     title: 'RELEVÉ FOURNISSEUR',
@@ -764,8 +783,8 @@ export function supplierStatementDocument(
       lines: [supplier.address, supplier.phone ? `Tél. : ${supplier.phone}` : null],
       legal: clientLegal(supplier),
     },
-    meta: [['Période', `du ${day(st.from)} au ${day(st.to)}`]],
-    body: statementBody(st, SUPPLIER_LEDGER_TYPES, 'Solde en notre faveur'),
+    meta,
+    body: statementBody(shown, SUPPLIER_LEDGER_TYPES, 'Solde en notre faveur'),
     cancelled: false,
     duplicate: false,
   });

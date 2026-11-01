@@ -21,6 +21,7 @@ import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { Prisma, type Supplier, type SupplierBalance } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { ImportCostsGate } from './import-costs-gate';
 
 type SupplierRow = Supplier & { balance: SupplierBalance | null };
 
@@ -38,6 +39,8 @@ function toDto(s: SupplierRow): SupplierDto {
     notes: s.notes,
     archivedAt: s.deletedAt?.toISOString() ?? null,
     balance: toMoneyString(s.balance?.balance.toString() ?? '0'),
+    currency: s.currency,
+    balanceCurrency: toMoneyString(s.balance?.balanceCurrency.toString() ?? '0'),
     hasOpening: s.balance?.hasOpening ?? false,
   };
 }
@@ -46,6 +49,8 @@ interface LedgerRow {
   id: string;
   type: SupplierLedgerEntryDto['type'];
   amount: Prisma.Decimal;
+  currency: string;
+  amountCurrency: Prisma.Decimal | null;
   label: string;
   reason: string | null;
   refType: string | null;
@@ -53,18 +58,22 @@ interface LedgerRow {
   createdBy: string | null;
   createdAt: Date;
   running: Prisma.Decimal;
+  runningCurrency: Prisma.Decimal;
 }
 
 const ledgerFields = (r: LedgerRow) => ({
   id: r.id,
   type: r.type,
   amount: toMoneyString(r.amount.toString()),
+  currency: r.currency,
+  amountCurrency: r.amountCurrency ? toMoneyString(r.amountCurrency.toString()) : null,
   label: r.label,
   reason: r.reason,
   refType: r.refType,
   refId: r.refId,
   createdAt: r.createdAt.toISOString(),
   runningBalance: toMoneyString(r.running.toString()),
+  runningBalanceCurrency: toMoneyString(r.runningCurrency.toString()),
 });
 
 @Injectable()
@@ -72,6 +81,7 @@ export class SuppliersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly importCosts: ImportCostsGate,
   ) {}
 
   async list(query: SupplierListQuery): Promise<SupplierPage> {
@@ -102,7 +112,10 @@ export class SuppliersService {
   }
 
   async get(id: string): Promise<SupplierDto> {
-    const s = await this.prisma.db.supplier.findUnique({ where: { id }, include: { balance: true } });
+    const s = await this.prisma.db.supplier.findUnique({
+      where: { id },
+      include: { balance: true },
+    });
     if (!s) throw new AppException(ErrorCode.NOT_FOUND, 'Supplier not found');
     return toDto(s);
   }
@@ -128,6 +141,7 @@ export class SuppliersService {
 
   /** Inside the caller's transaction (import). */
   async createInTx(tx: Tx, input: SupplierInput): Promise<Supplier> {
+    if (input.currency !== 'DZD') await this.importCosts.require();
     const s = await tx.supplier.create({
       data: { ...input, tenantId: tenantContext.requireTenantId() },
     });
@@ -156,6 +170,20 @@ export class SuppliersService {
   async updateInTx(tx: Tx, id: string, input: UpdateSupplierInput): Promise<void> {
     const before = await tx.supplier.findFirst({ where: { id, deletedAt: null } });
     if (!before) throw new AppException(ErrorCode.NOT_FOUND, 'Supplier not found');
+    if (input.currency !== undefined && input.currency !== before.currency) {
+      if (input.currency !== 'DZD') await this.importCosts.require();
+      // The two balances must never mix currencies: only a supplier with no account
+      // entries and no BR in its old currency can change.
+      const [entries, purchases] = await Promise.all([
+        tx.supplierLedgerEntry.count({ where: { supplierId: id } }),
+        tx.purchase.count({ where: { supplierId: id, status: { not: 'CANCELLED' } } }),
+      ]);
+      if (entries > 0 || purchases > 0) {
+        throw new AppException(ErrorCode.SUPPLIER_CURRENCY_LOCKED, 'Supplier has entries', {
+          field: 'currency',
+        });
+      }
+    }
     const after = await tx.supplier.update({ where: { id }, data: input });
     await this.audit.log(tx, {
       action: 'SUPPLIER_UPDATED',
@@ -198,8 +226,10 @@ export class SuppliersService {
     }
     const rows = await this.prisma.db.$queryRaw<(LedgerRow & { seq: bigint })[]>`
       SELECT * FROM (
-        SELECT id, seq, type, amount, label, reason, "refType", "refId", "createdBy", "createdAt",
-               SUM(amount) OVER (ORDER BY seq) AS running
+        SELECT id, seq, type, amount, currency, "amountCurrency", label, reason, "refType",
+               "refId", "createdBy", "createdAt",
+               SUM(amount) OVER (ORDER BY seq) AS running,
+               COALESCE(SUM("amountCurrency") OVER (ORDER BY seq), 0) AS "runningCurrency"
         FROM supplier_ledger_entries
         WHERE "tenantId" = ${tenantId}::uuid AND "supplierId" = ${id}::uuid
       ) l ${before}
@@ -209,6 +239,8 @@ export class SuppliersService {
     const users = await this.users(page.map((r) => r.createdBy));
     return {
       balance: supplier.balance,
+      currency: supplier.currency,
+      balanceCurrency: supplier.balanceCurrency,
       items: page.map((r) => ({
         ...ledgerFields(r),
         createdBy: r.createdBy ? (users.get(r.createdBy) ?? null) : null,
@@ -241,24 +273,35 @@ export class SuppliersService {
   async statement(id: string, query: SupplierStatementQuery): Promise<SupplierStatementDto> {
     const supplier = await this.prisma.db.supplier.findUnique({
       where: { id },
-      select: { id: true, code: true, name: true },
+      select: { id: true, code: true, name: true, currency: true },
     });
     if (!supplier) throw new AppException(ErrorCode.NOT_FOUND, 'Supplier not found');
     const tenantId = tenantContext.requireTenantId();
     const { start, end } = algiersRange(query.from, query.to);
-    const [opening] = await this.prisma.db.$queryRaw<{ total: Prisma.Decimal | null }[]>`
-      SELECT SUM(amount) AS total FROM supplier_ledger_entries
+    const [opening] = await this.prisma.db.$queryRaw<
+      { total: Prisma.Decimal | null; totalCurrency: Prisma.Decimal | null }[]
+    >`
+      SELECT SUM(amount) AS total, SUM("amountCurrency") AS "totalCurrency"
+      FROM supplier_ledger_entries
       WHERE "tenantId" = ${tenantId}::uuid AND "supplierId" = ${id}::uuid AND "createdAt" < ${start}`;
     const openingBalance = money(opening?.total?.toString() ?? '0');
+    const openingCurrency = money(opening?.totalCurrency?.toString() ?? '0');
     const rows = await this.prisma.db.$queryRaw<LedgerRow[]>`
-      SELECT id, type, amount, label, reason, "refType", "refId", "createdBy", "createdAt",
-             ${openingBalance.toString()}::numeric + SUM(amount) OVER (ORDER BY "createdAt", seq) AS running
+      SELECT id, type, amount, currency, "amountCurrency", label, reason, "refType", "refId",
+             "createdBy", "createdAt",
+             ${openingBalance.toString()}::numeric + SUM(amount) OVER (ORDER BY "createdAt", seq) AS running,
+             ${openingCurrency.toString()}::numeric
+               + COALESCE(SUM("amountCurrency") OVER (ORDER BY "createdAt", seq), 0) AS "runningCurrency"
       FROM supplier_ledger_entries
       WHERE "tenantId" = ${tenantId}::uuid AND "supplierId" = ${id}::uuid
         AND "createdAt" >= ${start} AND "createdAt" < ${end}
       ORDER BY "createdAt", seq`;
     let debit = money(0);
     let credit = money(0);
+    const closingCurrency = rows.reduce(
+      (s, r) => s.plus(r.amountCurrency?.toString() ?? '0'),
+      openingCurrency,
+    );
     for (const r of rows) {
       const a = money(r.amount.toString());
       if (a.gt(0)) debit = debit.plus(a);
@@ -269,8 +312,10 @@ export class SuppliersService {
       from: query.from,
       to: query.to,
       openingBalance: toMoneyString(openingBalance),
+      openingBalanceCurrency: toMoneyString(openingCurrency),
       entries: rows.map(ledgerFields),
       closingBalance: toMoneyString(openingBalance.plus(debit).minus(credit)),
+      closingBalanceCurrency: toMoneyString(closingCurrency),
       totalDebit: toMoneyString(debit),
       totalCredit: toMoneyString(credit),
     };

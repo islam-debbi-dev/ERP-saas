@@ -42,6 +42,10 @@ export function validateSuppliers(
     const opening = row.number('openingBalance', { decimals: 2, signed: true });
     const hasOpening = !!opening && !money(opening).isZero();
     if (hasOpening && supplier?.hasOpening) row.error('openingBalance', 'opening_already_set');
+    // The file is in DZD; a foreign supplier's account is in its currency (phase 22, parked).
+    if (hasOpening && supplier && supplier.currency !== 'DZD') {
+      row.error('openingBalance', 'foreign_currency_supplier');
+    }
 
     if (row.errors.length > 0 || !code || name === null || phone === null || address === null) {
       return { row, plan: null };

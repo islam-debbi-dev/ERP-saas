@@ -1,5 +1,18 @@
 import { z } from 'zod';
+import { CURRENCIES } from '../landed-cost';
 import { parseDA } from '../money';
+
+/** A currency code of `CURRENCIES` (phase 22). */
+export const currencyCode = z.enum(CURRENCIES);
+
+/** DZD per 1 unit of a currency (the bank domiciliation rate), > 0, at most 6 decimals. */
+export const exchangeRateString = z
+  .string()
+  .refine((v) => {
+    const parsed = parseDA(v);
+    return parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 6 && parsed.lt(1_000_000);
+  }, 'invalid_rate')
+  .transform((v) => normalizeDecimal(v));
 
 /** A non-negative money amount sent as a string (`"1500.00"`, `"1 500,00"`), max 2 decimals. */
 export const amountString = z.string().refine((v) => {

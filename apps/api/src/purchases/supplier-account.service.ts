@@ -8,8 +8,13 @@ import { type Tx } from '../prisma/prisma.service';
 export interface SupplierEntryInput {
   supplierId: string;
   type: SupplierLedgerType;
-  /** Signed: + we owe the supplier more, - we owe less. */
+  /** Signed, in DZD: + we owe the supplier more, - we owe less. */
   amount: string;
+  /**
+   * Phase 22: the same amount in the supplier's foreign currency (signed like `amount`).
+   * Required for a foreign supplier, refused for a DZD one: the two balances never drift.
+   */
+  amountCurrency?: string | null;
   /** Short description stored with the entry (document number, note...). */
   label: string;
   reason?: string | null;
@@ -21,6 +26,8 @@ export interface SupplierEntryInput {
 
 interface BalanceRow {
   balance: Money;
+  balanceCurrency: Money;
+  currency: string;
   hasOpening: boolean;
 }
 
@@ -56,13 +63,22 @@ export class SupplierAccountService {
         }
         row.hasOpening = true;
       }
+      const foreign = row.currency !== 'DZD';
+      if (foreign !== (e.amountCurrency !== undefined && e.amountCurrency !== null)) {
+        // A programming error, not a user one: callers convert before posting.
+        throw new Error(`supplier ${e.supplierId} (${row.currency}): amountCurrency mismatch`);
+      }
+      const amountCurrency = foreign ? money(e.amountCurrency ?? '0') : null;
       row.balance = row.balance.plus(amount);
+      if (amountCurrency) row.balanceCurrency = row.balanceCurrency.plus(amountCurrency);
       await tx.supplierLedgerEntry.create({
         data: {
           tenantId,
           supplierId: e.supplierId,
           type: e.type,
           amount: amount.toString(),
+          currency: row.currency,
+          amountCurrency: amountCurrency?.toString() ?? null,
           label: e.label.slice(0, 160),
           reason: e.reason ?? null,
           refType: e.refType ?? null,
@@ -77,7 +93,11 @@ export class SupplierAccountService {
     for (const [supplierId, row] of balances) {
       await tx.supplierBalance.update({
         where: { supplierId },
-        data: { balance: row.balance.toString(), hasOpening: row.hasOpening },
+        data: {
+          balance: row.balance.toString(),
+          balanceCurrency: row.balanceCurrency.toString(),
+          hasOpening: row.hasOpening,
+        },
       });
       result.set(supplierId, toMoneyString(row.balance));
     }
@@ -89,12 +109,33 @@ export class SupplierAccountService {
    * reverses exactly what is left. Call with the document locked.
    */
   async netOf(tx: Tx, refs: { refType: string; refIds: string[] }): Promise<Money> {
-    if (refs.refIds.length === 0) return money(0);
+    return (await this.netWithCurrency(tx, refs)).amount;
+  }
+
+  /** `netOf` plus the same in the supplier's currency (phase 22, foreign suppliers). */
+  async netWithCurrency(
+    tx: Tx,
+    refs: { refType: string; refIds: string[] },
+  ): Promise<{ amount: Money; amountCurrency: Money }> {
+    if (refs.refIds.length === 0) return { amount: money(0), amountCurrency: money(0) };
     const agg = await tx.supplierLedgerEntry.aggregate({
       where: { refType: refs.refType, refId: { in: refs.refIds } },
-      _sum: { amount: true },
+      _sum: { amount: true, amountCurrency: true },
     });
-    return money(agg._sum.amount?.toString() ?? '0');
+    return {
+      amount: money(agg._sum.amount?.toString() ?? '0'),
+      amountCurrency: money(agg._sum.amountCurrency?.toString() ?? '0'),
+    };
+  }
+
+  /** The supplier's currency ('DZD' unless set for an importer, phase 22). */
+  async currencyOf(tx: Tx, supplierId: string): Promise<string> {
+    const s = await tx.supplier.findUnique({
+      where: { id: supplierId },
+      select: { currency: true },
+    });
+    if (!s) throw new AppException(ErrorCode.NOT_FOUND, 'Supplier not found');
+    return s.currency;
   }
 
   /**
@@ -106,8 +147,9 @@ export class SupplierAccountService {
     const ids = [...new Set(supplierIds)].sort();
     const suppliers = await tx.supplier.findMany({
       where: { id: { in: ids } },
-      select: { id: true },
+      select: { id: true, currency: true },
     });
+    const currencyById = new Map(suppliers.map((s) => [s.id, s.currency]));
     if (suppliers.length !== ids.length) {
       throw new AppException(ErrorCode.NOT_FOUND, 'Supplier not found');
     }
@@ -118,9 +160,14 @@ export class SupplierAccountService {
         ON CONFLICT ("supplierId") DO NOTHING`;
     }
     const rows = await tx.$queryRaw<
-      { supplierId: string; balance: Prisma.Decimal; hasOpening: boolean }[]
+      {
+        supplierId: string;
+        balance: Prisma.Decimal;
+        balanceCurrency: Prisma.Decimal;
+        hasOpening: boolean;
+      }[]
     >`
-      SELECT "supplierId", balance, "hasOpening" FROM supplier_balances
+      SELECT "supplierId", balance, "balanceCurrency", "hasOpening" FROM supplier_balances
       WHERE "tenantId" = ${tenantId}::uuid
         AND "supplierId" IN (${Prisma.join(ids.map((id) => Prisma.sql`${id}::uuid`))})
       ORDER BY "supplierId"
@@ -128,7 +175,12 @@ export class SupplierAccountService {
     return new Map(
       rows.map((r) => [
         r.supplierId,
-        { balance: money(r.balance.toString()), hasOpening: r.hasOpening },
+        {
+          balance: money(r.balance.toString()),
+          balanceCurrency: money(r.balanceCurrency.toString()),
+          currency: currencyById.get(r.supplierId) ?? 'DZD',
+          hasOpening: r.hasOpening,
+        },
       ]),
     );
   }

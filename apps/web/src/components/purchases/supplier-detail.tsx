@@ -74,6 +74,14 @@ export function SupplierDetail({ supplierId }: { supplierId: string }) {
             <CardContent className="space-y-1">
               <p className="text-sm text-muted-foreground">{t('balance')}</p>
               <SupplierBalance value={s.balance} className="text-2xl font-semibold" />
+              {s.currency !== 'DZD' ? (
+                <SupplierBalance
+                  value={s.balanceCurrency}
+                  currency={s.currency}
+                  showHint={false}
+                  className="text-lg"
+                />
+              ) : null}
             </CardContent>
           </Card>
           <Payments supplierId={s.id} />
@@ -149,10 +157,19 @@ function Payments({ supplierId }: { supplierId: string }) {
                   ) : null}
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
-                  <Amount
-                    value={p.amount}
-                    className={cn(p.status === 'CANCELLED' && 'text-muted-foreground line-through')}
-                  />
+                  <span className="text-end">
+                    <Amount
+                      value={p.amount}
+                      className={cn(
+                        p.status === 'CANCELLED' && 'text-muted-foreground line-through',
+                      )}
+                    />
+                    {p.amountCurrency ? (
+                      <span dir="ltr" className="num block text-xs text-muted-foreground">
+                        {p.amountCurrency} {p.currency}
+                      </span>
+                    ) : null}
+                  </span>
                   {p.status === 'VALID' ? (
                     <Button
                       variant="ghost"
@@ -301,6 +318,11 @@ function Ledger({ supplierId }: { supplierId: string }) {
                   <p className="text-xs text-muted-foreground">
                     {t('balance')} <Amount value={e.runningBalance} />
                   </p>
+                  {e.amountCurrency ? (
+                    <p dir="ltr" className="num text-xs text-muted-foreground">
+                      {e.amountCurrency} {e.currency} · {e.runningBalanceCurrency} {e.currency}
+                    </p>
+                  ) : null}
                 </div>
               </li>
             );

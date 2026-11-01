@@ -11,6 +11,8 @@ import { execFileSync } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { buildFixture } from '../api/fixture.ts';
+import { call } from '../lib/http.ts';
+import { totp } from '../lib/totp.ts';
 
 const WEB = process.env['WEB'] ?? 'http://localhost:3005';
 const PASSWORD = 'Audit1234!';
@@ -22,7 +24,10 @@ export default async function globalSetup(): Promise<void> {
   // Distribution edition: every screen, the sales force ones included (phase 14), is swept.
   const fixture = await buildFixture('Web audit', 'DISTRIBUTEUR');
   await writeFile(`${authDir}fixture.json`, JSON.stringify(fixture, null, 2), 'utf8');
-  await writeFile(`${authDir}admin.json`, JSON.stringify(createAdmin(), null, 2), 'utf8');
+  const admin = createAdmin();
+  await writeFile(`${authDir}admin.json`, JSON.stringify(admin, null, 2), 'utf8');
+  // Phase 22: the dossiers d'importation screens are swept too (a module of the IMPORT edition).
+  await grantFeature(admin, fixture.session.tenantId, 'IMPORT_COSTS');
 
   const browser = await chromium.launch();
   try {
@@ -55,4 +60,24 @@ function createAdmin(): { email: string; password: string; secret: string } {
   const secret = /TOTP secret:\s+(\S+)/.exec(out)?.[1];
   if (!password || !secret) throw new Error(`admin:create gave no credentials:\n${out}`);
   return { email, password, secret };
+}
+
+/**
+ * Adds a module to the tenant through the super-admin API, which also drops the API's
+ * features cache entry (a direct DB update would wait for its TTL).
+ */
+async function grantFeature(
+  admin: { email: string; password: string; secret: string },
+  tenantId: string,
+  feature: string,
+): Promise<void> {
+  const login = await call<{ accessToken: string }>('/admin/auth/login', {
+    method: 'POST',
+    body: { email: admin.email, password: admin.password, code: totp(admin.secret) },
+  });
+  await call(`/admin/tenants/${tenantId}/subscription`, {
+    method: 'PATCH',
+    token: login.body.accessToken,
+    body: { featureGrants: [feature] },
+  });
 }

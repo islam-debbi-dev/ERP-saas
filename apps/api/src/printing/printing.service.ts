@@ -3,6 +3,7 @@ import {
   DocType,
   ErrorCode,
   OrderStatus,
+  Permission,
   type PrintableDocType,
   type PrintFormat,
   PurchaseStatus,
@@ -15,9 +16,11 @@ import {
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
+import { requirePermission } from '../auth/permissions';
 import { ClientsService } from '../clients/clients.service';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
+import { ImportFilesService } from '../import-files/import-files.service';
 import { PaymentsService } from '../payments/payments.service';
 import { PackagingService } from '../packaging/packaging.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -39,6 +42,7 @@ import {
   statementDocument,
   supplierStatementDocument,
 } from './templates/documents';
+import { landedCostDocument } from './templates/landed-cost';
 
 /** A document ready to be turned into a PDF. */
 export interface PreparedDocument {
@@ -72,6 +76,7 @@ export class PrintingService {
     private readonly suppliers: SuppliersService,
     private readonly transfers: StockTransfersService,
     private readonly orders: OrdersService,
+    private readonly importFiles: ImportFilesService,
     private readonly packaging: PackagingService,
   ) {}
 
@@ -112,6 +117,15 @@ export class PrintingService {
       }
       const duplicate = await this.recordPrint(DocType.BC, id, fmt, user);
       return done(orderDocument(order, ctx(duplicate)), order.number);
+    }
+    if (type === DocType.DI) {
+      // Costs and margins: an internal sheet, never a legal document (no DUPLICATA).
+      requirePermission(user, Permission.VIEW_COST_AND_MARGIN, {
+        message: 'You may not see costs and margins',
+      });
+      const file = await this.importFiles.get(id);
+      const preview = await this.importFiles.preview(id);
+      return { ...done(landedCostDocument(file, preview, ctx(false)), file.number), format: 'A4' };
     }
     if (type === DocType.BR) {
       const purchase = await this.purchases.get(id);

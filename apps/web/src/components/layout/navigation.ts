@@ -16,6 +16,7 @@ import {
   Truck,
   Users,
   Warehouse,
+  Ship,
 } from 'lucide-react';
 import { Feature, Role } from '@erp/shared';
 
@@ -31,6 +32,7 @@ export type NavKey =
   | 'promotions'
   | 'products'
   | 'purchases'
+  | 'importFiles'
   | 'stock'
   | 'flagged'
   | 'incentives'
@@ -106,6 +108,13 @@ export const NAV_GROUPS: readonly NavGroup[] = [
     items: [
       { key: 'products', url: '/produits', icon: Package },
       { key: 'purchases', url: '/achats', icon: Truck },
+      {
+        key: 'importFiles',
+        url: '/achats/dossiers',
+        icon: Ship,
+        feature: Feature.IMPORT_COSTS,
+        roles: [Role.OWNER, Role.MANAGER],
+      },
       { key: 'stock', url: '/stock', icon: Warehouse },
     ],
   },
@@ -156,8 +165,15 @@ export function visibleNavGroups(
     .filter((g) => g.items.length > 0);
 }
 
+const matches = (pathname: string, url: string) =>
+  pathname === url || pathname.startsWith(`${url}/`);
+
+/** The most specific item wins: /achats/dossiers is not also /achats. */
 export function isActive(pathname: string, url: string): boolean {
-  return pathname === url || pathname.startsWith(`${url}/`);
+  if (!matches(pathname, url)) return false;
+  return !NAV_ITEMS.some(
+    (i) => i.url.length > url.length && i.url.startsWith(`${url}/`) && matches(pathname, i.url),
+  );
 }
 
 export function currentNavItem(pathname: string): NavItem | undefined {

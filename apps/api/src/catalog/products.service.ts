@@ -62,6 +62,8 @@ export class ProductsService {
             baseUnitId: input.baseUnitId,
             tvaRate: input.tvaRate,
             minStock: input.minStock,
+            weightKg: input.weightKg ?? null,
+            volumeM3: input.volumeM3 ?? null,
             active: input.active,
           },
         });
@@ -178,6 +180,8 @@ export class ProductsService {
         ...(input.brandId !== undefined ? { brandId: input.brandId } : {}),
         tvaRate: input.tvaRate,
         minStock: input.minStock,
+        ...(input.weightKg !== undefined ? { weightKg: input.weightKg } : {}),
+        ...(input.volumeM3 !== undefined ? { volumeM3: input.volumeM3 } : {}),
         active: input.active,
         version: { increment: 1 },
       },

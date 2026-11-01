@@ -37,6 +37,8 @@ export function toProductDto(p: ProductWithRelations): ProductDto {
     baseUnitId: p.baseUnitId,
     tvaRate: p.tvaRate.toFixed(2),
     minStock: toQtyString(p.minStock),
+    weightKg: p.weightKg ? toQtyString(p.weightKg) : null,
+    volumeM3: p.volumeM3?.toFixed(4) ?? null,
     active: p.active,
     version: p.version,
     archivedAt: p.deletedAt?.toISOString() ?? null,

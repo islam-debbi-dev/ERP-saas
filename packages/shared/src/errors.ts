@@ -59,6 +59,20 @@ export const ErrorCode = {
   SUPPLIER_CODE_TAKEN: 'SUPPLIER_CODE_TAKEN',
   SUPPLIER_OPENING_ALREADY_SET: 'SUPPLIER_OPENING_ALREADY_SET',
   SUPPLIER_PAYMENT_NOT_VALID: 'SUPPLIER_PAYMENT_NOT_VALID',
+  // Importateur (phase 22)
+  IMPORT_FILE_NOT_OPEN: 'IMPORT_FILE_NOT_OPEN',
+  IMPORT_FILE_NOT_CLOSED: 'IMPORT_FILE_NOT_CLOSED',
+  IMPORT_FILE_EMPTY: 'IMPORT_FILE_EMPTY',
+  /** The BR belongs to a dossier: it moves with it (no detach once validated, no cancel once closed). */
+  PURCHASE_IN_IMPORT_FILE: 'PURCHASE_IN_IMPORT_FILE',
+  /** A BR, a payment or a cost must be in its supplier's currency. */
+  CURRENCY_MISMATCH: 'CURRENCY_MISMATCH',
+  /** The supplier already has entries: its currency cannot change. */
+  SUPPLIER_CURRENCY_LOCKED: 'SUPPLIER_CURRENCY_LOCKED',
+  /** Allocation by weight / volume needs it on every product of the dossier. */
+  ALLOCATION_BASIS_MISSING: 'ALLOCATION_BASIS_MISSING',
+  MANUAL_SPLIT_INVALID: 'MANUAL_SPLIT_INVALID',
+  IMPORT_COST_NOT_ACTIVE: 'IMPORT_COST_NOT_ACTIVE',
   // Share links (phase 21): unknown, expired and revoked look the same.
   SHARE_LINK_INVALID: 'SHARE_LINK_INVALID',
   // Clients

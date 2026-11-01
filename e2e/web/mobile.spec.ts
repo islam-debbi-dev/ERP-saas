@@ -101,6 +101,7 @@ interface Ids {
   planId: string;
   draftPlanId: string;
   runId: string;
+  importFileId: string;
   productReference: string;
   tenantId: string;
 }
@@ -306,6 +307,50 @@ async function prepareIds(f: Fixture): Promise<Ids> {
       body: { planId: plan.id, period: month },
     })
   ).body;
+  // Phase 22 (IMPORT_COSTS, granted in global-setup): an open dossier with a USD BR in
+  // transit and a cost, so its allocation table is on screen.
+  const usdSupplier = (
+    await call<{ id: string }>('/suppliers', {
+      method: 'POST',
+      token,
+      idempotencyKey: idemKey('sup'),
+      body: { name: 'Shenzhen Trading Co., Ltd', currency: 'USD' },
+    })
+  ).body;
+  const importFile = (
+    await call<{ id: string }>('/import-files', {
+      method: 'POST',
+      token,
+      idempotencyKey: idemKey('di'),
+      body: { reference: 'MSCU-BL-2026-118', containerNo: 'MSCU1234567' },
+    })
+  ).body;
+  const inTransit = (
+    await call<{ id: string }>('/purchases', {
+      method: 'POST',
+      token,
+      idempotencyKey: idemKey('pur'),
+      body: {
+        supplierId: usdSupplier.id,
+        documentDate: today(),
+        exchangeRate: '135.5',
+        importFileId: importFile.id,
+        lines: [{ productId: f.productId, unitId: f.baseUnitId, qty: '200', unitCost: '2.35' }],
+      },
+    })
+  ).body;
+  await call(`/purchases/${inTransit.id}/validate`, {
+    method: 'POST',
+    token,
+    idempotencyKey: idemKey('val'),
+    body: {},
+  });
+  await call(`/import-files/${importFile.id}/costs`, {
+    method: 'POST',
+    token,
+    idempotencyKey: idemKey('cost'),
+    body: { type: 'FRET', amount: '18000', method: 'VALUE' },
+  });
   // Phase 20: a packaging type, so the sale screen shows its "emballages rendus" card.
   await call('/packaging-types', {
     method: 'POST',
@@ -314,6 +359,7 @@ async function prepareIds(f: Fixture): Promise<Ids> {
   });
   const product = (await call<{ reference: string }>(`/products/${f.productId}`, { token })).body;
   return {
+    importFileId: importFile.id,
     productReference: product.reference,
     clientId: client.id,
     productId: f.productId,
@@ -335,6 +381,7 @@ function resolve(pattern: string, v: Ids): string {
   return (
     pattern
       .replace('/achats/fournisseurs/[id]', `/achats/fournisseurs/${v.supplierId}`)
+      .replace('/achats/dossiers/[id]', `/achats/dossiers/${v.importFileId}`)
       .replace('/achats/[id]', `/achats/${v.purchaseId}`)
       .replace('/clients/[id]', `/clients/${v.clientId}`)
       .replace('/produits/[id]', `/produits/${v.productId}`)
@@ -483,6 +530,38 @@ for (const locale of LOCALES) {
         await check(page, '/achats/fournisseurs/[id]/reglement', locale, results, {
           fullPage: false,
         });
+        await page.keyboard.press('Escape');
+      });
+
+      await test.step('dossier d\'importation: Close on screen, the cost sheet and its submit', async () => {
+        const path = resolve('/achats/dossiers/[id]', v);
+        await page.evaluate((to) => {
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
+        }, path);
+        await page.waitForURL((url) => url.pathname === path);
+        await settle(page);
+        await expectOnScreen(page, `button:has-text("${m['importFiles']?.['close']}")`);
+        await page.getByRole('button', { name: m['importFiles']?.['addCost'] }).first().click();
+        await page.locator('#cost-amount').waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
+        await check(page, '/achats/dossiers/[id]/frais', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+
+        await page.evaluate((to) => {
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
+        }, '/achats/dossiers');
+        await page.waitForURL((url) => url.pathname === '/achats/dossiers');
+        await settle(page);
+        await page.getByRole('button', { name: m['importFiles']?.['new'] }).first().click();
+        await page.locator('#di-reference').waitFor();
+        await page.waitForTimeout(400);
+        await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
+        await check(page, '/achats/dossiers/nouveau', locale, results, { fullPage: false });
         await page.keyboard.press('Escape');
       });
 

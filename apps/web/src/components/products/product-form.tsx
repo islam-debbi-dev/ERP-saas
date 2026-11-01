@@ -43,8 +43,8 @@ import { NativeSelect } from '@/components/ui/native-select';
 import { Switch } from '@/components/ui/switch';
 import { ProductCost } from './product-cost';
 import { ProductPackaging } from '@/components/distribution/product-packaging';
-import { useFeature } from '@/lib/auth';
 import { api, ApiError } from '@/lib/api-client';
+import { useFeature } from '@/lib/auth';
 import { catalogKeys, flattenCategories, useCategories, useUnitLabel } from '@/lib/catalog';
 import { useBrands } from '@/lib/sales-force';
 import { useErrorMessage } from '@/lib/use-error-message';
@@ -64,6 +64,9 @@ interface FormValues {
   baseUnitId: string;
   tvaRate: string;
   minStock: string;
+  /** Per base unit, for import costs allocated by weight / volume (phase 22). */
+  weightKg: string;
+  volumeM3: string;
   active: boolean;
   units: UnitRow[];
   defaultSale: string;
@@ -87,6 +90,8 @@ function toFormValues(product: ProductDto | null, units: UnitDto[]): FormValues 
       baseUnitId: base,
       tvaRate: '19',
       minStock: '0',
+      weightKg: '',
+      volumeM3: '',
       active: true,
       units: [{ unitId: base, factorToBase: '1', barcode: '' }],
       defaultSale: base,
@@ -102,6 +107,8 @@ function toFormValues(product: ProductDto | null, units: UnitDto[]): FormValues 
     baseUnitId: product.baseUnitId,
     tvaRate: qty(product.tvaRate).toString(),
     minStock: qty(product.minStock).toString(),
+    weightKg: product.weightKg ? qty(product.weightKg).toString() : '',
+    volumeM3: product.volumeM3 ? qty(product.volumeM3).toString() : '',
     active: product.active,
     // Base unit first, then packagings by size.
     units: [...product.units]
@@ -165,6 +172,7 @@ export function ProductForm({
   const queryClient = useQueryClient();
   const categories = useCategories();
   const brands = useBrands();
+  const importOn = useFeature(Feature.IMPORT_COSTS);
   const [problems, setProblems] = useState<string[]>([]);
 
   const unitById = useMemo(() => new Map(units.map((u) => [u.id, u])), [units]);
@@ -192,6 +200,10 @@ export function ProductForm({
       baseUnitId: v.baseUnitId,
       tvaRate: v.tvaRate,
       minStock: v.minStock || '0',
+      // Sent only with the module on: omitted keeps what is stored, blank clears it.
+      ...(importOn
+        ? { weightKg: v.weightKg.trim() || null, volumeM3: v.volumeM3.trim() || null }
+        : {}),
       active: v.active,
       units: v.units.map((u) => ({
         unitId: u.unitId,
@@ -405,6 +417,35 @@ export function ProductForm({
               {t('minStockHint')}
             </p>
           </div>
+          {importOn ? (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="weightKg">{t('weightKg', { unit: baseLabel })}</Label>
+                <Input
+                  id="weightKg"
+                  dir="ltr"
+                  inputMode="decimal"
+                  className="num"
+                  aria-describedby="weight-hint"
+                  {...form.register('weightKg')}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="volumeM3">{t('volumeM3', { unit: baseLabel })}</Label>
+                <Input
+                  id="volumeM3"
+                  dir="ltr"
+                  inputMode="decimal"
+                  className="num"
+                  aria-describedby="weight-hint"
+                  {...form.register('volumeM3')}
+                />
+              </div>
+              <p id="weight-hint" className="text-xs text-muted-foreground sm:col-span-2">
+                {t('weightHint')}
+              </p>
+            </>
+          ) : null}
           <div className="flex items-start justify-between gap-4 rounded-lg border p-3 sm:col-span-2">
             <div className="space-y-1">
               <Label htmlFor="active">{t('active')}</Label>
