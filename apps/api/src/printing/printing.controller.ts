@@ -14,6 +14,7 @@ import {
 import {
   type CreateShareLinkInput,
   createShareLinkSchema,
+  Permission,
   type PrintableDocType,
   printableDocTypeSchema,
   type PrintQuery,
@@ -25,7 +26,7 @@ import {
   supplierStatementQuerySchema,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
-import { CurrentUser, Public, Roles } from '../auth/decorators';
+import { CurrentUser, Public, RequirePermission, Roles } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { PdfRendererService } from './pdf-renderer.service';
 import { type PreparedDocument, PrintingService } from './printing.service';
@@ -67,6 +68,7 @@ export class StatementPrintController {
   ) {}
 
   @Get(':id/statement/pdf')
+  @RequirePermission(Permission.CLIENTS_VIEW)
   async statement(
     @Param('id', ParseUUIDPipe) id: string,
     @Query(new ZodValidationPipe(statementPdfQuerySchema)) query: StatementPdfQuery,
@@ -95,6 +97,7 @@ export class ReceiptPrintController {
   ) {}
 
   @Get(':id/receipt.pdf')
+  @RequirePermission(Permission.PAYMENTS_VIEW)
   async receipt(
     @Param('id', ParseUUIDPipe) id: string,
     @Query(new ZodValidationPipe(printQuerySchema)) query: PrintQuery,
@@ -114,7 +117,7 @@ export class SupplierStatementPrintController {
   ) {}
 
   @Get(':id/statement/pdf')
-  @Roles(Role.OWNER, Role.MANAGER)
+  @RequirePermission(Permission.SUPPLIERS_ACCOUNT)
   async statement(
     @Param('id', ParseUUIDPipe) id: string,
     @Query(new ZodValidationPipe(supplierStatementPdfQuerySchema)) query: StatementPdfQuery,

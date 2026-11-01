@@ -20,7 +20,9 @@ import { CatalogService } from '../catalog/catalog.service';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
+import type { CurrentUserInfo } from '../auth/auth.types';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { ScopeService } from '../sales-force/scope.service';
 import { StockService } from '../stock/stock.service';
 import { baseUnitCost } from '../stock/unit-conversion';
 import { WarehousesService } from '../stock/warehouses.service';
@@ -45,10 +47,16 @@ export class PurchaseWorkflowService {
     private readonly audit: AuditService,
     private readonly account: SupplierAccountService,
     private readonly warehouses: WarehousesService,
+    private readonly scope: ScopeService,
   ) {}
 
-  async validate(id: string, input: ValidatePurchaseInput): Promise<PurchaseDto> {
+  async validate(
+    id: string,
+    input: ValidatePurchaseInput,
+    user: CurrentUserInfo,
+  ): Promise<PurchaseDto> {
     await this.prisma.db.$transaction(async (tx) => {
+      await this.purchases.assertInScope(tx, user, id);
       // Lock order with the dossier (phase 22): dossier first, then its BRs, as closing does.
       const peek = await tx.purchase.findUnique({ where: { id }, select: { importFileId: true } });
       if (peek?.importFileId) await lockImportFileOpen(tx, peek.importFileId);
@@ -100,8 +108,9 @@ export class PurchaseWorkflowService {
         data: lines.map((l) => ({ ...l, tenantId, purchaseId: id })),
       });
 
-      // The dépôt chosen on the BR, else the default one.
+      // The dépôt chosen on the BR, else the default one; one the user works in (phase 24).
       const warehouseId = await this.warehouses.resolve(tx, purchase.warehouseId);
+      await this.scope.assertWarehouse(tx, user, warehouseId);
       const number = await this.numbering.next(tx, tenantId, DocType.BR);
       // In a dossier d'importation the goods are on the way: no stock until it is closed
       // at the coût de revient (ImportFilesService.close).
@@ -190,8 +199,9 @@ export class PurchaseWorkflowService {
    * A draft is simply abandoned. A validated BR is reversed with PURCHASE_RETURN
    * movements for what is still received (received minus already returned).
    */
-  async cancel(id: string): Promise<PurchaseDto> {
+  async cancel(id: string, user: CurrentUserInfo): Promise<PurchaseDto> {
     await this.prisma.db.$transaction(async (tx) => {
+      await this.purchases.assertInScope(tx, user, id);
       const peek = await tx.purchase.findUnique({ where: { id }, select: { importFileId: true } });
       if (peek?.importFileId) await lockImportFile(tx, peek.importFileId);
       const current = await lockPurchase(tx, id);
@@ -300,8 +310,13 @@ export class PurchaseWorkflowService {
   }
 
   /** Retour fournisseur: returns part of a validated BR, never more than what is left. */
-  async createReturn(id: string, input: PurchaseReturnInput): Promise<PurchaseDto> {
+  async createReturn(
+    id: string,
+    input: PurchaseReturnInput,
+    user: CurrentUserInfo,
+  ): Promise<PurchaseDto> {
     await this.prisma.db.$transaction(async (tx) => {
+      await this.purchases.assertInScope(tx, user, id);
       const current = await lockPurchase(tx, id);
       if (current.status !== PurchaseStatus.VALIDATED) {
         throw new AppException(
@@ -384,6 +399,7 @@ export class PurchaseWorkflowService {
       const warehouseId = await this.warehouses.resolve(tx, input.warehouseId, () =>
         Promise.resolve(purchase.warehouseId),
       );
+      await this.scope.assertWarehouse(tx, user, warehouseId);
       const number = await this.numbering.next(tx, tenantId, DocType.RF);
       const created = await tx.purchaseReturn.create({
         data: {

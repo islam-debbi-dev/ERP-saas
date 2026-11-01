@@ -45,6 +45,11 @@ export const createPaymentSchema = z.object({
     .optional(),
   /** Device position (phase 17, GEO_CHECK); ignored when the module is off. */
   geo: geoInputSchema.optional(),
+  /**
+   * The dépôt this versement belongs to (phase 24). Omitted: the user's only dépôt, else
+   * the dépôt principal.
+   */
+  warehouseId: id.optional(),
 });
 export type CreatePaymentInput = z.infer<typeof createPaymentSchema>;
 
@@ -64,6 +69,8 @@ export const paymentListQuerySchema = z.object({
   status: z.enum(['VALID', 'CANCELLED', 'BOUNCED']).optional(),
   receivedBy: id.optional(),
   collectedBy: id.optional(),
+  /** Only this dépôt (phase 24); one outside the user's reach gives nothing. */
+  warehouseId: id.optional(),
   /** Received between these Algiers days. */
   from: dateString.optional(),
   to: dateString.optional(),

@@ -71,6 +71,12 @@ export interface AuthUser {
   /** The company's edition and its effective modules (phase 13b), read on every call. */
   edition: Edition;
   features: Feature[];
+  /**
+   * Dépôts this user works in (OPERATE) and whose figures he sees (OPERATE ∪ VIEW_STATS),
+   * phase 24. null = all (owner, VIEW_ALL_WAREHOUSES, or MULTI_UNIT off).
+   */
+  warehouseIds: string[] | null;
+  statsWarehouseIds: string[] | null;
   /** Set by a temporary password: every other route answers PASSWORD_CHANGE_REQUIRED. */
   mustChangePassword: boolean;
   /** A super-admin viewing the company read-only (phase 13). */

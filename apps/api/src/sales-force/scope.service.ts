@@ -1,5 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { algiersDay, ErrorCode, Feature, Role, SELLING_ROLES, SellerScope } from '@erp/shared';
+import {
+  algiersDay,
+  ErrorCode,
+  Feature,
+  Permission,
+  Role,
+  SELLING_ROLES,
+  SellerScope,
+  WarehouseAccessLevel,
+  WarehouseType,
+} from '@erp/shared';
 import { type CurrentUserInfo } from '../auth/auth.types';
 import { FeaturesService } from '../billing/features.service';
 import { AppException } from '../common/app-exception';
@@ -8,16 +18,36 @@ import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 
 /**
- * What a user may see (phase 14). null = no restriction.
- * - `clientSellerIds`: only clients assigned to one of these users.
- * - `documentUserIds`: only sales / versements made by one of these users.
+ * What a user may see. null = no restriction.
+ * - `clientSellerIds`: only clients assigned to one of these users (phase 14).
+ * - `documentUserIds`: only sales / versements made by one of these users (phase 14).
+ * - `warehouseIds`: only documents and stock of these dépôts, where he works (OPERATE,
+ *   their trucks and his own truck; phase 24, MULTI_UNIT).
+ * - `statsWarehouseIds`: the dépôts whose aggregated figures he sees (OPERATE ∪ VIEW_STATS).
+ * - `userId` / `defaultWarehouseId`: a document without a dépôt (a draft, or a row written
+ *   before the backfill) counts as the dépôt principal's, and its creator always sees it.
  */
 export interface DataScope {
   clientSellerIds: string[] | null;
   documentUserIds: string[] | null;
+  warehouseIds: string[] | null;
+  statsWarehouseIds: string[] | null;
+  userId?: string;
+  defaultWarehouseId?: string | null;
 }
 
-const UNRESTRICTED: DataScope = { clientSellerIds: null, documentUserIds: null };
+/** Dépôts a user works in and sees figures of (phase 24). null = all of them. */
+export interface WarehouseScope {
+  warehouseIds: string[] | null;
+  statsWarehouseIds: string[] | null;
+  defaultWarehouseId: string | null;
+}
+
+const ALL_WAREHOUSES: WarehouseScope = {
+  warehouseIds: null,
+  statsWarehouseIds: null,
+  defaultWarehouseId: null,
+};
 
 type Db = PrismaService['db'] | Tx;
 
@@ -40,8 +70,14 @@ export class ScopeService {
   ) {}
 
   async of(user: CurrentUserInfo, db: Db = this.prisma.db): Promise<DataScope> {
-    if (user.role !== Role.SELLER && user.role !== Role.SUPERVISOR) return UNRESTRICTED;
-    if (!(await this.salesForceOn(user.tenantId))) return UNRESTRICTED;
+    const w = await this.warehouses(user, db);
+    const units = { ...w, userId: user.id };
+    if (user.role !== Role.SELLER && user.role !== Role.SUPERVISOR) {
+      return { clientSellerIds: null, documentUserIds: null, ...units };
+    }
+    if (!(await this.salesForceOn(user.tenantId))) {
+      return { clientSellerIds: null, documentUserIds: null, ...units };
+    }
     const tenant = await db.tenant.findUniqueOrThrow({
       where: { id: user.tenantId },
       select: { sellerScope: true },
@@ -49,11 +85,95 @@ export class ScopeService {
     const assignedOnly = tenant.sellerScope === SellerScope.ASSIGNED_ONLY;
     if (user.role === Role.SELLER) {
       return assignedOnly
-        ? { clientSellerIds: [user.id], documentUserIds: [user.id] }
-        : UNRESTRICTED;
+        ? { clientSellerIds: [user.id], documentUserIds: [user.id], ...units }
+        : { clientSellerIds: null, documentUserIds: null, ...units };
     }
     const team = await this.teamIds(user.id, db);
-    return { clientSellerIds: assignedOnly ? team : null, documentUserIds: team };
+    return { clientSellerIds: assignedOnly ? team : null, documentUserIds: team, ...units };
+  }
+
+  /**
+   * The dépôts a user works in and sees figures of (phase 24). Everything without the
+   * MULTI_UNIT module, for the owner and for VIEW_ALL_WAREHOUSES. Otherwise his
+   * UserWarehouseAccess rows, the trucks of those dépôts, and the truck he drives.
+   */
+  async warehouses(
+    user: Pick<CurrentUserInfo, 'id' | 'tenantId' | 'role' | 'permissions'>,
+    db: Db = this.prisma.db,
+  ): Promise<WarehouseScope> {
+    if (user.role === Role.OWNER) return ALL_WAREHOUSES;
+    if (user.permissions.includes(Permission.VIEW_ALL_WAREHOUSES)) return ALL_WAREHOUSES;
+    if (!(await this.multiUnitOn(user.tenantId))) return ALL_WAREHOUSES;
+    // tenantId explicit: login reads this outside a tenant context.
+    const tenantId = user.tenantId;
+    const rows = await db.userWarehouseAccess.findMany({
+      where: { tenantId, userId: user.id },
+      select: { warehouseId: true, level: true },
+    });
+    const operate = rows
+      .filter((r) => r.level === WarehouseAccessLevel.OPERATE)
+      .map((r) => r.warehouseId);
+    const all = rows.map((r) => r.warehouseId);
+    const trucks = await db.warehouse.findMany({
+      where: {
+        tenantId,
+        type: WarehouseType.VEHICLE,
+        OR: [{ parentWarehouseId: { in: all } }, { assignedUserId: user.id }],
+      },
+      select: { id: true, parentWarehouseId: true, assignedUserId: true },
+    });
+    const truckIds = (parents: string[]) =>
+      trucks
+        .filter(
+          (t) =>
+            t.assignedUserId === user.id ||
+            (t.parentWarehouseId !== null && parents.includes(t.parentWarehouseId)),
+        )
+        .map((t) => t.id);
+    const main = await db.warehouse.findFirst({
+      where: { tenantId, isDefault: true },
+      select: { id: true },
+    });
+    return {
+      warehouseIds: [...new Set([...operate, ...truckIds(operate)])],
+      statsWarehouseIds: [...new Set([...all, ...truckIds(all)])],
+      defaultWarehouseId: main?.id ?? null,
+    };
+  }
+
+  /** The one dépôt (not a truck) a user works in, when he works in exactly one (phase 24). */
+  async onlyWarehouse(user: CurrentUserInfo, db: Db = this.prisma.db): Promise<string | null> {
+    const { warehouseIds } = await this.warehouses(user, db);
+    if (!warehouseIds) return null;
+    const depots = await db.warehouse.findMany({
+      where: { id: { in: warehouseIds }, type: { not: WarehouseType.VEHICLE }, deletedAt: null },
+      select: { id: true },
+    });
+    return depots.length === 1 ? depots[0]!.id : null;
+  }
+
+  /**
+   * An operation in a dépôt outside the user's reach (OPERATE) answers WAREHOUSE_NOT_FOUND,
+   * as if it did not exist. Called with the dépôt the operation resolved to.
+   */
+  async assertWarehouse(db: Db, user: CurrentUserInfo, warehouseId: string): Promise<void> {
+    const { warehouseIds } = await this.warehouses(user, db);
+    if (warehouseIds && !warehouseIds.includes(warehouseId)) {
+      throw new AppException(ErrorCode.WAREHOUSE_NOT_FOUND, 'Warehouse not found');
+    }
+  }
+
+  /**
+   * The dépôts a list or a report covers: the user's reach, narrowed by `?warehouseId=`.
+   * A filter outside the reach gives nothing ([]), never more and never an error.
+   */
+  narrowWarehouses(ids: string[] | null, filter: string | undefined): string[] | null {
+    if (!filter) return ids;
+    return ids === null || ids.includes(filter) ? [filter] : [];
+  }
+
+  async multiUnitOn(tenantId: string): Promise<boolean> {
+    return (await this.features.of(tenantId)).features.includes(Feature.MULTI_UNIT);
   }
 
   /**
@@ -102,18 +222,70 @@ export class ScopeService {
     return scope.clientSellerIds ? { assignedSellerId: { in: scope.clientSellerIds } } : {};
   }
 
-  /** Legacy sales (no sellerId, before phase 14) belong to their creator. */
+  /**
+   * Legacy sales (no sellerId, before phase 14) belong to their creator. A sale of a dépôt
+   * outside the user's reach is not there (phase 24).
+   */
   saleWhere(scope: DataScope): Prisma.SaleWhereInput {
     const ids = scope.documentUserIds;
-    if (!ids) return {};
-    return { OR: [{ sellerId: { in: ids } }, { sellerId: null, createdBy: { in: ids } }] };
+    const and: Prisma.SaleWhereInput[] = [];
+    if (ids)
+      and.push({ OR: [{ sellerId: { in: ids } }, { sellerId: null, createdBy: { in: ids } }] });
+    const w = this.warehouseWhere(scope, scope.warehouseIds, 'createdBy');
+    if (w) and.push(w);
+    return and.length ? { AND: and } : {};
   }
 
   /** Legacy versements (no collectedBy) belong to whoever received them. */
   paymentWhere(scope: DataScope): Prisma.PaymentWhereInput {
     const ids = scope.documentUserIds;
-    if (!ids) return {};
-    return { OR: [{ collectedBy: { in: ids } }, { collectedBy: null, receivedBy: { in: ids } }] };
+    const and: Prisma.PaymentWhereInput[] = [];
+    if (ids) {
+      and.push({
+        OR: [{ collectedBy: { in: ids } }, { collectedBy: null, receivedBy: { in: ids } }],
+      });
+    }
+    const w = this.warehouseWhere(scope, scope.warehouseIds, 'receivedBy');
+    if (w) and.push(w);
+    return and.length ? { AND: and } : {};
+  }
+
+  /**
+   * Documents of these dépôts (phase 24); null = no restriction. A document without a
+   * dépôt counts as the dépôt principal's, and its creator always sees it.
+   */
+  warehouseWhere<F extends string>(
+    scope: Pick<DataScope, 'userId' | 'defaultWarehouseId'>,
+    ids: string[] | null,
+    creatorField: F,
+  ): { OR: Record<string, unknown>[] } | null {
+    if (!ids) return null;
+    const or: Record<string, unknown>[] = [{ warehouseId: { in: ids } }];
+    if (scope.defaultWarehouseId && ids.includes(scope.defaultWarehouseId)) {
+      or.push({ warehouseId: null });
+    } else if (scope.userId) {
+      or.push({ warehouseId: null, [creatorField]: scope.userId });
+    }
+    return { OR: or };
+  }
+
+  /** Same as `warehouseWhere` for raw SQL, on an alias with a `warehouseId` column. */
+  warehouseSql(
+    scope: Pick<DataScope, 'userId' | 'defaultWarehouseId'>,
+    ids: string[] | null,
+    alias: string,
+    creatorColumn?: string,
+  ): Prisma.Sql {
+    if (!ids) return Prisma.sql`TRUE`;
+    const col = Prisma.raw(`${alias}."warehouseId"`);
+    if (scope.defaultWarehouseId && ids.includes(scope.defaultWarehouseId)) {
+      return Prisma.sql`(${col} IS NULL OR ${col} = ANY(${ids}::uuid[]))`;
+    }
+    if (creatorColumn && scope.userId) {
+      const creator = Prisma.raw(`${alias}."${creatorColumn}"`);
+      return Prisma.sql`(${col} = ANY(${ids}::uuid[]) OR (${col} IS NULL AND ${creator} = ${scope.userId}::uuid))`;
+    }
+    return Prisma.sql`${col} = ANY(${ids}::uuid[])`;
   }
 
   /** Same as `clientWhere` for raw SQL, on a clients alias. */
@@ -124,14 +296,16 @@ export class ScopeService {
 
   /** Same as `saleWhere` for raw SQL, on a sales alias. */
   saleSql(scope: DataScope, alias: string): Prisma.Sql {
-    if (!scope.documentUserIds) return Prisma.sql`TRUE`;
-    return Prisma.sql`COALESCE(${Prisma.raw(`${alias}."sellerId"`)}, ${Prisma.raw(`${alias}."createdBy"`)}) = ANY(${scope.documentUserIds}::uuid[])`;
+    const w = this.warehouseSql(scope, scope.warehouseIds, alias, 'createdBy');
+    if (!scope.documentUserIds) return w;
+    return Prisma.sql`COALESCE(${Prisma.raw(`${alias}."sellerId"`)}, ${Prisma.raw(`${alias}."createdBy"`)}) = ANY(${scope.documentUserIds}::uuid[]) AND ${w}`;
   }
 
   /** Same as `paymentWhere` for raw SQL, on a payments alias. */
   paymentSql(scope: DataScope, alias: string): Prisma.Sql {
-    if (!scope.documentUserIds) return Prisma.sql`TRUE`;
-    return Prisma.sql`COALESCE(${Prisma.raw(`${alias}."collectedBy"`)}, ${Prisma.raw(`${alias}."receivedBy"`)}) = ANY(${scope.documentUserIds}::uuid[])`;
+    const w = this.warehouseSql(scope, scope.warehouseIds, alias, 'receivedBy');
+    if (!scope.documentUserIds) return w;
+    return Prisma.sql`COALESCE(${Prisma.raw(`${alias}."collectedBy"`)}, ${Prisma.raw(`${alias}."receivedBy"`)}) = ANY(${scope.documentUserIds}::uuid[]) AND ${w}`;
   }
 
   /**

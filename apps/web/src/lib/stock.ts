@@ -16,6 +16,9 @@ import {
   type StockTransferPage,
   THOUSANDS_SEPARATOR,
   type UpdateWarehouseInput,
+  type WarehouseBrandsInput,
+  type WarehouseCategoriesInput,
+  type WarehouseDetailDto,
   type WarehouseDto,
 } from '@erp/shared';
 import { api } from './api-client';
@@ -32,6 +35,7 @@ export const stockKeys = {
   inventories: ['inventories'] as const,
   inventory: (id: string) => ['inventories', id] as const,
   warehouses: ['warehouses'] as const,
+  warehouse: (id: string) => ['warehouses', id] as const,
   transfers: ['stock-transfers'] as const,
   transfer: (id: string) => ['stock-transfers', id] as const,
 };
@@ -123,7 +127,35 @@ export function useSaveWarehouse() {
         method: id ? 'PATCH' : 'POST',
         body,
       }),
+    // Also refreshes an open dépôt page (its key starts with 'warehouses').
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: stockKeys.warehouses }),
+  });
+}
+
+/** A dépôt with its brands, categories, team and trucks (phase 24, MULTI_UNIT). */
+export function useWarehouseDetail(id: string) {
+  return useQuery({
+    queryKey: stockKeys.warehouse(id),
+    queryFn: ({ signal }) => api.request<WarehouseDetailDto>(`/warehouses/${id}`, { signal }),
+  });
+}
+
+/** What a dépôt sells: its brands or its categories, each list replaced whole. */
+export function useSetWarehouseSells() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: string;
+      body: WarehouseBrandsInput | WarehouseCategoriesInput;
+    }) =>
+      api.request<WarehouseDetailDto>(
+        `/warehouses/${id}/${'brandIds' in body ? 'brands' : 'categories'}`,
+        { method: 'PUT', body },
+      ),
+    onSuccess: (data, { id }) => queryClient.setQueryData(stockKeys.warehouse(id), data),
   });
 }
 

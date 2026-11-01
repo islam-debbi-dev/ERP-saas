@@ -9,7 +9,8 @@ import {
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { requirePermission } from '../auth/permissions';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { ScopeService } from '../sales-force/scope.service';
 import { StockService } from './stock.service';
 import { baseUnitCost, toBaseLines } from './unit-conversion';
 import { WarehousesService } from './warehouses.service';
@@ -22,12 +23,13 @@ export class StockOperationsService {
     private readonly stock: StockService,
     private readonly audit: AuditService,
     private readonly warehouses: WarehousesService,
+    private readonly scope: ScopeService,
   ) {}
 
   /** One-time per product. Corrections afterwards go through adjustments. */
-  async opening(input: OpeningStockInput): Promise<StockOperationResult> {
+  async opening(input: OpeningStockInput, user: CurrentUserInfo): Promise<StockOperationResult> {
     return this.prisma.db.$transaction(async (tx) => {
-      const warehouseId = await this.warehouses.resolve(tx, input.warehouseId);
+      const warehouseId = await this.resolve(tx, input.warehouseId, user);
       const converted = await toBaseLines(tx, input.lines);
       const result = await this.stock.applyMovements(
         tx,
@@ -53,7 +55,7 @@ export class StockOperationsService {
   async adjust(input: AdjustmentInput, user: CurrentUserInfo): Promise<StockOperationResult> {
     requirePermission(user, Permission.STOCK_ADJUST, { message: 'You may not adjust the stock' });
     return this.prisma.db.$transaction(async (tx) => {
-      const warehouseId = await this.warehouses.resolve(tx, input.warehouseId);
+      const warehouseId = await this.resolve(tx, input.warehouseId, user);
       const converted = await toBaseLines(tx, input.lines);
       const result = await this.stock.applyMovements(
         tx,
@@ -79,5 +81,18 @@ export class StockOperationsService {
       });
       return { movements: result.movementIds.length, warnings: result.warnings };
     });
+  }
+
+  /** The chosen dépôt, else the user's only one, else MAIN; one he works in (phase 24). */
+  private async resolve(
+    tx: Tx,
+    requested: string | null | undefined,
+    user: CurrentUserInfo,
+  ): Promise<string> {
+    const id = await this.warehouses.resolve(tx, requested, () =>
+      this.scope.onlyWarehouse(user, tx),
+    );
+    await this.scope.assertWarehouse(tx, user, id);
+    return id;
   }
 }

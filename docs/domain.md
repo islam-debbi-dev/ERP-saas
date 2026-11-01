@@ -105,6 +105,17 @@
 - A dépôt is archived only when empty (move the stock out with a transfer first); the dépôt principal is never archived or deactivated.
 - **Clôture de tournée**: at the end of the day the API computes the cash the seller must hand over; the manager enters what he handed; the écart is stored and audited.
 
+### Dépôts as business units: teams, permissions, access (phase 24, module MULTI_UNIT)
+- One company, one tenant. A MAIN or SECONDARY dépôt is a **business unit** (e.g. "Vaisselle" for brand A, "Vêtements" for brand B). Products, clients, price levels and the CUMP stay company-wide.
+- **One client account across dépôts**: one ledger, one balance, one plafond. Each ledger entry and versement records its dépôt, so debts and cash can be shown per dépôt; the parts always add up to the balance. Opening balances and adjustments use the dépôt chosen, else the user's only dépôt, else the dépôt principal; an Excel import uses the dépôt principal.
+- **What a user may do**: permissions per module (view / create / edit / cancel) plus the sensitive actions of earlier phases. Role defaults give every role exactly what it could do before phase 24 (checked route by route by `route-access.spec.ts`). The owner always has everything. A user who manages users or access never gives more than he has, and never touches an owner.
+- **Where he may do it**: per dépôt, **Travailler** (OPERATE: sells, receives, sees its documents) or **Voir les statistiques** (VIEW_STATS: its dashboard, reports and sell-out figures, never a single document, client ledger detail or user list). The owner and "Tous les dépôts" (VIEW_ALL_WAREHOUSES) see every dépôt. A truck belongs to one dépôt and follows it: working in a dépôt includes its trucks, and a seller always works in the truck he drives.
+- Outside his reach a document is **not there** (404, empty list), never an error that reveals it. A user who works in exactly one dépôt gets it by default on a sale, BR, order, versement, inventaire, opening stock or adjustment. A transfer is changed by someone who works where its goods leave from.
+- **What a dépôt sells**: its brands and its categories (sub-categories included); none = everything. A truck sells what its dépôt sells. A sale or order line on another product is refused (`PRODUCT_NOT_IN_WAREHOUSE`) unless the user has "Vendre tout produit" (SELL_ANY_PRODUCT).
+- The **client statement** shows the whole account; a line of a dépôt the user does not work in only shows its date, type, number, amount and dépôt (no note, no author, no link to the document).
+- A user invited after phase 24 works in the dépôts of whoever invited him (every dépôt when the owner invites); whoever creates a dépôt works in it. The owner narrows access on the user's page.
+- Not in this phase: separate client accounts or plafonds per dépôt, inter-dépôt invoicing / transfer pricing, a different role per dépôt.
+
 ### Géolocalisation
 - Each client has a reference GPS point. Sellers cannot move it without approval.
 - Sales, versements and visits carry the phone's position at the time of the operation (never continuous tracking, law 18-07). The API computes the distance and stores a `GeoCheck`: OK, FAR, MOCKED, LOW_ACCURACY, NO_CLIENT_GPS, NO_SIGNAL.

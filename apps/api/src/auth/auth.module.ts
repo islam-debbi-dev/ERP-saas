@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { BillingModule } from '../billing/billing.module';
 import { CatalogModule } from '../catalog/catalog.module';
 import { APP_CONFIG, type AppConfig } from '../config/app-config';
+import { SalesForceModule } from '../sales-force/sales-force.module';
 import { AuthController, SessionsController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { FeatureGuard } from './feature.guard';
@@ -16,6 +17,7 @@ import { TokenService } from './token.service';
   imports: [
     BillingModule,
     CatalogModule,
+    SalesForceModule,
     JwtModule.registerAsync({
       inject: [APP_CONFIG],
       useFactory: (config: AppConfig) => ({

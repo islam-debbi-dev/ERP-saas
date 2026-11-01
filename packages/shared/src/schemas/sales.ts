@@ -127,6 +127,8 @@ export const saleListQuerySchema = z.object({
   status: z.enum(['DRAFT', 'VALIDATED', 'CANCELLED']).optional(),
   clientId: id.optional(),
   sellerId: id.optional(),
+  /** Only this dépôt (phase 24); one outside the user's reach gives nothing. */
+  warehouseId: id.optional(),
   /** Only BLs not yet grouped in a facture. */
   notInvoiced: z
     .enum(['true', 'false'])

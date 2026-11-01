@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
 import { BillingModule } from '../billing/billing.module';
 import { DocumentsModule } from '../documents/documents.module';
+import { SalesForceModule } from '../sales-force/sales-force.module';
 import { InventoriesService } from './inventories.service';
 import { InventoriesController, StockController } from './stock.controllers';
 import { StockOperationsService } from './stock-operations.service';
 import { StockQueriesService } from './stock-queries.service';
 import { StockTransfersService } from './stock-transfers.service';
 import { StockService } from './stock.service';
+import { UnitBackfillService } from './unit-backfill.service';
 import { WarehouseBackfillService } from './warehouse-backfill.service';
 import { StockTransfersController, WarehousesController } from './warehouses.controllers';
 import { WarehousesService } from './warehouses.service';
@@ -16,7 +18,7 @@ import { WarehousesService } from './warehouses.service';
  * the dépôt from WarehousesService; the dashboard reads StockQueriesService.
  */
 @Module({
-  imports: [DocumentsModule, BillingModule],
+  imports: [DocumentsModule, BillingModule, SalesForceModule],
   controllers: [
     StockController,
     InventoriesController,
@@ -31,6 +33,7 @@ import { WarehousesService } from './warehouses.service';
     WarehousesService,
     StockTransfersService,
     WarehouseBackfillService,
+    UnitBackfillService,
   ],
   exports: [StockService, StockQueriesService, WarehousesService, StockTransfersService],
 })

@@ -44,6 +44,7 @@ import { todayInAlgiers } from '@/lib/purchases';
 import { downloadReport, type ReportParams, useReport } from '@/lib/reports';
 import { formatQty } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
+import { useWarehouseFilter } from '@/lib/warehouse-scope';
 import { cn } from '@/lib/utils';
 import { Amount } from '@/components/shared/amount';
 
@@ -72,6 +73,7 @@ export function ReportsPage() {
       ? { ...params, name: allowed[0]!, groupBy: REPORT_GROUPS[allowed[0]!][0] }
       : params;
   const report = useReport(effective);
+  const warehouseId = useWarehouseFilter();
   const set = (patch: Partial<ReportParams>) => setParams({ ...effective, ...patch });
 
   // Sales force filters (phase 14): office roles narrow sales and versements by seller or
@@ -91,7 +93,7 @@ export function ReportsPage() {
   const exportXlsx = async () => {
     setExporting(true);
     try {
-      await downloadReport(effective);
+      await downloadReport({ ...effective, warehouseId });
     } catch (err) {
       toast.error(errorMessage(err));
     } finally {

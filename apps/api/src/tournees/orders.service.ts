@@ -208,6 +208,15 @@ export class OrdersService {
           // A promotion's remise follows today's promotions too.
           discountPct: l.promotionId ? '0' : l.discountPct.toString(),
         }));
+      // Phase 24: confirmed only for what the order's dépôt sells.
+      if (order.warehouseId) {
+        await this.warehouses.assertSells(
+          tx,
+          user,
+          order.warehouseId,
+          input.map((l) => l.productId),
+        );
+      }
       const priceLevelId = await resolvePriceLevel(tx, order.clientId);
       const assujetti = await this.sales.assujettiTva(tx);
       const { lines, totals, overrides, promoOverrides } = await this.pricing.priceLines(
@@ -409,6 +418,7 @@ export class OrdersService {
         order.warehouseId ??
         (await this.warehouses.vehicleOf(tx, user.id)) ??
         (await this.warehouses.defaultId(tx));
+      await this.scope.assertWarehouse(tx, user, warehouseId);
       // The cash is with the assigned livreur, even when the office records the delivery.
       const collectedBy = order.livreurId ?? user.id;
       const { saleId, warnings, change } = await this.workflow.deliverOrderInTx(
@@ -509,6 +519,7 @@ export class OrdersService {
           query.sellerId ? { sellerId: query.sellerId } : {},
           query.livreurId ? { livreurId: query.livreurId } : {},
           query.clientId ? { clientId: query.clientId } : {},
+          query.warehouseId ? { warehouseId: query.warehouseId } : {},
           query.from || query.to ? { requestedDate } : {},
         ],
       },
@@ -561,6 +572,14 @@ export class OrdersService {
    * own, a livreur only those assigned to him.
    */
   private async visibleWhere(user: CurrentUserInfo, db?: Tx): Promise<Prisma.OrderWhereInput> {
+    const own = await this.ownWhere(user, db);
+    // Phase 24: and only the orders of the dépôts he works in.
+    const scope = await this.scope.of(user, db);
+    const w = this.scope.warehouseWhere(scope, scope.warehouseIds, 'createdBy');
+    return w ? { AND: [own, w] } : own;
+  }
+
+  private async ownWhere(user: CurrentUserInfo, db?: Tx): Promise<Prisma.OrderWhereInput> {
     switch (user.role) {
       case Role.OWNER:
       case Role.MANAGER:
@@ -606,9 +625,19 @@ export class OrdersService {
   ): Promise<{ sellerId: string | null | undefined; warehouseId: string | null }> {
     await this.sales.checkClient(tx, input.clientId, user);
     const sellerId = await this.sales.resolveSeller(tx, user, input.sellerId, currentSellerId);
+    // A user who works in one dépôt takes orders for it (phase 24), and only for what it sells.
     const warehouseId = input.warehouseId
       ? await this.warehouses.resolve(tx, input.warehouseId)
-      : null;
+      : await this.scope.onlyWarehouse(user, tx);
+    if (warehouseId) {
+      await this.scope.assertWarehouse(tx, user, warehouseId);
+      await this.warehouses.assertSells(
+        tx,
+        user,
+        warehouseId,
+        input.lines.map((l) => l.productId),
+      );
+    }
     return { sellerId, warehouseId };
   }
 

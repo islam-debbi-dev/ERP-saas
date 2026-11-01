@@ -21,6 +21,23 @@ export interface Scope {
   sellerIds: string[] | null;
   /** Only the lines of products of this brand (phase 14). */
   brandId: string | null;
+  /**
+   * Only the documents of these dépôts (phase 24: the user's stats reach, narrowed by a
+   * `warehouseId` filter). null = every dépôt, [] = none.
+   */
+  warehouseIds?: string[] | null;
+  /** A document without a dépôt (before the backfills) counts as this one's. */
+  defaultWarehouseId?: string | null;
+}
+
+/** `AND <alias>."warehouseId"` in the scope's dépôts (nothing when every dépôt counts). */
+export function inWarehouses(scope: Scope, alias: string): Prisma.Sql {
+  const ids = scope.warehouseIds;
+  if (!ids) return Prisma.empty;
+  const col = Prisma.raw(`${alias}."warehouseId"`);
+  return scope.defaultWarehouseId && ids.includes(scope.defaultWarehouseId)
+    ? Prisma.sql`AND (${col} IS NULL OR ${col} = ANY(${ids}::uuid[]))`
+    : Prisma.sql`AND ${col} = ANY(${ids}::uuid[])`;
 }
 
 /**
@@ -37,7 +54,8 @@ export function countedSale(scope: Scope, alias = 's'): Prisma.Sql {
   return Prisma.sql`${s}."tenantId" = ${scope.tenantId}::uuid
     AND ${s}.status = 'VALIDATED'
     AND NOT EXISTS (SELECT 1 FROM sales g WHERE g."tenantId" = ${s}."tenantId" AND g."invoiceId" = ${s}.id)
-    ${scope.sellerIds ? Prisma.sql`AND ${sellerOf(alias)} = ANY(${scope.sellerIds}::uuid[])` : Prisma.empty}`;
+    ${scope.sellerIds ? Prisma.sql`AND ${sellerOf(alias)} = ANY(${scope.sellerIds}::uuid[])` : Prisma.empty}
+    ${inWarehouses(scope, alias)}`;
 }
 
 /** A line of `p` (products alias) passes the brand filter. */
@@ -151,12 +169,14 @@ export function saleLineFacts(scope: Scope, start: Date, end: Date): Prisma.Sql 
 /**
  * `saleLineFacts` plus a column `ecart`: the écart de coût of late import costs (phase
  * 22), dated when the late cost was entered, for the units already sold. It belongs to
- * nobody's sales, so a report limited to sellers leaves it out.
+ * nobody's sales, so a report limited to sellers (or dépôts) leaves it out.
  */
 export function marginFacts(scope: Scope, start: Date, end: Date): Prisma.Sql {
-  const ecart = scope.sellerIds
-    ? Prisma.empty
-    : Prisma.sql`
+  // Nobody's sales and no dépôt's either: left out of a report limited to some.
+  const ecart =
+    scope.sellerIds || scope.warehouseIds
+      ? Prisma.empty
+      : Prisma.sql`
     UNION ALL
     SELECT a."createdAt", a."productId", p."brandId", NULL, 0, 0, 0, 0, 0, 0, a.ecart
     FROM import_cost_allocations a JOIN products p ON p.id = a."productId"

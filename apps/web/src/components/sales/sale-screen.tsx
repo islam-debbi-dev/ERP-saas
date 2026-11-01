@@ -52,6 +52,7 @@ import { todayInAlgiers } from '@/lib/purchases';
 import { effectiveLevel, listPrice, saleKeys } from '@/lib/sales';
 import { formatQty, stockKeys } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
+import { useWarehouseFilter } from '@/lib/warehouse-scope';
 import { cn, isolateLtr } from '@/lib/utils';
 import { usePrint } from '@/components/shared/print-button';
 import {
@@ -136,6 +137,9 @@ export function SaleScreen({
   // Until the user picks one: the draft's seller, else the client's assigned seller.
   const sellerId = sellerChoice ?? draft?.sellerId ?? client?.assignedSeller?.id ?? '';
   const warehouseId = warehouseChoice ?? draft?.warehouse?.id ?? '';
+  // Phase 24: the search lists what the sale's dépôt (else the header's) sells.
+  const headerWarehouseId = useWarehouseFilter();
+  const searchWarehouseId = warehouseId || headerWarehouseId;
 
   const unitPrice = (l: ScreenLine) => l.price ?? listPrice(l.product, l.unitId, levelId);
   // Phase 20: the API's preview says which promotion each line gets (display only).
@@ -255,7 +259,9 @@ export function SaleScreen({
         return;
       }
       const page = await api.request<ProductPage>(
-        `/products?search=${encodeURIComponent(value)}&limit=8`,
+        `/products?search=${encodeURIComponent(value)}&limit=8${
+          searchWarehouseId ? `&warehouseId=${searchWarehouseId}` : ''
+        }`,
       );
       const items = page.items.filter((p) => p.active && !p.archivedAt);
       if (items.length === 0) toast.error(t('notFound', { code: value }));

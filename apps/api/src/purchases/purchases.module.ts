@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { BillingModule } from '../billing/billing.module';
 import { CatalogModule } from '../catalog/catalog.module';
 import { DocumentsModule } from '../documents/documents.module';
+import { SalesForceModule } from '../sales-force/sales-force.module';
 import { StockModule } from '../stock/stock.module';
 import { ImportCostsGate } from './import-costs-gate';
 import { PurchaseWorkflowService } from './purchase-workflow.service';
@@ -21,7 +22,7 @@ import { SuppliersService } from './suppliers.service';
  * StockService only; supplier account entries through SupplierAccountService only.
  */
 @Module({
-  imports: [StockModule, CatalogModule, DocumentsModule, BillingModule],
+  imports: [StockModule, CatalogModule, DocumentsModule, BillingModule, SalesForceModule],
   controllers: [SuppliersController, PurchasesController, SupplierPaymentsController],
   providers: [
     SuppliersService,

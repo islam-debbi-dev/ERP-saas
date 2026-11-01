@@ -16,10 +16,13 @@ import {
   WarehouseType,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
+import type { CurrentUserInfo } from '../auth/auth.types';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
+import { type Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { ScopeService } from '../sales-force/scope.service';
 import { type MovementInput, StockService } from './stock.service';
 import { toBaseLines } from './unit-conversion';
 import { WarehousesService } from './warehouses.service';
@@ -49,11 +52,14 @@ export class StockTransfersService {
     private readonly warehouses: WarehousesService,
     private readonly numbering: DocumentNumberingService,
     private readonly audit: AuditService,
+    private readonly scope: ScopeService,
   ) {}
 
-  async create(input: CreateStockTransferInput): Promise<StockTransferDto> {
+  async create(input: CreateStockTransferInput, user: CurrentUserInfo): Promise<StockTransferDto> {
     const id = await this.prisma.db.$transaction(async (tx) => {
       const header = await this.checkHeader(tx, input);
+      // Phase 24: goods leave a dépôt the user works in.
+      await this.scope.assertWarehouse(tx, user, header.fromWarehouseId);
       const lines = await this.convert(tx, input);
       const tenantId = tenantContext.requireTenantId();
       const transfer = await tx.stockTransfer.create({
@@ -77,10 +83,16 @@ export class StockTransfersService {
   }
 
   /** Replaces the whole draft. */
-  async update(id: string, input: UpdateStockTransferInput): Promise<StockTransferDto> {
+  async update(
+    id: string,
+    input: UpdateStockTransferInput,
+    user: CurrentUserInfo,
+  ): Promise<StockTransferDto> {
     await this.prisma.db.$transaction(async (tx) => {
+      await this.assertInScope(tx, user, id);
       await this.lock(tx, id, StockTransferStatus.DRAFT);
       const header = await this.checkHeader(tx, input);
+      await this.scope.assertWarehouse(tx, user, header.fromWarehouseId);
       const lines = await this.convert(tx, input);
       // Draft lines have no effect anywhere, so they are simply replaced.
       await tx.stockTransferLine.deleteMany({ where: { transferId: id } });
@@ -99,8 +111,9 @@ export class StockTransfersService {
     return this.get(id);
   }
 
-  async validate(id: string): Promise<TransferResult> {
+  async validate(id: string, user: CurrentUserInfo): Promise<TransferResult> {
     const warnings = await this.prisma.db.$transaction(async (tx) => {
+      await this.assertInScope(tx, user, id);
       await this.lock(tx, id, StockTransferStatus.DRAFT);
       const t = await tx.stockTransfer.findUniqueOrThrow({
         where: { id },
@@ -147,8 +160,9 @@ export class StockTransfersService {
    * destination to the source, under the same negative-stock rule as any exit (a truck
    * that already sold the goods cannot give them back under BLOCK).
    */
-  async cancel(id: string, reason: string): Promise<TransferResult> {
+  async cancel(id: string, reason: string, user: CurrentUserInfo): Promise<TransferResult> {
     const warnings = await this.prisma.db.$transaction(async (tx) => {
+      await this.assertInScope(tx, user, id);
       const status = await this.lock(tx, id);
       if (status === StockTransferStatus.CANCELLED) {
         throw new AppException(ErrorCode.TRANSFER_NOT_VALIDATED, 'Already cancelled');
@@ -191,11 +205,18 @@ export class StockTransfersService {
     return { transfer: await this.get(id), warnings };
   }
 
-  async list(query: StockTransferListQuery): Promise<StockTransferPage> {
+  async list(query: StockTransferListQuery, user: CurrentUserInfo): Promise<StockTransferPage> {
     const rows = await this.prisma.db.stockTransfer.findMany({
-      where: query.warehouseId
-        ? { OR: [{ fromWarehouseId: query.warehouseId }, { toWarehouseId: query.warehouseId }] }
-        : {},
+      where: {
+        AND: [
+          await this.visibleWhere(user),
+          query.warehouseId
+            ? {
+                OR: [{ fromWarehouseId: query.warehouseId }, { toWarehouseId: query.warehouseId }],
+              }
+            : {},
+        ],
+      },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: query.limit + 1,
       ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
@@ -222,9 +243,9 @@ export class StockTransfersService {
     };
   }
 
-  async get(id: string): Promise<StockTransferDto> {
-    const t = await this.prisma.db.stockTransfer.findUnique({
-      where: { id },
+  async get(id: string, user?: CurrentUserInfo): Promise<StockTransferDto> {
+    const t = await this.prisma.db.stockTransfer.findFirst({
+      where: { id, ...(user ? await this.visibleWhere(user) : {}) },
       include: {
         fromWarehouse: { select: { id: true, name: true, type: true } },
         toWarehouse: { select: { id: true, name: true, type: true } },
@@ -276,6 +297,29 @@ export class StockTransfersService {
    * TRANSFER_OUT then TRANSFER_IN per line, both at the CUMP read under the product lock:
    * the entry is valued at the average, so the average does not move.
    */
+  /** Transfers in or out of a dépôt the user works in (phase 24). */
+  private async visibleWhere(
+    user: CurrentUserInfo,
+    db?: Tx,
+  ): Promise<Prisma.StockTransferWhereInput> {
+    const { warehouseIds } = await this.scope.warehouses(user, db);
+    if (!warehouseIds) return {};
+    return {
+      OR: [{ fromWarehouseId: { in: warehouseIds } }, { toWarehouseId: { in: warehouseIds } }],
+    };
+  }
+
+  /** A transfer is changed by someone who works where its goods leave from (phase 24). */
+  private async assertInScope(tx: Tx, user: CurrentUserInfo, id: string): Promise<void> {
+    const { warehouseIds } = await this.scope.warehouses(user, tx);
+    if (!warehouseIds) return;
+    const t = await tx.stockTransfer.findFirst({
+      where: { id, fromWarehouseId: { in: warehouseIds } },
+      select: { id: true },
+    });
+    if (!t) throw new AppException(ErrorCode.NOT_FOUND, 'Transfer not found');
+  }
+
   private async move(
     tx: Tx,
     t: {

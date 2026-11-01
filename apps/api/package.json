@@ -10,6 +10,7 @@
     "reconcile": "node dist/reconcile/reconcile.cli.js",
     "db:backfill-supplier-ledger": "node dist/purchases/supplier-backfill.cli.js",
     "db:backfill-warehouses": "node dist/stock/warehouse-backfill.cli.js",
+    "db:backfill-units": "node dist/stock/unit-backfill.cli.js",
     "db:check-migrations": "tsx scripts/check-migrations.ts",
     "admin:create": "tsx scripts/admin-create.ts",
     "lint": "eslint .",

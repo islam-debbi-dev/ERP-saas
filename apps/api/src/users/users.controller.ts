@@ -10,42 +10,54 @@ import {
   Put,
 } from '@nestjs/common';
 import {
+  Feature,
   type InviteResultDto,
   type InviteUserInput,
   inviteUserSchema,
+  Permission,
   type ResetPasswordInput,
   resetPasswordSchema,
   Role,
+  type TeamNodeDto,
   type UpdateUserInput,
   updateUserSchema,
+  type UserAccessDto,
+  type UserAccessInput,
+  userAccessSchema,
   type UserDto,
   type UserPermissionsInput,
   userPermissionsSchema,
-  Feature,
-  type TeamNodeDto,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
-import { CurrentUser, RequireFeature, Roles } from '../auth/decorators';
+import { CurrentUser, RequireFeature, RequirePermission, Roles } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
+import { UserAccessService } from './user-access.service';
 import { UsersService } from './users.service';
 
-/** Managers see the team; only the OWNER invites, changes roles and permissions. */
+/**
+ * Managers see the team; the OWNER (or USERS_MANAGE, phase 24) invites, changes roles and
+ * permissions.
+ */
 @Controller('users')
 export class UsersController {
-  constructor(private readonly users: UsersService) {}
+  constructor(
+    private readonly users: UsersService,
+    private readonly access: UserAccessService,
+  ) {}
 
   @Get()
-  @Roles(Role.OWNER, Role.MANAGER)
+  @RequirePermission(Permission.USERS_VIEW)
   list(): Promise<UserDto[]> {
     return this.users.list();
   }
 
   @Post('invite')
-  @Roles(Role.OWNER)
+  @RequirePermission(Permission.USERS_MANAGE)
   invite(
     @Body(new ZodValidationPipe(inviteUserSchema)) body: InviteUserInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<InviteResultDto> {
-    return this.users.invite(body);
+    return this.users.invite(body, user);
   }
 
   /** Active users who can be a sale's seller (phase 14, core): the seller pickers. */
@@ -66,13 +78,13 @@ export class UsersController {
   }
 
   @Get(':id')
-  @Roles(Role.OWNER, Role.MANAGER)
+  @RequirePermission(Permission.USERS_VIEW)
   get(@Param('id', ParseUUIDPipe) id: string): Promise<UserDto> {
     return this.users.get(id);
   }
 
   @Put(':id')
-  @Roles(Role.OWNER)
+  @RequirePermission(Permission.USERS_MANAGE)
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(updateUserSchema)) body: UpdateUserInput,
@@ -82,17 +94,38 @@ export class UsersController {
   }
 
   @Put(':id/permissions')
-  @Roles(Role.OWNER)
+  @RequirePermission(Permission.USERS_MANAGE)
   permissions(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(userPermissionsSchema)) body: UserPermissionsInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<UserDto> {
-    return this.users.setPermissions(id, body);
+    return this.users.setPermissions(id, body, user);
+  }
+
+  /** The dépôts this user works in or sees figures of (phase 24). */
+  @Get(':id/access')
+  @RequirePermission(Permission.USERS_VIEW)
+  @RequireFeature(Feature.MULTI_UNIT)
+  getAccess(@Param('id', ParseUUIDPipe) id: string): Promise<UserAccessDto> {
+    return this.access.get(id);
+  }
+
+  /** Replaces his dépôts; never beyond the granter's own reach (ACCESS_ABOVE_GRANTER). */
+  @Put(':id/access')
+  @RequirePermission(Permission.WAREHOUSE_ACCESS_MANAGE)
+  @RequireFeature(Feature.MULTI_UNIT)
+  setAccess(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(userAccessSchema)) body: UserAccessInput,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<UserAccessDto> {
+    return this.access.set(id, body, user);
   }
 
   @Post(':id/deactivate')
+  @RequirePermission(Permission.USERS_MANAGE)
   @HttpCode(HttpStatus.OK)
-  @Roles(Role.OWNER)
   deactivate(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: CurrentUserInfo,
@@ -101,15 +134,18 @@ export class UsersController {
   }
 
   @Post(':id/reactivate')
+  @RequirePermission(Permission.USERS_MANAGE)
   @HttpCode(HttpStatus.OK)
-  @Roles(Role.OWNER)
-  reactivate(@Param('id', ParseUUIDPipe) id: string): Promise<UserDto> {
-    return this.users.reactivate(id);
+  reactivate(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<UserDto> {
+    return this.users.reactivate(id, user);
   }
 
   @Post(':id/reset-password')
+  @RequirePermission(Permission.USERS_MANAGE)
   @HttpCode(HttpStatus.OK)
-  @Roles(Role.OWNER)
   resetPassword(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(resetPasswordSchema)) body: ResetPasswordInput,

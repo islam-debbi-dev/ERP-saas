@@ -16,16 +16,16 @@ import {
   type CancelSupplierPaymentInput,
   cancelSupplierPaymentSchema,
   type CreatePurchaseInput,
+  createPurchaseSchema,
   type CreateSupplierPaymentInput,
   createSupplierPaymentSchema,
-  createPurchaseSchema,
+  Permission,
   type PurchaseDto,
   type PurchaseListQuery,
   purchaseListQuerySchema,
   type PurchasePage,
   type PurchaseReturnInput,
   purchaseReturnSchema,
-  Role,
   type SupplierBalancesDto,
   type SupplierDto,
   type SupplierInput,
@@ -51,7 +51,7 @@ import {
   validatePurchaseSchema,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
-import { CurrentUser, Roles } from '../auth/decorators';
+import { CurrentUser, RequirePermission } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { Idempotent } from '../idempotency/idempotent.decorator';
 import { PurchaseWorkflowService } from './purchase-workflow.service';
@@ -59,15 +59,12 @@ import { PurchasesService } from './purchases.service';
 import { SupplierPaymentsService } from './supplier-payments.service';
 import { SuppliersService } from './suppliers.service';
 
-const MANAGERS = [Role.OWNER, Role.MANAGER];
-/** Storekeepers receive goods: they prepare drafts; a manager validates. */
-const RECEIVERS = [...MANAGERS, Role.STOREKEEPER];
-
 @Controller('suppliers')
 export class SuppliersController {
   constructor(private readonly suppliers: SuppliersService) {}
 
   @Get()
+  @RequirePermission(Permission.SUPPLIERS_VIEW)
   list(
     @Query(new ZodValidationPipe(supplierListQuerySchema)) query: SupplierListQuery,
   ): Promise<SupplierPage> {
@@ -76,13 +73,13 @@ export class SuppliersController {
 
   // Declared before ':id'. Supplier accounts are for managers (phase 21).
   @Get('balances')
-  @Roles(...MANAGERS)
+  @RequirePermission(Permission.SUPPLIERS_ACCOUNT)
   balances(): Promise<SupplierBalancesDto> {
     return this.suppliers.balances();
   }
 
   @Get(':id/ledger')
-  @Roles(...MANAGERS)
+  @RequirePermission(Permission.SUPPLIERS_ACCOUNT)
   ledger(
     @Param('id', ParseUUIDPipe) id: string,
     @Query(new ZodValidationPipe(supplierLedgerQuerySchema)) query: SupplierLedgerQuery,
@@ -91,7 +88,7 @@ export class SuppliersController {
   }
 
   @Get(':id/statement')
-  @Roles(...MANAGERS)
+  @RequirePermission(Permission.SUPPLIERS_ACCOUNT)
   statement(
     @Param('id', ParseUUIDPipe) id: string,
     @Query(new ZodValidationPipe(supplierStatementQuerySchema)) query: SupplierStatementQuery,
@@ -100,18 +97,19 @@ export class SuppliersController {
   }
 
   @Get(':id')
+  @RequirePermission(Permission.SUPPLIERS_VIEW)
   get(@Param('id', ParseUUIDPipe) id: string): Promise<SupplierDto> {
     return this.suppliers.get(id);
   }
 
   @Post()
-  @Roles(...MANAGERS)
+  @RequirePermission(Permission.SUPPLIERS_CREATE)
   create(@Body(new ZodValidationPipe(supplierSchema)) body: SupplierInput): Promise<SupplierDto> {
     return this.suppliers.create(body);
   }
 
   @Patch(':id')
-  @Roles(...MANAGERS)
+  @RequirePermission(Permission.SUPPLIERS_EDIT)
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(updateSupplierSchema)) body: UpdateSupplierInput,
@@ -120,7 +118,7 @@ export class SuppliersController {
   }
 
   @Delete(':id')
-  @Roles(...MANAGERS)
+  @RequirePermission(Permission.SUPPLIERS_EDIT)
   @HttpCode(HttpStatus.NO_CONTENT)
   archive(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.suppliers.archive(id);
@@ -135,68 +133,81 @@ export class PurchasesController {
   ) {}
 
   @Get()
+  @RequirePermission(Permission.PURCHASES_VIEW)
   list(
     @Query(new ZodValidationPipe(purchaseListQuerySchema)) query: PurchaseListQuery,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<PurchasePage> {
-    return this.purchases.list(query);
+    return this.purchases.list(query, user);
   }
 
   @Get(':id')
-  get(@Param('id', ParseUUIDPipe) id: string): Promise<PurchaseDto> {
-    return this.purchases.get(id);
+  @RequirePermission(Permission.PURCHASES_VIEW)
+  get(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<PurchaseDto> {
+    return this.purchases.get(id, user);
   }
 
   @Post()
+  @RequirePermission(Permission.PURCHASES_CREATE)
   @Idempotent()
-  @Roles(...RECEIVERS)
   create(
     @Body(new ZodValidationPipe(createPurchaseSchema)) body: CreatePurchaseInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<PurchaseDto> {
-    return this.purchases.create(body);
+    return this.purchases.create(body, user);
   }
 
   @Put(':id')
-  @Roles(...RECEIVERS)
+  @RequirePermission(Permission.PURCHASES_CREATE)
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(updatePurchaseSchema)) body: UpdatePurchaseInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<PurchaseDto> {
-    return this.purchases.update(id, body);
+    return this.purchases.update(id, body, user);
   }
 
   @Post(':id/validate')
+  @RequirePermission(Permission.PURCHASES_VALIDATE)
   @Idempotent()
-  @Roles(...MANAGERS)
   @HttpCode(HttpStatus.OK)
   validate(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(validatePurchaseSchema)) body: ValidatePurchaseInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<PurchaseDto> {
-    return this.workflow.validate(id, body);
+    return this.workflow.validate(id, body, user);
   }
 
   @Post(':id/cancel')
+  @RequirePermission(Permission.PURCHASES_CANCEL)
   @Idempotent()
-  @Roles(...MANAGERS)
   @HttpCode(HttpStatus.OK)
-  cancel(@Param('id', ParseUUIDPipe) id: string): Promise<PurchaseDto> {
-    return this.workflow.cancel(id);
+  cancel(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<PurchaseDto> {
+    return this.workflow.cancel(id, user);
   }
 
   @Post(':id/returns')
+  @RequirePermission(Permission.PURCHASES_CANCEL)
   @Idempotent()
-  @Roles(...MANAGERS)
   createReturn(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(purchaseReturnSchema)) body: PurchaseReturnInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<PurchaseDto> {
-    return this.workflow.createReturn(id, body);
+    return this.workflow.createReturn(id, body, user);
   }
 }
 
 /** Règlements fournisseur (RGF, phase 21). */
 @Controller('supplier-payments')
-@Roles(...MANAGERS)
+@RequirePermission(Permission.SUPPLIERS_ACCOUNT)
 export class SupplierPaymentsController {
   constructor(private readonly payments: SupplierPaymentsService) {}
 
@@ -213,6 +224,7 @@ export class SupplierPaymentsController {
   }
 
   @Post()
+  @RequirePermission(Permission.SUPPLIERS_PAY)
   @Idempotent()
   create(
     @Body(new ZodValidationPipe(createSupplierPaymentSchema)) body: CreateSupplierPaymentInput,
@@ -222,6 +234,7 @@ export class SupplierPaymentsController {
   }
 
   @Post(':id/cancel')
+  @RequirePermission(Permission.SUPPLIERS_PAY)
   @Idempotent()
   @HttpCode(HttpStatus.OK)
   cancel(

@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Patch } from '@nestjs/common';
 import {
-  Role,
+  Permission,
   type TenantSettingsResponse,
   type UpdateTenantSettingsInput,
   updateTenantSettingsSchema,
 } from '@erp/shared';
-import { Roles } from '../auth/decorators';
+import { RequirePermission } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { TenantsService } from './tenants.service';
 
@@ -19,7 +19,7 @@ export class TenantsController {
   }
 
   @Patch()
-  @Roles(Role.OWNER, Role.MANAGER)
+  @RequirePermission(Permission.SETTINGS_EDIT)
   update(
     @Body(new ZodValidationPipe(updateTenantSettingsSchema)) body: UpdateTenantSettingsInput,
   ): Promise<TenantSettingsResponse> {

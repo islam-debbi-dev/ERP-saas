@@ -183,6 +183,8 @@ export const purchaseListQuerySchema = z.object({
   status: z.enum(['DRAFT', 'IN_TRANSIT', 'VALIDATED', 'CANCELLED']).optional(),
   supplierId: id.optional(),
   importFileId: id.optional(),
+  /** Only this dépôt (phase 24); one outside the user's reach gives nothing. */
+  warehouseId: id.optional(),
   from: dateString.optional(),
   to: dateString.optional(),
   cursor: id.optional(),

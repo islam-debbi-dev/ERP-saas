@@ -18,7 +18,9 @@ import { requirePermission } from '../auth/permissions';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
+import { type Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { ScopeService } from '../sales-force/scope.service';
 import { StockService } from './stock.service';
 import { toBaseLines } from './unit-conversion';
 import { WarehousesService } from './warehouses.service';
@@ -37,12 +39,16 @@ export class InventoriesService {
     private readonly numbering: DocumentNumberingService,
     private readonly audit: AuditService,
     private readonly warehouses: WarehousesService,
+    private readonly scope: ScopeService,
   ) {}
 
-  async create(input: CreateInventoryInput): Promise<InventoryDto> {
+  async create(input: CreateInventoryInput, user: CurrentUserInfo): Promise<InventoryDto> {
     const id = await this.prisma.db.$transaction(async (tx) => {
       const tenantId = tenantContext.requireTenantId();
-      const warehouseId = await this.warehouses.resolve(tx, input.warehouseId);
+      const warehouseId = await this.warehouses.resolve(tx, input.warehouseId, () =>
+        this.scope.onlyWarehouse(user, tx),
+      );
+      await this.scope.assertWarehouse(tx, user, warehouseId);
       const number = await this.numbering.next(tx, tenantId, DocType.INV);
       const inv = await tx.inventory.create({
         data: {
@@ -64,8 +70,9 @@ export class InventoriesService {
     return this.get(id);
   }
 
-  async list(): Promise<InventorySummaryDto[]> {
+  async list(user: CurrentUserInfo): Promise<InventorySummaryDto[]> {
     const rows = await this.prisma.db.inventory.findMany({
+      where: await this.scopeWhere(user),
       orderBy: { createdAt: 'desc' },
       take: 100,
       include: { _count: { select: { lines: true } } },
@@ -82,9 +89,9 @@ export class InventoriesService {
   }
 
   /** While open, "expected" is the live stock; once validated it is the frozen value. */
-  async get(id: string): Promise<InventoryDto> {
-    const inv = await this.prisma.db.inventory.findUnique({
-      where: { id },
+  async get(id: string, user?: CurrentUserInfo): Promise<InventoryDto> {
+    const inv = await this.prisma.db.inventory.findFirst({
+      where: { id, ...(user ? await this.scopeWhere(user) : {}) },
       include: {
         lines: {
           include: {
@@ -132,8 +139,13 @@ export class InventoriesService {
   }
 
   /** Upserts counted quantities; a null quantity removes the line (draft data only). */
-  async setLines(id: string, input: InventoryLinesInput): Promise<InventoryDto> {
+  async setLines(
+    id: string,
+    input: InventoryLinesInput,
+    user: CurrentUserInfo,
+  ): Promise<InventoryDto> {
     await this.prisma.db.$transaction(async (tx) => {
+      await this.assertInScope(tx, user, id);
       await this.lockOpen(tx, id);
       const toSet = input.lines.flatMap((l) =>
         l.qty !== null && l.unitId
@@ -164,6 +176,7 @@ export class InventoriesService {
       message: 'You may not validate an inventory',
     });
     await this.prisma.db.$transaction(async (tx) => {
+      await this.assertInScope(tx, user, id);
       await this.lockOpen(tx, id);
       const inv = await tx.inventory.findUniqueOrThrow({
         where: { id },
@@ -226,8 +239,9 @@ export class InventoriesService {
     return this.get(id);
   }
 
-  async cancel(id: string): Promise<InventoryDto> {
+  async cancel(id: string, user: CurrentUserInfo): Promise<InventoryDto> {
     await this.prisma.db.$transaction(async (tx) => {
+      await this.assertInScope(tx, user, id);
       await this.lockOpen(tx, id);
       await tx.inventory.update({
         where: { id },
@@ -240,6 +254,20 @@ export class InventoriesService {
       });
     });
     return this.get(id);
+  }
+
+  /** Counts of the dépôts the user works in (phase 24); one without a dépôt is MAIN's. */
+  private async scopeWhere(user: CurrentUserInfo, db?: Tx): Promise<Prisma.InventoryWhereInput> {
+    const scope = await this.scope.of(user, db);
+    const w = this.scope.warehouseWhere(scope, scope.warehouseIds, 'createdBy');
+    return w ? (w) : {};
+  }
+
+  private async assertInScope(tx: Tx, user: CurrentUserInfo, id: string): Promise<void> {
+    const where = await this.scopeWhere(user, tx);
+    if (Object.keys(where).length === 0) return;
+    const found = await tx.inventory.findFirst({ where: { id, ...where }, select: { id: true } });
+    if (!found) throw new AppException(ErrorCode.NOT_FOUND, 'Inventory not found');
   }
 
   /** Locks the inventory row and refuses anything but an open count. */

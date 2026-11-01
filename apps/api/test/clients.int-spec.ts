@@ -68,11 +68,20 @@ describe('clients', () => {
   /** Posts straight through the service, as sales and versements will. */
   const post = (who: RegisteredTenant, clientId: string, amount: string, createdAt?: Date) =>
     asTenant(who.tenantId, () =>
-      t.prisma.db.$transaction((tx) =>
-        account.post(tx, [
-          { clientId, type: 'ADJUSTMENT', amount, label: 'test', reason: 'test', createdAt },
-        ]),
-      ),
+      t.prisma.db.$transaction(async (tx) => {
+        const main = await tx.warehouse.findFirstOrThrow({ where: { isDefault: true } });
+        return account.post(tx, [
+          {
+            clientId,
+            type: 'ADJUSTMENT',
+            amount,
+            label: 'test',
+            reason: 'test',
+            createdAt,
+            warehouseId: main.id,
+          },
+        ]);
+      }),
     );
 
   const loginAs = async (who: RegisteredTenant, role: 'SELLER' | 'MANAGER') => {

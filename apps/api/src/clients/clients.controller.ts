@@ -14,32 +14,33 @@ import {
 import {
   type ClientAdjustmentInput,
   clientAdjustmentSchema,
+  type ClientBulkAssignInput,
+  type ClientBulkAssignResultDto,
+  clientBulkAssignSchema,
   type ClientDto,
   type ClientListQuery,
   clientListQuerySchema,
   type ClientPage,
   type ClientReconcileReport,
-  type ClientsToRemindDto,
   type ClientStatementDto,
+  type ClientsToRemindDto,
   type CreateClientInput,
   createClientSchema,
   type DebtorDto,
   type DebtorsQuery,
   debtorsQuerySchema,
+  Feature,
   type OpeningBalanceInput,
   openingBalanceSchema,
+  Permission,
   Role,
   type StatementQuery,
   statementQuerySchema,
   type UpdateClientInput,
   updateClientSchema,
-  type ClientBulkAssignInput,
-  type ClientBulkAssignResultDto,
-  clientBulkAssignSchema,
-  Feature,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
-import { CurrentUser, RequireFeature, Roles } from '../auth/decorators';
+import { CurrentUser, RequireFeature, RequirePermission, Roles } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { AgingService } from '../credit/aging.service';
 import { Idempotent } from '../idempotency/idempotent.decorator';
@@ -47,8 +48,6 @@ import { ScopeService } from '../sales-force/scope.service';
 import { ClientsService } from './clients.service';
 
 const MANAGERS = [Role.OWNER, Role.MANAGER];
-/** Sellers add and edit clients at the counter (but not their plafond, see the service). */
-const CLIENT_EDITORS = [...MANAGERS, Role.SUPERVISOR, Role.SELLER];
 
 @Controller('clients')
 export class ClientsController {
@@ -59,6 +58,7 @@ export class ClientsController {
   ) {}
 
   @Get()
+  @RequirePermission(Permission.CLIENTS_VIEW)
   list(
     @Query(new ZodValidationPipe(clientListQuerySchema)) query: ClientListQuery,
     @CurrentUser() user: CurrentUserInfo,
@@ -68,6 +68,7 @@ export class ClientsController {
 
   // Declared before ':id'.
   @Get('debtors')
+  @RequirePermission(Permission.CLIENTS_VIEW)
   async debtors(
     @Query(new ZodValidationPipe(debtorsQuerySchema)) query: DebtorsQuery,
     @CurrentUser() user: CurrentUserInfo,
@@ -99,6 +100,7 @@ export class ClientsController {
   }
 
   @Get(':id')
+  @RequirePermission(Permission.CLIENTS_VIEW)
   get(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: CurrentUserInfo,
@@ -107,6 +109,7 @@ export class ClientsController {
   }
 
   @Get(':id/statement')
+  @RequirePermission(Permission.CLIENTS_VIEW)
   statement(
     @Param('id', ParseUUIDPipe) id: string,
     @Query(new ZodValidationPipe(statementQuerySchema)) query: StatementQuery,
@@ -116,7 +119,7 @@ export class ClientsController {
   }
 
   @Post()
-  @Roles(...CLIENT_EDITORS)
+  @RequirePermission(Permission.CLIENTS_CREATE)
   create(
     @Body(new ZodValidationPipe(createClientSchema)) body: CreateClientInput,
     @CurrentUser() user: CurrentUserInfo,
@@ -125,7 +128,7 @@ export class ClientsController {
   }
 
   @Patch(':id')
-  @Roles(...CLIENT_EDITORS)
+  @RequirePermission(Permission.CLIENTS_EDIT)
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(updateClientSchema)) body: UpdateClientInput,
@@ -135,29 +138,31 @@ export class ClientsController {
   }
 
   @Delete(':id')
-  @Roles(...MANAGERS)
+  @RequirePermission(Permission.CLIENTS_ARCHIVE)
   @HttpCode(HttpStatus.NO_CONTENT)
   archive(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.clients.archive(id);
   }
 
   @Post(':id/opening-balance')
+  @RequirePermission(Permission.CLIENTS_BALANCE_ADJUST)
   @Idempotent()
-  @Roles(...MANAGERS)
   openingBalance(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(openingBalanceSchema)) body: OpeningBalanceInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<ClientDto> {
-    return this.clients.openingBalance(id, body);
+    return this.clients.openingBalance(id, body, user);
   }
 
   @Post(':id/adjustments')
+  @RequirePermission(Permission.CLIENTS_BALANCE_ADJUST)
   @Idempotent()
-  @Roles(...MANAGERS)
   adjust(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(clientAdjustmentSchema)) body: ClientAdjustmentInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<ClientDto> {
-    return this.clients.adjust(id, body);
+    return this.clients.adjust(id, body, user);
   }
 }

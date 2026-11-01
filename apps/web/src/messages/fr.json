@@ -384,6 +384,9 @@
     "TRANSFER_NOT_DRAFT": "Ce transfert est déjà validé ou annulé.",
     "TRANSFER_NOT_VALIDATED": "Ce transfert n’est pas validé.",
     "TRANSFER_EMPTY": "Ajoutez au moins un article.",
+    "PRODUCT_NOT_IN_WAREHOUSE": "Ce produit n’est pas vendu par ce dépôt.",
+    "ACCESS_ABOVE_GRANTER": "Vous ne pouvez pas donner plus de droits que les vôtres.",
+    "WAREHOUSE_ACCESS_INVALID": "Accès au dépôt invalide.",
     "ROUTE_NOT_FOUND": "Tournée introuvable.",
     "VISIT_INVALID": "Cette visite ne correspond pas à ce client ou à ce vendeur.",
     "ORDER_NOT_FOUND": "Bon de commande introuvable.",
@@ -1416,6 +1419,142 @@
     "PROMO_OVERRIDE": {
       "label": "Modifier une promotion sur une vente",
       "help": "Changer les unités gratuites (UG) ou la remise qu’une promotion donne à une ligne."
+    },
+    "PRODUCTS_VIEW": {
+      "label": "Voir les produits",
+      "help": "Catalogue, marques, catégories, unités."
+    },
+    "PRODUCTS_CREATE": {
+      "label": "Créer des produits",
+      "help": "Nouveaux produits, marques, catégories et unités."
+    },
+    "PRODUCTS_EDIT": {
+      "label": "Modifier les produits",
+      "help": "Modifier, archiver, restaurer ; niveaux de prix."
+    },
+    "STOCK_VIEW": {
+      "label": "Voir le stock",
+      "help": "Quantités, mouvements et inventaires."
+    },
+    "STOCK_COUNT": {
+      "label": "Compter le stock",
+      "help": "Commencer et remplir un inventaire."
+    },
+    "STOCK_TRANSFER": {
+      "label": "Transferts de stock",
+      "help": "Chargements, déchargements et transferts entre dépôts."
+    },
+    "PURCHASES_VIEW": {
+      "label": "Voir les achats",
+      "help": "Bons de réception."
+    },
+    "PURCHASES_CREATE": {
+      "label": "Saisir un BR",
+      "help": "Créer et modifier un bon de réception en brouillon."
+    },
+    "PURCHASES_VALIDATE": {
+      "label": "Valider un BR",
+      "help": "Faire entrer la marchandise en stock."
+    },
+    "PURCHASES_CANCEL": {
+      "label": "Annuler un BR",
+      "help": "Annulation et retour fournisseur."
+    },
+    "SUPPLIERS_VIEW": {
+      "label": "Voir les fournisseurs",
+      "help": "Liste et fiche fournisseur."
+    },
+    "SUPPLIERS_CREATE": {
+      "label": "Créer des fournisseurs",
+      "help": "Nouveau fournisseur."
+    },
+    "SUPPLIERS_EDIT": {
+      "label": "Modifier les fournisseurs",
+      "help": "Modifier et archiver."
+    },
+    "SUPPLIERS_ACCOUNT": {
+      "label": "Comptes fournisseurs",
+      "help": "Soldes, relevés et règlements."
+    },
+    "SUPPLIERS_PAY": {
+      "label": "Régler un fournisseur",
+      "help": "Saisir ou annuler un règlement."
+    },
+    "CLIENTS_VIEW": {
+      "label": "Voir les clients",
+      "help": "Liste, fiche et relevé."
+    },
+    "CLIENTS_CREATE": {
+      "label": "Créer des clients",
+      "help": "Nouveau client."
+    },
+    "CLIENTS_EDIT": {
+      "label": "Modifier les clients",
+      "help": "Coordonnées, plafond, niveau de prix."
+    },
+    "CLIENTS_ARCHIVE": {
+      "label": "Archiver des clients",
+      "help": "Retirer un client de la liste."
+    },
+    "CLIENTS_BALANCE_ADJUST": {
+      "label": "Ajuster un solde client",
+      "help": "Solde d’ouverture et ajustements."
+    },
+    "SALES_VIEW": {
+      "label": "Voir les ventes",
+      "help": "Bons de livraison, factures, avoirs."
+    },
+    "SALES_CREATE": {
+      "label": "Vendre",
+      "help": "Créer, modifier et valider une vente."
+    },
+    "SALES_RETURN": {
+      "label": "Retour client",
+      "help": "Faire un avoir."
+    },
+    "PAYMENTS_VIEW": {
+      "label": "Voir les versements",
+      "help": "Liste et reçus."
+    },
+    "PAYMENTS_CREATE": {
+      "label": "Encaisser",
+      "help": "Saisir un versement."
+    },
+    "PAYMENTS_BOUNCE": {
+      "label": "Chèque impayé",
+      "help": "Marquer un chèque comme impayé."
+    },
+    "REPORTS_VIEW": {
+      "label": "Voir les rapports",
+      "help": "Ventes, stock, encaissements."
+    },
+    "REPORTS_FINANCE": {
+      "label": "Ancienneté des dettes",
+      "help": "Balance âgée clients et fournisseurs."
+    },
+    "USERS_VIEW": {
+      "label": "Voir les utilisateurs",
+      "help": "Liste et fiches."
+    },
+    "USERS_MANAGE": {
+      "label": "Gérer les utilisateurs",
+      "help": "Inviter, modifier, désactiver ; jamais au-delà de ses propres droits."
+    },
+    "SETTINGS_EDIT": {
+      "label": "Paramètres",
+      "help": "Paramètres de l’entreprise et dépôts."
+    },
+    "SELL_ANY_PRODUCT": {
+      "label": "Vendre tout produit",
+      "help": "Vendre un produit hors des marques et catégories du dépôt."
+    },
+    "WAREHOUSE_ACCESS_MANAGE": {
+      "label": "Gérer l’accès aux dépôts",
+      "help": "Donner ou retirer l’accès d’un utilisateur aux dépôts."
+    },
+    "VIEW_ALL_WAREHOUSES": {
+      "label": "Tous les dépôts",
+      "help": "Travailler dans tous les dépôts et voir leurs chiffres."
     }
   },
   "sessions": {
@@ -1622,6 +1761,7 @@
     "featurePROMOTIONS": "Promotions et UG",
     "featurePACKAGING": "Emballages consignés",
     "featureIMPORT_COSTS": "Dossiers d’importation et coût de revient",
+    "featureMULTI_UNIT": "Dépôts et équipes",
     "yourEdition": "Édition {edition}",
     "included": "Modules inclus",
     "coreOnly": "Ventes, stock, achats, clients et crédit : tout le nécessaire du grossiste.",
@@ -2635,5 +2775,53 @@
       "netHt": "Net HT",
       "freeValueHt": "Valeur gratuités HT"
     }
+  },
+  "multiUnit": {
+    "switcherLabel": "Dépôt affiché",
+    "switcherAria": "Dépôt : {name}. Changer",
+    "allWarehouses": "Tous les dépôts",
+    "menuAccess": "Dépôts",
+    "accessTitle": "Dépôts de {name}",
+    "accessHelp": "Où il travaille et de quels dépôts il voit les chiffres. Ses camions suivent leur dépôt.",
+    "levelNONE": "Aucun accès",
+    "levelVIEW_STATS": "Voir les statistiques",
+    "levelOPERATE": "Travailler",
+    "allAccess": "Il travaille dans tous les dépôts : propriétaire, ou droit « Tous les dépôts ».",
+    "accessSaved": "Accès aux dépôts enregistré",
+    "resetDefaults": "Revenir aux droits du rôle",
+    "group_products": "Produits",
+    "group_stock": "Stock",
+    "group_purchases": "Achats",
+    "group_suppliers": "Fournisseurs",
+    "group_clients": "Clients",
+    "group_sales": "Ventes",
+    "group_payments": "Versements",
+    "group_reports": "Rapports",
+    "group_users": "Utilisateurs et dépôts",
+    "group_settings": "Paramètres",
+    "open": "Ouvrir {name}",
+    "back": "Dépôts",
+    "sells": "Ce que vend ce dépôt",
+    "sellsAll": "Tout le catalogue",
+    "sellsHelp": "Une vente ou une commande d’un autre produit est refusée, sauf avec le droit « Vendre tout produit ». Laissez vide pour vendre tout le catalogue.",
+    "brands": "Marques",
+    "categories": "Catégories",
+    "editBrands": "Modifier les marques",
+    "editCategories": "Modifier les catégories",
+    "noBrandsYet": "Aucune marque. Créez-en dans Produits.",
+    "noCategoriesYet": "Aucune catégorie. Créez-en dans Produits.",
+    "manager": "Gérant du dépôt",
+    "noManager": "Aucun",
+    "team": "Équipe",
+    "teamEmpty": "Personne ne travaille ici. Donnez l’accès depuis la fiche d’un utilisateur.",
+    "teamHelp": "Le propriétaire et les comptes « Tous les dépôts » y ont toujours accès.",
+    "trucks": "Camions",
+    "trucksEmpty": "Aucun camion rattaché à ce dépôt.",
+    "noDriver": "Sans chauffeur",
+    "parent": "Dépôt du camion",
+    "saved": "Dépôt enregistré",
+    "debtByWarehouse": "Dette par dépôt",
+    "reducedLine": "Dépôt {name} : détail non accessible",
+    "notFound": "Ce dépôt n’existe pas ou vous n’y avez pas accès."
   }
 }

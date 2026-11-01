@@ -76,6 +76,13 @@ Sidebar help links come from the web env (`NEXT_PUBLIC_SUPPORT_WHATSAPP`, `NEXT_
 - **After deploying phase 21, run the supplier ledger backfill once** (`docs/runbook.md`, "Supplier ledger backfill"); locally: `pnpm --filter @erp/api build && pnpm --filter @erp/api db:backfill-supplier-ledger`.
 - Rapports → Balance âgée (clients and suppliers, Excel export), Clients → À relancer (WhatsApp), the "Chèques à échéance" dashboard card, and "Partager le lien" on the relevé and the facture (`/s/<token>`, 7 days, revocable). The share URL is built from the first `WEB_ORIGIN`.
 
+## Dépôts et équipes (phase 24)
+
+- Module `MULTI_UNIT` (editions Distribution and Entreprise). Each user works in some dépôts ("Travailler") and may see the figures of others ("Voir les statistiques"): Paramètres → Utilisateurs → Dépôts. The owner and users with "Tous les dépôts" see everything.
+- Stock → Dépôts → a dépôt: what it sells (brands, categories), its manager, team and trucks. The header switcher filters lists, reports and the dashboard.
+- Permissions are now per module (view / create / edit / cancel); the role defaults give everyone exactly what they had before.
+- **After deploying phase 24, run the units backfill once** (`docs/runbook.md`, "Units backfill"); locally: `pnpm --filter @erp/api build && pnpm --filter @erp/api db:backfill-units`.
+
 ## Everyday commands
 
 ```bash

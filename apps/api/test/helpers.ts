@@ -122,6 +122,22 @@ export function tamper(t: TestApp) {
     tenantContext.runAsSystem(() => t.prisma.db.$executeRaw(sql, ...values));
 }
 
+/**
+ * A user created straight in the database (not invited) gets what an invitation by the
+ * owner gives (phase 24): OPERATE on every dépôt of his company. Without it, a user of a
+ * MULTI_UNIT company works nowhere.
+ */
+export async function grantAllWarehouses(t: TestApp, userId: string): Promise<void> {
+  await tamper(t)`
+    INSERT INTO user_warehouse_access ("id", "tenantId", "userId", "warehouseId", "level", "grantedAt")
+    SELECT gen_random_uuid(), u."tenantId", u.id, w.id, 'OPERATE', CURRENT_TIMESTAMP
+    FROM users u
+    JOIN warehouses w ON w."tenantId" = u."tenantId"
+      AND w.type IN ('MAIN', 'SECONDARY') AND w."deletedAt" IS NULL
+    WHERE u.id = ${userId}::uuid
+    ON CONFLICT ("userId", "warehouseId") DO NOTHING`;
+}
+
 export function bearer(token: string): [string, string] {
   return ['Authorization', `Bearer ${token}`];
 }

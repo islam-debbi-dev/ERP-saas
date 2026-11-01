@@ -17,6 +17,7 @@ import { chunks } from '../common/chunks';
 import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { WarehousesService } from '../stock/warehouses.service';
 import { CategoriesService } from './categories.service';
 import { PriceLevelsService } from './price-levels.service';
 import {
@@ -43,6 +44,7 @@ export class ProductsService {
     private readonly categories: CategoriesService,
     private readonly priceLevels: PriceLevelsService,
     private readonly billing: BillingService,
+    private readonly warehouses: WarehousesService,
   ) {}
 
   /** Product, units and prices in one transaction. */
@@ -231,6 +233,10 @@ export class ProductsService {
         ? { categoryId: { in: await this.categories.idsWithChildren(query.categoryId) } }
         : {}),
       ...(query.brandId ? { brandId: query.brandId } : {}),
+      // Phase 24: what this dépôt sells (the sale and order screens' search).
+      ...(query.warehouseId
+        ? { AND: [(await this.warehouses.sellsWhere(query.warehouseId)) ?? {}] }
+        : {}),
       ...(search
         ? {
             OR: [

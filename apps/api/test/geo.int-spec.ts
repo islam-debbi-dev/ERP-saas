@@ -25,8 +25,9 @@ import {
   bearer,
   catalogOf,
   createTestApp,
-  registerTenant,
+  grantAllWarehouses,
   type RegisteredTenant,
+  registerTenant,
   tamper,
   type TestApp,
   uniqueEmail,
@@ -97,6 +98,7 @@ describe('géolocalisation (phase 17)', () => {
         },
       }),
     );
+    await grantAllWarehouses(t, user.id);
     const login = await t
       .http()
       .post('/auth/login')

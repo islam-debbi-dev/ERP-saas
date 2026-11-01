@@ -3,6 +3,7 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import type { PurchaseDto, PurchasePage, PurchaseStatus, SupplierPage } from '@erp/shared';
 import { api } from './api-client';
+import { useWarehouseFilter } from './warehouse-scope';
 
 export interface PurchaseFilters {
   status: PurchaseStatus | '';
@@ -31,8 +32,9 @@ export function useSuppliers(search = '', enabled = true) {
 }
 
 export function usePurchasePages(filters: PurchaseFilters) {
+  const warehouseId = useWarehouseFilter();
   return useInfiniteQuery({
-    queryKey: purchaseKeys.list(filters),
+    queryKey: [...purchaseKeys.list(filters), warehouseId],
     initialPageParam: null as string | null,
     queryFn: ({ pageParam, signal }) => {
       const params = new URLSearchParams({ limit: '50' });
@@ -40,6 +42,7 @@ export function usePurchasePages(filters: PurchaseFilters) {
       if (filters.supplierId) params.set('supplierId', filters.supplierId);
       if (filters.from) params.set('from', filters.from);
       if (filters.to) params.set('to', filters.to);
+      if (warehouseId) params.set('warehouseId', warehouseId);
       if (pageParam) params.set('cursor', pageParam);
       return api.request<PurchasePage>(`/purchases?${params.toString()}`, { signal });
     },

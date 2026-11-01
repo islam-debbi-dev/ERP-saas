@@ -1,9 +1,10 @@
 import { createParamDecorator, type ExecutionContext, SetMetadata } from '@nestjs/common';
-import type { Feature, Role } from '@erp/shared';
+import type { Feature, Permission, Role } from '@erp/shared';
 import type { AuthenticatedRequest, CurrentUserInfo } from './auth.types';
 
 export const IS_PUBLIC_KEY = 'erp:isPublic';
 export const ROLES_KEY = 'erp:roles';
+export const PERMISSION_KEY = 'erp:permission';
 export const ALLOW_PASSWORD_CHANGE_KEY = 'erp:allowPasswordChange';
 export const ALLOW_WHEN_SUSPENDED_KEY = 'erp:allowWhenSuspended';
 export const FEATURE_KEY = 'erp:feature';
@@ -16,6 +17,14 @@ export const Public = (): MethodDecorator & ClassDecorator => SetMetadata(IS_PUB
 /** Route is limited to these roles. Without @Roles, any authenticated user passes. */
 export const Roles = (...roles: Role[]): MethodDecorator & ClassDecorator =>
   SetMetadata(ROLES_KEY, roles);
+
+/**
+ * Route of a module action (phase 24): the user needs this permission (role default,
+ * granted, not revoked). Role defaults reproduce the @Roles lists these routes had, so
+ * nobody gained or lost a right (auth/route-access.spec.ts). Combined with @Roles, both apply.
+ */
+export const RequirePermission = (permission: Permission): MethodDecorator & ClassDecorator =>
+  SetMetadata(PERMISSION_KEY, permission);
 
 /**
  * Reachable while the user must still change a temporary password (me, logout,

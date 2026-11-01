@@ -24,26 +24,23 @@ import {
   type PaymentListQuery,
   paymentListQuerySchema,
   type PaymentPage,
-  Role,
-  type UnpaidDocumentDto,
+  Permission,
   type ReassignCollectorInput,
   reassignCollectorSchema,
+  type UnpaidDocumentDto,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
-import { CurrentUser, Roles } from '../auth/decorators';
+import { CurrentUser, RequirePermission } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { Idempotent } from '../idempotency/idempotent.decorator';
 import { PaymentsService } from './payments.service';
-
-const MANAGERS = [Role.OWNER, Role.MANAGER];
-/** Who takes money. Cancel rules for sellers are checked in the service. */
-const CASHIERS = [...MANAGERS, Role.SUPERVISOR, Role.SELLER];
 
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly payments: PaymentsService) {}
 
   @Get()
+  @RequirePermission(Permission.PAYMENTS_VIEW)
   list(
     @Query(new ZodValidationPipe(paymentListQuerySchema)) query: PaymentListQuery,
     @CurrentUser() user: CurrentUserInfo,
@@ -53,6 +50,7 @@ export class PaymentsController {
 
   // Declared before ':id'.
   @Get('summary')
+  @RequirePermission(Permission.PAYMENTS_VIEW)
   summary(
     @Query(new ZodValidationPipe(cashSummaryQuerySchema)) query: CashSummaryQuery,
     @CurrentUser() user: CurrentUserInfo,
@@ -61,6 +59,7 @@ export class PaymentsController {
   }
 
   @Get(':id')
+  @RequirePermission(Permission.PAYMENTS_VIEW)
   get(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: CurrentUserInfo,
@@ -70,7 +69,7 @@ export class PaymentsController {
 
   /** Change who collected a versement (phase 14, SALE_REASSIGN_SELLER + reason). */
   @Patch(':id/collector')
-  @Roles(...CASHIERS)
+  @RequirePermission(Permission.PAYMENTS_CREATE)
   reassignCollector(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(reassignCollectorSchema)) body: ReassignCollectorInput,
@@ -80,8 +79,8 @@ export class PaymentsController {
   }
 
   @Post()
+  @RequirePermission(Permission.PAYMENTS_CREATE)
   @Idempotent()
-  @Roles(...CASHIERS)
   create(
     @Body(new ZodValidationPipe(createPaymentSchema)) body: CreatePaymentInput,
     @CurrentUser() user: CurrentUserInfo,
@@ -90,8 +89,8 @@ export class PaymentsController {
   }
 
   @Post(':id/cancel')
+  @RequirePermission(Permission.PAYMENTS_CREATE)
   @Idempotent()
-  @Roles(...CASHIERS)
   @HttpCode(HttpStatus.OK)
   cancel(
     @Param('id', ParseUUIDPipe) id: string,
@@ -102,8 +101,8 @@ export class PaymentsController {
   }
 
   @Post(':id/bounce')
+  @RequirePermission(Permission.PAYMENTS_BOUNCE)
   @Idempotent()
-  @Roles(...MANAGERS)
   @HttpCode(HttpStatus.OK)
   bounce(
     @Param('id', ParseUUIDPipe) id: string,
@@ -119,6 +118,7 @@ export class ClientPaymentsController {
   constructor(private readonly payments: PaymentsService) {}
 
   @Get(':id/unpaid-documents')
+  @RequirePermission(Permission.CLIENTS_VIEW)
   unpaid(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: CurrentUserInfo,

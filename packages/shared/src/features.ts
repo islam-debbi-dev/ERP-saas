@@ -25,6 +25,8 @@ export const Feature = {
   PACKAGING: 'PACKAGING',
   /** Dossiers d'importation, devises, coût de revient (phase 22). */
   IMPORT_COSTS: 'IMPORT_COSTS',
+  /** Dépôts as business units: teams, brands per dépôt, access per dépôt (phase 24). */
+  MULTI_UNIT: 'MULTI_UNIT',
 } as const;
 export type Feature = (typeof Feature)[keyof typeof Feature];
 export const FEATURES = Object.values(Feature);
@@ -53,6 +55,7 @@ export const EDITION_FEATURES: Record<Edition, readonly Feature[]> = {
     Feature.MOBILE_APP,
     Feature.PROMOTIONS,
     Feature.PACKAGING,
+    Feature.MULTI_UNIT,
   ],
   [Edition.ENTREPRISE]: FEATURES,
 };

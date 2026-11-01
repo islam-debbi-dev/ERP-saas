@@ -31,6 +31,7 @@ import { GeoCheckService } from '../geo/geo-check.service';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
+import { WarehousesService } from '../stock/warehouses.service';
 
 const paymentInclude = {
   client: { select: { id: true, code: true, name: true } },
@@ -104,6 +105,7 @@ export class PaymentsService {
     private readonly audit: AuditService,
     private readonly scope: ScopeService,
     private readonly geo: GeoCheckService,
+    private readonly warehouses: WarehousesService,
   ) {}
 
   // ---------------------------------------------------------------- used by sales
@@ -121,6 +123,8 @@ export class PaymentsService {
       mode: PaymentMode;
       receivedBy: string;
       collectedBy: string | null;
+      /** The sale's dépôt (phase 24). */
+      warehouseId: string;
     },
   ): Promise<void> {
     const tenantId = tenantContext.requireTenantId();
@@ -134,6 +138,7 @@ export class PaymentsService {
         mode: input.mode,
         receivedBy: input.receivedBy,
         collectedBy: input.collectedBy,
+        warehouseId: input.warehouseId,
       },
     });
     await tx.paymentAllocation.create({
@@ -183,6 +188,7 @@ export class PaymentsService {
         });
       }
       await this.scope.assertClient(tx, user, client.id);
+      const warehouseId = await this.warehouseFor(tx, input.warehouseId, user);
       const number = await this.numbering.next(tx, tenantId, DocType.VER);
       const payment = await tx.payment.create({
         data: {
@@ -198,6 +204,7 @@ export class PaymentsService {
           receivedBy: user.id,
           // A seller who takes the money collected it himself (phase 14).
           collectedBy: user.role === Role.SELLER ? user.id : null,
+          warehouseId,
         },
       });
       // Posting first locks the client balance: concurrent versements of the same
@@ -210,6 +217,7 @@ export class PaymentsService {
           label: number,
           refType: 'Payment',
           refId: payment.id,
+          warehouseId,
         },
       ]);
       const allocations = await this.allocate(
@@ -237,6 +245,7 @@ export class PaymentsService {
           clientId: client.id,
           amount: input.amount,
           mode: input.mode,
+          warehouseId,
           allocations: allocations.map((a) => ({ saleId: a.saleId, amount: a.amount.toString() })),
         },
       });
@@ -293,6 +302,7 @@ export class PaymentsService {
             reason,
             refType: 'Payment',
             refId: id,
+            warehouseId: p.warehouseId ?? (await this.defaultWarehouseId(tx)),
           },
         ]);
       }
@@ -310,6 +320,7 @@ export class PaymentsService {
   /** Chèque impayé: the debt comes back, plus the bank fees if any. */
   async bounce(id: string, input: BouncePaymentInput, user: CurrentUserInfo): Promise<PaymentDto> {
     await this.prisma.db.$transaction(async (tx) => {
+      await this.assertInScope(tx, user, id);
       const p = await this.lockValid(tx, id);
       if (p.mode !== 'CHEQUE') {
         throw new AppException(ErrorCode.PAYMENT_NOT_CHEQUE, 'Only a cheque can bounce');
@@ -334,6 +345,7 @@ export class PaymentsService {
         },
       });
       const fees = money(input.bankFees);
+      const warehouseId = p.warehouseId ?? (await this.defaultWarehouseId(tx));
       await this.account.post(tx, [
         {
           clientId: p.clientId,
@@ -343,6 +355,7 @@ export class PaymentsService {
           reason: input.reason,
           refType: 'Payment',
           refId: id,
+          warehouseId,
         },
         ...(fees.gt(0)
           ? [
@@ -354,6 +367,7 @@ export class PaymentsService {
                 reason: input.reason,
                 refType: 'Payment',
                 refId: id,
+                warehouseId,
               },
             ]
           : []),
@@ -419,7 +433,7 @@ export class PaymentsService {
 
   private async assertInScope(tx: Tx, user: CurrentUserInfo, id: string): Promise<void> {
     const scope = await this.scope.of(user, tx);
-    if (!scope.documentUserIds) return;
+    if (!scope.documentUserIds && !scope.warehouseIds) return;
     const p = await tx.payment.findFirst({
       where: { id, ...this.scope.paymentWhere(scope) },
       select: { id: true },
@@ -440,6 +454,7 @@ export class PaymentsService {
               ],
             }
           : {},
+        query.warehouseId ? { warehouseId: query.warehouseId } : {},
       ],
       ...(query.clientId ? { clientId: query.clientId } : {}),
       ...(query.mode ? { mode: query.mode } : {}),
@@ -490,9 +505,19 @@ export class PaymentsService {
   }
 
   /** Journal de caisse: money received that Algiers day, by mode and by user. */
-  async summary(date: string, user: CurrentUserInfo): Promise<CashSummaryDto> {
+  /**
+   * `statsWarehouseIds` (phase 24, dashboard): the dépôts whose cash the user sees as
+   * figures, in place of those he works in.
+   */
+  async summary(
+    date: string,
+    user: CurrentUserInfo,
+    statsWarehouseIds?: string[] | null,
+  ): Promise<CashSummaryDto> {
     const tenantId = tenantContext.requireTenantId();
-    const scope = await this.scope.of(user);
+    const base = await this.scope.of(user);
+    const scope =
+      statsWarehouseIds === undefined ? base : { ...base, warehouseIds: statsWarehouseIds };
     const rows = await this.prisma.db.$queryRaw<
       { mode: PaymentMode; receivedBy: string | null; count: bigint; total: Prisma.Decimal }[]
     >`
@@ -549,6 +574,33 @@ export class PaymentsService {
 
   // ---------------------------------------------------------------- internals
 
+  /**
+   * A versement's dépôt (phase 24): the one chosen (in the user's reach), else the only
+   * dépôt the user works in, else the dépôt principal.
+   */
+  private async warehouseFor(
+    tx: Tx,
+    requested: string | undefined,
+    user: CurrentUserInfo,
+  ): Promise<string> {
+    if (requested) {
+      const w = await tx.warehouse.findFirst({
+        where: { id: requested, deletedAt: null },
+        select: { id: true },
+      });
+      if (!w) throw new AppException(ErrorCode.WAREHOUSE_NOT_FOUND, 'Warehouse not found');
+      await this.scope.assertWarehouse(tx, user, w.id);
+      return w.id;
+    }
+    const id = (await this.scope.onlyWarehouse(user, tx)) ?? (await this.defaultWarehouseId(tx));
+    await this.scope.assertWarehouse(tx, user, id);
+    return id;
+  }
+
+  private defaultWarehouseId(tx: Tx): Promise<string> {
+    return this.warehouses.defaultId(tx);
+  }
+
   private async lockValid(
     tx: Tx,
     id: string,
@@ -562,6 +614,7 @@ export class PaymentsService {
     saleId: string | null;
     receivedBy: string | null;
     receivedAt: Date;
+    warehouseId: string | null;
   }> {
     const rows = await tx.$queryRaw<
       {
@@ -574,9 +627,11 @@ export class PaymentsService {
         saleId: string | null;
         receivedBy: string | null;
         receivedAt: Date;
+        warehouseId: string | null;
       }[]
     >`
-      SELECT id, number, status, mode, amount, "clientId", "saleId", "receivedBy", "receivedAt"
+      SELECT id, number, status, mode, amount, "clientId", "saleId", "receivedBy", "receivedAt",
+             "warehouseId"
       FROM payments
       WHERE id = ${id}::uuid AND "tenantId" = ${tenantContext.requireTenantId()}::uuid
       FOR UPDATE`;

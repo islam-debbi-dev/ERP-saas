@@ -8,6 +8,8 @@ import type {
   ResetPasswordInput,
   TenantSessionDto,
   UpdateUserInput,
+  UserAccessDto,
+  UserAccessInput,
   UserDto,
   UserPermissionsInput,
 } from '@erp/shared';
@@ -26,6 +28,7 @@ export const userKeys = {
   sessions: ['sessions'] as const,
   audit: (f: AuditFilters) => ['audit-logs', f] as const,
   facets: ['audit-logs', 'facets'] as const,
+  access: (id: string) => ['users', id, 'access'] as const,
 };
 
 export function useUsers(enabled = true) {
@@ -78,6 +81,27 @@ export function useResetPassword() {
   return useUserMutation(({ id, body }: { id: string; body: ResetPasswordInput }) =>
     api.request<InviteResultDto>(`/users/${id}/reset-password`, { method: 'POST', body }),
   );
+}
+
+/** The dépôts a user works in or sees figures of (phase 24, MULTI_UNIT). */
+export function useUserAccess(id: string) {
+  return useQuery({
+    queryKey: userKeys.access(id),
+    queryFn: ({ signal }) => api.request<UserAccessDto>(`/users/${id}/access`, { signal }),
+  });
+}
+
+export function useSetUserAccess() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UserAccessInput }) =>
+      api.request<UserAccessDto>(`/users/${id}/access`, { method: 'PUT', body }),
+    onSuccess: (data, { id }) => {
+      queryClient.setQueryData(userKeys.access(id), data);
+      // A dépôt's team changed too.
+      void queryClient.invalidateQueries({ queryKey: ['warehouses'] });
+    },
+  });
 }
 
 export function useSessions() {

@@ -26,6 +26,7 @@ import { ScopeService } from '../sales-force/scope.service';
 import {
   algiersDayOf,
   algiersMonthOf,
+  inWarehouses,
   saleDocumentFacts,
   marginFacts,
   saleLineFacts,
@@ -80,10 +81,14 @@ export class ReportsService {
       });
     }
     // Sales force data stays readable when the module is off (phase 13b): no feature check.
+    const units = await this.scopes.warehouses(user);
     const scope: Scope = {
       tenantId: tenantContext.requireTenantId(),
       sellerIds: await this.scopes.figuresSellerIds(user, query),
       brandId: query.brandId ?? null,
+      // Figures: the dépôts he works in or sees statistics of (phase 24).
+      warehouseIds: this.scopes.narrowWarehouses(units.statsWarehouseIds, query.warehouseId),
+      defaultWarehouseId: units.defaultWarehouseId,
     };
     const { start, end } = algiersRange(query.from, query.to);
     // The écart de coût column (phase 22) only for companies that have had late import
@@ -294,7 +299,7 @@ function margin(
 }
 
 function stockMovements(groupBy: ReportGroupBy, scope: Scope, start: Date, end: Date): Spec {
-  const where = Prisma.sql`m."tenantId" = ${scope.tenantId}::uuid AND ${within('m."createdAt"', start, end)}`;
+  const where = Prisma.sql`m."tenantId" = ${scope.tenantId}::uuid AND ${within('m."createdAt"', start, end)} ${inWarehouses(scope, 'm')}`;
   if (groupBy === 'product') {
     return {
       columns: [
@@ -311,7 +316,7 @@ function stockMovements(groupBy: ReportGroupBy, scope: Scope, start: Date, end: 
                COALESCE(-SUM(f."qtyBase") FILTER (WHERE f."qtyBase" < 0), 0) AS "qtyOut",
                SUM(f."qtyBase") AS "qtyNet"
         FROM stock_movements f ${PRODUCT_JOIN}
-        WHERE ${Prisma.sql`f."tenantId" = ${scope.tenantId}::uuid AND ${within('f."createdAt"', start, end)}`}
+        WHERE ${Prisma.sql`f."tenantId" = ${scope.tenantId}::uuid AND ${within('f."createdAt"', start, end)} ${inWarehouses(scope, 'f')}`}
         GROUP BY ${PRODUCT_GROUP}
         ORDER BY count DESC, p.designation`,
     };
@@ -338,7 +343,8 @@ function payments(groupBy: ReportGroupBy, scope: Scope, start: Date, end: Date):
   const collector = Prisma.raw('COALESCE(py."collectedBy", py."receivedBy")');
   const where = Prisma.sql`py."tenantId" = ${scope.tenantId}::uuid AND py.status = 'VALID'
     AND ${within('py."receivedAt"', start, end)}
-    ${scope.sellerIds ? Prisma.sql`AND ${collector} = ANY(${scope.sellerIds}::uuid[])` : Prisma.empty}`;
+    ${scope.sellerIds ? Prisma.sql`AND ${collector} = ANY(${scope.sellerIds}::uuid[])` : Prisma.empty}
+    ${inWarehouses(scope, 'py')}`;
   const values = Prisma.sql`COUNT(*) AS count, SUM(py.amount) AS total`;
   const valueColumns = [col('count', 'count'), col('total', 'money')];
   if (groupBy === 'user') {
@@ -371,12 +377,12 @@ function purchases(groupBy: ReportGroupBy, scope: Scope, start: Date, end: Date)
            0::numeric AS "retHt", 0::numeric AS "retTtc"
     FROM purchases p
     WHERE p."tenantId" = ${scope.tenantId}::uuid AND p.status = 'VALIDATED'
-      AND ${within('p."validatedAt"', start, end)}
+      AND ${within('p."validatedAt"', start, end)} ${inWarehouses(scope, 'p')}
     UNION ALL
     SELECT r."createdAt", r."supplierId", 0, 0, 0, r."totalHt", r."totalTtc"
     FROM purchase_returns r JOIN purchases p ON p.id = r."purchaseId"
     WHERE r."tenantId" = ${scope.tenantId}::uuid AND p.status = 'VALIDATED'
-      AND ${within('r."createdAt"', start, end)}`;
+      AND ${within('r."createdAt"', start, end)} ${inWarehouses(scope, 'r')}`;
   const values = Prisma.sql`SUM(f.docs) AS count, SUM(f.ht) AS "grossHt", SUM(f."retHt") AS "returnsHt",
     SUM(f.ht - f."retHt") AS "netHt", SUM(f.ttc - f."retTtc") AS "netTtc"`;
   const valueColumns = [

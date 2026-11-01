@@ -507,6 +507,8 @@ export class ImportsService {
       }
       if (p.opening) openings.push({ clientId: p.id, amount: p.opening });
     }
+    // Opening balances of an import belong to the dépôt principal (phase 24).
+    const warehouseId = openings.length > 0 ? await this.warehouses.defaultId(tx) : '';
     for (const chunk of chunks(openings)) {
       await this.accounts.post(
         tx,
@@ -517,6 +519,7 @@ export class ImportsService {
           label: 'Solde initial (import)',
           refType: 'IMPORT',
           refId: job.id,
+          warehouseId,
         })),
       );
     }
