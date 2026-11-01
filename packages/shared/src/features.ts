@@ -27,6 +27,8 @@ export const Feature = {
   IMPORT_COSTS: 'IMPORT_COSTS',
   /** Dépôts as business units: teams, brands per dépôt, access per dépôt (phase 24). */
   MULTI_UNIT: 'MULTI_UNIT',
+  /** Dépenses and dépôt rent (phase 25). In every edition: a small grossiste pays rent too. */
+  EXPENSES: 'EXPENSES',
 } as const;
 export type Feature = (typeof Feature)[keyof typeof Feature];
 export const FEATURES = Object.values(Feature);
@@ -44,8 +46,8 @@ export type Edition = (typeof Edition)[keyof typeof Edition];
 export const EDITIONS = Object.values(Edition);
 
 export const EDITION_FEATURES: Record<Edition, readonly Feature[]> = {
-  [Edition.ESSENTIEL]: [],
-  [Edition.IMPORT]: [Feature.IMPORT_COSTS, Feature.WAREHOUSES],
+  [Edition.ESSENTIEL]: [Feature.EXPENSES],
+  [Edition.IMPORT]: [Feature.IMPORT_COSTS, Feature.WAREHOUSES, Feature.EXPENSES],
   [Edition.DISTRIBUTION]: [
     Feature.SALES_FORCE,
     Feature.WAREHOUSES,
@@ -56,6 +58,7 @@ export const EDITION_FEATURES: Record<Edition, readonly Feature[]> = {
     Feature.PROMOTIONS,
     Feature.PACKAGING,
     Feature.MULTI_UNIT,
+    Feature.EXPENSES,
   ],
   [Edition.ENTREPRISE]: FEATURES,
 };

@@ -21,3 +21,4 @@ export * from './geo';
 export * from './incentives';
 export * from './import-files';
 export * from './promotions';
+export * from './expenses';

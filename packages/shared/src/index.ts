@@ -20,3 +20,4 @@ export * from './incentives';
 export * from './landed-cost';
 export * from './packaging';
 export * from './promotions';
+export * from './rent';
