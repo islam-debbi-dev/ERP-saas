@@ -45,5 +45,6 @@ describe('seed', () => {
       t.prisma.db.routeStop.count({ where: { routeId: '00000000-0000-4000-8000-0000000016a1' } }),
     );
     expect(stops).toBe(3);
-  });
+    // The seed runs twice through tsx in a child process: give it room on a busy CI runner.
+  }, 60_000);
 });
