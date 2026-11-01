@@ -147,6 +147,14 @@ export const ErrorCode = {
   INCENTIVE_RUN_APPROVED: 'INCENTIVE_RUN_APPROVED',
   INCENTIVE_RUN_NOT_PREVIEW: 'INCENTIVE_RUN_NOT_PREVIEW',
   INCENTIVE_RUN_NOT_APPROVED: 'INCENTIVE_RUN_NOT_APPROVED',
+  // Promotions & emballages (phase 20)
+  /** Changing free units or a promotion's remise needs PROMO_OVERRIDE. */
+  PROMO_OVERRIDE_FORBIDDEN: 'PROMO_OVERRIDE_FORBIDDEN',
+  PROMOTION_INVALID: 'PROMOTION_INVALID',
+  /** Free lines follow their paid line: they are never returned or delivered on their own. */
+  FREE_LINE_NOT_EDITABLE: 'FREE_LINE_NOT_EDITABLE',
+  PACKAGING_OPENING_ALREADY_SET: 'PACKAGING_OPENING_ALREADY_SET',
+  PACKAGING_TYPE_NAME_TAKEN: 'PACKAGING_TYPE_NAME_TAKEN',
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 

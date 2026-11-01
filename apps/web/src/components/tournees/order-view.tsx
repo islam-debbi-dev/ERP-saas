@@ -41,6 +41,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -73,6 +74,7 @@ export function OrderView({ id, backHref = '/commandes' }: { id: string; backHre
 
 function View({ id, backHref }: { id: string; backHref: string }) {
   const t = useTranslations('orders');
+  const tpromo = useTranslations('promotions');
   const tc = useTranslations('common');
   const errorMessage = useErrorMessage();
   const unitLabel = useUnitLabel();
@@ -103,13 +105,16 @@ function View({ id, backHref }: { id: string; backHref: string }) {
     void queryClient.invalidateQueries({ queryKey: tourneeKeys.orders });
   };
 
+  // Free lines (UG) and a promotion's remise are given again by the API (phase 20).
   const current = (): SaleLineInput[] =>
-    (o?.lines ?? []).map((l) => ({
-      productId: l.productId,
-      unitId: l.unitId,
-      qty: l.qty,
-      discountPct: l.discountPct,
-    }));
+    (o?.lines ?? [])
+      .filter((l) => !l.isFree)
+      .map((l) => ({
+        productId: l.productId,
+        unitId: l.unitId,
+        qty: l.qty,
+        discountPct: l.promotion ? '0' : l.discountPct,
+      }));
 
   const save = useMutation({
     mutationFn: (patch: { lines?: SaleLineInput[]; requestedDate?: string | null }) => {
@@ -448,6 +453,16 @@ function View({ id, backHref }: { id: string; backHref: string }) {
                       <p className="text-xs text-muted-foreground" dir="ltr">
                         {l.reference}
                       </p>
+                      {l.isFree || l.promotion ? (
+                        <span className="mt-1 flex flex-wrap gap-1">
+                          {l.isFree ? <Badge>{tpromo('freeBadge')}</Badge> : null}
+                          {l.promotion ? (
+                            <Badge variant="secondary" className="max-w-full truncate">
+                              {l.promotion.name}
+                            </Badge>
+                          ) : null}
+                        </span>
+                      ) : null}
                     </td>
                     <td className="num p-3 text-end font-medium" data-label={t('colQty')}>
                       <bdi dir="ltr">{formatQty(l.qty)}</bdi>{' '}
@@ -487,7 +502,8 @@ function View({ id, backHref }: { id: string; backHref: string }) {
                         </span>
                       )}
                     </td>
-                    {draft ? (
+                    {draft && l.isFree ? <td className="p-3" data-cell="actions" /> : null}
+                    {draft && !l.isFree ? (
                       <td className="p-3" data-cell="actions">
                         <Button
                           variant="ghost"

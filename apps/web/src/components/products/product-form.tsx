@@ -42,6 +42,7 @@ import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Switch } from '@/components/ui/switch';
 import { ProductCost } from './product-cost';
+import { ProductPackaging } from '@/components/distribution/product-packaging';
 import { api, ApiError } from '@/lib/api-client';
 import { useFeature } from '@/lib/auth';
 import { catalogKeys, flattenCategories, useCategories, useUnitLabel } from '@/lib/catalog';
@@ -181,6 +182,7 @@ export function ProductForm({
   const baseUnit = unitById.get(watched.baseUnitId ?? '');
   const baseLabel = unitLabel(baseUnit);
   const isEdit = product !== null;
+  const packagingOn = useFeature(Feature.PACKAGING);
 
   /** Build the API payload from what was typed. */
   function payload(v: FormValues) {
@@ -641,6 +643,12 @@ export function ProductForm({
         <Section title={t('costSection')}>
           <ProductCost productId={product?.id ?? null} />
         </Section>
+
+        {isEdit && packagingOn ? (
+          <Section title={t('packagingSection')}>
+            <ProductPackaging productId={product.id} baseUnitLabel={baseLabel} />
+          </Section>
+        ) : null}
       </fieldset>
 
       <div className="sticky bottom-0 z-20 -mx-4 flex flex-wrap items-center justify-between gap-2 border-t bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:py-3 backdrop-blur lg:-mx-6 lg:px-6">

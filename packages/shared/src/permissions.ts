@@ -27,6 +27,8 @@ export const Permission = {
   GEO_OVERRIDE: 'GEO_OVERRIDE',
   /** Approve the month's bonuses (phase 18). The owner always can; not a manager default. */
   INCENTIVE_APPROVE: 'INCENTIVE_APPROVE',
+  /** Change the free units (UG) or the remise a promotion gave a line (phase 20). */
+  PROMO_OVERRIDE: 'PROMO_OVERRIDE',
 } as const;
 export type Permission = (typeof Permission)[keyof typeof Permission];
 export const PERMISSIONS = Object.values(Permission);

@@ -23,6 +23,9 @@ import {
   type ReportQuery,
   reportQuerySchema,
   Role,
+  type SellOutDto,
+  type SellOutQuery,
+  sellOutQuerySchema,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { CurrentUser, Roles } from '../auth/decorators';
@@ -35,6 +38,12 @@ import { OnboardingService } from './onboarding.service';
 import { agingFileName, buildAgingXlsx } from './aging-xlsx';
 import { buildReportXlsx, reportFileName } from './report-xlsx';
 import { ReportsService } from './reports.service';
+import {
+  buildSellOutXlsx,
+  SELL_OUT_SCREEN_ROWS,
+  sellOutFileName,
+  SellOutService,
+} from './sell-out.service';
 
 const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
@@ -85,6 +94,7 @@ export class ReportsController {
   constructor(
     private readonly reports: ReportsService,
     private readonly aging: AgingService,
+    private readonly sellOuts: SellOutService,
   ) {}
 
   // Balance âgée (phase 21), declared before ':name'. Managers only, like the accounts.
@@ -122,6 +132,32 @@ export class ReportsController {
   ): Promise<StreamableFile> {
     requirePermission(user, Permission.EXPORT_DATA, { message: 'You may not export data' });
     return agingFile(await this.aging.suppliers(query.asOf));
+  }
+
+  /** Sell-out par marque (phase 20). Declared before ':name'. */
+  @Get('sell-out')
+  @Roles(Role.OWNER, Role.MANAGER, Role.SUPERVISOR)
+  sellOut(
+    @Query(new ZodValidationPipe(sellOutQuerySchema)) query: SellOutQuery,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<SellOutDto> {
+    return this.sellOuts.run(query, user, SELL_OUT_SCREEN_ROWS);
+  }
+
+  @Get('sell-out/export.xlsx')
+  @Roles(Role.OWNER, Role.MANAGER, Role.SUPERVISOR)
+  async sellOutExport(
+    @Query(new ZodValidationPipe(sellOutQuerySchema)) query: SellOutQuery,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<StreamableFile> {
+    requirePermission(user, Permission.EXPORT_DATA, { message: 'You may not export data' });
+    const report = await this.sellOuts.run(query, user);
+    const buffer = await buildSellOutXlsx(report);
+    return new StreamableFile(buffer, {
+      type: XLSX_MIME,
+      disposition: `attachment; filename="${sellOutFileName(report)}"`,
+      length: buffer.length,
+    });
   }
 
   @Get(':name')

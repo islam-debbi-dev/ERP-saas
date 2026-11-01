@@ -172,38 +172,44 @@ export function ReturnDialog({ sale, open, onOpenChange }: DialogProps) {
             <ResponsiveDialogTitle>{t('returnTitle')}</ResponsiveDialogTitle>
             <ResponsiveDialogDescription>{t('returnHelp')}</ResponsiveDialogDescription>
           </ResponsiveDialogHeader>
+          {sale.lines.some((l) => l.isFree) ? (
+            <p className="text-sm text-muted-foreground">{t('returnFreeHelp')}</p>
+          ) : null}
           <ul className="max-h-72 divide-y overflow-y-auto rounded-md border">
-            {sale.lines.map((l) => {
-              const left = available(l);
-              const q = parseDA(quantities[l.id] ?? '');
-              return (
-                <li
-                  key={l.id}
-                  className="flex flex-wrap items-center justify-between gap-3 px-3 py-2"
-                >
-                  <div className="min-w-0">
-                    <p className="font-medium">{l.designation}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {t('leftToReturn', {
-                        qty: isolateLtr(formatQty(left.toString())),
-                        unit: unitLabel({ code: l.unitCode, name: l.unitName }),
-                        price: isolateLtr(formatDA(l.unitPriceHt)),
-                      })}
-                    </p>
-                  </div>
-                  <Input
-                    aria-label={t('returnQtyOf', { product: l.designation })}
-                    dir="ltr"
-                    inputMode="decimal"
-                    className="num w-28"
-                    disabled={left.lte(0)}
-                    aria-invalid={q !== null && q.gt(left)}
-                    value={quantities[l.id] ?? ''}
-                    onChange={(e) => setQuantities((s) => ({ ...s, [l.id]: e.target.value }))}
-                  />
-                </li>
-              );
-            })}
+            {/* Free units (UG) come back with their paid line, in proportion (API). */}
+            {sale.lines
+              .filter((l) => !l.isFree)
+              .map((l) => {
+                const left = available(l);
+                const q = parseDA(quantities[l.id] ?? '');
+                return (
+                  <li
+                    key={l.id}
+                    className="flex flex-wrap items-center justify-between gap-3 px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-medium">{l.designation}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t('leftToReturn', {
+                          qty: isolateLtr(formatQty(left.toString())),
+                          unit: unitLabel({ code: l.unitCode, name: l.unitName }),
+                          price: isolateLtr(formatDA(l.unitPriceHt)),
+                        })}
+                      </p>
+                    </div>
+                    <Input
+                      aria-label={t('returnQtyOf', { product: l.designation })}
+                      dir="ltr"
+                      inputMode="decimal"
+                      className="num w-28"
+                      disabled={left.lte(0)}
+                      aria-invalid={q !== null && q.gt(left)}
+                      value={quantities[l.id] ?? ''}
+                      onChange={(e) => setQuantities((s) => ({ ...s, [l.id]: e.target.value }))}
+                    />
+                  </li>
+                );
+              })}
           </ul>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">

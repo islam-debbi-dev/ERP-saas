@@ -76,9 +76,10 @@ export function SaleScreenLoader({
     );
   }
   const byId = new Map((products.data ?? []).map((p) => [p.id, p]));
+  // Free lines (UG) are not typed: the API gives them again from the promotions.
   const lines: ScreenLine[] = (draft.data?.lines ?? []).flatMap((l) => {
     const product = byId.get(l.productId);
-    if (!product) return [];
+    if (!product || l.isFree) return [];
     const typed = l.listPriceHt === null || l.listPriceHt !== l.unitPriceHt;
     return [
       {
@@ -87,7 +88,9 @@ export function SaleScreenLoader({
         unitId: l.unitId,
         qty: l.qty,
         price: typed ? l.unitPriceHt : null,
-        discount: money(l.discountPct).toString(),
+        // A promotion's remise is given again by the API; a typed one stays.
+        discount: l.promotion ? '0' : money(l.discountPct).toString(),
+        freeQty: null,
       },
     ];
   });

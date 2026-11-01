@@ -351,6 +351,12 @@ async function prepareIds(f: Fixture): Promise<Ids> {
     idempotencyKey: idemKey('cost'),
     body: { type: 'FRET', amount: '18000', method: 'VALUE' },
   });
+  // Phase 20: a packaging type, so the sale screen shows its "emballages rendus" card.
+  await call('/packaging-types', {
+    method: 'POST',
+    token,
+    body: { name: uniq('Casier ') },
+  });
   const product = (await call<{ reference: string }>(`/products/${f.productId}`, { token })).body;
   return {
     importFileId: importFile.id,
@@ -743,6 +749,39 @@ for (const locale of LOCALES) {
         await expectOnScreen(page, `[role="dialog"] button:has-text("${m['incentives']?.['approveConfirm']}")`);
         await check(page, '/primes/calculs/[id]/valider', locale, results, { fullPage: false });
         await page.keyboard.press('Escape');
+      });
+
+      await test.step('distribution: promotion sheet, packaging return and sale packaging card', async () => {
+        const go = async (path: string) => {
+          await page.evaluate((to) => {
+            (
+              window as unknown as { next: { router: { push(href: string): void } } }
+            ).next.router.push(to);
+          }, path);
+          await page.waitForURL((url) => url.pathname === path.split('?')[0]);
+          await settle(page);
+        };
+        await go('/promotions');
+        await page.getByRole('button', { name: m['promotions']?.['new'] }).click();
+        await page.locator('#promo-name').waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        await check(page, '/promotions/nouvelle', locale, results, { fullPage: false });
+        await page.locator('[role="dialog"] button[type="submit"]').scrollIntoViewIfNeeded();
+        await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
+        await page.keyboard.press('Escape');
+
+        await go(resolve('/clients/[id]', v));
+        await page.getByRole('button', { name: m['packaging']?.['newMovement'] }).click();
+        await page.locator('#pm-qty').waitFor();
+        await page.waitForTimeout(400);
+        await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
+        await check(page, '/clients/[id]/emballages', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+
+        await go(`/ventes/nouvelle?client=${v.clientId}`);
+        await page.locator('[id^="returned-"]').first().waitFor();
+        await page.locator('[id^="returned-"]').first().scrollIntoViewIfNeeded();
+        await check(page, '/ventes/nouvelle/emballages', locale, results, { fullPage: false });
       });
 
       await test.step('fast sale: a line, then the total and the validate button on screen', async () => {

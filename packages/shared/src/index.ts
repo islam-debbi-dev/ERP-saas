@@ -18,3 +18,5 @@ export * from './subscription';
 export * from './timbre';
 export * from './incentives';
 export * from './landed-cost';
+export * from './packaging';
+export * from './promotions';

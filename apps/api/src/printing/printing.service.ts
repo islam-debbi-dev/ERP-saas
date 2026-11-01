@@ -22,6 +22,7 @@ import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { ImportFilesService } from '../import-files/import-files.service';
 import { PaymentsService } from '../payments/payments.service';
+import { PackagingService } from '../packaging/packaging.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { PurchasesService } from '../purchases/purchases.service';
 import { SuppliersService } from '../purchases/suppliers.service';
@@ -37,6 +38,7 @@ import {
   transferDocument,
   receiptDocument,
   saleDocument,
+  packagingStatementDocument,
   statementDocument,
   supplierStatementDocument,
 } from './templates/documents';
@@ -75,6 +77,7 @@ export class PrintingService {
     private readonly transfers: StockTransfersService,
     private readonly orders: OrdersService,
     private readonly importFiles: ImportFilesService,
+    private readonly packaging: PackagingService,
   ) {}
 
   async document(
@@ -189,6 +192,25 @@ export class PrintingService {
       html: statementDocument(statement, client, { seller, format: fmt }),
       format: fmt,
       filename: `releve-${client.code}-${query.from}-${query.to}.pdf`,
+      footer: seller.documentFooter,
+    };
+  }
+
+  /** Relevé d'emballages (phase 20): every entry of the client, never a duplicata. */
+  async packagingStatement(
+    clientId: string,
+    format: PrintFormat | undefined,
+    user: CurrentUserInfo,
+  ): Promise<PreparedDocument> {
+    const seller = await this.tenants.getSettings();
+    const fmt = format ?? seller.defaultPrintFormat;
+    const client = await this.clients.get(clientId, user);
+    const entries = await this.packaging.statement(clientId, user);
+    const { balances } = await this.packaging.ofClient(clientId, { limit: 1 }, user);
+    return {
+      html: packagingStatementDocument(entries, balances, client, { seller, format: fmt }),
+      format: fmt,
+      filename: `emballages-${client.code}.pdf`,
       footer: seller.documentFooter,
     };
   }

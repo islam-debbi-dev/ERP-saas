@@ -52,7 +52,8 @@
     "deliveries": "التسليمات",
     "flagged": "العمليات المُبلَّغ عنها",
     "incentives": "المكافآت",
-    "importFiles": "ملفات الاستيراد"
+    "importFiles": "ملفات الاستيراد",
+    "promotions": "العروض"
   },
   "roles": {
     "OWNER": "المالك",
@@ -204,7 +205,8 @@
     "filterTeam": "الفريق",
     "allTeams": "الكل",
     "filterBrand": "العلامة",
-    "allBrands": "الكل"
+    "allBrands": "الكل",
+    "sellOutLink": "المبيعات حسب العلامة"
   },
   "settings": {
     "title": "الإعدادات",
@@ -412,7 +414,12 @@
     "SUPPLIER_CURRENCY_LOCKED": "لهذا المورد عمليات مسجلة: لا يمكن تغيير عملته.",
     "ALLOCATION_BASIS_MISSING": "التوزيع غير ممكن: أدخل وزن أو حجم المنتجات المعنية.",
     "MANUAL_SPLIT_INVALID": "يجب أن يساوي التوزيع اليدوي مبلغ المصروف بالضبط.",
-    "IMPORT_COST_NOT_ACTIVE": "هذا المصروف ملغى مسبقًا."
+    "IMPORT_COST_NOT_ACTIVE": "هذا المصروف ملغى مسبقًا.",
+    "PROMO_OVERRIDE_FORBIDDEN": "فقط مستخدم مخوّل يمكنه تغيير الوحدات المجانية أو تخفيض العرض.",
+    "PROMOTION_INVALID": "منتج أو وحدة أو زبون أو قطاع في العرض غير موجود.",
+    "FREE_LINE_NOT_EDITABLE": "الوحدات المجانية تتبع سطرها المدفوع: لا يوجد عرض هنا.",
+    "PACKAGING_OPENING_ALREADY_SET": "رصيد التغليف الافتتاحي لهذا الزبون مسجّل مسبقًا.",
+    "PACKAGING_TYPE_NAME_TAKEN": "يوجد تغليف بهذا الاسم."
   },
   "units": {
     "PIECE": "قطعة",
@@ -511,7 +518,9 @@
     "noBrand": "بدون علامة",
     "weightKg": "الوزن (كغ لكل {unit})",
     "volumeM3": "الحجم (م³ لكل {unit})",
-    "weightHint": "اختياري. يُستعمل لتوزيع مصاريف الاستيراد حسب الوزن أو الحجم."
+    "weightHint": "اختياري. يُستعمل لتوزيع مصاريف الاستيراد حسب الوزن أو الحجم.",
+    "packagingTypes": "التغليف",
+    "packagingSection": "التغليف المسترجع"
   },
   "categories": {
     "title": "الفئات",
@@ -1055,7 +1064,9 @@
     "sellerChanged": "تم تغيير البائع",
     "warehouseAuto": "تلقائي (شاحنة البائع، وإلا المستودع الرئيسي)",
     "returnToSaleWarehouse": "رجوع إلى {name}",
-    "returnToMain": "رجوع إلى المستودع الرئيسي"
+    "returnToMain": "رجوع إلى المستودع الرئيسي",
+    "warnPackagingNegative": "أرجع الزبون تغليفًا أكثر من المسجّل (الرصيد {count}).",
+    "returnFreeHelp": "الوحدات المجانية ترجع مع سطرها بالتناسب."
   },
   "payments": {
     "title": "الدفعات",
@@ -1152,13 +1163,15 @@
       "PRODUCTS": "المنتجات",
       "OPENING_STOCK": "المخزون الافتتاحي",
       "CLIENTS": "الزبائن والأرصدة",
-      "SUPPLIERS": "الموردون والأرصدة"
+      "SUPPLIERS": "الموردون والأرصدة",
+      "PACKAGING_OPENING": "التغليف عند الزبائن"
     },
     "typesHelp": {
       "PRODUCTS": "المرجع، التسمية، الوحدات، التعبئة، الباركود، الأسعار، الرسم على القيمة المضافة.",
       "OPENING_STOCK": "الكمية والتكلفة الافتتاحية للمنتجات الموجودة.",
       "CLIENTS": "الرمز، الاسم، الهاتف، سقف الكريدي والرصيد الافتتاحي.",
-      "SUPPLIERS": "الرمز، الاسم، الهاتف والرصيد الافتتاحي (ما تدين به للمورد)."
+      "SUPPLIERS": "الرمز، الاسم، الهاتف والرصيد الافتتاحي (ما تدين به للمورد).",
+      "PACKAGING_OPENING": "رمز الزبون والتغليف والكمية التي يملكها كل زبون."
     },
     "template": "تحميل النموذج",
     "file": "الملف",
@@ -1208,7 +1221,8 @@
       "PRODUCTS": "{n, plural, other {# سطر افتتاحي}}",
       "OPENING_STOCK": "{n, plural, other {# مخزون افتتاحي سُجّل}}",
       "CLIENTS": "{n, plural, other {# رصيد افتتاحي سُجّل}}",
-      "SUPPLIERS": "{n, plural, one {تم تسجيل رصيد مورد واحد} other {تم تسجيل # أرصدة موردين}}"
+      "SUPPLIERS": "{n, plural, one {تم تسجيل رصيد مورد واحد} other {تم تسجيل # أرصدة موردين}}",
+      "PACKAGING_OPENING": "{n, plural, one {تم تسجيل رصيد تغليف واحد} other {تم تسجيل # أرصدة تغليف}}"
     },
     "again": "استيراد جديد",
     "history": "سجل الاستيراد",
@@ -1249,7 +1263,9 @@
       "address": "العنوان",
       "creditLimit": "السقف",
       "openingBalance": "الرصيد الافتتاحي",
-      "brand": "العلامة"
+      "brand": "العلامة",
+      "clientCode": "رمز الزبون",
+      "packaging": "التغليف"
     },
     "issues": {
       "required": "إلزامي",
@@ -1285,7 +1301,9 @@
       "zero_cost": "تكلفة صفر: سيكون هامش هذا المنتج خاطئًا",
       "supplier_archived": "مورد مؤرشف",
       "invalid_supplier": "مورد غير صالح ({rule})",
-      "foreign_currency_supplier": "مورد بعملة أجنبية: لا يُستورد رصيده بالدينار"
+      "foreign_currency_supplier": "مورد بعملة أجنبية: لا يُستورد رصيده بالدينار",
+      "client_not_found": "لا يوجد زبون بهذا الرمز",
+      "packaging_not_found": "تغليف «{value}» غير معروف"
     }
   },
   "users": {
@@ -1394,6 +1412,10 @@
     "INCENTIVE_APPROVE": {
       "label": "المصادقة على المكافآت",
       "help": "المصادقة على حساب مكافآت الشهر (المالك يستطيع دائمًا)."
+    },
+    "PROMO_OVERRIDE": {
+      "label": "تعديل عرض في بيع",
+      "help": "تغيير الوحدات المجانية أو التخفيض الذي يمنحه عرض لسطر."
     }
   },
   "sessions": {
@@ -2447,5 +2469,171 @@
     "cancelFileTitle": "إلغاء الملف",
     "fileCancelled": "تم إلغاء الملف.",
     "costTypeTVA_IMPORT": "الرسم على القيمة المضافة عند الاستيراد"
+  },
+  "promotions": {
+    "title": "العروض",
+    "subtitle": "وحدات مجانية وتخفيضات تُطبَّق على المبيعات تلقائيًا.",
+    "new": "عرض جديد",
+    "edit": "تعديل العرض",
+    "saved": "تم تعديل العرض",
+    "created": "تم إنشاء العرض",
+    "statusFilter": "الفترة",
+    "statusactive": "جارية",
+    "statusupcoming": "قادمة",
+    "statusended": "منتهية",
+    "emptyactive": "لا يوجد عرض جارٍ",
+    "emptyupcoming": "لا يوجد عرض قادم",
+    "emptyended": "لا يوجد عرض منتهٍ",
+    "emptyHelp": "أنشئ عرضًا: يُطبَّق على المبيعات والطلبيات في تواريخه.",
+    "priorityBadge": "الأولوية {n}",
+    "inactive": "معطّل",
+    "actionsOf": "إجراءات على {name}",
+    "archive": "حذف",
+    "archiveTitle": "حذف هذا العرض؟",
+    "archiveBody": "لن يُطبَّق بعد الآن. المبيعات السابقة تحتفظ بوحداتها المجانية وتخفيضها.",
+    "archived": "تم حذف العرض",
+    "ruleFreeUnits": "شراء {buy} {product} ← {free} {freeProduct} مجانًا",
+    "repeatableShort": "قابل للتكرار",
+    "rulePercent": "−{pct}٪ على {target}",
+    "ruleMin": "ابتداءً من {qty}",
+    "targetPRODUCTS": "منتجات",
+    "targetBRAND": "علامة",
+    "targetCATEGORY": "فئة",
+    "scopeALL": "كل الزبائن",
+    "scopePRICE_LEVEL": "مستوى سعر",
+    "scopeSECTOR": "قطاع",
+    "scopeCLIENTS": "قائمة زبائن",
+    "clientCount": "{count, plural, one {زبون واحد} other {# زبائن}}",
+    "dates": "من {from} إلى {to}",
+    "freeUnits": "مجاني",
+    "freeQtyOf": "الوحدات المجانية لـ {product}",
+    "freeBadge": "مجاني",
+    "productSearch": "بحث: {field}",
+    "productSearchPlaceholder": "المرجع أو التسمية",
+    "pickProduct": "اختر منتجًا",
+    "name": "الاسم",
+    "type": "النوع",
+    "typeFREE_UNITS": "وحدات مجانية (10+1)",
+    "typePERCENT_DISCOUNT": "تخفيض بالنسبة المئوية",
+    "priority": "الأولوية",
+    "priorityHelp": "الأعلى يفوز عندما تستهدف عدة عروض نفس السطر.",
+    "validFrom": "من",
+    "validTo": "إلى",
+    "freeRule": "اشترِ… واحصل على…",
+    "buyProduct": "المنتج المشترى",
+    "buyQty": "الكمية المشتراة",
+    "unit": "الوحدة",
+    "pickUnit": "اختر وحدة",
+    "freeProduct": "المنتج المهدى",
+    "sameProduct": "نفس المنتج",
+    "freeQty": "الكمية المهداة",
+    "repeatable": "قابل للتكرار (25 مشتراة بعرض 10+1 تعطي 2 مجانًا)",
+    "discountRule": "التخفيض",
+    "target": "على",
+    "discountPct": "التخفيض ٪",
+    "products": "المنتجات",
+    "add": "إضافة",
+    "removeNamed": "إزالة {name}",
+    "brand": "العلامة",
+    "pickBrand": "اختر علامة",
+    "category": "الفئة",
+    "pickCategory": "اختر فئة",
+    "categoryHelp": "تشمل الفئات الفرعية.",
+    "minQtyBase": "الحد الأدنى للكمية في السطر (الوحدة الأساسية)",
+    "minQtyNone": "بدون حد أدنى",
+    "clients": "الزبائن المعنيون",
+    "clientScope": "الزبائن المعنيون",
+    "priceLevel": "مستوى السعر",
+    "pickPriceLevel": "اختر مستوى",
+    "sector": "القطاع",
+    "pickSector": "اختر قطاعًا",
+    "addClient": "إضافة زبون",
+    "active": "مفعّل"
+  },
+  "packaging": {
+    "returnedTitle": "التغليف المُرجَع",
+    "held": "{count, plural, =0 {لا شيء عند الزبون} other {# عند الزبون}}",
+    "title": "التغليف",
+    "subtitle": "صناديق ومنصات وقارورات: تُحسب عند كل زبون.",
+    "new": "تغليف جديد",
+    "edit": "تعديل التغليف",
+    "saved": "تم تعديل التغليف",
+    "created": "تم إنشاء التغليف",
+    "emptyTitle": "لا يوجد تغليف",
+    "emptyHelp": "أنشئ صناديقك أو منصاتك ثم حدّدها على المنتجات.",
+    "productCount": "{count, plural, =0 {لا منتج} one {منتج واحد} other {# منتجات}}",
+    "deposit": "قيمة الرهن",
+    "editNamed": "تعديل {name}",
+    "archiveNamed": "حذف {name}",
+    "name": "الاسم",
+    "namePlaceholder": "صندوق 24 قارورة",
+    "depositValue": "قيمة الرهن (اختياري)",
+    "depositHelp": "للعرض فقط: لا يُسجَّل أي مبلغ في حساب الزبون.",
+    "archiveTitle": "حذف هذا التغليف؟",
+    "archiveBody": "الكميات الموجودة عند الزبائن تبقى في كشوفهم.",
+    "archived": "تم حذف التغليف",
+    "archive": "حذف",
+    "noTypesYet": "أنشئ التغليف أولًا في المنتجات > التغليف.",
+    "productHelp": "في كل بيع يُحسب عدد التغليف المعطى للزبون تلقائيًا.",
+    "type": "التغليف",
+    "pickType": "اختر تغليفًا",
+    "perPackaging": "{unit} في كل تغليف",
+    "removeRow": "إزالة هذا التغليف",
+    "addRow": "إضافة تغليف",
+    "productSaved": "تم حفظ تغليف المنتج",
+    "clientTitle": "التغليف عند الزبون",
+    "newMovement": "إرجاع التغليف",
+    "clientEmpty": "لا يوجد تغليف عند هذا الزبون.",
+    "history": "الحركات",
+    "entryDELIVERY": "مُسلَّم",
+    "entryRETURN": "مُرجَع",
+    "entryOPENING": "رصيد افتتاحي",
+    "entryADJUST": "تعديل",
+    "entryREVERSAL": "إلغاء",
+    "after": "الرصيد {count}",
+    "loadMore": "عرض المزيد",
+    "movementSaved": "تم الحفظ. لدى الزبون الآن {count}.",
+    "negativeWarning": "أرجع الزبون أكثر من المسجّل: تحقّق من رصيده الافتتاحي.",
+    "movementType": "العملية",
+    "qtyReturned": "الكمية المُرجَعة",
+    "qtyAdjust": "التصحيح (+ أو −)",
+    "adjustHelp": "موجب: لدى الزبون أكثر. سالب: لديه أقل.",
+    "noteRequired": "السبب",
+    "note": "ملاحظة (اختياري)",
+    "saleTitle": "التغليف",
+    "givenReturned": "{given} معطى · {returned} مُرجَع"
+  },
+  "sellOut": {
+    "title": "المبيعات حسب العلامة",
+    "subtitle": "المبيعات للزبائن حسب العلامة والمنتج والقطاع والبائع ونوع الزبون.",
+    "noBrand": "بدون علامة",
+    "clientTypePARTICULIER": "فرد",
+    "clientTypePROFESSIONNEL": "مهني",
+    "counter": "زبون الشباك",
+    "sector": "القطاع",
+    "allSectors": "كل القطاعات",
+    "clientType": "نوع الزبون",
+    "allClientTypes": "كل الأنواع",
+    "empty": "لا مبيعات في هذه الفترة",
+    "emptyHelp": "غيّر التواريخ أو المرشحات.",
+    "truncated": "تُعرض أول 2000 سطر فقط: ملف Excel يحتوي عليها كلها.",
+    "col": {
+      "month": "الشهر",
+      "brand": "العلامة",
+      "reference": "المرجع",
+      "designation": "التسمية",
+      "unit": "الوحدة",
+      "sector": "القطاع",
+      "seller": "البائع",
+      "clientType": "نوع الزبون",
+      "qtySold": "الكمية المباعة",
+      "qtyFree": "الكمية المجانية",
+      "qtyReturned": "الكمية المُرجَعة",
+      "qtyNet": "الكمية الصافية",
+      "salesHt": "المبيعات دون رسم",
+      "returnsHt": "المرتجعات دون رسم",
+      "netHt": "الصافي دون رسم",
+      "freeValueHt": "قيمة المجاني"
+    }
   }
 }

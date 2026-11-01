@@ -68,6 +68,7 @@
 - Numbers accept `1 234,50`, `1.234,50`, `1,234.50`, `1234.5`, `1 234 DA`. A lone `,` is decimal; a single `.` is decimal; several `.` are thousands separators.
 - New products: base unit is the default sale and purchase unit; empty TVA means 0 % (shown as a warning). Unknown categories are created.
 - The original file is kept 30 days, then dropped; the job row stays for audit.
+- Later imports: **Fournisseurs et soldes** (phase 21) and **Emballages** (phase 20, PACKAGING: code client, emballage, quantité → `OPENING` on the packaging ledger).
 
 ## Editions (phase 13b)
 - One codebase for three kinds of customers. The plan switches modules on (`packages/shared/features.ts`), the API enforces it.
@@ -129,6 +130,22 @@
 ### Promotions & emballages
 - **UG (unités gratuites)**: "10+1" free units are separate lines at price 0 that leave stock; their cost lowers the margin.
 - **Emballages consignés** (casiers, palettes, bouteilles): a per-client count ledger, + when delivered, − when returned.
+- Rules (phase 20, modules PROMOTIONS and PACKAGING):
+  - A promotion is `FREE_UNITS` (buy N of X, get M of X or of Y free; repeatable: 25 bought with 10+1 gives 2) or `PERCENT_DISCOUNT` (on products, a brand, or a category with its sub-categories; optional minimum quantity in base units). It covers all clients, a price level, a sector or a list of clients, between two Algiers days (both included).
+  - **The API applies them** when it prices lines: a sale draft or quick sale, an order draft and its confirmation. The day that counts is the day the lines are priced; validating a draft keeps what it was priced with (like prices). An order is priced again at confirmation (list prices and promotions of that day). The web shows the API's preview (`POST /pricing/preview`).
+  - At most one promotion per line, and each line is judged alone (two lines of the same product are not added up). The highest priority wins; a tie goes to the best for the client (the free units valued at the client's list price, or the remise in DA), then to the oldest promotion. Free lines are never a target.
+  - A free line is its own line: price 0, `isFree`, the promotion's id and **name frozen**, and `freeOfPosition` pointing to its paid line. It leaves stock at the CUMP like any line, so its cost lowers the margin; its "valeur des gratuités" is its quantity × the client's list price kept on the line. Editing or archiving a promotion never changes a past document.
+  - Changing the free quantity or a promotion's remise needs **PROMO_OVERRIDE** (managers by default); it is audited (`PROMO_OVERRIDE_USED`). Free units without a promotion are refused.
+  - **Returns**: only paid lines are picked; the free units come back by themselves, in proportion to the paid units returned **so far** (cumulative, so several small returns end where one big return would), rounded half-up to whole units (to 0.001 for a decimal unit). Returning all the paid units brings back all the free ones. Example: 25 cartons with 2 free; return 10 → 2 × 10 / 25 = 0.8 → 1 free back; return the other 15 → the last one.
+  - **Order delivery**: free units go with their paid line by the same proportion rule. A facture made from BLs keeps the free lines.
+  - **Objectifs & primes**: free units count as 0 quantity (no bonus "per unit" on a gift), but their cost stays in the margin.
+- Emballages (phase 20):
+  - A product may travel in one or more packaging types (1 casier per 24 bouteilles). A validated sale to a client posts `DELIVERY` = ceil(quantity in base units ÷ per packaging) for each line, free lines included (30 bouteilles = 2 casiers). Empties the client hands back are entered on the sale (or the delivery) and post `RETURN`. The client comptoir has no packaging account.
+  - Manual movements (`POST /packaging-movements`, idempotent): `RETURN` by anyone who sees the client, `ADJUST` (signed, with a note) by managers. Opening counts come from the Excel import "Emballages" (`OPENING`, refused twice for a client and a packaging).
+  - Cancelling a sale posts `REVERSAL` of exactly what that sale left (given − returned). An avoir does not move packaging: empties are entered when they come back.
+  - A count can go below zero (openings may be missing at the start): the API answers with a warning, never a refusal. Counts only: the deposit value is shown, no money is posted (money consigne is parked).
+  - Same ledger rules as money: `ClientPackagingEntry` is append-only, the cached `ClientPackagingBalance` is updated in the same transaction (locked after the client balance) and checked by the nightly reconcile.
+- **Sell-out par marque** (`GET /reports/sell-out`, owner, manager, supervisor for his team): month × brand × product × sector × seller × client type, in base units and HT. Same counting rules as the other reports (a sale in the month it is validated, an avoir in the month it is made, factures from BLs excluded). Sold, free (UG) and returned quantities are separate columns; free units brought back lower the free columns. The sector is the client's current one; the client type is the one frozen at validation. The Excel export has fixed French column titles (`SELL_OUT_COLUMNS`): never rename or reorder them, only add at the end.
 
 ## Typical edge cases to always consider
 - Selling the last carton from two devices at the same time.
@@ -175,6 +192,7 @@
 - **Clôture de tournée**: `SellerSession` closing with the cash écart.
 - **Objectif / prime / commission**: `SalesTarget` / `IncentiveRule` / `IncentiveRun`.
 - **UG**: unités gratuites, free units of a promotion.
-- **Emballage consigné**: returnable packaging tracked per client.
+- **Emballage consigné**: returnable packaging tracked per client (`PackagingType`, `ClientPackagingEntry`).
+- **Sell-out**: what the distributor sold to its clients, per brand, sent to the brand every month.
 - **Règlement fournisseur**: payment to a supplier, prefix `RGF`.
 - **Dossier d'importation (DI)**: one import shipment grouping BRs and their costs. **Coût de revient**: landed unit cost.

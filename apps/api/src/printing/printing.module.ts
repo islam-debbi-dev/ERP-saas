@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ImportFilesModule } from '../import-files/import-files.module';
 import { StockModule } from '../stock/stock.module';
 import { ClientsModule } from '../clients/clients.module';
+import { PackagingModule } from '../packaging/packaging.module';
 import { PaymentsModule } from '../payments/payments.module';
 import { PurchasesModule } from '../purchases/purchases.module';
 import { SalesModule } from '../sales/sales.module';
@@ -33,6 +34,7 @@ import { ShareLinksService } from './share-links.service';
     StockModule,
     TourneesModule,
     ImportFilesModule,
+    PackagingModule,
   ],
   controllers: [
     DocumentsPrintController,

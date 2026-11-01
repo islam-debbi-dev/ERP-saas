@@ -26,7 +26,15 @@ import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
 import { WarehousesService } from '../stock/warehouses.service';
 import { fromIsoDate, saleInclude, toIsoDate, toSaleDto } from './sale.mapper';
-import { type PriceOverride, resolvePriceLevel, snapshotSaleLines } from './sale-lines';
+import { PackagingLedgerService } from '../packaging/packaging-ledger.service';
+import { PricingService } from '../promotions/pricing.service';
+import {
+  carryPromotions,
+  type PriceOverride,
+  type PromotionFields,
+  resolvePriceLevel,
+  snapshotSaleLines,
+} from './sale-lines';
 
 /** Sale drafts and reads. Effects (stock, account, payments) live in SaleWorkflowService. */
 @Injectable()
@@ -36,6 +44,8 @@ export class SalesService {
     private readonly audit: AuditService,
     private readonly scope: ScopeService,
     private readonly warehouses: WarehousesService,
+    private readonly pricing: PricingService,
+    private readonly packaging: PackagingLedgerService,
   ) {}
 
   async create(input: CreateSaleInput, user: CurrentUserInfo): Promise<SaleDto> {
@@ -52,7 +62,11 @@ export class SalesService {
      * Set when the sale is the BL of a delivered bon de commande (phase 16): its prices were
      * checked at confirmation and its seller is the order's, whoever delivers.
      */
-    fromOrder?: { sellerId: string | null },
+    fromOrder?: {
+      sellerId: string | null;
+      /** The order lines' promotion fields, same order as `input.lines` (phase 20). */
+      promotions: PromotionFields[];
+    },
   ): Promise<string> {
     const tenantId = tenantContext.requireTenantId();
     await this.checkClient(tx, input.clientId, user);
@@ -65,12 +79,18 @@ export class SalesService {
       : null;
     const priceLevelId = await resolvePriceLevel(tx, input.clientId);
     const assujetti = await this.assujettiTva(tx);
-    const { lines, totals, overrides } = await snapshotSaleLines(
-      tx,
-      input.lines,
-      priceLevelId,
-      assujetti,
-    );
+    // An order's BL keeps the order's lines as they are, free lines included (phase 20).
+    const { lines, totals, overrides, promoOverrides } = fromOrder
+      ? await snapshotSaleLines(tx, input.lines, priceLevelId, assujetti).then((r) => ({
+          ...r,
+          lines: carryPromotions(r.lines, fromOrder.promotions),
+          promoOverrides: [],
+        }))
+      : await this.pricing.priceLines(tx, input.lines, {
+          clientId: input.clientId,
+          priceLevelId,
+          assujettiTva: assujetti,
+        });
     if (!fromOrder) await this.checkOverrides(tx, overrides, user);
     const sale = await tx.sale.create({
       data: {
@@ -105,7 +125,12 @@ export class SalesService {
         warehouseId,
         lines: input.lines,
         overrides,
+        promoOverrides,
       },
+    });
+    await this.pricing.checkPromoOverrides(tx, promoOverrides, user, {
+      entity: 'Sale',
+      id: sale.id,
     });
     return sale.id;
   }
@@ -132,13 +157,13 @@ export class SalesService {
         : input.warehouseId;
       const priceLevelId = await resolvePriceLevel(tx, input.clientId);
       const assujetti = await this.assujettiTva(tx);
-      const { lines, totals, overrides } = await snapshotSaleLines(
+      const { lines, totals, overrides, promoOverrides } = await this.pricing.priceLines(
         tx,
         input.lines,
-        priceLevelId,
-        assujetti,
+        { clientId: input.clientId, priceLevelId, assujettiTva: assujetti },
       );
       await this.checkOverrides(tx, overrides, user);
+      await this.pricing.checkPromoOverrides(tx, promoOverrides, user, { entity: 'Sale', id });
       // Draft lines have no effect anywhere, so they are simply replaced.
       await tx.saleLine.deleteMany({ where: { saleId: id } });
       if (lines.length > 0) {
@@ -173,6 +198,7 @@ export class SalesService {
           ...(warehouseId !== undefined ? { warehouseId } : {}),
           lines: input.lines,
           overrides,
+          promoOverrides,
         },
       });
     });
@@ -198,7 +224,7 @@ export class SalesService {
           select: { id: true, fullName: true },
         })
       : null;
-    return toSaleDto(s, seller);
+    return toSaleDto(s, seller, await this.packaging.ofSale(this.prisma.db, s.id));
   }
 
   /**

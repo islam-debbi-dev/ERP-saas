@@ -9,6 +9,9 @@ import {
   type ClientStatementDto,
   computeTotals,
   type OrderDto,
+  type PackagingBalanceDto,
+  type PackagingEntryDto,
+  PackagingEntryType,
   OrderStatus,
   money,
   numberToFrenchWords,
@@ -68,6 +71,50 @@ const UNIT_NAMES: Record<string, string> = {
 };
 const unitLabel = (l: { unitName: string | null; unitCode: string }): string =>
   l.unitName ?? UNIT_NAMES[l.unitCode] ?? l.unitCode;
+
+/** A free line (UG, phase 20) says so on paper, with the promotion that gave it. */
+const designationOf = (l: {
+  designation: string;
+  isFree?: boolean;
+  promotion?: { name: string } | null;
+}): string =>
+  l.isFree
+    ? `${l.designation} — UG${l.promotion ? ` (${l.promotion.name})` : ''}`
+    : l.promotion
+      ? `${l.designation} — ${l.promotion.name}`
+      : l.designation;
+
+const PACKAGING_TYPES: Record<string, string> = {
+  [PackagingEntryType.OPENING]: 'Stock initial',
+  [PackagingEntryType.DELIVERY]: 'Livré',
+  [PackagingEntryType.RETURN]: 'Rendu',
+  [PackagingEntryType.ADJUST]: 'Ajustement',
+  [PackagingEntryType.REVERSAL]: 'Annulation',
+};
+
+/** Emballages donnés / rendus with the goods (phase 20). */
+function packagingTable(rows: SaleDto['packaging']): SafeHtml | string {
+  if (rows.length === 0) return '';
+  return html`<table class="lines packaging">
+    <thead>
+      <tr>
+        <th>Emballages</th>
+        <th class="num">Donnés</th>
+        <th class="num">Rendus</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows.map(
+        (r) =>
+          html`<tr>
+            <td>${r.name}</td>
+            <td class="num">${String(r.given)}</td>
+            <td class="num">${String(r.returned)}</td>
+          </tr>`,
+      )}
+    </tbody>
+  </table>`;
+}
 
 const LEDGER_TYPES: Record<string, string> = {
   [ClientLedgerType.OPENING]: "Solde d'ouverture",
@@ -217,13 +264,14 @@ export function saleDocument(sale: SaleDto, ctx: PrintContext): string {
 
   const body = html`
     ${linesTable(
-      sale.lines.map((l) => ({ ...l, unit: unitLabel(l) })),
+      sale.lines.map((l) => ({ ...l, designation: designationOf(l), unit: unitLabel(l) })),
       sale.assujettiTva,
     )}
     <div class="after">
       <div>${tvaMention(sale.assujettiTva, ctx.seller)}</div>
       ${totalsTable(rows)}
     </div>
+    ${packagingTable(sale.packaging)}
     ${facture ? words('Arrêtée la présente facture à la somme de', due) : ''}
     ${sale.note ? html`<p class="note">Note : ${sale.note}</p>` : ''}
     <div class="signatures">
@@ -255,7 +303,7 @@ export function avoirDocument(sale: SaleDto, returnId: string, ctx: PrintContext
   const lines: PrintLine[] = avoir.lines.map((rl) => {
     const l = byLine.get(rl.saleLineId);
     return {
-      designation: l?.designation ?? '',
+      designation: l ? designationOf(l) : '',
       unit: l ? unitLabel(l) : '',
       qty: rl.qty,
       unitPriceHt: rl.unitPriceHt,
@@ -462,7 +510,11 @@ export function orderDocument(o: OrderDto, ctx: PrintContext): string {
   if (o.sale?.number) meta.push(['Livré par', o.sale.number]);
   const body = html`
     ${linesTable(
-      o.lines.map((l) => ({ ...l, unit: UNIT_NAMES[l.unitCode] ?? l.unitCode })),
+      o.lines.map((l) => ({
+        ...l,
+        designation: designationOf(l),
+        unit: UNIT_NAMES[l.unitCode] ?? l.unitCode,
+      })),
       o.assujettiTva,
     )}
     <div class="after">
@@ -610,6 +662,83 @@ export function statementDocument(
       legal: clientLegal(client),
     },
     meta: [['Période', `du ${day(st.from)} au ${day(st.to)}`]],
+    body,
+    cancelled: false,
+    duplicate: false,
+  });
+}
+
+/** Relevé d'emballages (phase 20): counts only, entry by entry, with the count after each. */
+export function packagingStatementDocument(
+  entries: PackagingEntryDto[],
+  balances: PackagingBalanceDto[],
+  client: ClientDto,
+  ctx: Omit<PrintContext, 'duplicate'>,
+): string {
+  const body = html`
+    <table class="lines">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Emballage</th>
+          <th>Opération</th>
+          <th>Libellé</th>
+          <th class="num">Donnés</th>
+          <th class="num">Rendus</th>
+          <th class="num">Solde</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${entries.map(
+          (e) =>
+            html`<tr>
+              <td>${dayOf(e.createdAt)}</td>
+              <td>${e.packagingName}</td>
+              <td>${PACKAGING_TYPES[e.type] ?? e.type}</td>
+              <td>${e.label}${e.note ? html` — ${e.note}` : ''}</td>
+              <td class="num">${e.qty > 0 ? String(e.qty) : ''}</td>
+              <td class="num">${e.qty < 0 ? String(-e.qty) : ''}</td>
+              <td class="num">${String(e.balanceAfter)}</td>
+            </tr>`,
+        )}
+      </tbody>
+    </table>
+    <table class="lines packaging">
+      <thead>
+        <tr>
+          <th>Emballages chez le client</th>
+          <th class="num">Quantité</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${balances.map(
+          (b) =>
+            html`<tr>
+              <td>${b.name}</td>
+              <td class="num">${String(b.balance)}</td>
+            </tr>`,
+        )}
+      </tbody>
+    </table>
+  `;
+  return layout({
+    format: ctx.format,
+    title: "RELEVÉ D'EMBALLAGES",
+    number: null,
+    date: dayOf(new Date().toISOString()),
+    seller: ctx.seller,
+    party: {
+      label: 'Client',
+      name: client.name,
+      code: client.code,
+      lines: [
+        client.address,
+        [client.commune, client.wilaya].filter(Boolean).join(', ') || null,
+        client.phone ? `Tél. : ${client.phone}` : null,
+      ],
+      legal: clientLegal(client),
+    },
+    meta: [],
     body,
     cancelled: false,
     duplicate: false,

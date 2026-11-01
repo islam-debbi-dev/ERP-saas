@@ -52,7 +52,8 @@
     "deliveries": "Livraisons",
     "flagged": "Opérations signalées",
     "incentives": "Primes",
-    "importFiles": "Dossiers d'importation"
+    "importFiles": "Dossiers d'importation",
+    "promotions": "Promotions"
   },
   "roles": {
     "OWNER": "Propriétaire",
@@ -204,7 +205,8 @@
     "filterTeam": "Équipe",
     "allTeams": "Toutes",
     "filterBrand": "Marque",
-    "allBrands": "Toutes"
+    "allBrands": "Toutes",
+    "sellOutLink": "Sell-out par marque"
   },
   "settings": {
     "title": "Paramètres",
@@ -412,7 +414,12 @@
     "SUPPLIER_CURRENCY_LOCKED": "Ce fournisseur a déjà des opérations : sa devise ne peut plus changer.",
     "ALLOCATION_BASIS_MISSING": "Répartition impossible : renseignez le poids ou le volume des produits concernés.",
     "MANUAL_SPLIT_INVALID": "La répartition manuelle doit faire exactement le montant du frais.",
-    "IMPORT_COST_NOT_ACTIVE": "Ce frais est déjà annulé."
+    "IMPORT_COST_NOT_ACTIVE": "Ce frais est déjà annulé.",
+    "PROMO_OVERRIDE_FORBIDDEN": "Seul un utilisateur autorisé peut changer les UG ou la remise d’une promotion.",
+    "PROMOTION_INVALID": "Un produit, une unité, un client ou un secteur de la promotion est introuvable.",
+    "FREE_LINE_NOT_EDITABLE": "Les unités gratuites suivent leur ligne payante : aucune promotion ne s’applique ici.",
+    "PACKAGING_OPENING_ALREADY_SET": "Le stock initial d’emballages de ce client est déjà saisi.",
+    "PACKAGING_TYPE_NAME_TAKEN": "Un emballage porte déjà ce nom."
   },
   "units": {
     "PIECE": "Pièce",
@@ -511,7 +518,9 @@
     "noBrand": "Sans marque",
     "weightKg": "Poids (kg par {unit})",
     "volumeM3": "Volume (m³ par {unit})",
-    "weightHint": "Facultatif. Sert à répartir les frais d'importation au poids ou au volume."
+    "weightHint": "Facultatif. Sert à répartir les frais d'importation au poids ou au volume.",
+    "packagingTypes": "Emballages",
+    "packagingSection": "Emballages consignés"
   },
   "categories": {
     "title": "Catégories",
@@ -1055,7 +1064,9 @@
     "sellerChanged": "Vendeur changé",
     "warehouseAuto": "Automatique (camion du vendeur, sinon dépôt principal)",
     "returnToSaleWarehouse": "Retour à {name}",
-    "returnToMain": "Retour au dépôt principal"
+    "returnToMain": "Retour au dépôt principal",
+    "warnPackagingNegative": "Le client rend plus d’emballages que prévu (solde {count}).",
+    "returnFreeHelp": "Les unités gratuites (UG) reviennent avec leur ligne, au prorata."
   },
   "payments": {
     "title": "Versements",
@@ -1152,13 +1163,15 @@
       "PRODUCTS": "Produits",
       "OPENING_STOCK": "Stock initial",
       "CLIENTS": "Clients et soldes",
-      "SUPPLIERS": "Fournisseurs et soldes"
+      "SUPPLIERS": "Fournisseurs et soldes",
+      "PACKAGING_OPENING": "Emballages chez les clients"
     },
     "typesHelp": {
       "PRODUCTS": "Référence, désignation, unités, colisage, codes-barres, prix, TVA.",
       "OPENING_STOCK": "Quantité et coût de départ des produits déjà créés.",
       "CLIENTS": "Code, nom, téléphone, plafond et solde initial (crédit).",
-      "SUPPLIERS": "Code, nom, téléphone et solde initial (ce que vous devez au fournisseur)."
+      "SUPPLIERS": "Code, nom, téléphone et solde initial (ce que vous devez au fournisseur).",
+      "PACKAGING_OPENING": "Code client, emballage et quantité que chaque client détient déjà."
     },
     "template": "Télécharger le modèle",
     "file": "Fichier",
@@ -1208,7 +1221,8 @@
       "PRODUCTS": "{n, plural, one {# ligne d'ouverture} other {# lignes d'ouverture}}",
       "OPENING_STOCK": "{n, plural, one {# stock initial enregistré} other {# stocks initiaux enregistrés}}",
       "CLIENTS": "{n, plural, one {# solde initial enregistré} other {# soldes initiaux enregistrés}}",
-      "SUPPLIERS": "{n, plural, one {# solde fournisseur enregistré} other {# soldes fournisseurs enregistrés}}"
+      "SUPPLIERS": "{n, plural, one {# solde fournisseur enregistré} other {# soldes fournisseurs enregistrés}}",
+      "PACKAGING_OPENING": "{n, plural, one {# stock d’emballages enregistré} other {# stocks d’emballages enregistrés}}"
     },
     "again": "Nouvel import",
     "history": "Historique des imports",
@@ -1249,7 +1263,9 @@
       "address": "Adresse",
       "creditLimit": "Plafond",
       "openingBalance": "Solde initial",
-      "brand": "Marque"
+      "brand": "Marque",
+      "clientCode": "Code client",
+      "packaging": "Emballage"
     },
     "issues": {
       "required": "obligatoire",
@@ -1285,7 +1301,9 @@
       "zero_cost": "coût à zéro : la marge de ce produit sera faussée",
       "supplier_archived": "fournisseur archivé",
       "invalid_supplier": "fournisseur invalide ({rule})",
-      "foreign_currency_supplier": "fournisseur en devise : son solde ne s'importe pas en DA"
+      "foreign_currency_supplier": "fournisseur en devise : son solde ne s'importe pas en DA",
+      "client_not_found": "aucun client avec ce code",
+      "packaging_not_found": "emballage « {value} » inconnu"
     }
   },
   "users": {
@@ -1394,6 +1412,10 @@
     "INCENTIVE_APPROVE": {
       "label": "Valider les primes",
       "help": "Valider le calcul des primes du mois (le gérant le peut toujours)."
+    },
+    "PROMO_OVERRIDE": {
+      "label": "Modifier une promotion sur une vente",
+      "help": "Changer les unités gratuites (UG) ou la remise qu’une promotion donne à une ligne."
     }
   },
   "sessions": {
@@ -2447,5 +2469,171 @@
     "cancelFileTitle": "Annuler le dossier",
     "fileCancelled": "Dossier annulé.",
     "costTypeTVA_IMPORT": "TVA à l'importation"
+  },
+  "promotions": {
+    "title": "Promotions",
+    "subtitle": "UG et remises appliquées automatiquement aux ventes.",
+    "new": "Nouvelle promotion",
+    "edit": "Modifier la promotion",
+    "saved": "Promotion modifiée",
+    "created": "Promotion créée",
+    "statusFilter": "Période",
+    "statusactive": "En cours",
+    "statusupcoming": "À venir",
+    "statusended": "Terminées",
+    "emptyactive": "Aucune promotion en cours",
+    "emptyupcoming": "Aucune promotion à venir",
+    "emptyended": "Aucune promotion terminée",
+    "emptyHelp": "Créez une promotion : elle s’appliquera aux ventes et aux commandes de ses dates.",
+    "priorityBadge": "Priorité {n}",
+    "inactive": "Désactivée",
+    "actionsOf": "Actions sur {name}",
+    "archive": "Supprimer",
+    "archiveTitle": "Supprimer cette promotion ?",
+    "archiveBody": "Elle ne s’appliquera plus. Les ventes déjà faites gardent leurs UG et leur remise.",
+    "archived": "Promotion supprimée",
+    "ruleFreeUnits": "{buy} {product} achetés → {free} {freeProduct} gratuits",
+    "repeatableShort": "cumulable",
+    "rulePercent": "−{pct} % sur {target}",
+    "ruleMin": "dès {qty}",
+    "targetPRODUCTS": "Produits",
+    "targetBRAND": "Marque",
+    "targetCATEGORY": "Catégorie",
+    "scopeALL": "Tous les clients",
+    "scopePRICE_LEVEL": "Un niveau de prix",
+    "scopeSECTOR": "Un secteur",
+    "scopeCLIENTS": "Une liste de clients",
+    "clientCount": "{count, plural, one {# client} other {# clients}}",
+    "dates": "Du {from} au {to}",
+    "freeUnits": "UG",
+    "freeQtyOf": "Unités gratuites de {product}",
+    "freeBadge": "UG",
+    "productSearch": "Chercher : {field}",
+    "productSearchPlaceholder": "Référence ou désignation",
+    "pickProduct": "Choisir un produit",
+    "name": "Nom",
+    "type": "Type",
+    "typeFREE_UNITS": "Unités gratuites (10+1)",
+    "typePERCENT_DISCOUNT": "Remise en %",
+    "priority": "Priorité",
+    "priorityHelp": "La plus haute l’emporte quand plusieurs promotions visent la même ligne.",
+    "validFrom": "Du",
+    "validTo": "Au",
+    "freeRule": "Achetez… recevez…",
+    "buyProduct": "Produit acheté",
+    "buyQty": "Quantité achetée",
+    "unit": "Unité",
+    "pickUnit": "Choisir une unité",
+    "freeProduct": "Produit offert",
+    "sameProduct": "Le même produit",
+    "freeQty": "Quantité offerte",
+    "repeatable": "Cumulable (25 achetés en 10+1 donnent 2 gratuits)",
+    "discountRule": "Remise",
+    "target": "Sur",
+    "discountPct": "Remise %",
+    "products": "Produits",
+    "add": "Ajouter",
+    "removeNamed": "Retirer {name}",
+    "brand": "Marque",
+    "pickBrand": "Choisir une marque",
+    "category": "Catégorie",
+    "pickCategory": "Choisir une catégorie",
+    "categoryHelp": "Ses sous-catégories sont comprises.",
+    "minQtyBase": "Quantité minimum par ligne (unité de base)",
+    "minQtyNone": "Aucun minimum",
+    "clients": "Clients concernés",
+    "clientScope": "Clients concernés",
+    "priceLevel": "Niveau de prix",
+    "pickPriceLevel": "Choisir un niveau",
+    "sector": "Secteur",
+    "pickSector": "Choisir un secteur",
+    "addClient": "Ajouter un client",
+    "active": "Active"
+  },
+  "packaging": {
+    "returnedTitle": "Emballages rendus",
+    "held": "{count, plural, =0 {Aucun chez le client} one {# chez le client} other {# chez le client}}",
+    "title": "Emballages",
+    "subtitle": "Casiers, palettes, bonbonnes : comptés chez chaque client.",
+    "new": "Nouvel emballage",
+    "edit": "Modifier l’emballage",
+    "saved": "Emballage modifié",
+    "created": "Emballage créé",
+    "emptyTitle": "Aucun emballage",
+    "emptyHelp": "Créez vos casiers ou palettes, puis indiquez-les sur les produits.",
+    "productCount": "{count, plural, =0 {Aucun produit} one {# produit} other {# produits}}",
+    "deposit": "Consigne",
+    "editNamed": "Modifier {name}",
+    "archiveNamed": "Supprimer {name}",
+    "name": "Nom",
+    "namePlaceholder": "Casier 24 bouteilles",
+    "depositValue": "Valeur de consigne (facultatif)",
+    "depositHelp": "Affichée seulement : aucun montant n’est porté au compte du client.",
+    "archiveTitle": "Supprimer cet emballage ?",
+    "archiveBody": "Les quantités déjà chez les clients restent sur leur relevé.",
+    "archived": "Emballage supprimé",
+    "archive": "Supprimer",
+    "noTypesYet": "Créez d’abord vos emballages dans Produits > Emballages.",
+    "productHelp": "À chaque vente, le nombre d’emballages donnés au client est compté tout seul.",
+    "type": "Emballage",
+    "pickType": "Choisir un emballage",
+    "perPackaging": "{unit} par emballage",
+    "removeRow": "Retirer cet emballage",
+    "addRow": "Ajouter un emballage",
+    "productSaved": "Emballages du produit enregistrés",
+    "clientTitle": "Emballages chez le client",
+    "newMovement": "Retour d’emballages",
+    "clientEmpty": "Aucun emballage chez ce client.",
+    "history": "Mouvements",
+    "entryDELIVERY": "Livré",
+    "entryRETURN": "Rendu",
+    "entryOPENING": "Stock initial",
+    "entryADJUST": "Ajustement",
+    "entryREVERSAL": "Annulation",
+    "after": "Solde {count}",
+    "loadMore": "Voir plus",
+    "movementSaved": "Enregistré. Le client a maintenant {count}.",
+    "negativeWarning": "Le client rend plus que ce qui est enregistré : vérifiez son stock initial.",
+    "movementType": "Opération",
+    "qtyReturned": "Quantité rendue",
+    "qtyAdjust": "Correction (+ ou −)",
+    "adjustHelp": "Positif : le client en a plus. Négatif : il en a moins.",
+    "noteRequired": "Motif",
+    "note": "Note (facultatif)",
+    "saleTitle": "Emballages",
+    "givenReturned": "{given} donnés · {returned} rendus"
+  },
+  "sellOut": {
+    "title": "Sell-out par marque",
+    "subtitle": "Ventes aux clients par marque, produit, secteur, vendeur et type de client.",
+    "noBrand": "Sans marque",
+    "clientTypePARTICULIER": "Particulier",
+    "clientTypePROFESSIONNEL": "Professionnel",
+    "counter": "Comptoir",
+    "sector": "Secteur",
+    "allSectors": "Tous les secteurs",
+    "clientType": "Type de client",
+    "allClientTypes": "Tous les types",
+    "empty": "Aucune vente sur cette période",
+    "emptyHelp": "Changez les dates ou les filtres.",
+    "truncated": "Seules les 2 000 premières lignes sont affichées : l’export Excel les contient toutes.",
+    "col": {
+      "month": "Mois",
+      "brand": "Marque",
+      "reference": "Référence",
+      "designation": "Désignation",
+      "unit": "Unité",
+      "sector": "Secteur",
+      "seller": "Vendeur",
+      "clientType": "Type client",
+      "qtySold": "Qté vendue",
+      "qtyFree": "Qté gratuite (UG)",
+      "qtyReturned": "Qté retournée",
+      "qtyNet": "Qté nette",
+      "salesHt": "Ventes HT",
+      "returnsHt": "Retours HT",
+      "netHt": "Net HT",
+      "freeValueHt": "Valeur gratuités HT"
+    }
   }
 }
