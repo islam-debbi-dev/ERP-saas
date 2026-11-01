@@ -384,6 +384,9 @@
     "TRANSFER_NOT_DRAFT": "This transfer is already validated or cancelled.",
     "TRANSFER_NOT_VALIDATED": "This transfer is not validated.",
     "TRANSFER_EMPTY": "Add at least one product.",
+    "PRODUCT_NOT_IN_WAREHOUSE": "This product is not sold by this dépôt.",
+    "ACCESS_ABOVE_GRANTER": "You cannot give more rights than your own.",
+    "WAREHOUSE_ACCESS_INVALID": "Invalid dépôt access.",
     "ROUTE_NOT_FOUND": "Route not found.",
     "VISIT_INVALID": "This visit does not match this client or seller.",
     "ORDER_NOT_FOUND": "Order not found.",
@@ -1416,6 +1419,142 @@
     "PROMO_OVERRIDE": {
       "label": "Change a promotion on a sale",
       "help": "Change the free units or the discount a promotion gives a line."
+    },
+    "PRODUCTS_VIEW": {
+      "label": "View products",
+      "help": "Catalog, brands, categories, units."
+    },
+    "PRODUCTS_CREATE": {
+      "label": "Create products",
+      "help": "New products, brands, categories and units."
+    },
+    "PRODUCTS_EDIT": {
+      "label": "Edit products",
+      "help": "Edit, archive, restore; price levels."
+    },
+    "STOCK_VIEW": {
+      "label": "View stock",
+      "help": "Quantities, movements and inventories."
+    },
+    "STOCK_COUNT": {
+      "label": "Count stock",
+      "help": "Start and fill an inventory."
+    },
+    "STOCK_TRANSFER": {
+      "label": "Stock transfers",
+      "help": "Loading, unloading and transfers between dépôts."
+    },
+    "PURCHASES_VIEW": {
+      "label": "View purchases",
+      "help": "Goods receipts (BR)."
+    },
+    "PURCHASES_CREATE": {
+      "label": "Enter a BR",
+      "help": "Create and edit a draft goods receipt."
+    },
+    "PURCHASES_VALIDATE": {
+      "label": "Validate a BR",
+      "help": "Bring the goods into stock."
+    },
+    "PURCHASES_CANCEL": {
+      "label": "Cancel a BR",
+      "help": "Cancel and return to supplier."
+    },
+    "SUPPLIERS_VIEW": {
+      "label": "View suppliers",
+      "help": "Supplier list and card."
+    },
+    "SUPPLIERS_CREATE": {
+      "label": "Create suppliers",
+      "help": "New supplier."
+    },
+    "SUPPLIERS_EDIT": {
+      "label": "Edit suppliers",
+      "help": "Edit and archive."
+    },
+    "SUPPLIERS_ACCOUNT": {
+      "label": "Supplier accounts",
+      "help": "Balances, statements and payments."
+    },
+    "SUPPLIERS_PAY": {
+      "label": "Pay a supplier",
+      "help": "Record or cancel a payment."
+    },
+    "CLIENTS_VIEW": {
+      "label": "View clients",
+      "help": "List, card and statement."
+    },
+    "CLIENTS_CREATE": {
+      "label": "Create clients",
+      "help": "New client."
+    },
+    "CLIENTS_EDIT": {
+      "label": "Edit clients",
+      "help": "Details, credit limit, price level."
+    },
+    "CLIENTS_ARCHIVE": {
+      "label": "Archive clients",
+      "help": "Remove a client from the list."
+    },
+    "CLIENTS_BALANCE_ADJUST": {
+      "label": "Adjust a client balance",
+      "help": "Opening balance and adjustments."
+    },
+    "SALES_VIEW": {
+      "label": "View sales",
+      "help": "Delivery notes, invoices, credit notes."
+    },
+    "SALES_CREATE": {
+      "label": "Sell",
+      "help": "Create, edit and validate a sale."
+    },
+    "SALES_RETURN": {
+      "label": "Client return",
+      "help": "Make a credit note."
+    },
+    "PAYMENTS_VIEW": {
+      "label": "View payments",
+      "help": "List and receipts."
+    },
+    "PAYMENTS_CREATE": {
+      "label": "Collect",
+      "help": "Record a payment."
+    },
+    "PAYMENTS_BOUNCE": {
+      "label": "Bounced cheque",
+      "help": "Mark a cheque as unpaid."
+    },
+    "REPORTS_VIEW": {
+      "label": "View reports",
+      "help": "Sales, stock, collections."
+    },
+    "REPORTS_FINANCE": {
+      "label": "Debt aging",
+      "help": "Client and supplier aging."
+    },
+    "USERS_VIEW": {
+      "label": "View users",
+      "help": "List and cards."
+    },
+    "USERS_MANAGE": {
+      "label": "Manage users",
+      "help": "Invite, edit, deactivate; never beyond your own rights."
+    },
+    "SETTINGS_EDIT": {
+      "label": "Settings",
+      "help": "Company settings and dépôts."
+    },
+    "SELL_ANY_PRODUCT": {
+      "label": "Sell any product",
+      "help": "Sell a product outside the dépôt’s brands and categories."
+    },
+    "WAREHOUSE_ACCESS_MANAGE": {
+      "label": "Manage dépôt access",
+      "help": "Give or take a user’s access to dépôts."
+    },
+    "VIEW_ALL_WAREHOUSES": {
+      "label": "All dépôts",
+      "help": "Work in every dépôt and see its figures."
     }
   },
   "sessions": {
@@ -1622,6 +1761,7 @@
     "featurePROMOTIONS": "Promotions and free units",
     "featurePACKAGING": "Returnable packaging",
     "featureIMPORT_COSTS": "Import files and landed cost",
+    "featureMULTI_UNIT": "Dépôts and teams",
     "yourEdition": "{edition} edition",
     "included": "Included modules",
     "coreOnly": "Sales, stock, purchases, clients and credit: everything a wholesaler needs.",

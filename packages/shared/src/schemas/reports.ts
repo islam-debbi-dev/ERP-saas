@@ -49,6 +49,8 @@ export const reportQuerySchema = z
     /** Only the sales of this user's team (himself and his subtree); SALES_FORCE. */
     teamOf: z.uuid().optional(),
     brandId: z.uuid().optional(),
+    /** Only this dépôt's figures (phase 24); one outside the user's reach gives nothing. */
+    warehouseId: z.uuid().optional(),
   })
   .refine((q) => q.from <= q.to, { message: 'invalid_range', path: ['to'] })
   .refine((q) => q.from > q.to || rangeLength(q) <= MAX_REPORT_DAYS, {
@@ -70,6 +72,7 @@ export const dashboardQuerySchema = z.object({
   sellerId: z.uuid().optional(),
   teamOf: z.uuid().optional(),
   brandId: z.uuid().optional(),
+  warehouseId: z.uuid().optional(),
 });
 export type DashboardQuery = z.infer<typeof dashboardQuerySchema>;
 

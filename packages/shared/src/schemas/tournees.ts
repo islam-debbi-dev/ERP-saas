@@ -258,6 +258,8 @@ export const orderListQuerySchema = z.object({
   sellerId: id.optional(),
   livreurId: id.optional(),
   clientId: id.optional(),
+  /** Only this dépôt (phase 24); one outside the user's reach gives nothing. */
+  warehouseId: id.optional(),
   /** Requested delivery date range. */
   from: dateString.optional(),
   to: dateString.optional(),

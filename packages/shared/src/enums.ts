@@ -146,6 +146,17 @@ export const WarehouseType = {
 export type WarehouseType = (typeof WarehouseType)[keyof typeof WarehouseType];
 export const WAREHOUSE_TYPES = Object.values(WarehouseType);
 
+/**
+ * A user's reach in one dépôt (phase 24, MULTI_UNIT). OPERATE: he works there (sells,
+ * receives, sees its documents). VIEW_STATS: he sees its aggregated figures only.
+ */
+export const WarehouseAccessLevel = {
+  OPERATE: 'OPERATE',
+  VIEW_STATS: 'VIEW_STATS',
+} as const;
+export type WarehouseAccessLevel = (typeof WarehouseAccessLevel)[keyof typeof WarehouseAccessLevel];
+export const WAREHOUSE_ACCESS_LEVELS = Object.values(WarehouseAccessLevel);
+
 export const StockTransferType = {
   /** Chargement: dépôt → camion. */
   LOAD: 'LOAD',

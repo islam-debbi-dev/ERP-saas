@@ -1,8 +1,10 @@
 import { z } from 'zod';
 import {
+  type Role,
   StockTransferType,
   WarehouseType,
   type StockTransferStatus,
+  type WarehouseAccessLevel,
   type WarehouseType as WarehouseTypeValue,
 } from '../enums';
 import { normalizeDecimal, quantityString } from './common';
@@ -27,13 +29,28 @@ export const createWarehouseSchema = z
   });
 export type CreateWarehouseInput = z.infer<typeof createWarehouseSchema>;
 
-/** Omitted fields are unchanged; null clears the driver. */
+/** Omitted fields are unchanged; null clears the driver, the manager or the parent. */
 export const updateWarehouseSchema = z.object({
   name: name.optional(),
   assignedUserId: id.nullable().optional(),
   active: z.boolean().optional(),
+  /** The dépôt's manager (phase 24, MULTI_UNIT). */
+  managerUserId: id.nullable().optional(),
+  /** The dépôt a truck belongs to (VEHICLE only): it inherits its team and brands. */
+  parentWarehouseId: id.nullable().optional(),
 });
 export type UpdateWarehouseInput = z.infer<typeof updateWarehouseSchema>;
+
+/** What a dépôt sells (phase 24): empty = everything. Replaces the whole list. */
+export const warehouseBrandsSchema = z.object({
+  brandIds: z.array(id).max(500).transform((v) => [...new Set(v)]),
+});
+export type WarehouseBrandsInput = z.infer<typeof warehouseBrandsSchema>;
+
+export const warehouseCategoriesSchema = z.object({
+  categoryIds: z.array(id).max(500).transform((v) => [...new Set(v)]),
+});
+export type WarehouseCategoriesInput = z.infer<typeof warehouseCategoriesSchema>;
 
 export interface WarehouseDto {
   id: string;
@@ -44,6 +61,21 @@ export interface WarehouseDto {
   assignedUser: { id: string; fullName: string } | null;
   /** Products with stock (≠ 0) in this dépôt. */
   productCount: number;
+  manager: { id: string; fullName: string } | null;
+  parent: { id: string; name: string } | null;
+}
+
+/** One dépôt with its team (phase 24): who works there, who sees its figures, its trucks. */
+export interface WarehouseDetailDto extends WarehouseDto {
+  brands: { id: string; name: string }[];
+  categories: { id: string; name: string }[];
+  team: {
+    id: string;
+    fullName: string;
+    role: Role;
+    level: WarehouseAccessLevel;
+  }[];
+  trucks: { id: string; name: string; assignedUser: { id: string; fullName: string } | null }[];
 }
 
 // ---------------------------------------------------------------- stock transfers

@@ -17,6 +17,8 @@ describe('effectiveFeatures', () => {
     expect(effectiveFeatures(Edition.IMPORT)).toEqual([Feature.WAREHOUSES, Feature.IMPORT_COSTS]);
     expect(effectiveFeatures(Edition.DISTRIBUTION)).not.toContain(Feature.IMPORT_COSTS);
     expect(effectiveFeatures(Edition.DISTRIBUTION)).toContain(Feature.MOBILE_APP);
+    expect(effectiveFeatures(Edition.DISTRIBUTION)).toContain(Feature.MULTI_UNIT);
+    expect(effectiveFeatures(Edition.IMPORT)).not.toContain(Feature.MULTI_UNIT);
     expect(effectiveFeatures(Edition.ENTREPRISE)).toEqual(FEATURES);
   });
 

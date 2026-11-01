@@ -1,8 +1,9 @@
 import { Role } from './enums';
 
 /**
- * Sensitive actions a user may do on top of (or despite) his role. The API checks
- * them in the services; the web only hides what the user cannot do.
+ * What a user may do on top of (or despite) his role. The API checks them (route guard
+ * for module actions, services for sensitive ones); the web only hides what the user
+ * cannot do.
  */
 export const Permission = {
   /** Sell at a price other than the client's price level. */
@@ -15,7 +16,7 @@ export const Permission = {
   SALE_CANCEL: 'SALE_CANCEL',
   /** Cancel any versement (without it: only your own, the same day). */
   PAYMENT_CANCEL: 'PAYMENT_CANCEL',
-  /** Stock adjustments and inventory validation. */
+  /** Stock adjustments, opening stock, inventory validation and cancel. */
   STOCK_ADJUST: 'STOCK_ADJUST',
   /** See CUMP, stock value, costs and margins. */
   VIEW_COST_AND_MARGIN: 'VIEW_COST_AND_MARGIN',
@@ -29,21 +30,187 @@ export const Permission = {
   INCENTIVE_APPROVE: 'INCENTIVE_APPROVE',
   /** Change the free units (UG) or the remise a promotion gave a line (phase 20). */
   PROMO_OVERRIDE: 'PROMO_OVERRIDE',
+
+  // Module permissions (phase 24). Their role defaults reproduce the role lists the
+  // routes had before, so nobody gained or lost a right when they appeared.
+  PRODUCTS_VIEW: 'PRODUCTS_VIEW',
+  PRODUCTS_CREATE: 'PRODUCTS_CREATE',
+  /** Edit, archive and restore products, brands, categories and price levels. */
+  PRODUCTS_EDIT: 'PRODUCTS_EDIT',
+  STOCK_VIEW: 'STOCK_VIEW',
+  /** Start and fill an inventory (validating it needs STOCK_ADJUST). */
+  STOCK_COUNT: 'STOCK_COUNT',
+  STOCK_TRANSFER: 'STOCK_TRANSFER',
+  PURCHASES_VIEW: 'PURCHASES_VIEW',
+  /** Create and edit a BR draft. */
+  PURCHASES_CREATE: 'PURCHASES_CREATE',
+  PURCHASES_VALIDATE: 'PURCHASES_VALIDATE',
+  /** Cancel a BR and make a retour fournisseur. */
+  PURCHASES_CANCEL: 'PURCHASES_CANCEL',
+  SUPPLIERS_VIEW: 'SUPPLIERS_VIEW',
+  SUPPLIERS_CREATE: 'SUPPLIERS_CREATE',
+  SUPPLIERS_EDIT: 'SUPPLIERS_EDIT',
+  /** Supplier balances, ledgers, statements and règlements list. */
+  SUPPLIERS_ACCOUNT: 'SUPPLIERS_ACCOUNT',
+  /** Record or cancel a règlement fournisseur. */
+  SUPPLIERS_PAY: 'SUPPLIERS_PAY',
+  CLIENTS_VIEW: 'CLIENTS_VIEW',
+  CLIENTS_CREATE: 'CLIENTS_CREATE',
+  CLIENTS_EDIT: 'CLIENTS_EDIT',
+  CLIENTS_ARCHIVE: 'CLIENTS_ARCHIVE',
+  /** Opening balance and manual adjustments of a client account. */
+  CLIENTS_BALANCE_ADJUST: 'CLIENTS_BALANCE_ADJUST',
+  SALES_VIEW: 'SALES_VIEW',
+  /** Create, edit, validate a sale (cancelling a validated one also needs SALE_CANCEL). */
+  SALES_CREATE: 'SALES_CREATE',
+  /** Retour client (avoir). */
+  SALES_RETURN: 'SALES_RETURN',
+  PAYMENTS_VIEW: 'PAYMENTS_VIEW',
+  PAYMENTS_CREATE: 'PAYMENTS_CREATE',
+  /** Mark a cheque as unpaid (impayé). */
+  PAYMENTS_BOUNCE: 'PAYMENTS_BOUNCE',
+  REPORTS_VIEW: 'REPORTS_VIEW',
+  /** Aging of clients and suppliers. */
+  REPORTS_FINANCE: 'REPORTS_FINANCE',
+  USERS_VIEW: 'USERS_VIEW',
+  /** Invite, edit, deactivate users and change their permissions (never above his own). */
+  USERS_MANAGE: 'USERS_MANAGE',
+  /** Company settings and dépôts. */
+  SETTINGS_EDIT: 'SETTINGS_EDIT',
+  /** Sell a product outside the brands and categories of the dépôt. */
+  SELL_ANY_PRODUCT: 'SELL_ANY_PRODUCT',
+  /** Give or take a user's access to dépôts (never above his own). */
+  WAREHOUSE_ACCESS_MANAGE: 'WAREHOUSE_ACCESS_MANAGE',
+  /** Work in and see every dépôt, as the owner does. */
+  VIEW_ALL_WAREHOUSES: 'VIEW_ALL_WAREHOUSES',
 } as const;
 export type Permission = (typeof Permission)[keyof typeof Permission];
 export const PERMISSIONS = Object.values(Permission);
 
+/** Modules of the permission grid, in screen order. */
+export const PERMISSION_GROUPS = {
+  products: [Permission.PRODUCTS_VIEW, Permission.PRODUCTS_CREATE, Permission.PRODUCTS_EDIT],
+  stock: [
+    Permission.STOCK_VIEW,
+    Permission.STOCK_COUNT,
+    Permission.STOCK_TRANSFER,
+    Permission.STOCK_ADJUST,
+  ],
+  purchases: [
+    Permission.PURCHASES_VIEW,
+    Permission.PURCHASES_CREATE,
+    Permission.PURCHASES_VALIDATE,
+    Permission.PURCHASES_CANCEL,
+  ],
+  suppliers: [
+    Permission.SUPPLIERS_VIEW,
+    Permission.SUPPLIERS_CREATE,
+    Permission.SUPPLIERS_EDIT,
+    Permission.SUPPLIERS_ACCOUNT,
+    Permission.SUPPLIERS_PAY,
+  ],
+  clients: [
+    Permission.CLIENTS_VIEW,
+    Permission.CLIENTS_CREATE,
+    Permission.CLIENTS_EDIT,
+    Permission.CLIENTS_ARCHIVE,
+    Permission.CLIENTS_BALANCE_ADJUST,
+    Permission.CREDIT_OVERRIDE,
+  ],
+  sales: [
+    Permission.SALES_VIEW,
+    Permission.SALES_CREATE,
+    Permission.SALE_CANCEL,
+    Permission.SALES_RETURN,
+    Permission.PRICE_OVERRIDE,
+    Permission.DISCOUNT_ABOVE_X,
+    Permission.PROMO_OVERRIDE,
+    Permission.SALE_REASSIGN_SELLER,
+    Permission.SELL_ANY_PRODUCT,
+    Permission.GEO_OVERRIDE,
+  ],
+  payments: [
+    Permission.PAYMENTS_VIEW,
+    Permission.PAYMENTS_CREATE,
+    Permission.PAYMENT_CANCEL,
+    Permission.PAYMENTS_BOUNCE,
+  ],
+  reports: [
+    Permission.REPORTS_VIEW,
+    Permission.REPORTS_FINANCE,
+    Permission.VIEW_COST_AND_MARGIN,
+    Permission.EXPORT_DATA,
+    Permission.INCENTIVE_APPROVE,
+  ],
+  users: [
+    Permission.USERS_VIEW,
+    Permission.USERS_MANAGE,
+    Permission.WAREHOUSE_ACCESS_MANAGE,
+    Permission.VIEW_ALL_WAREHOUSES,
+  ],
+  settings: [Permission.SETTINGS_EDIT],
+} as const satisfies Record<string, readonly Permission[]>;
+export type PermissionGroup = keyof typeof PERMISSION_GROUPS;
+
+/** The phase 1–23 permissions: the only ones the grid shows without MULTI_UNIT. */
+export const SENSITIVE_PERMISSIONS: readonly Permission[] = [
+  Permission.PRICE_OVERRIDE,
+  Permission.DISCOUNT_ABOVE_X,
+  Permission.CREDIT_OVERRIDE,
+  Permission.SALE_CANCEL,
+  Permission.PAYMENT_CANCEL,
+  Permission.STOCK_ADJUST,
+  Permission.VIEW_COST_AND_MARGIN,
+  Permission.EXPORT_DATA,
+  Permission.SALE_REASSIGN_SELLER,
+  Permission.GEO_OVERRIDE,
+  Permission.INCENTIVE_APPROVE,
+  Permission.PROMO_OVERRIDE,
+];
+
+/** Every role reads the catalog, stock, documents and its own reports (as before). */
+const VIEW_ALL: readonly Permission[] = [
+  Permission.PRODUCTS_VIEW,
+  Permission.STOCK_VIEW,
+  Permission.PURCHASES_VIEW,
+  Permission.SUPPLIERS_VIEW,
+  Permission.CLIENTS_VIEW,
+  Permission.SALES_VIEW,
+  Permission.PAYMENTS_VIEW,
+  Permission.REPORTS_VIEW,
+];
+/** What the road roles (seller, supervisor) did besides reading. */
+const FIELD: readonly Permission[] = [
+  Permission.CLIENTS_CREATE,
+  Permission.CLIENTS_EDIT,
+  Permission.SALES_CREATE,
+  Permission.PAYMENTS_CREATE,
+];
+/** What the storekeeper did besides reading. */
+const STORE: readonly Permission[] = [
+  Permission.PURCHASES_CREATE,
+  Permission.STOCK_COUNT,
+  Permission.STOCK_TRANSFER,
+];
+/** The owner's alone unless he grants them. */
+const OWNER_ONLY: readonly Permission[] = [
+  Permission.INCENTIVE_APPROVE,
+  Permission.USERS_MANAGE,
+  Permission.SELL_ANY_PRODUCT,
+  Permission.WAREHOUSE_ACCESS_MANAGE,
+  Permission.VIEW_ALL_WAREHOUSES,
+];
+
 /** What each role can do by default. The OWNER always has everything. */
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   [Role.OWNER]: PERMISSIONS,
-  // Approving bonuses is the owner's call unless he grants it.
-  [Role.MANAGER]: PERMISSIONS.filter((p) => p !== Permission.INCENTIVE_APPROVE),
-  [Role.SELLER]: [],
+  [Role.MANAGER]: PERMISSIONS.filter((p) => !OWNER_ONLY.includes(p)),
+  [Role.SELLER]: [...VIEW_ALL, ...FIELD],
   // Counts stock but does not adjust it or validate an inventory (AGENTS: MANAGER+).
-  [Role.STOREKEEPER]: [],
+  [Role.STOREKEEPER]: [...VIEW_ALL, ...STORE],
   // Sees his team's figures; sensitive actions are granted one by one by the owner.
-  [Role.SUPERVISOR]: [],
-  [Role.LIVREUR]: [],
+  [Role.SUPERVISOR]: [...VIEW_ALL, ...FIELD],
+  [Role.LIVREUR]: [...VIEW_ALL],
 };
 
 /**

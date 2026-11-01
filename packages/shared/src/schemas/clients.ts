@@ -78,6 +78,8 @@ export type ClientListQuery = z.infer<typeof clientListQuerySchema>;
 export const openingBalanceSchema = z.object({
   amount: signedAmount({ nonZero: true }),
   note: optionalText(255),
+  /** The dépôt the debt belongs to (phase 24); omitted = the dépôt principal. */
+  warehouseId: id.optional(),
 });
 export type OpeningBalanceInput = z.infer<typeof openingBalanceSchema>;
 
@@ -85,6 +87,8 @@ export const clientAdjustmentSchema = z.object({
   /** + the client owes more, - the client owes less. */
   amount: signedAmount({ nonZero: true }),
   reason: z.string().trim().min(3).max(255),
+  /** The dépôt the adjustment belongs to (phase 24); omitted = the dépôt principal. */
+  warehouseId: id.optional(),
 });
 export type ClientAdjustmentInput = z.infer<typeof clientAdjustmentSchema>;
 
@@ -128,6 +132,11 @@ export interface ClientDto {
   overLimit: boolean;
   /** Reference GPS point (phase 17); null until someone saves it. */
   location: ClientLocationDto | null;
+  /**
+   * What the client owes in each dépôt (phase 24, MULTI_UNIT): one account, the amounts
+   * add up to `balance`. Only on the client's own page.
+   */
+  debtByWarehouse?: ClientDebtByWarehouseDto[];
 }
 
 export interface ClientPage {
@@ -147,6 +156,19 @@ export interface ClientLedgerEntryDto {
   createdAt: string;
   /** Balance right after this entry. */
   runningBalance: string;
+  /** The dépôt the entry belongs to (phase 24); null before the backfill. */
+  warehouse: { id: string; name: string } | null;
+  /**
+   * A dépôt the user does not work in: only date, type, number (`label`), amount and dépôt
+   * are given; reason, refId and createdBy are null and the document cannot be opened.
+   */
+  reduced: boolean;
+}
+
+/** What the client owes in each dépôt (phase 24); the amounts add up to the balance. */
+export interface ClientDebtByWarehouseDto {
+  warehouse: { id: string; name: string } | null;
+  balance: string;
 }
 
 export interface ClientStatementDto {

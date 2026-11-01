@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Role, ROLES } from '../enums';
+import { Role, ROLES, WAREHOUSE_ACCESS_LEVELS, type WarehouseAccessLevel } from '../enums';
 import { type Permission, PERMISSIONS } from '../permissions';
 import { normalizePhone } from '../phone';
 import { emailField, passwordField } from './auth';
@@ -92,6 +92,38 @@ export const userPermissionsSchema = z
     path: ['revokes'],
   });
 export type UserPermissionsInput = z.infer<typeof userPermissionsSchema>;
+
+/**
+ * A user's dépôts (phase 24). Replaces the whole list; a dépôt left out = no access.
+ * Trucks are not listed: they follow their parent dépôt.
+ */
+export const userAccessSchema = z.object({
+  access: z
+    .array(
+      z.object({
+        warehouseId: id,
+        level: z.enum(WAREHOUSE_ACCESS_LEVELS as [WarehouseAccessLevel, ...WarehouseAccessLevel[]]),
+      }),
+    )
+    .max(200)
+    .refine((v) => new Set(v.map((a) => a.warehouseId)).size === v.length, {
+      message: 'duplicate_warehouse',
+    }),
+});
+export type UserAccessInput = z.infer<typeof userAccessSchema>;
+
+export interface UserAccessDto {
+  userId: string;
+  /** Owner or VIEW_ALL_WAREHOUSES: every dépôt, the list below does not matter. */
+  allWarehouses: boolean;
+  access: {
+    warehouseId: string;
+    warehouseName: string;
+    level: WarehouseAccessLevel;
+    grantedAt: string;
+    grantedBy: { id: string; fullName: string } | null;
+  }[];
+}
 
 export const resetPasswordSchema = z
   .object({ mode: z.enum(INVITE_MODES), password: passwordField.optional() })

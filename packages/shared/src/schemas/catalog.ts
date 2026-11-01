@@ -175,6 +175,8 @@ export const productListQuerySchema = z.object({
   search: z.string().trim().max(100).optional(),
   categoryId: id.optional(),
   brandId: id.optional(),
+  /** Only what this dépôt sells (its brands and categories), phase 24. */
+  warehouseId: id.optional(),
   archived: z
     .enum(['true', 'false'])
     .optional()
