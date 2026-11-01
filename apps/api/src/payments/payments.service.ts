@@ -505,9 +505,19 @@ export class PaymentsService {
   }
 
   /** Journal de caisse: money received that Algiers day, by mode and by user. */
-  async summary(date: string, user: CurrentUserInfo): Promise<CashSummaryDto> {
+  /**
+   * `statsWarehouseIds` (phase 24, dashboard): the dépôts whose cash the user sees as
+   * figures, in place of those he works in.
+   */
+  async summary(
+    date: string,
+    user: CurrentUserInfo,
+    statsWarehouseIds?: string[] | null,
+  ): Promise<CashSummaryDto> {
     const tenantId = tenantContext.requireTenantId();
-    const scope = await this.scope.of(user);
+    const base = await this.scope.of(user);
+    const scope =
+      statsWarehouseIds === undefined ? base : { ...base, warehouseIds: statsWarehouseIds };
     const rows = await this.prisma.db.$queryRaw<
       { mode: PaymentMode; receivedBy: string | null; count: bigint; total: Prisma.Decimal }[]
     >`

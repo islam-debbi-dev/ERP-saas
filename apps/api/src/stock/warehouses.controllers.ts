@@ -132,36 +132,45 @@ export class StockTransfersController {
   @Get()
   list(
     @Query(new ZodValidationPipe(stockTransferListQuerySchema)) query: StockTransferListQuery,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<StockTransferPage> {
-    return this.transfers.list(query);
+    return this.transfers.list(query, user);
   }
 
   @Get(':id')
-  get(@Param('id', ParseUUIDPipe) id: string): Promise<StockTransferDto> {
-    return this.transfers.get(id);
+  get(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<StockTransferDto> {
+    return this.transfers.get(id, user);
   }
 
   @Post()
   @Idempotent()
   create(
     @Body(new ZodValidationPipe(createStockTransferSchema)) body: CreateStockTransferInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<StockTransferDto> {
-    return this.transfers.create(body);
+    return this.transfers.create(body, user);
   }
 
   @Put(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(updateStockTransferSchema)) body: UpdateStockTransferInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<StockTransferDto> {
-    return this.transfers.update(id, body);
+    return this.transfers.update(id, body, user);
   }
 
   @Post(':id/validate')
   @Idempotent()
   @HttpCode(HttpStatus.OK)
-  validate(@Param('id', ParseUUIDPipe) id: string): Promise<TransferResult> {
-    return this.transfers.validate(id);
+  validate(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<TransferResult> {
+    return this.transfers.validate(id, user);
   }
 
   @Post(':id/cancel')
@@ -170,7 +179,8 @@ export class StockTransfersController {
   cancel(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(cancelStockTransferSchema)) body: CancelStockTransferInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<TransferResult> {
-    return this.transfers.cancel(id, body.reason);
+    return this.transfers.cancel(id, body.reason, user);
   }
 }

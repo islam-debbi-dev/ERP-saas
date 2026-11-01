@@ -611,6 +611,65 @@ export class ClientsService {
     };
   }
 
+  /**
+   * `creditSummary` and `debtors` for a user who sees some dépôts only (phase 24): what
+   * clients owe in those dépôts, from the ledger (one account, split by dépôt). The plafond
+   * stays the client's whole account: a client is over it when his whole balance is.
+   */
+  async creditInWarehouses(
+    warehouseIds: string[],
+    defaultWarehouseId: string | null,
+    limit: number,
+  ): Promise<{
+    total: string;
+    debtorCount: number;
+    overLimitCount: number;
+    overLimit: DebtorDto[];
+    topDebtors: DebtorDto[];
+  }> {
+    const tenantId = tenantContext.requireTenantId();
+    const inReach =
+      defaultWarehouseId && warehouseIds.includes(defaultWarehouseId)
+        ? Prisma.sql`(e."warehouseId" IS NULL OR e."warehouseId" = ANY(${warehouseIds}::uuid[]))`
+        : Prisma.sql`e."warehouseId" = ANY(${warehouseIds}::uuid[])`;
+    const rows = await this.prisma.db.$queryRaw<
+      {
+        id: string;
+        code: string;
+        name: string;
+        phone: string | null;
+        debt: Prisma.Decimal;
+        balance: Prisma.Decimal;
+        creditLimit: Prisma.Decimal | null;
+      }[]
+    >`
+      SELECT c.id, c.code, c.name, c.phone, d.debt, b.balance, c."creditLimit"
+      FROM (
+        SELECT e."clientId", SUM(e.amount) AS debt FROM client_ledger_entries e
+        WHERE e."tenantId" = ${tenantId}::uuid AND ${inReach}
+        GROUP BY e."clientId" HAVING SUM(e.amount) > 0
+      ) d
+      JOIN clients c ON c.id = d."clientId" AND c."deletedAt" IS NULL
+      JOIN client_balances b ON b."clientId" = c.id
+      ORDER BY d.debt DESC, c.id`;
+    const toDebtor = (r: (typeof rows)[number], amount: Prisma.Decimal): DebtorDto => ({
+      id: r.id,
+      code: r.code,
+      name: r.name,
+      phone: r.phone,
+      balance: toMoneyString(amount.toString()),
+      creditLimit: r.creditLimit ? toMoneyString(r.creditLimit.toString()) : null,
+    });
+    const over = rows.filter((r) => r.creditLimit && r.balance.gt(r.creditLimit));
+    return {
+      total: toMoneyString(rows.reduce((sum, r) => sum.plus(r.debt.toString()), money(0))),
+      debtorCount: rows.length,
+      overLimitCount: over.length,
+      overLimit: over.slice(0, limit).map((r) => toDebtor(r, r.balance)),
+      topDebtors: rows.slice(0, limit).map((r) => toDebtor(r, r.debt)),
+    };
+  }
+
   /** Cache vs ledger. An empty `differences` list means they agree. */
   async reconcile(): Promise<ClientReconcileReport> {
     const tenantId = tenantContext.requireTenantId();

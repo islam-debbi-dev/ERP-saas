@@ -44,18 +44,49 @@ export class StockQueriesService {
    * Live products with their level. Raw SQL because "qty <= minStock" compares two
    * columns; tenantId is passed explicitly (raw SQL bypasses the tenant extension).
    */
-  async list(query: StockListQuery, showCost: boolean, withWarehouses = false): Promise<StockPage> {
+  /**
+   * `reach` (phase 24): the dépôts the user works in, null = all. A user who works in some
+   * dépôts sees their quantities only; a `warehouseId` outside them gives an empty page.
+   */
+  async list(
+    query: StockListQuery,
+    showCost: boolean,
+    withWarehouses = false,
+    reach: string[] | null = null,
+  ): Promise<StockPage> {
     const tenantId = tenantContext.requireTenantId();
     const search = query.search?.trim();
-    // One dépôt: its quantity replaces the company total (filters and value included).
-    const wh = query.warehouseId
-      ? {
-          join: Prisma.sql`
-            JOIN warehouses w ON w.id = ${query.warehouseId}::uuid AND w."tenantId" = ${tenantId}::uuid
+    const ids = query.warehouseId
+      ? reach === null || reach.includes(query.warehouseId)
+        ? [query.warehouseId]
+        : []
+      : reach;
+    if (ids && ids.length === 0) {
+      return {
+        items: [],
+        nextCursor: null,
+        summary: { totalValue: null, lowStockCount: 0, productCount: 0 },
+      };
+    }
+    // One dépôt: its quantity replaces the company total (filters and value included);
+    // several: their sum.
+    const wh =
+      ids && ids.length === 1
+        ? {
+            join: Prisma.sql`
+            JOIN warehouses w ON w.id = ${ids[0]}::uuid AND w."tenantId" = ${tenantId}::uuid
             LEFT JOIN warehouse_stocks ws ON ws."warehouseId" = w.id AND ws."productId" = p.id`,
-          qty: warehouseQtySql(tenantId, 's'),
-        }
-      : { join: Prisma.empty, qty: Prisma.sql`COALESCE(s."qtyBase", 0)` };
+            qty: warehouseQtySql(tenantId, 's'),
+          }
+        : ids
+          ? {
+              join: Prisma.empty,
+              qty: Prisma.sql`(SELECT COALESCE(SUM(${warehouseQtySql(tenantId, 's')}), 0)
+                FROM warehouses w
+                LEFT JOIN warehouse_stocks ws ON ws."warehouseId" = w.id AND ws."productId" = p.id
+                WHERE w."tenantId" = ${tenantId}::uuid AND w.id = ANY(${ids}::uuid[]))`,
+            }
+          : { join: Prisma.empty, qty: Prisma.sql`COALESCE(s."qtyBase", 0)` };
     const filters: Prisma.Sql[] = [
       Prisma.sql`p."tenantId" = ${tenantId}::uuid`,
       Prisma.sql`p."deletedAt" IS NULL`,
@@ -100,7 +131,7 @@ export class StockQueriesService {
 
     const page = rows.slice(0, query.limit);
     const items = await this.withUnits(page, showCost);
-    if (withWarehouses) await this.addSplit(items);
+    if (withWarehouses || reach) await this.addSplit(items, reach);
     return {
       items,
       nextCursor: rows.length > query.limit ? (page.at(-1)?.id ?? null) : null,
@@ -115,14 +146,22 @@ export class StockQueriesService {
   /** Dashboard figures, with the stock page's own definitions (stock bas includes rupture). */
   async dashboardSummary(
     showCost: boolean,
+    warehouseIds: string[] | null = null,
   ): Promise<{ outOfStock: number; lowStock: number; value: string | null }> {
     const tenantId = tenantContext.requireTenantId();
+    // Phase 24: the stock of the dépôts whose figures the user sees.
+    const q = warehouseIds
+      ? Prisma.sql`(SELECT COALESCE(SUM(${warehouseQtySql(tenantId, 's')}), 0)
+          FROM warehouses w
+          LEFT JOIN warehouse_stocks ws ON ws."warehouseId" = w.id AND ws."productId" = p.id
+          WHERE w."tenantId" = ${tenantId}::uuid AND w.id = ANY(${warehouseIds}::uuid[]))`
+      : Prisma.sql`COALESCE(s."qtyBase", 0)`;
     const [row] = await this.prisma.db.$queryRaw<
       { value: Dec; lowStock: bigint; outOfStock: bigint }[]
     >`
-      SELECT COALESCE(SUM(CASE WHEN s."qtyBase" > 0 THEN ROUND(s."qtyBase" * s."avgCost", 2) ELSE 0 END), 0) AS value,
-             COUNT(*) FILTER (WHERE COALESCE(s."qtyBase", 0) <= p."minStock") AS "lowStock",
-             COUNT(*) FILTER (WHERE COALESCE(s."qtyBase", 0) <= 0) AS "outOfStock"
+      SELECT COALESCE(SUM(CASE WHEN ${q} > 0 THEN ROUND(${q} * s."avgCost", 2) ELSE 0 END), 0) AS value,
+             COUNT(*) FILTER (WHERE ${q} <= p."minStock") AS "lowStock",
+             COUNT(*) FILTER (WHERE ${q} <= 0) AS "outOfStock"
       FROM products p
       LEFT JOIN product_stocks s ON s."productId" = p.id
       WHERE p."tenantId" = ${tenantId}::uuid AND p."deletedAt" IS NULL`;
@@ -134,7 +173,7 @@ export class StockQueriesService {
   }
 
   /** Adds the quantity of every live dépôt to each row (stock list columns, stock card). */
-  private async addSplit(items: StockLevelDto[]): Promise<void> {
+  private async addSplit(items: StockLevelDto[], reach: string[] | null = null): Promise<void> {
     if (items.length === 0) return;
     const tenantId = tenantContext.requireTenantId();
     const rows = await this.prisma.db.$queryRaw<
@@ -147,6 +186,7 @@ export class StockQueriesService {
       LEFT JOIN product_stocks ps ON ps."productId" = p.id AND ps."tenantId" = ${tenantId}::uuid
       WHERE p."tenantId" = ${tenantId}::uuid
         AND p.id IN (${Prisma.join(items.map((i) => Prisma.sql`${i.productId}::uuid`))})
+        AND ${reach ? Prisma.sql`w.id = ANY(${reach}::uuid[])` : Prisma.sql`TRUE`}
       ORDER BY w."isDefault" DESC, w.name`;
     for (const item of items) {
       item.byWarehouse = rows
@@ -159,6 +199,7 @@ export class StockQueriesService {
     productId: string,
     showCost: boolean,
     withWarehouses = false,
+    reach: string[] | null = null,
   ): Promise<StockLevelDto> {
     const product = await this.prisma.db.product.findUnique({
       where: { id: productId },
@@ -181,7 +222,13 @@ export class StockQueriesService {
       showCost,
     );
     if (!item) throw new AppException(ErrorCode.PRODUCT_NOT_FOUND, 'Product not found');
-    if (withWarehouses) await this.addSplit([item]);
+    if (withWarehouses || reach) await this.addSplit([item], reach);
+    // Phase 24: a user who works in some dépôts sees their quantity, not the company's.
+    if (reach) {
+      item.qtyBase = toQtyString(
+        (item.byWarehouse ?? []).reduce((sum, w) => sum.plus(w.qtyBase), qty(0)).toString(),
+      );
+    }
     return item;
   }
 
@@ -194,6 +241,7 @@ export class StockQueriesService {
     productId: string,
     query: MovementQuery,
     showCost: boolean,
+    reach: string[] | null = null,
   ): Promise<StockMovementPage> {
     const product = await this.prisma.db.product.findUnique({
       where: { id: productId },
@@ -207,9 +255,19 @@ export class StockQueriesService {
           select: { id: true, isDefault: true },
         })
       : null;
-    if (query.warehouseId && !wh) {
+    if (query.warehouseId && (!wh || (reach && !reach.includes(wh.id)))) {
       throw new AppException(ErrorCode.WAREHOUSE_NOT_FOUND, 'Warehouse not found');
     }
+    // Phase 24: without a dépôt chosen, a user who works in some dépôts sees their
+    // movements, with their own running balance.
+    const many =
+      !wh && reach
+        ? await this.prisma.db.warehouse.findMany({
+            where: { id: { in: reach } },
+            select: { id: true, isDefault: true },
+          })
+        : null;
+    const manyHasDefault = many?.some((w) => w.isDefault) ?? false;
     const rows = await this.prisma.db.stockMovement.findMany({
       where: {
         productId,
@@ -217,7 +275,14 @@ export class StockQueriesService {
           ? wh.isDefault
             ? { OR: [{ warehouseId: wh.id }, { warehouseId: null }] }
             : { warehouseId: wh.id }
-          : {}),
+          : many
+            ? {
+                OR: [
+                  { warehouseId: { in: many.map((w) => w.id) } },
+                  ...(manyHasDefault ? [{ warehouseId: null }] : []),
+                ],
+              }
+            : {}),
       },
       orderBy: { seq: 'desc' },
       take: query.limit + 1,
@@ -233,10 +298,13 @@ export class StockQueriesService {
     });
     const byId = new Map(users.map((u) => [u.id, u]));
     const running = new Map<string, string>();
-    if (wh && page.length > 0) {
-      const own = wh.isDefault
-        ? Prisma.sql`("warehouseId" = ${wh.id}::uuid OR "warehouseId" IS NULL)`
-        : Prisma.sql`"warehouseId" = ${wh.id}::uuid`;
+    if ((wh || many) && page.length > 0) {
+      const own = wh
+        ? wh.isDefault
+          ? Prisma.sql`("warehouseId" = ${wh.id}::uuid OR "warehouseId" IS NULL)`
+          : Prisma.sql`"warehouseId" = ${wh.id}::uuid`
+        : Prisma.sql`("warehouseId" = ANY(${many!.map((w) => w.id)}::uuid[])
+            ${manyHasDefault ? Prisma.sql`OR "warehouseId" IS NULL` : Prisma.empty})`;
       const balances = await this.prisma.db.$queryRaw<{ id: string; balance: Dec }[]>`
         SELECT id, balance FROM (
           SELECT id, SUM("qtyBase") OVER (ORDER BY seq ROWS UNBOUNDED PRECEDING) AS balance
@@ -252,7 +320,11 @@ export class StockQueriesService {
         type: m.type,
         qtyBase: toQtyString(m.qtyBase.toString()),
         unitCost: showCost ? (m.unitCost?.toFixed(4) ?? null) : null,
-        balanceAfter: toQtyString(m.balanceAfter.toString()),
+        // The company balance is not shown to a user who works in some dépôts only.
+        balanceAfter:
+          many !== null
+            ? (running.get(m.id) ?? toQtyString('0'))
+            : toQtyString(m.balanceAfter.toString()),
         avgCostAfter: showCost ? m.avgCostAfter.toFixed(4) : null,
         reason: m.reason,
         refType: m.refType,

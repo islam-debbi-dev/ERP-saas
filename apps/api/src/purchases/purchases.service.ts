@@ -13,7 +13,9 @@ import { AuditService } from '../audit/audit.service';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { type Prisma } from '../generated/prisma/client';
+import type { CurrentUserInfo } from '../auth/auth.types';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { ScopeService } from '../sales-force/scope.service';
 import { WarehousesService } from '../stock/warehouses.service';
 import { fromIsoDate, purchaseInclude, toIsoDate, toPurchaseDto } from './purchase.mapper';
 import { ImportCostsGate } from './import-costs-gate';
@@ -27,18 +29,21 @@ export class PurchasesService {
     private readonly audit: AuditService,
     private readonly warehouses: WarehousesService,
     private readonly importCosts: ImportCostsGate,
+    private readonly scope: ScopeService,
   ) {}
 
-  async create(input: CreatePurchaseInput): Promise<PurchaseDto> {
+  async create(input: CreatePurchaseInput, user: CurrentUserInfo): Promise<PurchaseDto> {
     const id = await this.prisma.db.$transaction(async (tx) => {
       const tenantId = tenantContext.requireTenantId();
       const fx = await this.foreignPrices(tx, input);
       const importFileId = await this.checkImportFile(tx, input.importFileId);
       const { lines, totals, totalCurrency } = await snapshotLines(tx, input.lines, fx);
       this.checkPaid(input.paidAmount, totals.totalTtc.toString(), fx);
+      // A user who works in one dépôt receives there (phase 24).
       const warehouseId = input.warehouseId
         ? await this.warehouses.resolve(tx, input.warehouseId)
-        : null;
+        : await this.scope.onlyWarehouse(user, tx);
+      if (warehouseId) await this.scope.assertWarehouse(tx, user, warehouseId);
       const purchase = await tx.purchase.create({
         data: {
           tenantId,
@@ -77,12 +82,17 @@ export class PurchasesService {
       });
       return purchase.id;
     });
-    return this.get(id);
+    return this.get(id, user);
   }
 
   /** Replaces the draft (header and lines). `version` guards against concurrent edits. */
-  async update(id: string, input: UpdatePurchaseInput): Promise<PurchaseDto> {
+  async update(
+    id: string,
+    input: UpdatePurchaseInput,
+    user: CurrentUserInfo,
+  ): Promise<PurchaseDto> {
     await this.prisma.db.$transaction(async (tx) => {
+      await this.assertInScope(tx, user, id);
       const current = await lockPurchase(tx, id);
       if (current.status !== PurchaseStatus.DRAFT) {
         throw new AppException(ErrorCode.PURCHASE_NOT_DRAFT, 'Only a draft can be edited', {
@@ -101,6 +111,7 @@ export class PurchasesService {
       const warehouseId = input.warehouseId
         ? await this.warehouses.resolve(tx, input.warehouseId)
         : input.warehouseId;
+      if (warehouseId) await this.scope.assertWarehouse(tx, user, warehouseId);
       // Draft lines have no effect anywhere, so they are simply replaced.
       await tx.purchaseLine.deleteMany({ where: { purchaseId: id } });
       if (lines.length > 0) {
@@ -135,17 +146,42 @@ export class PurchasesService {
         after: { supplierId: input.supplierId, lines: input.lines },
       });
     });
-    return this.get(id);
+    return this.get(id, user);
   }
 
-  async get(id: string): Promise<PurchaseDto> {
-    const p = await this.prisma.db.purchase.findUnique({ where: { id }, include: purchaseInclude });
+  /**
+   * One BR. With a user, a BR of a dépôt outside his reach answers 404 (phase 24); without
+   * one (internal reads after a write already checked) it is not scoped.
+   */
+  async get(id: string, user?: CurrentUserInfo): Promise<PurchaseDto> {
+    const scoped = user ? await this.scopeWhere(user) : {};
+    const p = await this.prisma.db.purchase.findFirst({
+      where: { id, ...scoped },
+      include: purchaseInclude,
+    });
     if (!p) throw new AppException(ErrorCode.NOT_FOUND, 'Purchase not found');
     return toPurchaseDto(p);
   }
 
-  async list(query: PurchaseListQuery): Promise<PurchasePage> {
+  /** 404 unless the BR is in a dépôt the user works in (phase 24). Every write calls it. */
+  async assertInScope(tx: Tx, user: CurrentUserInfo, id: string): Promise<void> {
+    const where = await this.scopeWhere(user, tx);
+    if (!where.AND) return;
+    const p = await tx.purchase.findFirst({ where: { id, ...where }, select: { id: true } });
+    if (!p) throw new AppException(ErrorCode.NOT_FOUND, 'Purchase not found');
+  }
+
+  /** BRs of the dépôts the user works in; a draft without one counts as the dépôt principal's. */
+  private async scopeWhere(user: CurrentUserInfo, db?: Tx): Promise<Prisma.PurchaseWhereInput> {
+    const scope = await this.scope.of(user, db);
+    const w = this.scope.warehouseWhere(scope, scope.warehouseIds, 'createdBy');
+    return w ? { AND: [w] } : {};
+  }
+
+  async list(query: PurchaseListQuery, user: CurrentUserInfo): Promise<PurchasePage> {
     const where: Prisma.PurchaseWhereInput = {
+      ...(await this.scopeWhere(user)),
+      ...(query.warehouseId ? { warehouseId: query.warehouseId } : {}),
       ...(query.status ? { status: query.status } : {}),
       ...(query.supplierId ? { supplierId: query.supplierId } : {}),
       ...(query.importFileId ? { importFileId: query.importFileId } : {}),

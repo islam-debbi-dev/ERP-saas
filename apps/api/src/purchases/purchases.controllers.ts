@@ -136,14 +136,18 @@ export class PurchasesController {
   @RequirePermission(Permission.PURCHASES_VIEW)
   list(
     @Query(new ZodValidationPipe(purchaseListQuerySchema)) query: PurchaseListQuery,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<PurchasePage> {
-    return this.purchases.list(query);
+    return this.purchases.list(query, user);
   }
 
   @Get(':id')
   @RequirePermission(Permission.PURCHASES_VIEW)
-  get(@Param('id', ParseUUIDPipe) id: string): Promise<PurchaseDto> {
-    return this.purchases.get(id);
+  get(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<PurchaseDto> {
+    return this.purchases.get(id, user);
   }
 
   @Post()
@@ -151,8 +155,9 @@ export class PurchasesController {
   @Idempotent()
   create(
     @Body(new ZodValidationPipe(createPurchaseSchema)) body: CreatePurchaseInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<PurchaseDto> {
-    return this.purchases.create(body);
+    return this.purchases.create(body, user);
   }
 
   @Put(':id')
@@ -160,8 +165,9 @@ export class PurchasesController {
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(updatePurchaseSchema)) body: UpdatePurchaseInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<PurchaseDto> {
-    return this.purchases.update(id, body);
+    return this.purchases.update(id, body, user);
   }
 
   @Post(':id/validate')
@@ -171,16 +177,20 @@ export class PurchasesController {
   validate(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(validatePurchaseSchema)) body: ValidatePurchaseInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<PurchaseDto> {
-    return this.workflow.validate(id, body);
+    return this.workflow.validate(id, body, user);
   }
 
   @Post(':id/cancel')
   @RequirePermission(Permission.PURCHASES_CANCEL)
   @Idempotent()
   @HttpCode(HttpStatus.OK)
-  cancel(@Param('id', ParseUUIDPipe) id: string): Promise<PurchaseDto> {
-    return this.workflow.cancel(id);
+  cancel(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<PurchaseDto> {
+    return this.workflow.cancel(id, user);
   }
 
   @Post(':id/returns')
@@ -189,8 +199,9 @@ export class PurchasesController {
   createReturn(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(purchaseReturnSchema)) body: PurchaseReturnInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<PurchaseDto> {
-    return this.workflow.createReturn(id, body);
+    return this.workflow.createReturn(id, body, user);
   }
 }
 

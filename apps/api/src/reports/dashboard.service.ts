@@ -53,24 +53,43 @@ export class DashboardService {
    */
   async get(
     user: CurrentUserInfo,
-    filters: { date?: string; sellerId?: string; teamOf?: string; brandId?: string } = {},
+    filters: {
+      date?: string;
+      sellerId?: string;
+      teamOf?: string;
+      brandId?: string;
+      warehouseId?: string;
+    } = {},
   ): Promise<DashboardDto> {
     const date = filters.date ?? algiersDay();
     const manager = MANAGERS.includes(user.role);
     const seesSales = manager || user.role === Role.SELLER || user.role === Role.SUPERVISOR;
     const seesStock = manager || user.role === Role.STOREKEEPER;
+    // Phase 24: the dépôts whose figures he sees (works in or VIEW_STATS), narrowed by
+    // the dépôt switcher. null = all.
+    const units = await this.scopes.warehouses(user);
+    const warehouseIds = this.scopes.narrowWarehouses(units.statsWarehouseIds, filters.warehouseId);
     const scope: Scope = {
       tenantId: tenantContext.requireTenantId(),
       sellerIds: await this.scopes.figuresSellerIds(user, filters),
       brandId: filters.brandId ?? null,
+      warehouseIds,
+      defaultWarehouseId: units.defaultWarehouseId,
     };
     const seesCost = can(user, Permission.VIEW_COST_AND_MARGIN);
+    const byUnit = warehouseIds
+      ? this.clients.creditInWarehouses(warehouseIds, units.defaultWarehouseId, TOP_DEBTORS)
+      : null;
     const [sales, cash, credit, debtors, stock, cheques] = await Promise.all([
       seesSales ? this.sales(scope, date, seesCost) : null,
-      manager ? this.payments.summary(date, user) : null,
-      manager ? this.clients.creditSummary(TOP_DEBTORS) : null,
-      manager ? this.clients.debtors(TOP_DEBTORS) : null,
-      seesStock ? this.stock.dashboardSummary(seesCost) : null,
+      manager ? this.payments.summary(date, user, warehouseIds) : null,
+      manager ? (byUnit ?? this.clients.creditSummary(TOP_DEBTORS)) : null,
+      manager
+        ? byUnit
+          ? byUnit.then((c) => c.topDebtors)
+          : this.clients.debtors(TOP_DEBTORS)
+        : null,
+      seesStock ? this.stock.dashboardSummary(seesCost, warehouseIds) : null,
       manager ? this.aging.dueCheques(date) : null,
     ]);
     return {

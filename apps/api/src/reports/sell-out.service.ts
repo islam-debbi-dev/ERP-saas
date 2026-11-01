@@ -77,10 +77,14 @@ export class SellOutService {
         report: 'sell-out',
       });
     }
+    const units = await this.scopes.warehouses(user);
     const scope = {
       tenantId: tenantContext.requireTenantId(),
       sellerIds: await this.scopes.figuresSellerIds(user, { sellerId: query.sellerId }),
       brandId: query.brandId ?? null,
+      // Phase 24: the dépôts whose figures he sees.
+      warehouseIds: units.statsWarehouseIds,
+      defaultWarehouseId: units.defaultWarehouseId,
     };
     const { start, end } = algiersRange(query.from, query.to);
     const filters: Prisma.Sql[] = [];

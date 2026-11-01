@@ -38,6 +38,7 @@ import { CurrentUser, RequirePermission, Roles } from '../auth/decorators';
 import { can } from '../auth/permissions';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { Idempotent } from '../idempotency/idempotent.decorator';
+import { ScopeService } from '../sales-force/scope.service';
 import { InventoriesService } from './inventories.service';
 import { StockOperationsService } from './stock-operations.service';
 import { StockQueriesService } from './stock-queries.service';
@@ -49,7 +50,13 @@ export class StockController {
     private readonly queries: StockQueriesService,
     private readonly operations: StockOperationsService,
     private readonly warehouses: WarehousesService,
+    private readonly scope: ScopeService,
   ) {}
+
+  /** The dépôts whose stock the user sees (phase 24); null = all. */
+  private async reach(user: CurrentUserInfo): Promise<string[] | null> {
+    return (await this.scope.warehouses(user)).warehouseIds;
+  }
 
   @Get()
   @RequirePermission(Permission.STOCK_VIEW)
@@ -61,6 +68,7 @@ export class StockController {
       query,
       can(user, Permission.VIEW_COST_AND_MARGIN),
       await this.warehouses.enabled(user.tenantId),
+      await this.reach(user),
     );
   }
 
@@ -81,17 +89,23 @@ export class StockController {
       productId,
       can(user, Permission.VIEW_COST_AND_MARGIN),
       await this.warehouses.enabled(user.tenantId),
+      await this.reach(user),
     );
   }
 
   @Get(':productId/movements')
   @RequirePermission(Permission.STOCK_VIEW)
-  movements(
+  async movements(
     @Param('productId', ParseUUIDPipe) productId: string,
     @Query(new ZodValidationPipe(movementQuerySchema)) query: MovementQuery,
     @CurrentUser() user: CurrentUserInfo,
   ): Promise<StockMovementPage> {
-    return this.queries.movements(productId, query, can(user, Permission.VIEW_COST_AND_MARGIN));
+    return this.queries.movements(
+      productId,
+      query,
+      can(user, Permission.VIEW_COST_AND_MARGIN),
+      await this.reach(user),
+    );
   }
 
   @Post('opening')
@@ -99,8 +113,9 @@ export class StockController {
   @Idempotent()
   opening(
     @Body(new ZodValidationPipe(openingStockSchema)) body: OpeningStockInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<StockOperationResult> {
-    return this.operations.opening(body);
+    return this.operations.opening(body, user);
   }
 
   /** STOCK_ADJUST is checked in the service: it can be granted to any user. */
@@ -120,14 +135,17 @@ export class InventoriesController {
 
   @Get()
   @RequirePermission(Permission.STOCK_VIEW)
-  list(): Promise<InventorySummaryDto[]> {
-    return this.inventories.list();
+  list(@CurrentUser() user: CurrentUserInfo): Promise<InventorySummaryDto[]> {
+    return this.inventories.list(user);
   }
 
   @Get(':id')
   @RequirePermission(Permission.STOCK_VIEW)
-  get(@Param('id', ParseUUIDPipe) id: string): Promise<InventoryDto> {
-    return this.inventories.get(id);
+  get(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<InventoryDto> {
+    return this.inventories.get(id, user);
   }
 
   /** Counting is open to storekeepers; validating needs a manager. */
@@ -136,8 +154,9 @@ export class InventoriesController {
   @Idempotent()
   create(
     @Body(new ZodValidationPipe(createInventorySchema)) body: CreateInventoryInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<InventoryDto> {
-    return this.inventories.create(body);
+    return this.inventories.create(body, user);
   }
 
   @Put(':id/lines')
@@ -145,8 +164,9 @@ export class InventoriesController {
   setLines(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(inventoryLinesSchema)) body: InventoryLinesInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<InventoryDto> {
-    return this.inventories.setLines(id, body);
+    return this.inventories.setLines(id, body, user);
   }
 
   @Post(':id/validate')
@@ -163,7 +183,10 @@ export class InventoriesController {
   @RequirePermission(Permission.STOCK_ADJUST)
   @Idempotent()
   @HttpCode(HttpStatus.OK)
-  cancel(@Param('id', ParseUUIDPipe) id: string): Promise<InventoryDto> {
-    return this.inventories.cancel(id);
+  cancel(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<InventoryDto> {
+    return this.inventories.cancel(id, user);
   }
 }
