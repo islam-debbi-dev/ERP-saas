@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { BillingModule } from '../billing/billing.module';
 import { DocumentsModule } from '../documents/documents.module';
+import { SalesForceModule } from '../sales-force/sales-force.module';
 import { InventoriesService } from './inventories.service';
 import { InventoriesController, StockController } from './stock.controllers';
 import { StockOperationsService } from './stock-operations.service';
@@ -16,7 +17,7 @@ import { WarehousesService } from './warehouses.service';
  * the dépôt from WarehousesService; the dashboard reads StockQueriesService.
  */
 @Module({
-  imports: [DocumentsModule, BillingModule],
+  imports: [DocumentsModule, BillingModule, SalesForceModule],
   controllers: [
     StockController,
     InventoriesController,

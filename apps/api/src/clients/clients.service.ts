@@ -4,6 +4,7 @@ import {
   type ClientAdjustmentInput,
   type ClientBulkAssignInput,
   type ClientBulkAssignResultDto,
+  type ClientDebtByWarehouseDto,
   type ClientDto,
   type ClientListQuery,
   type ClientPage,
@@ -27,6 +28,7 @@ import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { type DataScope, ScopeService } from '../sales-force/scope.service';
+import { WarehousesService } from '../stock/warehouses.service';
 import { SectorsService } from '../sales-force/sectors.service';
 import { ClientAccountService } from './client-account.service';
 
@@ -98,6 +100,7 @@ export class ClientsService {
     private readonly audit: AuditService,
     private readonly scope: ScopeService,
     private readonly sectors: SectorsService,
+    private readonly warehouses: WarehousesService,
   ) {}
 
   /** Raw SQL picks the page (filters compare balance with plafond); Prisma loads the rows. */
@@ -160,7 +163,33 @@ export class ClientsService {
       include: clientInclude,
     });
     if (!c) throw new AppException(ErrorCode.NOT_FOUND, 'Client not found');
-    return toDto(c);
+    const dto = toDto(c);
+    if (await this.warehouses.multiUnitOn()) dto.debtByWarehouse = await this.debtByWarehouse(id);
+    return dto;
+  }
+
+  /**
+   * One client account, split by the dépôt each entry belongs to (phase 24). The parts add
+   * up to the balance; entries without a dépôt (before the backfill) count for the
+   * dépôt principal, as the backfill will decide.
+   */
+  async debtByWarehouse(id: string): Promise<ClientDebtByWarehouseDto[]> {
+    const tenantId = tenantContext.requireTenantId();
+    const rows = await this.prisma.db.$queryRaw<
+      { id: string | null; name: string | null; balance: Prisma.Decimal }[]
+    >`
+      SELECT w.id, w.name, SUM(e.amount) AS balance
+      FROM client_ledger_entries e
+      LEFT JOIN warehouses w ON w.id = COALESCE(e."warehouseId", (
+        SELECT d.id FROM warehouses d WHERE d."tenantId" = ${tenantId}::uuid AND d."isDefault"))
+      WHERE e."tenantId" = ${tenantId}::uuid AND e."clientId" = ${id}::uuid
+      GROUP BY w.id, w.name
+      HAVING SUM(e.amount) <> 0
+      ORDER BY w.name`;
+    return rows.map((r) => ({
+      warehouse: r.id ? { id: r.id, name: r.name ?? '' } : null,
+      balance: toMoneyString(r.balance.toString()),
+    }));
   }
 
   async create(input: CreateClientInput, user: CurrentUserInfo): Promise<ClientDto> {
@@ -345,25 +374,41 @@ export class ClientsService {
   }
 
   /** Once per client. Negative = the client starts with credit in his favour. */
-  async openingBalance(id: string, input: OpeningBalanceInput): Promise<ClientDto> {
+  async openingBalance(
+    id: string,
+    input: OpeningBalanceInput,
+    user: CurrentUserInfo,
+  ): Promise<ClientDto> {
     await this.prisma.db.$transaction(async (tx) => {
       await this.liveClient(tx, id);
+      const warehouseId = await this.ledgerWarehouse(tx, input.warehouseId, user);
       await this.account.post(tx, [
-        { clientId: id, type: 'OPENING', amount: input.amount, label: input.note ?? '' },
+        {
+          clientId: id,
+          type: 'OPENING',
+          amount: input.amount,
+          label: input.note ?? '',
+          warehouseId,
+        },
       ]);
       await this.audit.log(tx, {
         action: 'CLIENT_OPENING_BALANCE',
         entity: 'Client',
         entityId: id,
-        after: { amount: input.amount, note: input.note },
+        after: { amount: input.amount, note: input.note, warehouseId },
       });
     });
     return this.get(id);
   }
 
-  async adjust(id: string, input: ClientAdjustmentInput): Promise<ClientDto> {
+  async adjust(
+    id: string,
+    input: ClientAdjustmentInput,
+    user: CurrentUserInfo,
+  ): Promise<ClientDto> {
     await this.prisma.db.$transaction(async (tx) => {
       await this.liveClient(tx, id);
+      const warehouseId = await this.ledgerWarehouse(tx, input.warehouseId, user);
       await this.account.post(tx, [
         {
           clientId: id,
@@ -371,13 +416,14 @@ export class ClientsService {
           amount: input.amount,
           label: input.reason,
           reason: input.reason,
+          warehouseId,
         },
       ]);
       await this.audit.log(tx, {
         action: 'CLIENT_ADJUSTED',
         entity: 'Client',
         entityId: id,
-        after: { amount: input.amount, reason: input.reason },
+        after: { amount: input.amount, reason: input.reason, warehouseId },
       });
     });
     return this.get(id);
@@ -399,6 +445,9 @@ export class ClientsService {
     });
     if (!client) throw new AppException(ErrorCode.NOT_FOUND, 'Client not found');
     const tenantId = tenantContext.requireTenantId();
+    // Phase 24: one account, every line, but a line of a dépôt the user does not work in
+    // only shows its date, type, number, amount and dépôt.
+    const reach = scope?.warehouseIds ?? null;
     const start = algiersDayStart(query.from);
     const end = Prisma.sql`(((${query.to}::date + 1))::timestamp AT TIME ZONE 'Africa/Algiers')`;
 
@@ -419,14 +468,20 @@ export class ClientsService {
         createdBy: string | null;
         createdAt: Date;
         running: Prisma.Decimal;
+        warehouseId: string | null;
+        warehouseName: string | null;
       }[]
     >`
-      SELECT id, type, amount, label, reason, "refType", "refId", "createdBy", "createdAt",
-             ${openingBalance.toString()}::numeric + SUM(amount) OVER (ORDER BY "createdAt", seq) AS running
-      FROM client_ledger_entries
-      WHERE "tenantId" = ${tenantId}::uuid AND "clientId" = ${id}::uuid
-        AND "createdAt" >= ${start} AND "createdAt" < ${end}
-      ORDER BY "createdAt", seq`;
+      SELECT e.id, e.type, e.amount, e.label, e.reason, e."refType", e."refId", e."createdBy",
+             e."createdAt",
+             ${openingBalance.toString()}::numeric + SUM(e.amount) OVER (ORDER BY e."createdAt", e.seq) AS running,
+             w.id AS "warehouseId", w.name AS "warehouseName"
+      FROM client_ledger_entries e
+      LEFT JOIN warehouses w ON w.id = COALESCE(e."warehouseId", (
+        SELECT d.id FROM warehouses d WHERE d."tenantId" = ${tenantId}::uuid AND d."isDefault"))
+      WHERE e."tenantId" = ${tenantId}::uuid AND e."clientId" = ${id}::uuid
+        AND e."createdAt" >= ${start} AND e."createdAt" < ${end}
+      ORDER BY e."createdAt", e.seq`;
 
     const userIds = [
       ...new Set(rows.map((r) => r.createdBy).filter((u): u is string => Boolean(u))),
@@ -448,22 +503,45 @@ export class ClientsService {
       from: query.from,
       to: query.to,
       openingBalance: toMoneyString(openingBalance),
-      entries: rows.map((r) => ({
-        id: r.id,
-        type: r.type,
-        amount: toMoneyString(r.amount.toString()),
-        label: r.label,
-        reason: r.reason,
-        refType: r.refType,
-        refId: r.refId,
-        createdBy: r.createdBy ? (byId.get(r.createdBy) ?? null) : null,
-        createdAt: r.createdAt.toISOString(),
-        runningBalance: toMoneyString(r.running.toString()),
-      })),
+      entries: rows.map((r) => {
+        const reduced = reach !== null && !(r.warehouseId && reach.includes(r.warehouseId));
+        return {
+          id: r.id,
+          type: r.type,
+          amount: toMoneyString(r.amount.toString()),
+          // The label is the document number (or the note of an adjustment): the number
+          // stays, a free note of another dépôt does not.
+          label: reduced && r.refType === null ? '' : r.label,
+          reason: reduced ? null : r.reason,
+          refType: r.refType,
+          refId: reduced ? null : r.refId,
+          createdBy: !reduced && r.createdBy ? (byId.get(r.createdBy) ?? null) : null,
+          createdAt: r.createdAt.toISOString(),
+          runningBalance: toMoneyString(r.running.toString()),
+          warehouse: r.warehouseId ? { id: r.warehouseId, name: r.warehouseName ?? '' } : null,
+          reduced,
+        };
+      }),
       closingBalance: toMoneyString(openingBalance.plus(debit).minus(credit)),
       totalDebit: toMoneyString(debit),
       totalCredit: toMoneyString(credit),
     };
+  }
+
+  /**
+   * The dépôt an opening balance or an adjustment belongs to (phase 24): the one chosen,
+   * else the user's only dépôt, else the dépôt principal; always in the user's reach.
+   */
+  private async ledgerWarehouse(
+    tx: Tx,
+    requested: string | undefined,
+    user: CurrentUserInfo,
+  ): Promise<string> {
+    const id = requested
+      ? await this.warehouses.resolve(tx, requested)
+      : ((await this.scope.onlyWarehouse(user, tx)) ?? (await this.warehouses.defaultId(tx)));
+    await this.scope.assertWarehouse(tx, user, id);
+    return id;
   }
 
   /** Who owes the most (dashboard, phase 10). */

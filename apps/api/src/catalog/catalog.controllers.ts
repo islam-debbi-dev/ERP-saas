@@ -14,17 +14,16 @@ import {
 import {
   type BarcodeMatchDto,
   type BrandDto,
+  type CategoryDto,
   type CreateBrandInput,
   createBrandSchema,
-  type UpdateBrandInput,
-  updateBrandSchema,
-  type CategoryDto,
   type CreateCategoryInput,
   createCategorySchema,
   type CreateProductInput,
   createProductSchema,
   type CreateUnitInput,
   createUnitSchema,
+  Permission,
   type PriceLevelDto,
   type ProductDto,
   type ProductListQuery,
@@ -32,14 +31,15 @@ import {
   type ProductPage,
   type RenamePriceLevelInput,
   renamePriceLevelSchema,
-  Role,
   type UnitDto,
+  type UpdateBrandInput,
+  updateBrandSchema,
   type UpdateCategoryInput,
   updateCategorySchema,
   type UpdateProductInput,
   updateProductSchema,
 } from '@erp/shared';
-import { Roles } from '../auth/decorators';
+import { RequirePermission } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { BrandsService } from './brands.service';
 import { CategoriesService } from './categories.service';
@@ -47,20 +47,18 @@ import { PriceLevelsService } from './price-levels.service';
 import { ProductsService } from './products.service';
 import { UnitsService } from './units.service';
 
-/** Catalog writes: owner and manager for now (finer permissions in phase 11). */
-const CATALOG_WRITERS = [Role.OWNER, Role.MANAGER];
-
 @Controller('units')
 export class UnitsController {
   constructor(private readonly units: UnitsService) {}
 
   @Get()
+  @RequirePermission(Permission.PRODUCTS_VIEW)
   list(): Promise<UnitDto[]> {
     return this.units.list();
   }
 
   @Post()
-  @Roles(...CATALOG_WRITERS)
+  @RequirePermission(Permission.PRODUCTS_CREATE)
   create(@Body(new ZodValidationPipe(createUnitSchema)) body: CreateUnitInput): Promise<UnitDto> {
     return this.units.create(body);
   }
@@ -71,12 +69,13 @@ export class PriceLevelsController {
   constructor(private readonly levels: PriceLevelsService) {}
 
   @Get()
+  @RequirePermission(Permission.PRODUCTS_VIEW)
   list(): Promise<PriceLevelDto[]> {
     return this.levels.list();
   }
 
   @Patch(':id')
-  @Roles(...CATALOG_WRITERS)
+  @RequirePermission(Permission.PRODUCTS_EDIT)
   rename(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(renamePriceLevelSchema)) body: RenamePriceLevelInput,
@@ -90,12 +89,13 @@ export class CategoriesController {
   constructor(private readonly categories: CategoriesService) {}
 
   @Get()
+  @RequirePermission(Permission.PRODUCTS_VIEW)
   tree(): Promise<CategoryDto[]> {
     return this.categories.tree();
   }
 
   @Post()
-  @Roles(...CATALOG_WRITERS)
+  @RequirePermission(Permission.PRODUCTS_CREATE)
   create(
     @Body(new ZodValidationPipe(createCategorySchema)) body: CreateCategoryInput,
   ): Promise<CategoryDto> {
@@ -103,7 +103,7 @@ export class CategoriesController {
   }
 
   @Patch(':id')
-  @Roles(...CATALOG_WRITERS)
+  @RequirePermission(Permission.PRODUCTS_EDIT)
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(updateCategorySchema)) body: UpdateCategoryInput,
@@ -112,7 +112,7 @@ export class CategoriesController {
   }
 
   @Delete(':id')
-  @Roles(...CATALOG_WRITERS)
+  @RequirePermission(Permission.PRODUCTS_EDIT)
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.categories.remove(id);
@@ -125,12 +125,13 @@ export class BrandsController {
   constructor(private readonly brands: BrandsService) {}
 
   @Get()
+  @RequirePermission(Permission.PRODUCTS_VIEW)
   list(): Promise<BrandDto[]> {
     return this.brands.list();
   }
 
   @Post()
-  @Roles(...CATALOG_WRITERS)
+  @RequirePermission(Permission.PRODUCTS_CREATE)
   create(
     @Body(new ZodValidationPipe(createBrandSchema)) body: CreateBrandInput,
   ): Promise<BrandDto> {
@@ -138,7 +139,7 @@ export class BrandsController {
   }
 
   @Patch(':id')
-  @Roles(...CATALOG_WRITERS)
+  @RequirePermission(Permission.PRODUCTS_EDIT)
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(updateBrandSchema)) body: UpdateBrandInput,
@@ -147,7 +148,7 @@ export class BrandsController {
   }
 
   @Delete(':id')
-  @Roles(...CATALOG_WRITERS)
+  @RequirePermission(Permission.PRODUCTS_EDIT)
   @HttpCode(HttpStatus.NO_CONTENT)
   archive(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.brands.archive(id);
@@ -159,6 +160,7 @@ export class ProductsController {
   constructor(private readonly products: ProductsService) {}
 
   @Get()
+  @RequirePermission(Permission.PRODUCTS_VIEW)
   list(
     @Query(new ZodValidationPipe(productListQuerySchema)) query: ProductListQuery,
   ): Promise<ProductPage> {
@@ -167,17 +169,19 @@ export class ProductsController {
 
   // Declared before ':id' so "by-barcode" is not parsed as an id.
   @Get('by-barcode/:code')
+  @RequirePermission(Permission.PRODUCTS_VIEW)
   byBarcode(@Param('code') code: string): Promise<BarcodeMatchDto> {
     return this.products.byBarcode(code.trim());
   }
 
   @Get(':id')
+  @RequirePermission(Permission.PRODUCTS_VIEW)
   get(@Param('id', ParseUUIDPipe) id: string): Promise<ProductDto> {
     return this.products.get(id);
   }
 
   @Post()
-  @Roles(...CATALOG_WRITERS)
+  @RequirePermission(Permission.PRODUCTS_CREATE)
   create(
     @Body(new ZodValidationPipe(createProductSchema)) body: CreateProductInput,
   ): Promise<ProductDto> {
@@ -185,7 +189,7 @@ export class ProductsController {
   }
 
   @Patch(':id')
-  @Roles(...CATALOG_WRITERS)
+  @RequirePermission(Permission.PRODUCTS_EDIT)
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(updateProductSchema)) body: UpdateProductInput,
@@ -194,14 +198,14 @@ export class ProductsController {
   }
 
   @Post(':id/archive')
-  @Roles(...CATALOG_WRITERS)
+  @RequirePermission(Permission.PRODUCTS_EDIT)
   @HttpCode(HttpStatus.OK)
   archive(@Param('id', ParseUUIDPipe) id: string): Promise<ProductDto> {
     return this.products.archive(id, true);
   }
 
   @Post(':id/restore')
-  @Roles(...CATALOG_WRITERS)
+  @RequirePermission(Permission.PRODUCTS_EDIT)
   @HttpCode(HttpStatus.OK)
   restore(@Param('id', ParseUUIDPipe) id: string): Promise<ProductDto> {
     return this.products.archive(id, false);

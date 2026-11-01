@@ -34,7 +34,7 @@ import {
   type StockPage,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
-import { CurrentUser, Roles } from '../auth/decorators';
+import { CurrentUser, RequirePermission, Roles } from '../auth/decorators';
 import { can } from '../auth/permissions';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { Idempotent } from '../idempotency/idempotent.decorator';
@@ -42,9 +42,6 @@ import { InventoriesService } from './inventories.service';
 import { StockOperationsService } from './stock-operations.service';
 import { StockQueriesService } from './stock-queries.service';
 import { WarehousesService } from './warehouses.service';
-
-/** Stock-changing actions: manager and above (AGENTS: adjustments are MANAGER+). */
-const STOCK_WRITERS = [Role.OWNER, Role.MANAGER];
 
 @Controller('stock')
 export class StockController {
@@ -55,6 +52,7 @@ export class StockController {
   ) {}
 
   @Get()
+  @RequirePermission(Permission.STOCK_VIEW)
   async list(
     @Query(new ZodValidationPipe(stockListQuerySchema)) query: StockListQuery,
     @CurrentUser() user: CurrentUserInfo,
@@ -74,6 +72,7 @@ export class StockController {
   }
 
   @Get(':productId')
+  @RequirePermission(Permission.STOCK_VIEW)
   async level(
     @Param('productId', ParseUUIDPipe) productId: string,
     @CurrentUser() user: CurrentUserInfo,
@@ -86,6 +85,7 @@ export class StockController {
   }
 
   @Get(':productId/movements')
+  @RequirePermission(Permission.STOCK_VIEW)
   movements(
     @Param('productId', ParseUUIDPipe) productId: string,
     @Query(new ZodValidationPipe(movementQuerySchema)) query: MovementQuery,
@@ -95,8 +95,8 @@ export class StockController {
   }
 
   @Post('opening')
+  @RequirePermission(Permission.STOCK_ADJUST)
   @Idempotent()
-  @Roles(...STOCK_WRITERS)
   opening(
     @Body(new ZodValidationPipe(openingStockSchema)) body: OpeningStockInput,
   ): Promise<StockOperationResult> {
@@ -119,19 +119,21 @@ export class InventoriesController {
   constructor(private readonly inventories: InventoriesService) {}
 
   @Get()
+  @RequirePermission(Permission.STOCK_VIEW)
   list(): Promise<InventorySummaryDto[]> {
     return this.inventories.list();
   }
 
   @Get(':id')
+  @RequirePermission(Permission.STOCK_VIEW)
   get(@Param('id', ParseUUIDPipe) id: string): Promise<InventoryDto> {
     return this.inventories.get(id);
   }
 
   /** Counting is open to storekeepers; validating needs a manager. */
   @Post()
+  @RequirePermission(Permission.STOCK_COUNT)
   @Idempotent()
-  @Roles(...STOCK_WRITERS, Role.STOREKEEPER)
   create(
     @Body(new ZodValidationPipe(createInventorySchema)) body: CreateInventoryInput,
   ): Promise<InventoryDto> {
@@ -139,7 +141,7 @@ export class InventoriesController {
   }
 
   @Put(':id/lines')
-  @Roles(...STOCK_WRITERS, Role.STOREKEEPER)
+  @RequirePermission(Permission.STOCK_COUNT)
   setLines(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(inventoryLinesSchema)) body: InventoryLinesInput,
@@ -158,8 +160,8 @@ export class InventoriesController {
   }
 
   @Post(':id/cancel')
+  @RequirePermission(Permission.STOCK_ADJUST)
   @Idempotent()
-  @Roles(...STOCK_WRITERS)
   @HttpCode(HttpStatus.OK)
   cancel(@Param('id', ParseUUIDPipe) id: string): Promise<InventoryDto> {
     return this.inventories.cancel(id);

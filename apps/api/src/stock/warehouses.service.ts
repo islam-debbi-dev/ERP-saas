@@ -3,17 +3,24 @@ import {
   type CreateWarehouseInput,
   ErrorCode,
   Feature,
+  Permission,
   SELLING_ROLES,
   type UpdateWarehouseInput,
+  WarehouseAccessLevel,
+  type WarehouseBrandsInput,
+  type WarehouseCategoriesInput,
+  type WarehouseDetailDto,
   type WarehouseDto,
   WarehouseType,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
+import type { CurrentUserInfo } from '../auth/auth.types';
 import { FeaturesService } from '../billing/features.service';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { ScopeService } from '../sales-force/scope.service';
 
 /** Name of the dépôt every tenant has (shown in French on printed documents too). */
 export const DEFAULT_WAREHOUSE_NAME = 'Dépôt principal';
@@ -31,6 +38,7 @@ export class WarehousesService {
     private readonly prisma: PrismaService,
     private readonly features: FeaturesService,
     private readonly audit: AuditService,
+    private readonly scope: ScopeService,
   ) {}
 
   async enabled(tenantId: string = tenantContext.requireTenantId()): Promise<boolean> {
@@ -103,13 +111,20 @@ export class WarehousesService {
     return this.resolve(tx, requested, () => this.vehicleOf(tx, sellerId));
   }
 
-  async list(): Promise<WarehouseDto[]> {
+  /**
+   * The dépôts a user can see (phase 24): those he works in or sees figures of; a dépôt
+   * outside his reach is not listed. Without a user (internal reads): all of them.
+   */
+  async list(user?: CurrentUserInfo): Promise<WarehouseDto[]> {
     await this.defaultId();
+    const reach = user ? (await this.scope.warehouses(user)).statsWarehouseIds : null;
     const rows = await this.prisma.db.warehouse.findMany({
-      where: { deletedAt: null },
+      where: { deletedAt: null, ...(reach ? { id: { in: reach } } : {}) },
       orderBy: [{ isDefault: 'desc' }, { type: 'asc' }, { name: 'asc' }],
       include: {
         assignedUser: { select: { id: true, fullName: true } },
+        manager: { select: { id: true, fullName: true } },
+        parent: { select: { id: true, name: true } },
         _count: { select: { stocks: { where: { qtyBase: { not: 0 } } } } },
       },
     });
@@ -121,18 +136,54 @@ export class WarehousesService {
       active: w.active,
       assignedUser: w.assignedUser,
       productCount: w._count.stocks,
+      manager: w.manager,
+      parent: w.parent,
     }));
   }
 
-  async get(id: string): Promise<WarehouseDto> {
-    const found = (await this.list()).find((w) => w.id === id);
+  async get(id: string, user?: CurrentUserInfo): Promise<WarehouseDto> {
+    const found = (await this.list(user)).find((w) => w.id === id);
     if (!found) throw new AppException(ErrorCode.WAREHOUSE_NOT_FOUND, 'Warehouse not found');
     return found;
   }
 
-  async create(input: CreateWarehouseInput): Promise<WarehouseDto> {
+  /** A dépôt with what it sells, its team and its trucks (phase 24). */
+  async detail(id: string, user: CurrentUserInfo): Promise<WarehouseDetailDto> {
+    const base = await this.get(id, user);
+    const [brands, categories, access, trucks] = await Promise.all([
+      this.prisma.db.warehouseBrand.findMany({
+        where: { warehouseId: id },
+        select: { brand: { select: { id: true, name: true } } },
+        orderBy: { brand: { name: 'asc' } },
+      }),
+      this.prisma.db.warehouseCategory.findMany({
+        where: { warehouseId: id },
+        select: { category: { select: { id: true, name: true } } },
+        orderBy: { category: { name: 'asc' } },
+      }),
+      this.prisma.db.userWarehouseAccess.findMany({
+        where: { warehouseId: id, user: { deletedAt: null } },
+        select: { level: true, user: { select: { id: true, fullName: true, role: true } } },
+        orderBy: { user: { fullName: 'asc' } },
+      }),
+      this.prisma.db.warehouse.findMany({
+        where: { parentWarehouseId: id, deletedAt: null },
+        select: { id: true, name: true, assignedUser: { select: { id: true, fullName: true } } },
+        orderBy: { name: 'asc' },
+      }),
+    ]);
+    return {
+      ...base,
+      brands: brands.map((b) => b.brand),
+      categories: categories.map((c) => c.category),
+      team: access.map((a) => ({ ...a.user, level: a.level })),
+      trucks,
+    };
+  }
+
+  async create(input: CreateWarehouseInput, user?: CurrentUserInfo): Promise<WarehouseDto> {
     const id = await this.prisma.db.$transaction(async (tx) => {
-      await this.defaultId(tx);
+      const mainId = await this.defaultId(tx);
       if (input.assignedUserId) await this.checkDriver(tx, input.assignedUserId, null);
       const w = await this.write(() =>
         tx.warehouse.create({
@@ -141,9 +192,26 @@ export class WarehousesService {
             name: input.name,
             type: input.type,
             assignedUserId: input.assignedUserId,
+            // A truck belongs to a dépôt (phase 24): the dépôt principal until moved.
+            parentWarehouseId: input.type === WarehouseType.VEHICLE ? mainId : null,
           },
         }),
       );
+      // Whoever creates a dépôt works in it, so a user restricted to some dépôts sees it.
+      if (user && input.type !== WarehouseType.VEHICLE) {
+        const { warehouseIds } = await this.scope.warehouses(user, tx);
+        if (warehouseIds) {
+          await tx.userWarehouseAccess.create({
+            data: {
+              tenantId: tenantContext.requireTenantId(),
+              userId: user.id,
+              warehouseId: w.id,
+              level: WarehouseAccessLevel.OPERATE,
+              grantedBy: user.id,
+            },
+          });
+        }
+      }
       await this.audit.log(tx, {
         action: 'WAREHOUSE_CREATED',
         entity: 'Warehouse',
@@ -155,9 +223,31 @@ export class WarehousesService {
     return this.get(id);
   }
 
-  async update(id: string, input: UpdateWarehouseInput): Promise<WarehouseDto> {
+  async update(
+    id: string,
+    input: UpdateWarehouseInput,
+    user?: CurrentUserInfo,
+  ): Promise<WarehouseDto> {
     await this.prisma.db.$transaction(async (tx) => {
       const before = await this.live(tx, id);
+      if (user) await this.assertReach(tx, user, id);
+      if (input.managerUserId !== undefined || input.parentWarehouseId !== undefined) {
+        await this.assertMultiUnit();
+      }
+      if (input.managerUserId) {
+        const manager = await tx.user.findFirst({
+          where: { id: input.managerUserId, deletedAt: null },
+          select: { id: true },
+        });
+        if (!manager) {
+          throw new AppException(ErrorCode.WAREHOUSE_INVALID, 'Unknown manager', {
+            field: 'managerUserId',
+          });
+        }
+      }
+      if (input.parentWarehouseId !== undefined) {
+        await this.checkParent(tx, before, input.parentWarehouseId, user);
+      }
       if (input.assignedUserId && before.type !== WarehouseType.VEHICLE) {
         throw new AppException(ErrorCode.WAREHOUSE_INVALID, 'Only a truck has a driver', {
           rule: 'driver_on_vehicle_only',
@@ -176,6 +266,8 @@ export class WarehousesService {
             name: input.name,
             assignedUserId: input.assignedUserId,
             active: input.active,
+            managerUserId: input.managerUserId,
+            parentWarehouseId: input.parentWarehouseId,
           },
         }),
       );
@@ -183,17 +275,211 @@ export class WarehousesService {
         action: 'WAREHOUSE_UPDATED',
         entity: 'Warehouse',
         entityId: id,
-        before: { name: before.name, assignedUserId: before.assignedUserId, active: before.active },
+        before: {
+          name: before.name,
+          assignedUserId: before.assignedUserId,
+          active: before.active,
+          managerUserId: before.managerUserId,
+          parentWarehouseId: before.parentWarehouseId,
+        },
         after: input,
       });
     });
     return this.get(id);
   }
 
+  /** What a dépôt sells (phase 24): replaces its brands; none = every brand. */
+  async setBrands(
+    id: string,
+    input: WarehouseBrandsInput,
+    user: CurrentUserInfo,
+  ): Promise<WarehouseDetailDto> {
+    await this.assertMultiUnit();
+    await this.prisma.db.$transaction(async (tx) => {
+      const w = await this.live(tx, id);
+      await this.assertReach(tx, user, id);
+      this.assertSellingDepot(w);
+      const found = await tx.brand.count({
+        where: { id: { in: input.brandIds }, deletedAt: null },
+      });
+      if (found !== input.brandIds.length) {
+        throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown brand', { field: 'brandIds' });
+      }
+      const before = await tx.warehouseBrand.findMany({
+        where: { warehouseId: id },
+        select: { brandId: true },
+      });
+      await tx.warehouseBrand.deleteMany({ where: { warehouseId: id } });
+      if (input.brandIds.length > 0) {
+        await tx.warehouseBrand.createMany({
+          data: input.brandIds.map((brandId) => ({
+            tenantId: tenantContext.requireTenantId(),
+            warehouseId: id,
+            brandId,
+          })),
+        });
+      }
+      await this.audit.log(tx, {
+        action: 'WAREHOUSE_BRANDS_SET',
+        entity: 'Warehouse',
+        entityId: id,
+        before: { brandIds: before.map((b) => b.brandId) },
+        after: input,
+      });
+    });
+    return this.detail(id, user);
+  }
+
+  /** What a dépôt sells (phase 24): replaces its categories (sub-categories included). */
+  async setCategories(
+    id: string,
+    input: WarehouseCategoriesInput,
+    user: CurrentUserInfo,
+  ): Promise<WarehouseDetailDto> {
+    await this.assertMultiUnit();
+    await this.prisma.db.$transaction(async (tx) => {
+      const w = await this.live(tx, id);
+      await this.assertReach(tx, user, id);
+      this.assertSellingDepot(w);
+      const found = await tx.category.count({
+        where: { id: { in: input.categoryIds }, deletedAt: null },
+      });
+      if (found !== input.categoryIds.length) {
+        throw new AppException(ErrorCode.VALIDATION_FAILED, 'Unknown category', {
+          field: 'categoryIds',
+        });
+      }
+      const before = await tx.warehouseCategory.findMany({
+        where: { warehouseId: id },
+        select: { categoryId: true },
+      });
+      await tx.warehouseCategory.deleteMany({ where: { warehouseId: id } });
+      if (input.categoryIds.length > 0) {
+        await tx.warehouseCategory.createMany({
+          data: input.categoryIds.map((categoryId) => ({
+            tenantId: tenantContext.requireTenantId(),
+            warehouseId: id,
+            categoryId,
+          })),
+        });
+      }
+      await this.audit.log(tx, {
+        action: 'WAREHOUSE_CATEGORIES_SET',
+        entity: 'Warehouse',
+        entityId: id,
+        before: { categoryIds: before.map((c) => c.categoryId) },
+        after: input,
+      });
+    });
+    return this.detail(id, user);
+  }
+
+  /**
+   * The products of `productIds` a dépôt does not sell (phase 24): outside its brands or
+   * its categories (with their sub-categories). A truck sells what its parent dépôt sells.
+   * Empty brands and categories = it sells everything. Without MULTI_UNIT: nothing is refused.
+   */
+  async productsOutside(db: Db, warehouseId: string, productIds: string[]): Promise<string[]> {
+    if (productIds.length === 0 || !(await this.multiUnitOn())) return [];
+    const w = await db.warehouse.findFirst({
+      where: { id: warehouseId },
+      select: { id: true, parentWarehouseId: true },
+    });
+    const depotId = w?.parentWarehouseId ?? w?.id;
+    if (!depotId) return [];
+    const tenantId = tenantContext.requireTenantId();
+    const rows = await db.$queryRaw<{ id: string }[]>`
+      WITH RECURSIVE allowed_cats AS (
+        SELECT "categoryId" AS id FROM warehouse_categories
+        WHERE "tenantId" = ${tenantId}::uuid AND "warehouseId" = ${depotId}::uuid
+        UNION
+        SELECT c.id FROM categories c JOIN allowed_cats a ON c."parentId" = a.id
+        WHERE c."tenantId" = ${tenantId}::uuid
+      )
+      SELECT p.id FROM products p
+      WHERE p."tenantId" = ${tenantId}::uuid AND p.id = ANY(${productIds}::uuid[])
+        AND (
+          (EXISTS (SELECT 1 FROM warehouse_brands b
+                   WHERE b."tenantId" = ${tenantId}::uuid AND b."warehouseId" = ${depotId}::uuid)
+           AND (p."brandId" IS NULL OR p."brandId" NOT IN (
+                 SELECT "brandId" FROM warehouse_brands
+                 WHERE "tenantId" = ${tenantId}::uuid AND "warehouseId" = ${depotId}::uuid)))
+          OR
+          (EXISTS (SELECT 1 FROM warehouse_categories wc
+                   WHERE wc."tenantId" = ${tenantId}::uuid AND wc."warehouseId" = ${depotId}::uuid)
+           AND (p."categoryId" IS NULL OR p."categoryId" NOT IN (SELECT id FROM allowed_cats)))
+        )`;
+    return rows.map((r) => r.id);
+  }
+
+  /**
+   * PRODUCT_NOT_IN_WAREHOUSE unless every product is sold by the dépôt (phase 24), or the
+   * user may sell anything (SELL_ANY_PRODUCT).
+   */
+  async assertSells(
+    db: Db,
+    user: CurrentUserInfo,
+    warehouseId: string,
+    productIds: string[],
+  ): Promise<void> {
+    if (user.permissions.includes(Permission.SELL_ANY_PRODUCT)) return;
+    const outside = await this.productsOutside(db, warehouseId, [...new Set(productIds)]);
+    if (outside.length > 0) {
+      throw new AppException(
+        ErrorCode.PRODUCT_NOT_IN_WAREHOUSE,
+        'This dépôt does not sell these products',
+        { warehouseId, productIds: outside },
+      );
+    }
+  }
+
+  /** Product filter for a dépôt's searches (phase 24): what it sells. null = everything. */
+  async sellsWhere(warehouseId: string): Promise<Prisma.ProductWhereInput | null> {
+    if (!(await this.multiUnitOn())) return null;
+    const w = await this.prisma.db.warehouse.findFirst({
+      where: { id: warehouseId },
+      select: { id: true, parentWarehouseId: true },
+    });
+    const depotId = w?.parentWarehouseId ?? w?.id;
+    if (!depotId) return null;
+    const [brands, cats] = await Promise.all([
+      this.prisma.db.warehouseBrand.findMany({
+        where: { warehouseId: depotId },
+        select: { brandId: true },
+      }),
+      this.prisma.db.warehouseCategory.findMany({
+        where: { warehouseId: depotId },
+        select: { categoryId: true },
+      }),
+    ]);
+    if (brands.length === 0 && cats.length === 0) return null;
+    const and: Prisma.ProductWhereInput[] = [];
+    if (brands.length > 0) and.push({ brandId: { in: brands.map((b) => b.brandId) } });
+    if (cats.length > 0) {
+      const tenantId = tenantContext.requireTenantId();
+      const ids = cats.map((c) => c.categoryId);
+      const tree = await this.prisma.db.$queryRaw<{ id: string }[]>`
+        WITH RECURSIVE t AS (
+          SELECT id FROM categories WHERE "tenantId" = ${tenantId}::uuid AND id = ANY(${ids}::uuid[])
+          UNION
+          SELECT c.id FROM categories c JOIN t ON c."parentId" = t.id
+          WHERE c."tenantId" = ${tenantId}::uuid
+        )
+        SELECT id FROM t`;
+      and.push({ categoryId: { in: tree.map((r) => r.id) } });
+    }
+    return { AND: and };
+  }
+
+  async multiUnitOn(tenantId: string = tenantContext.requireTenantId()): Promise<boolean> {
+    return (await this.features.of(tenantId)).features.includes(Feature.MULTI_UNIT);
+  }
+
   /** Archives an empty dépôt. Stock must be moved out first (a transfer), never dropped. */
-  async archive(id: string): Promise<void> {
+  async archive(id: string, user?: CurrentUserInfo): Promise<void> {
     await this.prisma.db.$transaction(async (tx) => {
       const before = await this.live(tx, id);
+      if (user) await this.assertReach(tx, user, id);
       if (before.isDefault) {
         throw new AppException(ErrorCode.WAREHOUSE_INVALID, 'The main dépôt cannot be archived', {
           rule: 'default_not_archived',
@@ -229,6 +515,53 @@ export class WarehousesService {
     const w = await tx.warehouse.findFirst({ where: { id, deletedAt: null } });
     if (!w) throw new AppException(ErrorCode.WAREHOUSE_NOT_FOUND, 'Warehouse not found');
     return w;
+  }
+
+  /** A dépôt outside the user's reach (OPERATE) is not there for him (phase 24). */
+  private async assertReach(tx: Tx, user: CurrentUserInfo, id: string): Promise<void> {
+    await this.scope.assertWarehouse(tx, user, id);
+  }
+
+  private async assertMultiUnit(): Promise<void> {
+    if (await this.multiUnitOn()) return;
+    throw new AppException(ErrorCode.FEATURE_NOT_IN_PLAN, 'This module is not in your plan', {
+      feature: Feature.MULTI_UNIT,
+    });
+  }
+
+  /** Brands and categories belong to dépôts; a truck sells what its parent sells. */
+  private assertSellingDepot(w: { type: string }): void {
+    if (w.type === WarehouseType.VEHICLE) {
+      throw new AppException(ErrorCode.WAREHOUSE_INVALID, 'A truck sells what its dépôt sells', {
+        rule: 'vehicle_follows_parent',
+      });
+    }
+  }
+
+  /** A truck's parent: a live dépôt (MAIN / SECONDARY) the user works in. Only trucks have one. */
+  private async checkParent(
+    tx: Tx,
+    w: { id: string; type: string },
+    parentId: string | null,
+    user?: CurrentUserInfo,
+  ): Promise<void> {
+    if (w.type !== WarehouseType.VEHICLE) {
+      if (parentId === null) return;
+      throw new AppException(ErrorCode.WAREHOUSE_INVALID, 'Only a truck belongs to a dépôt', {
+        rule: 'parent_on_vehicle_only',
+      });
+    }
+    if (parentId === null) return;
+    const parent = await tx.warehouse.findFirst({
+      where: { id: parentId, deletedAt: null, type: { not: WarehouseType.VEHICLE } },
+      select: { id: true },
+    });
+    if (!parent) {
+      throw new AppException(ErrorCode.WAREHOUSE_INVALID, 'A truck belongs to a dépôt', {
+        field: 'parentWarehouseId',
+      });
+    }
+    if (user) await this.assertReach(tx, user, parentId);
   }
 
   /** A driver is an active user who sells, and drives one truck only. */

@@ -23,6 +23,11 @@ export interface LedgerEntryInput {
   reason?: string | null;
   refType?: string | null;
   refId?: string | null;
+  /**
+   * The dépôt the entry belongs to (phase 24): the source document's, else the one chosen,
+   * else the dépôt principal. Required so no new entry is written without one.
+   */
+  warehouseId: string;
   /** Only for imports of historical balances; defaults to now. */
   createdAt?: Date;
 }
@@ -76,6 +81,7 @@ export class ClientAccountService {
           reason: e.reason ?? null,
           refType: e.refType ?? null,
           refId: e.refId ?? null,
+          warehouseId: e.warehouseId,
           createdBy: userId,
           ...(e.createdAt ? { createdAt: e.createdAt } : {}),
         },

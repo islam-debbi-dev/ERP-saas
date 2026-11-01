@@ -30,8 +30,9 @@ import {
   bearer,
   catalogOf,
   createTestApp,
-  registerTenant,
+  grantAllWarehouses,
   type RegisteredTenant,
+  registerTenant,
   tamper,
   type TenantCatalog,
   type TestApp,
@@ -110,6 +111,7 @@ describe('tournées, orders and seller sessions (phase 16)', () => {
         },
       }),
     );
+    await grantAllWarehouses(t, user.id);
     const login = await t
       .http()
       .post('/auth/login')

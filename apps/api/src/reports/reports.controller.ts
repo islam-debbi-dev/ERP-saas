@@ -28,7 +28,7 @@ import {
   sellOutQuerySchema,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
-import { CurrentUser, Roles } from '../auth/decorators';
+import { CurrentUser, RequirePermission, Roles } from '../auth/decorators';
 import { requirePermission } from '../auth/permissions';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { AgingService } from '../credit/aging.service';
@@ -99,7 +99,7 @@ export class ReportsController {
 
   // Balance âgée (phase 21), declared before ':name'. Managers only, like the accounts.
   @Get('aging')
-  @Roles(Role.OWNER, Role.MANAGER)
+  @RequirePermission(Permission.REPORTS_FINANCE)
   clientAging(
     @Query(new ZodValidationPipe(agingQuerySchema)) query: AgingQuery,
   ): Promise<AgingReportDto> {
@@ -107,7 +107,7 @@ export class ReportsController {
   }
 
   @Get('supplier-aging')
-  @Roles(Role.OWNER, Role.MANAGER)
+  @RequirePermission(Permission.REPORTS_FINANCE)
   supplierAging(
     @Query(new ZodValidationPipe(agingQuerySchema)) query: AgingQuery,
   ): Promise<AgingReportDto> {
@@ -115,7 +115,7 @@ export class ReportsController {
   }
 
   @Get('aging/export.xlsx')
-  @Roles(Role.OWNER, Role.MANAGER)
+  @RequirePermission(Permission.REPORTS_FINANCE)
   async clientAgingExport(
     @Query(new ZodValidationPipe(agingQuerySchema)) query: AgingQuery,
     @CurrentUser() user: CurrentUserInfo,
@@ -125,7 +125,7 @@ export class ReportsController {
   }
 
   @Get('supplier-aging/export.xlsx')
-  @Roles(Role.OWNER, Role.MANAGER)
+  @RequirePermission(Permission.REPORTS_FINANCE)
   async supplierAgingExport(
     @Query(new ZodValidationPipe(agingQuerySchema)) query: AgingQuery,
     @CurrentUser() user: CurrentUserInfo,
@@ -161,6 +161,7 @@ export class ReportsController {
   }
 
   @Get(':name')
+  @RequirePermission(Permission.REPORTS_VIEW)
   run(
     @Param('name', new ZodValidationPipe(reportNameSchema)) name: ReportName,
     @Query(new ZodValidationPipe(reportQuerySchema)) query: ReportQuery,
@@ -170,6 +171,7 @@ export class ReportsController {
   }
 
   @Get(':name/export.xlsx')
+  @RequirePermission(Permission.REPORTS_VIEW)
   async export(
     @Param('name', new ZodValidationPipe(reportNameSchema)) name: ReportName,
     @Query(new ZodValidationPipe(reportQuerySchema)) query: ReportQuery,

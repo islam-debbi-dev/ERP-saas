@@ -23,6 +23,7 @@ import { tenantContext } from '../common/tenant-context';
 import { Prisma, type User } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
+import { UserAccessService } from './user-access.service';
 
 type UserRow = User & {
   sessions: { lastUsedAt: Date }[];
@@ -61,7 +62,8 @@ function unusablePassword(): Promise<string> {
 
 /**
  * Staff accounts of the company. Users are never deleted: a deactivated user keeps
- * his name on every document and audit row. Only the OWNER writes here.
+ * his name on every document and audit row. The OWNER writes here, and anyone he granted
+ * USERS_MANAGE (phase 24), who never touches an owner nor gives more than he has.
  *
  * OWNER rules: there is always at least one active OWNER; an OWNER's role and
  * activation are his own business (other owners cannot demote or deactivate him);
@@ -75,6 +77,7 @@ export class UsersService {
     private readonly audit: AuditService,
     private readonly billing: BillingService,
     private readonly scope: ScopeService,
+    private readonly access: UserAccessService,
   ) {}
 
   async list(): Promise<UserDto[]> {
@@ -91,7 +94,8 @@ export class UsersService {
     return toDto(u);
   }
 
-  async invite(input: InviteUserInput): Promise<InviteResultDto> {
+  async invite(input: InviteUserInput, actor: CurrentUserInfo): Promise<InviteResultDto> {
+    if (input.role === Role.OWNER) assertOwnerActor(actor);
     const passwordHash =
       input.mode === 'PASSWORD' && input.password
         ? await hashPassword(input.password)
@@ -116,6 +120,7 @@ export class UsersService {
           },
         });
         const link = input.mode === 'LINK' ? await this.auth.createInvitation(tx, user.id) : null;
+        await this.access.grantDefaults(tx, user.id, actor);
         await this.audit.log(tx, {
           action: 'USER_INVITED',
           entity: 'User',
@@ -143,6 +148,7 @@ export class UsersService {
     await this.uniqueGuard(() =>
       this.prisma.db.$transaction(async (tx) => {
         const before = await this.lockUser(tx, id);
+        if (before.role === Role.OWNER || input.role === Role.OWNER) assertOwnerActor(actor);
         if (input.role !== before.role) await this.checkRoleChange(tx, before, actor);
         if (
           input.managerId !== undefined &&
@@ -173,13 +179,28 @@ export class UsersService {
     return this.get(id);
   }
 
-  async setPermissions(id: string, input: UserPermissionsInput): Promise<UserDto> {
+  async setPermissions(
+    id: string,
+    input: UserPermissionsInput,
+    actor: CurrentUserInfo,
+  ): Promise<UserDto> {
     await this.prisma.db.$transaction(async (tx) => {
       const before = await this.lockUser(tx, id);
       if (before.role === Role.OWNER) {
         throw new AppException(ErrorCode.FORBIDDEN, 'An owner always has every permission', {
           rule: 'owner_has_all',
         });
+      }
+      // A new grant must be a right the actor has himself (the owner has them all).
+      const above = input.grants.filter(
+        (g) => !before.permissionGrants.includes(g) && !actor.permissions.includes(g),
+      );
+      if (above.length > 0) {
+        throw new AppException(
+          ErrorCode.ACCESS_ABOVE_GRANTER,
+          'You cannot grant a permission you do not have',
+          { permissions: above },
+        );
       }
       await tx.user.update({
         where: { id },
@@ -232,9 +253,10 @@ export class UsersService {
     return this.get(id);
   }
 
-  async reactivate(id: string): Promise<UserDto> {
+  async reactivate(id: string, actor: CurrentUserInfo): Promise<UserDto> {
     await this.prisma.db.$transaction(async (tx) => {
       const user = await this.lockUser(tx, id);
+      if (user.role === Role.OWNER) assertOwnerActor(actor);
       if (!user.deletedAt) return;
       await this.assertUserSlot(tx);
       await tx.user.update({
@@ -271,6 +293,7 @@ export class UsersService {
         throw new AppException(ErrorCode.USER_DEACTIVATED, 'Reactivate this user first');
       }
       if (user.role === Role.OWNER && user.id !== actor.id) {
+        assertOwnerActor(actor);
         throw new AppException(ErrorCode.FORBIDDEN, 'Only an owner resets his own password', {
           rule: 'owner_protected',
         });
@@ -475,4 +498,12 @@ function pick(u: User) {
     role: u.role,
     managerId: u.managerId,
   };
+}
+
+/** Owner accounts and the OWNER role are the owner's business only (phase 24). */
+function assertOwnerActor(actor: CurrentUserInfo): void {
+  if (actor.role === Role.OWNER) return;
+  throw new AppException(ErrorCode.FORBIDDEN, 'Only an owner can do this to an owner account', {
+    rule: 'owner_protected',
+  });
 }

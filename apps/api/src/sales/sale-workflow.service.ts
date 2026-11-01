@@ -40,6 +40,7 @@ import { GeoCheckService } from '../geo/geo-check.service';
 import { Prisma } from '../generated/prisma/client';
 import { PaymentsService } from '../payments/payments.service';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { ScopeService } from '../sales-force/scope.service';
 import { StockService } from '../stock/stock.service';
 import { timbreRuleOf } from '../tenants/timbre-rule';
 import { fromIsoDate } from './sale.mapper';
@@ -68,6 +69,7 @@ export class SaleWorkflowService {
     private readonly warehouses: WarehousesService,
     private readonly geo: GeoCheckService,
     private readonly packaging: PackagingLedgerService,
+    private readonly scope: ScopeService,
   ) {}
 
   async validate(
@@ -199,6 +201,14 @@ export class SaleWorkflowService {
     const lines = carryPromotions(snapped, sale.lines);
     // The chosen dépôt, else the seller's truck, else MAIN (phase 15).
     const warehouseId = await this.warehouses.forSale(tx, sale.warehouseId, sale.sellerId);
+    // Phase 24: only in a dépôt the user works in, and only what that dépôt sells.
+    await this.scope.assertWarehouse(tx, user, warehouseId);
+    await this.warehouses.assertSells(
+      tx,
+      user,
+      warehouseId,
+      sale.lines.map((l) => l.productId),
+    );
     // Locks the stock rows first (see the class comment) and gives the CUMP for margins.
     const levels = await this.stock.lockedLevels(
       tx,
@@ -290,6 +300,7 @@ export class SaleWorkflowService {
           label: number,
           refType: 'Sale',
           refId: id,
+          warehouseId,
         });
       }
       if (paid.gt(0)) {
@@ -300,6 +311,7 @@ export class SaleWorkflowService {
           label: number,
           refType: 'Sale',
           refId: id,
+          warehouseId,
         });
       }
       await this.account.post(tx, entries);
@@ -321,6 +333,7 @@ export class SaleWorkflowService {
         receivedBy: user.id,
         // The money is collected by the sale's seller when he takes it himself.
         collectedBy: opts.collectedBy ?? (user.role === Role.SELLER ? user.id : null),
+        warehouseId,
       });
     }
 
@@ -452,6 +465,7 @@ export class SaleWorkflowService {
               refIds: sale.returns.map((r) => r.id),
             }),
           );
+          const ledgerWarehouseId = sale.warehouseId ?? (await this.warehouses.defaultId(tx));
           const entries: LedgerEntryInput[] = [saleNet, paidBack.negated()]
             .filter((net) => !net.isZero())
             .map((net) => ({
@@ -462,6 +476,7 @@ export class SaleWorkflowService {
               reason,
               refType: 'Sale',
               refId: id,
+              warehouseId: ledgerWarehouseId,
             }));
           await this.account.post(tx, entries);
         }
@@ -573,6 +588,7 @@ export class SaleWorkflowService {
       const warehouseId = await this.warehouses.resolve(tx, input.warehouseId, () =>
         Promise.resolve(sale.warehouseId),
       );
+      await this.scope.assertWarehouse(tx, user, warehouseId);
       const number = await this.numbering.next(tx, tenantId, DocType.AV);
       const avoir = await tx.saleReturn.create({
         data: {
@@ -644,6 +660,7 @@ export class SaleWorkflowService {
             reason: input.reason,
             refType: 'SaleReturn',
             refId: avoir.id,
+            warehouseId,
           },
         ]);
       }
@@ -801,6 +818,10 @@ export class SaleWorkflowService {
       const blPaid = bls.reduce((s, b) => s.plus(b.paidAmount.toString()), money(0));
       const diff = totals.totalTtc.minus(blTtc);
       const number = await this.numbering.next(tx, tenantId, DocType.FAC);
+      const factureWarehouseId =
+        new Set(bls.map((b) => b.warehouseId)).size === 1 && first.warehouseId
+          ? first.warehouseId
+          : await this.warehouses.defaultId(tx);
       const facture = await tx.sale.create({
         data: {
           tenantId,
@@ -831,10 +852,7 @@ export class SaleWorkflowService {
           // The BLs' seller when they share one; reports count the BLs, not the facture.
           sellerId: new Set(bls.map((b) => b.sellerId)).size === 1 ? first.sellerId : null,
           // No stock effect (the BLs moved it): their dépôt when they share one, else MAIN.
-          warehouseId:
-            new Set(bls.map((b) => b.warehouseId)).size === 1 && first.warehouseId
-              ? first.warehouseId
-              : await this.warehouses.defaultId(tx),
+          warehouseId: factureWarehouseId,
           validatedBy: user.id,
           validatedAt: new Date(),
         },
@@ -883,6 +901,7 @@ export class SaleWorkflowService {
             reason: 'TVA rounding',
             refType: 'Sale',
             refId: facture.id,
+            warehouseId: factureWarehouseId,
           },
         ]);
       }

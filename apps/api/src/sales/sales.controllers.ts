@@ -18,12 +18,14 @@ import {
   createSaleSchema,
   type InvoiceFromBlsInput,
   invoiceFromBlsSchema,
+  Permission,
   type PricePreviewDto,
   type PricePreviewQuery,
   pricePreviewQuerySchema,
   type QuickSaleInput,
   quickSaleSchema,
-  Role,
+  type ReassignSellerInput,
+  reassignSellerSchema,
   type SaleDto,
   type SaleListQuery,
   saleListQuerySchema,
@@ -35,19 +37,13 @@ import {
   updateSaleSchema,
   type ValidateSaleInput,
   validateSaleSchema,
-  type ReassignSellerInput,
-  reassignSellerSchema,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
-import { CurrentUser, Roles } from '../auth/decorators';
+import { CurrentUser, RequirePermission } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { Idempotent } from '../idempotency/idempotent.decorator';
 import { SaleWorkflowService } from './sale-workflow.service';
 import { SalesService } from './sales.service';
-
-const MANAGERS = [Role.OWNER, Role.MANAGER];
-/** Who sells. Price overrides, credit overrides and cancellations are checked in the service. */
-const SELLERS = [...MANAGERS, Role.SUPERVISOR, Role.SELLER];
 
 @Controller('sales')
 export class SalesController {
@@ -57,6 +53,7 @@ export class SalesController {
   ) {}
 
   @Get()
+  @RequirePermission(Permission.SALES_VIEW)
   list(
     @Query(new ZodValidationPipe(saleListQuerySchema)) query: SaleListQuery,
     @CurrentUser() user: CurrentUserInfo,
@@ -66,6 +63,7 @@ export class SalesController {
 
   // Declared before ':id'.
   @Get('price-preview')
+  @RequirePermission(Permission.SALES_VIEW)
   pricePreview(
     @Query(new ZodValidationPipe(pricePreviewQuerySchema)) query: PricePreviewQuery,
     @CurrentUser() user: CurrentUserInfo,
@@ -74,6 +72,7 @@ export class SalesController {
   }
 
   @Get(':id')
+  @RequirePermission(Permission.SALES_VIEW)
   get(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: CurrentUserInfo,
@@ -83,7 +82,7 @@ export class SalesController {
 
   /** Change the seller of a validated sale (phase 14, SALE_REASSIGN_SELLER + reason). */
   @Patch(':id/seller')
-  @Roles(...SELLERS)
+  @RequirePermission(Permission.SALES_CREATE)
   reassignSeller(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(reassignSellerSchema)) body: ReassignSellerInput,
@@ -93,7 +92,7 @@ export class SalesController {
   }
 
   @Post()
-  @Roles(...SELLERS)
+  @RequirePermission(Permission.SALES_CREATE)
   create(
     @Body(new ZodValidationPipe(createSaleSchema)) body: CreateSaleInput,
     @CurrentUser() user: CurrentUserInfo,
@@ -102,8 +101,8 @@ export class SalesController {
   }
 
   @Post('quick')
+  @RequirePermission(Permission.SALES_CREATE)
   @Idempotent()
-  @Roles(...SELLERS)
   quick(
     @Body(new ZodValidationPipe(quickSaleSchema)) body: QuickSaleInput,
     @CurrentUser() user: CurrentUserInfo,
@@ -112,7 +111,7 @@ export class SalesController {
   }
 
   @Put(':id')
-  @Roles(...SELLERS)
+  @RequirePermission(Permission.SALES_CREATE)
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(updateSaleSchema)) body: UpdateSaleInput,
@@ -122,8 +121,8 @@ export class SalesController {
   }
 
   @Post(':id/validate')
+  @RequirePermission(Permission.SALES_CREATE)
   @Idempotent()
-  @Roles(...SELLERS)
   @HttpCode(HttpStatus.OK)
   validate(
     @Param('id', ParseUUIDPipe) id: string,
@@ -134,8 +133,8 @@ export class SalesController {
   }
 
   @Post(':id/cancel')
+  @RequirePermission(Permission.SALES_CREATE)
   @Idempotent()
-  @Roles(...SELLERS)
   @HttpCode(HttpStatus.OK)
   cancel(
     @Param('id', ParseUUIDPipe) id: string,
@@ -146,8 +145,8 @@ export class SalesController {
   }
 
   @Post(':id/returns')
+  @RequirePermission(Permission.SALES_RETURN)
   @Idempotent()
-  @Roles(...MANAGERS)
   returns(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(saleReturnSchema)) body: SaleReturnInput,
@@ -162,8 +161,8 @@ export class InvoicesController {
   constructor(private readonly workflow: SaleWorkflowService) {}
 
   @Post('from-bls')
+  @RequirePermission(Permission.SALES_CREATE)
   @Idempotent()
-  @Roles(...SELLERS)
   fromBls(
     @Body(new ZodValidationPipe(invoiceFromBlsSchema)) body: InvoiceFromBlsInput,
     @CurrentUser() user: CurrentUserInfo,

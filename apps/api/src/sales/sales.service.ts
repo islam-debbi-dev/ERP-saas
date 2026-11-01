@@ -73,10 +73,20 @@ export class SalesService {
     const sellerId = fromOrder
       ? fromOrder.sellerId
       : ((await this.resolveSeller(tx, user, input.sellerId, undefined)) ?? null);
-    // Checked now (exists, module); the final choice is made at validation.
+    // Checked now (exists, module); the final choice is made at validation. A user who
+    // works in one dépôt only sells from it (phase 24).
     const warehouseId = input.warehouseId
       ? await this.warehouses.resolve(tx, input.warehouseId)
-      : null;
+      : await this.scope.onlyWarehouse(user, tx);
+    if (warehouseId) {
+      await this.scope.assertWarehouse(tx, user, warehouseId);
+      await this.warehouses.assertSells(
+        tx,
+        user,
+        warehouseId,
+        input.lines.map((l) => l.productId),
+      );
+    }
     const priceLevelId = await resolvePriceLevel(tx, input.clientId);
     const assujetti = await this.assujettiTva(tx);
     // An order's BL keeps the order's lines as they are, free lines included (phase 20).
@@ -155,6 +165,16 @@ export class SalesService {
       const warehouseId = input.warehouseId
         ? await this.warehouses.resolve(tx, input.warehouseId)
         : input.warehouseId;
+      const lineWarehouseId = warehouseId === undefined ? current.warehouseId : warehouseId;
+      if (lineWarehouseId) {
+        await this.scope.assertWarehouse(tx, user, lineWarehouseId);
+        await this.warehouses.assertSells(
+          tx,
+          user,
+          lineWarehouseId,
+          input.lines.map((l) => l.productId),
+        );
+      }
       const priceLevelId = await resolvePriceLevel(tx, input.clientId);
       const assujetti = await this.assujettiTva(tx);
       const { lines, totals, overrides, promoOverrides } = await this.pricing.priceLines(
@@ -275,10 +295,13 @@ export class SalesService {
     return this.get(id, user);
   }
 
-  /** 404 unless the sale is in the user's scope (phase 14). Used by every write on a sale. */
+  /**
+   * 404 unless the sale is in the user's scope (phase 14: seller and team; phase 24: his
+   * dépôts). Used by every write on a sale.
+   */
   async assertInScope(tx: Tx, user: CurrentUserInfo, id: string): Promise<void> {
     const scope = await this.scope.of(user, tx);
-    if (!scope.documentUserIds) return;
+    if (!scope.documentUserIds && !scope.warehouseIds) return;
     const s = await tx.sale.findFirst({
       where: { id, ...this.scope.saleWhere(scope) },
       select: { id: true },
@@ -307,6 +330,7 @@ export class SalesService {
               OR: [{ sellerId: query.sellerId }, { sellerId: null, createdBy: query.sellerId }],
             }
           : {},
+        query.warehouseId ? { warehouseId: query.warehouseId } : {},
       ],
       ...(query.type ? { type: query.type } : {}),
       ...(query.status ? { status: query.status } : {}),
@@ -480,11 +504,16 @@ export class SalesService {
 export async function lockSale(
   tx: Tx,
   id: string,
-): Promise<{ status: SaleStatus; version: number; sellerId: string | null }> {
+): Promise<{
+  status: SaleStatus;
+  version: number;
+  sellerId: string | null;
+  warehouseId: string | null;
+}> {
   const rows = await tx.$queryRaw<
-    { status: SaleStatus; version: number; sellerId: string | null }[]
+    { status: SaleStatus; version: number; sellerId: string | null; warehouseId: string | null }[]
   >`
-    SELECT status, version, "sellerId" FROM sales
+    SELECT status, version, "sellerId", "warehouseId" FROM sales
     WHERE id = ${id}::uuid AND "tenantId" = ${tenantContext.requireTenantId()}::uuid
     FOR UPDATE`;
   const row = rows[0];

@@ -26,6 +26,7 @@ import { FeaturesService } from '../billing/features.service';
 import { CatalogService } from '../catalog/catalog.service';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
+import { ScopeService } from '../sales-force/scope.service';
 import { APP_CONFIG, type AppConfig } from '../config/app-config';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
@@ -95,6 +96,7 @@ export class AuthService {
     private readonly limiter: LoginLimiter,
     private readonly billing: BillingService,
     private readonly features: FeaturesService,
+    private readonly scope: ScopeService,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
@@ -510,12 +512,13 @@ export class AuthService {
   }
 
   async me(user: CurrentUserInfo): Promise<AuthUser> {
-    const [tenant, { edition, features }] = await Promise.all([
+    const [tenant, { edition, features }, units] = await Promise.all([
       this.prisma.db.tenant.findUniqueOrThrow({
         where: { id: user.tenantId },
         select: { name: true },
       }),
       this.features.of(user.tenantId),
+      this.scope.warehouses(user),
     ]);
     return {
       id: user.id,
@@ -528,6 +531,8 @@ export class AuthService {
       permissions: user.permissions,
       edition,
       features,
+      warehouseIds: units.warehouseIds,
+      statsWarehouseIds: units.statsWarehouseIds,
       mustChangePassword: user.mustChangePassword,
       ...(user.impersonatedBy ? { impersonating: true } : {}),
     };
@@ -587,6 +592,17 @@ export class AuthService {
       role: user.role,
     });
     const edition = user.tenant.subscription?.edition ?? Edition.ESSENTIEL;
+    const permissions = effectivePermissions(
+      user.role,
+      user.permissionGrants,
+      user.permissionRevokes,
+    );
+    const units = await this.scope.warehouses({
+      id: user.id,
+      tenantId: user.tenantId,
+      role: user.role,
+      permissions,
+    });
     return {
       accessToken,
       expiresIn: this.tokens.accessTtlSeconds,
@@ -599,9 +615,11 @@ export class AuthService {
         role: user.role,
         tenantId: user.tenantId,
         tenantName: user.tenant.name,
-        permissions: effectivePermissions(user.role, user.permissionGrants, user.permissionRevokes),
+        permissions,
         edition,
         features: effectiveFeatures(edition, user.tenant.featureGrants, user.tenant.featureRevokes),
+        warehouseIds: units.warehouseIds,
+        statsWarehouseIds: units.statsWarehouseIds,
         mustChangePassword: user.mustChangePassword,
       },
     };

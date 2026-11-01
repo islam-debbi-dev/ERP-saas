@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CreditModule } from '../credit/credit.module';
 import { SalesForceModule } from '../sales-force/sales-force.module';
+import { StockModule } from '../stock/stock.module';
 import { ClientAccountService } from './client-account.service';
 import { ClientLocationController, LocationRequestsController } from './client-location.controller';
 import { ClientLocationService } from './client-location.service';
@@ -9,7 +10,7 @@ import { ClientsService } from './clients.service';
 
 /** Clients and their account. Sales and versements use ClientAccountService only. */
 @Module({
-  imports: [CreditModule, SalesForceModule],
+  imports: [CreditModule, SalesForceModule, StockModule],
   controllers: [ClientsController, ClientLocationController, LocationRequestsController],
   providers: [ClientsService, ClientAccountService, ClientLocationService],
   exports: [ClientAccountService, ClientsService, ClientLocationService],
