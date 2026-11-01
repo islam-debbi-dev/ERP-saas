@@ -166,7 +166,7 @@ function Detail({ id }: { id: string }) {
       </Alert>
 
       <Card>
-        <CardContent className="grid gap-2 pt-6 text-sm sm:grid-cols-3">
+        <CardContent className="grid gap-2 text-sm sm:grid-cols-3">
           <p>
             <span className="text-muted-foreground">{t('arrivalDate')}: </span>
             {f.arrivalDate
