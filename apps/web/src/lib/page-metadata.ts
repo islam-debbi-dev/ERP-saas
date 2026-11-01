@@ -5,6 +5,7 @@ type TitleKey =
   | 'nav.dashboard'
   | 'nav.products'
   | 'nav.purchases'
+  | 'nav.importFiles'
   | 'nav.sales'
   | 'nav.clients'
   | 'nav.versements'
