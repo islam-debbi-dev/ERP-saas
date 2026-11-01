@@ -29,6 +29,13 @@ Each phase is one branch, one PR and one Claude Code session. Prompts live in [`
 | 20 | [Mode distributeur](prompts/phase-20-distribution-mode.md) | Promotions & UG, emballages consignés ledger, sell-out report par marque | 14, 15, 16 | v2 |
 | 21 | [Crédit avancé](prompts/phase-21-credit-advanced.md) | Supplier ledger + règlements, client aging, relances WhatsApp, share links, cheques à échéance | 13b | v1.1 |
 | 22 | [Importateur](prompts/phase-22-import-landed-cost.md) | Dossiers d'importation, devises + taux, coût de revient (landed cost) into CUMP, late costs | 13b, 21 | v2 |
+| 23 | [Bascule VPS](prompts/phase-23-vps-cutover.md) | Production moves from Vercel + Neon to the VPS stack: env audit, single-runner jobs, verified data move | 12, 22 | v2 |
+| 24 | [Dépôts: équipes et accès](prompts/phase-24-warehouse-teams-access.md) | Dépôt = business unit (brands, categories, team), module permissions, OPERATE / VIEW_STATS access per dépôt, dépôt switcher | 15, 23 | v2 |
+| 25 | [Charges et loyers](prompts/phase-25-expenses-rent.md) | Dépenses (ledger-style), baux with rent prorata, charges report | 24 | v2 |
+| 26 | [Vue d'ensemble](prompts/phase-26-overview-dashboard.md) | One card per dépôt: CA, cash in/out, marge, charges, résultat net, créances, stock | 24, 25 | v2 |
+| 27 | [Notifications WhatsApp](prompts/phase-27-whatsapp-notifications.md) | Tenant's own WhatsApp Cloud API number, outbox, cash in / out alerts, daily summary | 23, 25 | v2 |
+| 28 | [Relances automatiques](prompts/phase-28-auto-reminders.md) | Scheduled debtor reminders on WhatsApp, per-client exclude / pause, preview and log | 21, 27 | v2 |
+| 29 | [Édition mono-société](prompts/phase-29-single-company-edition.md) | `DEPLOYMENT_MODE=single`, signed license, installer for one company on its own VPS | 28 | v2 |
 
 **MVP = phases 1 to 12b.** Put the pilot grossiste on it after phase 12b (traders open it on their phones); phase 13 can follow during the free pilot month.
 
@@ -46,6 +53,12 @@ Every phase that adds a screen follows [`ui.md`](ui.md): phone first, RTL, Playw
 - 21 is core (supplier debts and aging are wanted by every plan), so it comes before the distributor phases despite its number.
 - 17 and 18 only need 14 and work from the web; do them early if a distributor wants bonuses or GPS before the mobile app.
 - 19 (Flutter) waits until the API it needs (14–18) is stable and tested from the web.
+
+## After phase 22 (plan of 2026-11-01)
+**23 → 24 → 25 → 26 → 27 → 28 → 29.**
+- 23 first: every later phase assumes a long-running server (jobs, PDFs) and the data on the VPS.
+- Decisions taken with islam: one client account across dépôts; one role per user; each company connects and pays for its own WhatsApp number; the single-company edition comes last and is sold without yearly maintenance.
+- Start Meta Business verification for a pilot company early: it takes days and blocks 27–28.
 
 ## v1.1 backlog not covered by a phase yet
 - Price history and bulk price update (by % or by category).
