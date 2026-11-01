@@ -70,6 +70,7 @@ Every phase that adds a screen follows [`ui.md`](ui.md): phone first, RTL, Playw
 - TOTP replay protection (remember the last used step per admin) and admin 2FA enrolment from the UI.
 
 ## Later
+- **Online shop (phase 30 when needed)**: a separate storefront repo (Next.js) that reads catalog, prices and stock from the ERP and sends orders into it as `Order` with source WEB (phase 16 flow: confirm → BL). ERP side: public API with hashed per-tenant API keys, catalog / stock endpoints, idempotent `POST` order, status webhook. The same API can serve WooCommerce or Shopify connectors.
 - Flutter owner dashboard app (the vendeur app is phase 19).
 - Flutter desktop caisse with offline mode (SQLite/drift, operation queue, idempotent resync).
 - CRM (tasks, notes per client; visits are phase 16).
