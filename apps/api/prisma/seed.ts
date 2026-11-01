@@ -143,6 +143,19 @@ async function main(): Promise<void> {
           role: 'SELLER',
         },
       });
+      // Phase 24 (MULTI_UNIT): the demo seller works in every dépôt of the company (the
+      // dépôt principal first, as signup creates it).
+      await tx.$executeRaw`
+        INSERT INTO warehouses ("id", "tenantId", "name", "type", "isDefault", "updatedAt")
+        VALUES (gen_random_uuid(), ${tenant.id}::uuid, 'Dépôt principal', 'MAIN', true, CURRENT_TIMESTAMP)
+        ON CONFLICT DO NOTHING`;
+      await tx.$executeRaw`
+        INSERT INTO user_warehouse_access ("id", "tenantId", "userId", "warehouseId", "level", "grantedAt")
+        SELECT gen_random_uuid(), w."tenantId", ${DEMO_SELLER_ID}::uuid, w.id, 'OPERATE', CURRENT_TIMESTAMP
+        FROM warehouses w
+        WHERE w."tenantId" = ${tenant.id}::uuid AND w.type IN ('MAIN', 'SECONDARY')
+          AND w."deletedAt" IS NULL
+        ON CONFLICT ("userId", "warehouseId") DO NOTHING`;
       const demoClients = [
         {
           id: '00000000-0000-4000-8000-0000000016c1',
