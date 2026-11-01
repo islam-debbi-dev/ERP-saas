@@ -4,7 +4,7 @@ import { MoreHorizontal, Plus, Users } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Feature, formatPhone, Role, type UserDto } from '@erp/shared';
+import { Feature, formatPhone, Permission, Role, type UserDto } from '@erp/shared';
 import { TeamTree } from '@/components/sales-force/team-tree';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
@@ -36,7 +36,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useAuth, useFeature } from '@/lib/auth';
+import { useAuth, useFeature, usePermission } from '@/lib/auth';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { useSetActive, useUsers } from '@/lib/users';
 import {
@@ -52,7 +52,10 @@ type Open =
   | { kind: 'edit' | 'permissions' | 'access' | 'reset' | 'deactivate'; user: UserDto }
   | null;
 
-/** Paramètres > Utilisateurs. Managers see the list; only the owner changes it. */
+/**
+ * Paramètres > Utilisateurs. Managers see the list; the owner, or anyone granted
+ * USERS_MANAGE (phase 24), changes it. A non-owner never acts on an owner (the API refuses).
+ */
 export function UsersPage() {
   const t = useTranslations('users');
   const tr = useTranslations('roles');
@@ -61,6 +64,7 @@ export function UsersPage() {
   const { state } = useAuth();
   const me = state.user;
   const owner = me?.role === Role.OWNER;
+  const canManage = usePermission(Permission.USERS_MANAGE);
   const salesForce = useFeature(Feature.SALES_FORCE);
   const multiUnit = useFeature(Feature.MULTI_UNIT);
   const tu = useTranslations('multiUnit');
@@ -84,7 +88,7 @@ export function UsersPage() {
         title={t('title')}
         description={t('subtitle')}
         actions={
-          owner ? (
+          canManage ? (
             <Button onClick={() => setOpen({ kind: 'invite' })}>
               <Plus aria-hidden />
               {t('invite')}
@@ -111,7 +115,7 @@ export function UsersPage() {
                 {salesForce ? <TableHead>{t('colManager')}</TableHead> : null}
                 <TableHead>{t('colStatus')}</TableHead>
                 <TableHead>{t('colLastActivity')}</TableHead>
-                {owner ? <TableHead className="w-10" /> : null}
+                {canManage ? <TableHead className="w-10" /> : null}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -169,7 +173,9 @@ export function UsersPage() {
                       ? format.relativeTime(new Date(u.lastActivityAt), new Date())
                       : '—'}
                   </TableCell>
-                  {owner ? (
+                  {canManage && !owner && u.role === Role.OWNER ? (
+                    <TableCell data-cell="actions" />
+                  ) : canManage ? (
                     <TableCell data-cell="actions">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

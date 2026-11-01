@@ -67,7 +67,14 @@ const MANAGER_ROLES = new Set<Role>([Role.OWNER, Role.MANAGER, Role.SUPERVISOR])
 
 function useRoleChoices(current?: Role): Role[] {
   const salesForce = useFeature(Feature.SALES_FORCE);
-  return INVITE_ROLES.filter((r) => salesForce || !SALES_FORCE_ROLES.has(r) || r === current);
+  // Only an owner makes someone owner (phase 24: USERS_MANAGE can be granted to others).
+  const { state } = useAuth();
+  const owner = state.user?.role === Role.OWNER;
+  return INVITE_ROLES.filter(
+    (r) =>
+      (salesForce || !SALES_FORCE_ROLES.has(r) || r === current) &&
+      (owner || r !== Role.OWNER || r === current),
+  );
 }
 
 /** Who the user reports to (phase 14): an active owner, manager or supervisor, not himself. */

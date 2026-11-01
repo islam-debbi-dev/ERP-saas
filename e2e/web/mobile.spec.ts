@@ -104,6 +104,8 @@ interface Ids {
   importFileId: string;
   /** A dépôt (SECONDARY) for its page (phase 24, MULTI_UNIT). */
   warehouseId: string;
+  /** A seller whose Dépôts dialog is opened (phase 24). */
+  sellerName: string;
   productReference: string;
   tenantId: string;
 }
@@ -190,6 +192,19 @@ async function prepareIds(f: Fixture): Promise<Ids> {
       body: { name: uniq('Dépôt Vaisselle '), type: 'SECONDARY' },
     })
   ).body;
+  // ...and a seller, whose row on the users page has the Dépôts action.
+  const sellerName = uniq('Vendeur dépôts ');
+  await call('/users/invite', {
+    method: 'POST',
+    token,
+    body: {
+      fullName: sellerName,
+      email: `${uniq('depots-').toLowerCase()}@audit.test`,
+      role: 'SELLER',
+      mode: 'PASSWORD',
+      password: 'Audit1234!',
+    },
+  });
   // Phase 16 (TOURNEES): a route of the owner running every day with the long-named client,
   // so "Ma tournée" has a stop, and a confirmed bon de commande to deliver.
   const route = (
@@ -380,6 +395,7 @@ async function prepareIds(f: Fixture): Promise<Ids> {
     inventoryId: inventory.id,
     transferId: transfer.id,
     warehouseId: depot.id,
+    sellerName,
     routeId: route.id,
     orderId: order.id,
     planId: plan.id,
@@ -541,6 +557,25 @@ for (const locale of LOCALES) {
         await page.waitForTimeout(400); // the sheet slides in
         await expectOnScreen(page, '[role="dialog"] button:last-of-type');
         await check(page, '/stock/depots/[id]/marques', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+      });
+
+      await test.step("a user's Dépôts opens as a sheet with its save button on screen", async () => {
+        const path = '/parametres/utilisateurs';
+        await page.evaluate((to) => {
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
+        }, path);
+        await page.waitForURL((url) => url.pathname === path);
+        await settle(page);
+        const actions = (m['users']?.['actions'] ?? '').replace('{name}', v.sellerName);
+        await page.getByRole('button', { name: actions }).click();
+        await page.getByRole('menuitem', { name: m['multiUnit']?.['menuAccess'] }).click();
+        await page.locator('[role="dialog"] select').first().waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        await expectOnScreen(page, '[role="dialog"] button:last-of-type');
+        await check(page, '/parametres/utilisateurs/depots', locale, results, { fullPage: false });
         await page.keyboard.press('Escape');
       });
 

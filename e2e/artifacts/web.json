@@ -202,7 +202,7 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 36988,
+                  "duration": 37352,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -210,67 +210,67 @@
                   "steps": [
                     {
                       "title": "/achats",
-                      "duration": 334
+                      "duration": 336
                     },
                     {
                       "title": "/achats/[id]",
-                      "duration": 385
+                      "duration": 400
                     },
                     {
                       "title": "/achats/dossiers",
-                      "duration": 358
+                      "duration": 327
                     },
                     {
                       "title": "/achats/dossiers/[id]",
-                      "duration": 405
+                      "duration": 379
                     },
                     {
                       "title": "/achats/fournisseurs",
-                      "duration": 284
+                      "duration": 261
                     },
                     {
                       "title": "/achats/fournisseurs/[id]",
-                      "duration": 312
+                      "duration": 299
                     },
                     {
                       "title": "/achats/nouveau",
-                      "duration": 342
+                      "duration": 327
                     },
                     {
                       "title": "/clients",
-                      "duration": 315
+                      "duration": 285
                     },
                     {
                       "title": "/clients/[id]",
-                      "duration": 423
+                      "duration": 394
                     },
                     {
                       "title": "/clients/[id]/modifier",
-                      "duration": 364
+                      "duration": 345
                     },
                     {
                       "title": "/clients/a-relancer",
-                      "duration": 275
+                      "duration": 250
                     },
                     {
                       "title": "/clients/nouveau",
-                      "duration": 340
+                      "duration": 316
                     },
                     {
                       "title": "/clients/secteurs",
-                      "duration": 272
+                      "duration": 246
                     },
                     {
                       "title": "/commandes",
-                      "duration": 242
+                      "duration": 253
                     },
                     {
                       "title": "/commandes/[id]",
-                      "duration": 312
+                      "duration": 283
                     },
                     {
                       "title": "/livraisons",
-                      "duration": 251
+                      "duration": 231
                     },
                     {
                       "title": "/livraisons/[id]",
@@ -278,222 +278,226 @@
                     },
                     {
                       "title": "/mot-de-passe",
-                      "duration": 245
+                      "duration": 264
                     },
                     {
                       "title": "/operations-signalees",
-                      "duration": 258
+                      "duration": 260
                     },
                     {
                       "title": "/parametres",
-                      "duration": 545
+                      "duration": 615
                     },
                     {
                       "title": "/parametres/abonnement",
-                      "duration": 322
+                      "duration": 861
                     },
                     {
                       "title": "/parametres/import",
-                      "duration": 332
+                      "duration": 328
                     },
                     {
                       "title": "/parametres/journal",
-                      "duration": 766
+                      "duration": 779
                     },
                     {
                       "title": "/parametres/sessions",
-                      "duration": 314
+                      "duration": 292
                     },
                     {
                       "title": "/parametres/utilisateurs",
-                      "duration": 323
+                      "duration": 338
                     },
                     {
                       "title": "/primes",
-                      "duration": 320
+                      "duration": 319
                     },
                     {
                       "title": "/primes/calculs/[id]",
-                      "duration": 355
+                      "duration": 294
                     },
                     {
                       "title": "/primes/objectifs",
-                      "duration": 334
+                      "duration": 350
                     },
                     {
                       "title": "/primes/plans/[id]",
-                      "duration": 306
+                      "duration": 280
                     },
                     {
                       "title": "/produits",
-                      "duration": 279
-                    },
-                    {
-                      "title": "/produits/[id]",
-                      "duration": 427
-                    },
-                    {
-                      "title": "/produits/categories",
-                      "duration": 242
-                    },
-                    {
-                      "title": "/produits/emballages",
-                      "duration": 246
-                    },
-                    {
-                      "title": "/produits/marques",
-                      "duration": 238
-                    },
-                    {
-                      "title": "/produits/nouveau",
-                      "duration": 363
-                    },
-                    {
-                      "title": "/promotions",
-                      "duration": 252
-                    },
-                    {
-                      "title": "/rapports",
-                      "duration": 309
-                    },
-                    {
-                      "title": "/rapports/balance-agee",
-                      "duration": 282
-                    },
-                    {
-                      "title": "/rapports/sell-out",
-                      "duration": 275
-                    },
-                    {
-                      "title": "/stock",
-                      "duration": 1079
-                    },
-                    {
-                      "title": "/stock/[productId]",
-                      "duration": 287
-                    },
-                    {
-                      "title": "/stock/depots",
-                      "duration": 276
-                    },
-                    {
-                      "title": "/stock/depots/[id]",
-                      "duration": 356
-                    },
-                    {
-                      "title": "/stock/inventaires",
-                      "duration": 263
-                    },
-                    {
-                      "title": "/stock/inventaires/[id]",
-                      "duration": 270
-                    },
-                    {
-                      "title": "/stock/transferts",
-                      "duration": 254
-                    },
-                    {
-                      "title": "/stock/transferts/[id]",
-                      "duration": 266
-                    },
-                    {
-                      "title": "/tableau-de-bord",
-                      "duration": 435
-                    },
-                    {
-                      "title": "/tournees",
-                      "duration": 242
-                    },
-                    {
-                      "title": "/tournees/[id]",
-                      "duration": 311
-                    },
-                    {
-                      "title": "/tournees/aujourdhui",
                       "duration": 268
                     },
                     {
-                      "title": "/tournees/cloture",
-                      "duration": 272
+                      "title": "/produits/[id]",
+                      "duration": 412
                     },
                     {
-                      "title": "/tournees/rapports",
+                      "title": "/produits/categories",
+                      "duration": 253
+                    },
+                    {
+                      "title": "/produits/emballages",
+                      "duration": 251
+                    },
+                    {
+                      "title": "/produits/marques",
+                      "duration": 234
+                    },
+                    {
+                      "title": "/produits/nouveau",
+                      "duration": 355
+                    },
+                    {
+                      "title": "/promotions",
+                      "duration": 240
+                    },
+                    {
+                      "title": "/rapports",
+                      "duration": 278
+                    },
+                    {
+                      "title": "/rapports/balance-agee",
+                      "duration": 264
+                    },
+                    {
+                      "title": "/rapports/sell-out",
+                      "duration": 265
+                    },
+                    {
+                      "title": "/stock",
+                      "duration": 1057
+                    },
+                    {
+                      "title": "/stock/[productId]",
                       "duration": 267
                     },
                     {
-                      "title": "/ventes",
+                      "title": "/stock/depots",
+                      "duration": 258
+                    },
+                    {
+                      "title": "/stock/depots/[id]",
+                      "duration": 315
+                    },
+                    {
+                      "title": "/stock/inventaires",
+                      "duration": 249
+                    },
+                    {
+                      "title": "/stock/inventaires/[id]",
+                      "duration": 272
+                    },
+                    {
+                      "title": "/stock/transferts",
+                      "duration": 241
+                    },
+                    {
+                      "title": "/stock/transferts/[id]",
+                      "duration": 256
+                    },
+                    {
+                      "title": "/tableau-de-bord",
+                      "duration": 427
+                    },
+                    {
+                      "title": "/tournees",
+                      "duration": 240
+                    },
+                    {
+                      "title": "/tournees/[id]",
                       "duration": 298
                     },
                     {
+                      "title": "/tournees/aujourdhui",
+                      "duration": 257
+                    },
+                    {
+                      "title": "/tournees/cloture",
+                      "duration": 284
+                    },
+                    {
+                      "title": "/tournees/rapports",
+                      "duration": 272
+                    },
+                    {
+                      "title": "/ventes",
+                      "duration": 286
+                    },
+                    {
                       "title": "/ventes/[id]",
-                      "duration": 317
+                      "duration": 339
                     },
                     {
                       "title": "/ventes/nouvelle",
-                      "duration": 330
+                      "duration": 342
                     },
                     {
                       "title": "/versements",
-                      "duration": 283
+                      "duration": 276
                     },
                     {
                       "title": "new versement opens as a sheet with its save button on screen",
-                      "duration": 921
+                      "duration": 847
                     },
                     {
                       "title": "what a dépôt sells opens as a sheet with its save button on screen",
-                      "duration": 756
+                      "duration": 713
+                    },
+                    {
+                      "title": "a user's Dépôts opens as a sheet with its save button on screen",
+                      "duration": 993
                     },
                     {
                       "title": "new règlement fournisseur opens as a sheet with its save button on screen",
-                      "duration": 785
+                      "duration": 742
                     },
                     {
                       "title": "dossier d'importation: Close on screen, the cost sheet and its submit",
-                      "duration": 1523
+                      "duration": 1525
                     },
                     {
                       "title": "chargement: new transfer sheet, then the entry screen and its Validate",
-                      "duration": 1690
+                      "duration": 1628
                     },
                     {
                       "title": "share link of the relevé: the link and the WhatsApp button on screen",
-                      "duration": 950
+                      "duration": 844
                     },
                     {
                       "title": "bulk assign: select a client, the assign sheet and its button on screen",
-                      "duration": 938
+                      "duration": 911
                     },
                     {
                       "title": "team tree: the users page with the manager column and the teams",
-                      "duration": 311
+                      "duration": 315
                     },
                     {
                       "title": "dashboard: the onboarding checklist fits",
-                      "duration": 417
+                      "duration": 424
                     },
                     {
                       "title": "tournées: visit sheet, deliver dialog and cash closing on screen",
-                      "duration": 2362
+                      "duration": 2287
                     },
                     {
                       "title": "flagged operations: the detail sheet, its map and the review buttons",
-                      "duration": 832
+                      "duration": 787
                     },
                     {
                       "title": "incentives: rule sheet and approve dialog with their buttons on screen",
-                      "duration": 1832
+                      "duration": 1768
                     },
                     {
                       "title": "distribution: promotion sheet, packaging return and sale packaging card",
-                      "duration": 2021
+                      "duration": 1974
                     },
                     {
                       "title": "fast sale: a line, then the total and the validate button on screen",
-                      "duration": 534
+                      "duration": 551
                     }
                   ],
-                  "startTime": "2026-11-01T22:13:25.067Z",
+                  "startTime": "2026-11-01T22:28:38.853Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -503,7 +507,7 @@
           ],
           "id": "e79c838550b25e92508e-c363fb8506d445ccb8af",
           "file": "mobile.spec.ts",
-          "line": 485,
+          "line": 501,
           "column": 3
         },
         {
@@ -522,7 +526,7 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 5412,
+                  "duration": 5147,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -530,26 +534,26 @@
                   "steps": [
                     {
                       "title": "/admin/login",
-                      "duration": 1176
+                      "duration": 1187
                     },
                     {
                       "title": "/inscription",
-                      "duration": 1075
+                      "duration": 1065
                     },
                     {
                       "title": "/invitation/[token]",
-                      "duration": 1010
+                      "duration": 975
                     },
                     {
                       "title": "/login",
-                      "duration": 1062
+                      "duration": 1047
                     },
                     {
                       "title": "/support",
-                      "duration": 1085
+                      "duration": 871
                     }
                   ],
-                  "startTime": "2026-11-01T22:14:03.600Z",
+                  "startTime": "2026-11-01T22:29:17.663Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -559,7 +563,7 @@
           ],
           "id": "e79c838550b25e92508e-310943156c06c1ecdfac",
           "file": "mobile.spec.ts",
-          "line": 841,
+          "line": 876,
           "column": 3
         },
         {
@@ -578,7 +582,7 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 37398,
+                  "duration": 37680,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -586,15 +590,15 @@
                   "steps": [
                     {
                       "title": "/achats",
-                      "duration": 326
+                      "duration": 315
                     },
                     {
                       "title": "/achats/[id]",
-                      "duration": 416
+                      "duration": 387
                     },
                     {
                       "title": "/achats/dossiers",
-                      "duration": 320
+                      "duration": 339
                     },
                     {
                       "title": "/achats/dossiers/[id]",
@@ -602,7 +606,7 @@
                     },
                     {
                       "title": "/achats/fournisseurs",
-                      "duration": 269
+                      "duration": 283
                     },
                     {
                       "title": "/achats/fournisseurs/[id]",
@@ -610,19 +614,19 @@
                     },
                     {
                       "title": "/achats/nouveau",
-                      "duration": 340
+                      "duration": 338
                     },
                     {
                       "title": "/clients",
-                      "duration": 298
+                      "duration": 300
                     },
                     {
                       "title": "/clients/[id]",
-                      "duration": 404
+                      "duration": 421
                     },
                     {
                       "title": "/clients/[id]/modifier",
-                      "duration": 350
+                      "duration": 347
                     },
                     {
                       "title": "/clients/a-relancer",
@@ -630,71 +634,71 @@
                     },
                     {
                       "title": "/clients/nouveau",
-                      "duration": 317
+                      "duration": 319
                     },
                     {
                       "title": "/clients/secteurs",
-                      "duration": 253
-                    },
-                    {
-                      "title": "/commandes",
-                      "duration": 249
-                    },
-                    {
-                      "title": "/commandes/[id]",
-                      "duration": 279
-                    },
-                    {
-                      "title": "/livraisons",
-                      "duration": 239
-                    },
-                    {
-                      "title": "/livraisons/[id]",
-                      "duration": 278
-                    },
-                    {
-                      "title": "/mot-de-passe",
                       "duration": 250
                     },
                     {
+                      "title": "/commandes",
+                      "duration": 241
+                    },
+                    {
+                      "title": "/commandes/[id]",
+                      "duration": 292
+                    },
+                    {
+                      "title": "/livraisons",
+                      "duration": 247
+                    },
+                    {
+                      "title": "/livraisons/[id]",
+                      "duration": 292
+                    },
+                    {
+                      "title": "/mot-de-passe",
+                      "duration": 260
+                    },
+                    {
                       "title": "/operations-signalees",
-                      "duration": 264
+                      "duration": 252
                     },
                     {
                       "title": "/parametres",
-                      "duration": 708
+                      "duration": 731
                     },
                     {
                       "title": "/parametres/abonnement",
-                      "duration": 318
+                      "duration": 327
                     },
                     {
                       "title": "/parametres/import",
-                      "duration": 321
+                      "duration": 325
                     },
                     {
                       "title": "/parametres/journal",
-                      "duration": 779
+                      "duration": 850
                     },
                     {
                       "title": "/parametres/sessions",
-                      "duration": 320
+                      "duration": 336
                     },
                     {
                       "title": "/parametres/utilisateurs",
-                      "duration": 300
+                      "duration": 307
                     },
                     {
                       "title": "/primes",
-                      "duration": 289
+                      "duration": 287
                     },
                     {
                       "title": "/primes/calculs/[id]",
-                      "duration": 298
+                      "duration": 286
                     },
                     {
                       "title": "/primes/objectifs",
-                      "duration": 321
+                      "duration": 332
                     },
                     {
                       "title": "/primes/plans/[id]",
@@ -706,170 +710,174 @@
                     },
                     {
                       "title": "/produits/[id]",
-                      "duration": 417
+                      "duration": 430
                     },
                     {
                       "title": "/produits/categories",
-                      "duration": 253
+                      "duration": 254
                     },
                     {
                       "title": "/produits/emballages",
-                      "duration": 241
+                      "duration": 238
                     },
                     {
                       "title": "/produits/marques",
-                      "duration": 241
+                      "duration": 255
                     },
                     {
                       "title": "/produits/nouveau",
-                      "duration": 359
+                      "duration": 374
                     },
                     {
                       "title": "/promotions",
-                      "duration": 247
+                      "duration": 281
                     },
                     {
                       "title": "/rapports",
-                      "duration": 296
+                      "duration": 278
                     },
                     {
                       "title": "/rapports/balance-agee",
-                      "duration": 274
+                      "duration": 279
                     },
                     {
                       "title": "/rapports/sell-out",
-                      "duration": 294
+                      "duration": 280
                     },
                     {
                       "title": "/stock",
-                      "duration": 1093
+                      "duration": 1076
                     },
                     {
                       "title": "/stock/[productId]",
-                      "duration": 350
+                      "duration": 298
                     },
                     {
                       "title": "/stock/depots",
-                      "duration": 283
+                      "duration": 260
                     },
                     {
                       "title": "/stock/depots/[id]",
-                      "duration": 387
+                      "duration": 366
                     },
                     {
                       "title": "/stock/inventaires",
-                      "duration": 280
+                      "duration": 239
                     },
                     {
                       "title": "/stock/inventaires/[id]",
-                      "duration": 269
+                      "duration": 274
                     },
                     {
                       "title": "/stock/transferts",
-                      "duration": 257
-                    },
-                    {
-                      "title": "/stock/transferts/[id]",
-                      "duration": 276
-                    },
-                    {
-                      "title": "/tableau-de-bord",
-                      "duration": 441
-                    },
-                    {
-                      "title": "/tournees",
                       "duration": 253
                     },
                     {
+                      "title": "/stock/transferts/[id]",
+                      "duration": 263
+                    },
+                    {
+                      "title": "/tableau-de-bord",
+                      "duration": 425
+                    },
+                    {
+                      "title": "/tournees",
+                      "duration": 236
+                    },
+                    {
                       "title": "/tournees/[id]",
-                      "duration": 293
-                    },
-                    {
-                      "title": "/tournees/aujourdhui",
-                      "duration": 257
-                    },
-                    {
-                      "title": "/tournees/cloture",
-                      "duration": 276
-                    },
-                    {
-                      "title": "/tournees/rapports",
-                      "duration": 280
-                    },
-                    {
-                      "title": "/ventes",
-                      "duration": 302
-                    },
-                    {
-                      "title": "/ventes/[id]",
-                      "duration": 372
-                    },
-                    {
-                      "title": "/ventes/nouvelle",
-                      "duration": 319
-                    },
-                    {
-                      "title": "/versements",
-                      "duration": 285
-                    },
-                    {
-                      "title": "new versement opens as a sheet with its save button on screen",
-                      "duration": 872
-                    },
-                    {
-                      "title": "what a dépôt sells opens as a sheet with its save button on screen",
-                      "duration": 742
-                    },
-                    {
-                      "title": "new règlement fournisseur opens as a sheet with its save button on screen",
-                      "duration": 975
-                    },
-                    {
-                      "title": "dossier d'importation: Close on screen, the cost sheet and its submit",
-                      "duration": 1486
-                    },
-                    {
-                      "title": "chargement: new transfer sheet, then the entry screen and its Validate",
-                      "duration": 1695
-                    },
-                    {
-                      "title": "share link of the relevé: the link and the WhatsApp button on screen",
-                      "duration": 942
-                    },
-                    {
-                      "title": "bulk assign: select a client, the assign sheet and its button on screen",
-                      "duration": 943
-                    },
-                    {
-                      "title": "team tree: the users page with the manager column and the teams",
                       "duration": 312
                     },
                     {
+                      "title": "/tournees/aujourdhui",
+                      "duration": 250
+                    },
+                    {
+                      "title": "/tournees/cloture",
+                      "duration": 288
+                    },
+                    {
+                      "title": "/tournees/rapports",
+                      "duration": 271
+                    },
+                    {
+                      "title": "/ventes",
+                      "duration": 296
+                    },
+                    {
+                      "title": "/ventes/[id]",
+                      "duration": 300
+                    },
+                    {
+                      "title": "/ventes/nouvelle",
+                      "duration": 324
+                    },
+                    {
+                      "title": "/versements",
+                      "duration": 289
+                    },
+                    {
+                      "title": "new versement opens as a sheet with its save button on screen",
+                      "duration": 825
+                    },
+                    {
+                      "title": "what a dépôt sells opens as a sheet with its save button on screen",
+                      "duration": 725
+                    },
+                    {
+                      "title": "a user's Dépôts opens as a sheet with its save button on screen",
+                      "duration": 998
+                    },
+                    {
+                      "title": "new règlement fournisseur opens as a sheet with its save button on screen",
+                      "duration": 753
+                    },
+                    {
+                      "title": "dossier d'importation: Close on screen, the cost sheet and its submit",
+                      "duration": 1515
+                    },
+                    {
+                      "title": "chargement: new transfer sheet, then the entry screen and its Validate",
+                      "duration": 1659
+                    },
+                    {
+                      "title": "share link of the relevé: the link and the WhatsApp button on screen",
+                      "duration": 972
+                    },
+                    {
+                      "title": "bulk assign: select a client, the assign sheet and its button on screen",
+                      "duration": 929
+                    },
+                    {
+                      "title": "team tree: the users page with the manager column and the teams",
+                      "duration": 330
+                    },
+                    {
                       "title": "dashboard: the onboarding checklist fits",
-                      "duration": 424
+                      "duration": 430
                     },
                     {
                       "title": "tournées: visit sheet, deliver dialog and cash closing on screen",
-                      "duration": 2311
+                      "duration": 2301
                     },
                     {
                       "title": "flagged operations: the detail sheet, its map and the review buttons",
-                      "duration": 758
+                      "duration": 844
                     },
                     {
                       "title": "incentives: rule sheet and approve dialog with their buttons on screen",
-                      "duration": 1708
+                      "duration": 1716
                     },
                     {
                       "title": "distribution: promotion sheet, packaging return and sale packaging card",
-                      "duration": 2016
+                      "duration": 1943
                     },
                     {
                       "title": "fast sale: a line, then the total and the validate button on screen",
-                      "duration": 550
+                      "duration": 483
                     }
                   ],
-                  "startTime": "2026-11-01T22:14:09.019Z",
+                  "startTime": "2026-11-01T22:29:22.817Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -879,7 +887,7 @@
           ],
           "id": "e79c838550b25e92508e-3f644165a2f8eca7f86c",
           "file": "mobile.spec.ts",
-          "line": 485,
+          "line": 501,
           "column": 3
         },
         {
@@ -898,7 +906,7 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 7109,
+                  "duration": 5133,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -906,26 +914,26 @@
                   "steps": [
                     {
                       "title": "/admin/login",
-                      "duration": 2843
+                      "duration": 1241
                     },
                     {
                       "title": "/inscription",
-                      "duration": 1031
+                      "duration": 975
                     },
                     {
                       "title": "/invitation/[token]",
-                      "duration": 1005
+                      "duration": 986
                     },
                     {
                       "title": "/login",
-                      "duration": 1299
+                      "duration": 1034
                     },
                     {
                       "title": "/support",
-                      "duration": 926
+                      "duration": 895
                     }
                   ],
-                  "startTime": "2026-11-01T22:14:46.452Z",
+                  "startTime": "2026-11-01T22:30:00.523Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -935,7 +943,7 @@
           ],
           "id": "e79c838550b25e92508e-3f576c7c859908d62308",
           "file": "mobile.spec.ts",
-          "line": 841,
+          "line": 876,
           "column": 3
         },
         {
@@ -954,7 +962,7 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 10825,
+                  "duration": 13111,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -962,18 +970,18 @@
                   "steps": [
                     {
                       "title": "/admin",
-                      "duration": 6844
+                      "duration": 9910
                     },
                     {
                       "title": "/admin/societes/[id]",
-                      "duration": 1299
+                      "duration": 950
                     },
                     {
                       "title": "record payment opens as a sheet with its button on screen",
-                      "duration": 1401
+                      "duration": 1078
                     }
                   ],
-                  "startTime": "2026-11-01T22:14:53.576Z",
+                  "startTime": "2026-11-01T22:30:05.664Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -983,7 +991,7 @@
           ],
           "id": "e79c838550b25e92508e-8923eb9d1ef2bcc1c11d",
           "file": "mobile.spec.ts",
-          "line": 871,
+          "line": 906,
           "column": 3
         },
         {
@@ -1002,7 +1010,7 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 9106,
+                  "duration": 8981,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -1010,18 +1018,18 @@
                   "steps": [
                     {
                       "title": "/admin",
-                      "duration": 6038
+                      "duration": 5769
                     },
                     {
                       "title": "/admin/societes/[id]",
-                      "duration": 505
+                      "duration": 877
                     },
                     {
                       "title": "record payment opens as a sheet with its button on screen",
-                      "duration": 808
+                      "duration": 935
                     }
                   ],
-                  "startTime": "2026-11-01T22:15:04.412Z",
+                  "startTime": "2026-11-01T22:30:18.787Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1031,7 +1039,7 @@
           ],
           "id": "e79c838550b25e92508e-d8170968548e2dbe780a",
           "file": "mobile.spec.ts",
-          "line": 871,
+          "line": 906,
           "column": 3
         },
         {
@@ -1050,7 +1058,7 @@
                   "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 35387,
+                  "duration": 36466,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -1058,19 +1066,19 @@
                   "steps": [
                     {
                       "title": "/achats",
-                      "duration": 338
+                      "duration": 327
                     },
                     {
                       "title": "/achats/[id]",
-                      "duration": 369
+                      "duration": 349
                     },
                     {
                       "title": "/achats/dossiers",
-                      "duration": 300
+                      "duration": 313
                     },
                     {
                       "title": "/achats/dossiers/[id]",
-                      "duration": 366
+                      "duration": 406
                     },
                     {
                       "title": "/achats/fournisseurs",
@@ -1078,243 +1086,247 @@
                     },
                     {
                       "title": "/achats/fournisseurs/[id]",
-                      "duration": 289
-                    },
-                    {
-                      "title": "/achats/nouveau",
-                      "duration": 333
-                    },
-                    {
-                      "title": "/clients",
-                      "duration": 302
-                    },
-                    {
-                      "title": "/clients/[id]",
-                      "duration": 395
-                    },
-                    {
-                      "title": "/clients/[id]/modifier",
-                      "duration": 344
-                    },
-                    {
-                      "title": "/clients/a-relancer",
-                      "duration": 261
-                    },
-                    {
-                      "title": "/clients/nouveau",
-                      "duration": 300
-                    },
-                    {
-                      "title": "/clients/secteurs",
-                      "duration": 234
-                    },
-                    {
-                      "title": "/commandes",
-                      "duration": 257
-                    },
-                    {
-                      "title": "/commandes/[id]",
-                      "duration": 279
-                    },
-                    {
-                      "title": "/livraisons",
-                      "duration": 260
-                    },
-                    {
-                      "title": "/livraisons/[id]",
-                      "duration": 276
-                    },
-                    {
-                      "title": "/mot-de-passe",
-                      "duration": 243
-                    },
-                    {
-                      "title": "/operations-signalees",
-                      "duration": 264
-                    },
-                    {
-                      "title": "/parametres",
-                      "duration": 523
-                    },
-                    {
-                      "title": "/parametres/abonnement",
-                      "duration": 300
-                    },
-                    {
-                      "title": "/parametres/import",
-                      "duration": 295
-                    },
-                    {
-                      "title": "/parametres/journal",
-                      "duration": 878
-                    },
-                    {
-                      "title": "/parametres/sessions",
-                      "duration": 330
-                    },
-                    {
-                      "title": "/parametres/utilisateurs",
-                      "duration": 316
-                    },
-                    {
-                      "title": "/primes",
-                      "duration": 293
-                    },
-                    {
-                      "title": "/primes/calculs/[id]",
-                      "duration": 300
-                    },
-                    {
-                      "title": "/primes/objectifs",
-                      "duration": 321
-                    },
-                    {
-                      "title": "/primes/plans/[id]",
-                      "duration": 285
-                    },
-                    {
-                      "title": "/produits",
-                      "duration": 263
-                    },
-                    {
-                      "title": "/produits/[id]",
-                      "duration": 411
-                    },
-                    {
-                      "title": "/produits/categories",
-                      "duration": 242
-                    },
-                    {
-                      "title": "/produits/emballages",
-                      "duration": 233
-                    },
-                    {
-                      "title": "/produits/marques",
-                      "duration": 247
-                    },
-                    {
-                      "title": "/produits/nouveau",
-                      "duration": 345
-                    },
-                    {
-                      "title": "/promotions",
-                      "duration": 246
-                    },
-                    {
-                      "title": "/rapports",
-                      "duration": 266
-                    },
-                    {
-                      "title": "/rapports/balance-agee",
-                      "duration": 279
-                    },
-                    {
-                      "title": "/rapports/sell-out",
-                      "duration": 285
-                    },
-                    {
-                      "title": "/stock",
-                      "duration": 1077
-                    },
-                    {
-                      "title": "/stock/[productId]",
-                      "duration": 269
-                    },
-                    {
-                      "title": "/stock/depots",
-                      "duration": 261
-                    },
-                    {
-                      "title": "/stock/depots/[id]",
-                      "duration": 294
-                    },
-                    {
-                      "title": "/stock/inventaires",
-                      "duration": 246
-                    },
-                    {
-                      "title": "/stock/inventaires/[id]",
-                      "duration": 268
-                    },
-                    {
-                      "title": "/stock/transferts",
-                      "duration": 236
-                    },
-                    {
-                      "title": "/stock/transferts/[id]",
-                      "duration": 262
-                    },
-                    {
-                      "title": "/tableau-de-bord",
-                      "duration": 473
-                    },
-                    {
-                      "title": "/tournees",
-                      "duration": 260
-                    },
-                    {
-                      "title": "/tournees/[id]",
-                      "duration": 326
-                    },
-                    {
-                      "title": "/tournees/aujourdhui",
                       "duration": 287
                     },
                     {
+                      "title": "/achats/nouveau",
+                      "duration": 317
+                    },
+                    {
+                      "title": "/clients",
+                      "duration": 288
+                    },
+                    {
+                      "title": "/clients/[id]",
+                      "duration": 379
+                    },
+                    {
+                      "title": "/clients/[id]/modifier",
+                      "duration": 341
+                    },
+                    {
+                      "title": "/clients/a-relancer",
+                      "duration": 249
+                    },
+                    {
+                      "title": "/clients/nouveau",
+                      "duration": 315
+                    },
+                    {
+                      "title": "/clients/secteurs",
+                      "duration": 258
+                    },
+                    {
+                      "title": "/commandes",
+                      "duration": 245
+                    },
+                    {
+                      "title": "/commandes/[id]",
+                      "duration": 286
+                    },
+                    {
+                      "title": "/livraisons",
+                      "duration": 248
+                    },
+                    {
+                      "title": "/livraisons/[id]",
+                      "duration": 281
+                    },
+                    {
+                      "title": "/mot-de-passe",
+                      "duration": 247
+                    },
+                    {
+                      "title": "/operations-signalees",
+                      "duration": 282
+                    },
+                    {
+                      "title": "/parametres",
+                      "duration": 568
+                    },
+                    {
+                      "title": "/parametres/abonnement",
+                      "duration": 299
+                    },
+                    {
+                      "title": "/parametres/import",
+                      "duration": 299
+                    },
+                    {
+                      "title": "/parametres/journal",
+                      "duration": 908
+                    },
+                    {
+                      "title": "/parametres/sessions",
+                      "duration": 332
+                    },
+                    {
+                      "title": "/parametres/utilisateurs",
+                      "duration": 334
+                    },
+                    {
+                      "title": "/primes",
+                      "duration": 290
+                    },
+                    {
+                      "title": "/primes/calculs/[id]",
+                      "duration": 310
+                    },
+                    {
+                      "title": "/primes/objectifs",
+                      "duration": 295
+                    },
+                    {
+                      "title": "/primes/plans/[id]",
+                      "duration": 258
+                    },
+                    {
+                      "title": "/produits",
+                      "duration": 261
+                    },
+                    {
+                      "title": "/produits/[id]",
+                      "duration": 390
+                    },
+                    {
+                      "title": "/produits/categories",
+                      "duration": 253
+                    },
+                    {
+                      "title": "/produits/emballages",
+                      "duration": 251
+                    },
+                    {
+                      "title": "/produits/marques",
+                      "duration": 257
+                    },
+                    {
+                      "title": "/produits/nouveau",
+                      "duration": 344
+                    },
+                    {
+                      "title": "/promotions",
+                      "duration": 240
+                    },
+                    {
+                      "title": "/rapports",
+                      "duration": 267
+                    },
+                    {
+                      "title": "/rapports/balance-agee",
+                      "duration": 278
+                    },
+                    {
+                      "title": "/rapports/sell-out",
+                      "duration": 286
+                    },
+                    {
+                      "title": "/stock",
+                      "duration": 1059
+                    },
+                    {
+                      "title": "/stock/[productId]",
+                      "duration": 280
+                    },
+                    {
+                      "title": "/stock/depots",
+                      "duration": 251
+                    },
+                    {
+                      "title": "/stock/depots/[id]",
+                      "duration": 302
+                    },
+                    {
+                      "title": "/stock/inventaires",
+                      "duration": 249
+                    },
+                    {
+                      "title": "/stock/inventaires/[id]",
+                      "duration": 254
+                    },
+                    {
+                      "title": "/stock/transferts",
+                      "duration": 247
+                    },
+                    {
+                      "title": "/stock/transferts/[id]",
+                      "duration": 270
+                    },
+                    {
+                      "title": "/tableau-de-bord",
+                      "duration": 488
+                    },
+                    {
+                      "title": "/tournees",
+                      "duration": 243
+                    },
+                    {
+                      "title": "/tournees/[id]",
+                      "duration": 300
+                    },
+                    {
+                      "title": "/tournees/aujourdhui",
+                      "duration": 280
+                    },
+                    {
                       "title": "/tournees/cloture",
-                      "duration": 297
+                      "duration": 302
                     },
                     {
                       "title": "/tournees/rapports",
-                      "duration": 252
+                      "duration": 281
                     },
                     {
                       "title": "/ventes",
-                      "duration": 301
+                      "duration": 299
                     },
                     {
                       "title": "/ventes/[id]",
-                      "duration": 320
+                      "duration": 318
                     },
                     {
                       "title": "/ventes/nouvelle",
-                      "duration": 335
+                      "duration": 314
                     },
                     {
                       "title": "/versements",
-                      "duration": 291
+                      "duration": 280
                     },
                     {
                       "title": "new versement opens as a sheet with its save button on screen",
-                      "duration": 819
+                      "duration": 788
                     },
                     {
                       "title": "what a dépôt sells opens as a sheet with its save button on screen",
-                      "duration": 707
+                      "duration": 697
+                    },
+                    {
+                      "title": "a user's Dépôts opens as a sheet with its save button on screen",
+                      "duration": 1006
                     },
                     {
                       "title": "new règlement fournisseur opens as a sheet with its save button on screen",
-                      "duration": 730
+                      "duration": 736
                     },
                     {
                       "title": "dossier d'importation: Close on screen, the cost sheet and its submit",
-                      "duration": 1502
+                      "duration": 1479
                     },
                     {
                       "title": "chargement: new transfer sheet, then the entry screen and its Validate",
-                      "duration": 1676
+                      "duration": 1613
                     },
                     {
                       "title": "share link of the relevé: the link and the WhatsApp button on screen",
-                      "duration": 841
+                      "duration": 837
                     },
                     {
                       "title": "bulk assign: select a client, the assign sheet and its button on screen",
-                      "duration": 907
+                      "duration": 898
                     },
                     {
                       "title": "team tree: the users page with the manager column and the teams",
-                      "duration": 301
+                      "duration": 330
                     },
                     {
                       "title": "dashboard: the onboarding checklist fits",
@@ -1322,26 +1334,26 @@
                     },
                     {
                       "title": "tournées: visit sheet, deliver dialog and cash closing on screen",
-                      "duration": 2246
+                      "duration": 2278
                     },
                     {
                       "title": "flagged operations: the detail sheet, its map and the review buttons",
-                      "duration": 800
+                      "duration": 828
                     },
                     {
                       "title": "incentives: rule sheet and approve dialog with their buttons on screen",
-                      "duration": 1678
+                      "duration": 1754
                     },
                     {
                       "title": "distribution: promotion sheet, packaging return and sale packaging card",
-                      "duration": 1892
+                      "duration": 1928
                     },
                     {
                       "title": "fast sale: a line, then the total and the validate button on screen",
-                      "duration": 491
+                      "duration": 487
                     }
                   ],
-                  "startTime": "2026-11-01T22:15:15.421Z",
+                  "startTime": "2026-11-01T22:30:28.782Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1351,7 +1363,7 @@
           ],
           "id": "e79c838550b25e92508e-64139fae68b2d0f06c9d",
           "file": "mobile.spec.ts",
-          "line": 485,
+          "line": 501,
           "column": 3
         },
         {
@@ -1370,7 +1382,7 @@
                   "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4795,
+                  "duration": 4814,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -1378,26 +1390,26 @@
                   "steps": [
                     {
                       "title": "/admin/login",
-                      "duration": 963
+                      "duration": 971
                     },
                     {
                       "title": "/inscription",
-                      "duration": 981
+                      "duration": 993
                     },
                     {
                       "title": "/invitation/[token]",
-                      "duration": 964
+                      "duration": 981
                     },
                     {
                       "title": "/login",
-                      "duration": 1028
+                      "duration": 1009
                     },
                     {
                       "title": "/support",
-                      "duration": 859
+                      "duration": 858
                     }
                   ],
-                  "startTime": "2026-11-01T22:15:52.297Z",
+                  "startTime": "2026-11-01T22:31:06.622Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1407,7 +1419,7 @@
           ],
           "id": "e79c838550b25e92508e-a76434bf256ee6188cae",
           "file": "mobile.spec.ts",
-          "line": 841,
+          "line": 876,
           "column": 3
         },
         {
@@ -1426,7 +1438,7 @@
                   "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 35907,
+                  "duration": 36734,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -1434,143 +1446,143 @@
                   "steps": [
                     {
                       "title": "/achats",
-                      "duration": 339
+                      "duration": 344
                     },
                     {
                       "title": "/achats/[id]",
-                      "duration": 370
+                      "duration": 381
                     },
                     {
                       "title": "/achats/dossiers",
-                      "duration": 294
+                      "duration": 313
                     },
                     {
                       "title": "/achats/dossiers/[id]",
-                      "duration": 418
+                      "duration": 416
                     },
                     {
                       "title": "/achats/fournisseurs",
-                      "duration": 267
+                      "duration": 268
                     },
                     {
                       "title": "/achats/fournisseurs/[id]",
-                      "duration": 296
+                      "duration": 292
                     },
                     {
                       "title": "/achats/nouveau",
-                      "duration": 330
+                      "duration": 339
                     },
                     {
                       "title": "/clients",
-                      "duration": 293
+                      "duration": 290
                     },
                     {
                       "title": "/clients/[id]",
-                      "duration": 395
+                      "duration": 399
                     },
                     {
                       "title": "/clients/[id]/modifier",
-                      "duration": 332
+                      "duration": 346
                     },
                     {
                       "title": "/clients/a-relancer",
-                      "duration": 239
+                      "duration": 251
                     },
                     {
                       "title": "/clients/nouveau",
-                      "duration": 323
+                      "duration": 319
                     },
                     {
                       "title": "/clients/secteurs",
-                      "duration": 256
+                      "duration": 235
                     },
                     {
                       "title": "/commandes",
-                      "duration": 244
-                    },
-                    {
-                      "title": "/commandes/[id]",
-                      "duration": 287
-                    },
-                    {
-                      "title": "/livraisons",
-                      "duration": 236
-                    },
-                    {
-                      "title": "/livraisons/[id]",
-                      "duration": 288
-                    },
-                    {
-                      "title": "/mot-de-passe",
-                      "duration": 242
-                    },
-                    {
-                      "title": "/operations-signalees",
-                      "duration": 284
-                    },
-                    {
-                      "title": "/parametres",
-                      "duration": 532
-                    },
-                    {
-                      "title": "/parametres/abonnement",
-                      "duration": 316
-                    },
-                    {
-                      "title": "/parametres/import",
-                      "duration": 317
-                    },
-                    {
-                      "title": "/parametres/journal",
-                      "duration": 891
-                    },
-                    {
-                      "title": "/parametres/sessions",
-                      "duration": 379
-                    },
-                    {
-                      "title": "/parametres/utilisateurs",
-                      "duration": 334
-                    },
-                    {
-                      "title": "/primes",
-                      "duration": 297
-                    },
-                    {
-                      "title": "/primes/calculs/[id]",
-                      "duration": 314
-                    },
-                    {
-                      "title": "/primes/objectifs",
-                      "duration": 364
-                    },
-                    {
-                      "title": "/primes/plans/[id]",
-                      "duration": 293
-                    },
-                    {
-                      "title": "/produits",
-                      "duration": 258
-                    },
-                    {
-                      "title": "/produits/[id]",
-                      "duration": 432
-                    },
-                    {
-                      "title": "/produits/categories",
-                      "duration": 254
-                    },
-                    {
-                      "title": "/produits/emballages",
                       "duration": 241
                     },
                     {
+                      "title": "/commandes/[id]",
+                      "duration": 280
+                    },
+                    {
+                      "title": "/livraisons",
+                      "duration": 242
+                    },
+                    {
+                      "title": "/livraisons/[id]",
+                      "duration": 284
+                    },
+                    {
+                      "title": "/mot-de-passe",
+                      "duration": 243
+                    },
+                    {
+                      "title": "/operations-signalees",
+                      "duration": 288
+                    },
+                    {
+                      "title": "/parametres",
+                      "duration": 549
+                    },
+                    {
+                      "title": "/parametres/abonnement",
+                      "duration": 296
+                    },
+                    {
+                      "title": "/parametres/import",
+                      "duration": 316
+                    },
+                    {
+                      "title": "/parametres/journal",
+                      "duration": 857
+                    },
+                    {
+                      "title": "/parametres/sessions",
+                      "duration": 369
+                    },
+                    {
+                      "title": "/parametres/utilisateurs",
+                      "duration": 360
+                    },
+                    {
+                      "title": "/primes",
+                      "duration": 302
+                    },
+                    {
+                      "title": "/primes/calculs/[id]",
+                      "duration": 305
+                    },
+                    {
+                      "title": "/primes/objectifs",
+                      "duration": 309
+                    },
+                    {
+                      "title": "/primes/plans/[id]",
+                      "duration": 267
+                    },
+                    {
+                      "title": "/produits",
+                      "duration": 247
+                    },
+                    {
+                      "title": "/produits/[id]",
+                      "duration": 413
+                    },
+                    {
+                      "title": "/produits/categories",
+                      "duration": 240
+                    },
+                    {
+                      "title": "/produits/emballages",
+                      "duration": 238
+                    },
+                    {
                       "title": "/produits/marques",
-                      "duration": 261
+                      "duration": 244
                     },
                     {
                       "title": "/produits/nouveau",
-                      "duration": 356
+                      "duration": 377
                     },
                     {
                       "title": "/promotions",
@@ -1578,146 +1590,150 @@
                     },
                     {
                       "title": "/rapports",
-                      "duration": 278
-                    },
-                    {
-                      "title": "/rapports/balance-agee",
-                      "duration": 283
-                    },
-                    {
-                      "title": "/rapports/sell-out",
-                      "duration": 278
-                    },
-                    {
-                      "title": "/stock",
-                      "duration": 1090
-                    },
-                    {
-                      "title": "/stock/[productId]",
-                      "duration": 298
-                    },
-                    {
-                      "title": "/stock/depots",
-                      "duration": 274
-                    },
-                    {
-                      "title": "/stock/depots/[id]",
-                      "duration": 299
-                    },
-                    {
-                      "title": "/stock/inventaires",
-                      "duration": 247
-                    },
-                    {
-                      "title": "/stock/inventaires/[id]",
-                      "duration": 269
-                    },
-                    {
-                      "title": "/stock/transferts",
-                      "duration": 257
-                    },
-                    {
-                      "title": "/stock/transferts/[id]",
-                      "duration": 262
-                    },
-                    {
-                      "title": "/tableau-de-bord",
-                      "duration": 428
-                    },
-                    {
-                      "title": "/tournees",
-                      "duration": 248
-                    },
-                    {
-                      "title": "/tournees/[id]",
-                      "duration": 297
-                    },
-                    {
-                      "title": "/tournees/aujourdhui",
-                      "duration": 276
-                    },
-                    {
-                      "title": "/tournees/cloture",
-                      "duration": 276
-                    },
-                    {
-                      "title": "/tournees/rapports",
                       "duration": 270
                     },
                     {
+                      "title": "/rapports/balance-agee",
+                      "duration": 276
+                    },
+                    {
+                      "title": "/rapports/sell-out",
+                      "duration": 277
+                    },
+                    {
+                      "title": "/stock",
+                      "duration": 1068
+                    },
+                    {
+                      "title": "/stock/[productId]",
+                      "duration": 301
+                    },
+                    {
+                      "title": "/stock/depots",
+                      "duration": 273
+                    },
+                    {
+                      "title": "/stock/depots/[id]",
+                      "duration": 295
+                    },
+                    {
+                      "title": "/stock/inventaires",
+                      "duration": 249
+                    },
+                    {
+                      "title": "/stock/inventaires/[id]",
+                      "duration": 271
+                    },
+                    {
+                      "title": "/stock/transferts",
+                      "duration": 243
+                    },
+                    {
+                      "title": "/stock/transferts/[id]",
+                      "duration": 270
+                    },
+                    {
+                      "title": "/tableau-de-bord",
+                      "duration": 436
+                    },
+                    {
+                      "title": "/tournees",
+                      "duration": 249
+                    },
+                    {
+                      "title": "/tournees/[id]",
+                      "duration": 288
+                    },
+                    {
+                      "title": "/tournees/aujourdhui",
+                      "duration": 284
+                    },
+                    {
+                      "title": "/tournees/cloture",
+                      "duration": 339
+                    },
+                    {
+                      "title": "/tournees/rapports",
+                      "duration": 269
+                    },
+                    {
                       "title": "/ventes",
-                      "duration": 314
+                      "duration": 300
                     },
                     {
                       "title": "/ventes/[id]",
-                      "duration": 309
+                      "duration": 312
                     },
                     {
                       "title": "/ventes/nouvelle",
-                      "duration": 329
+                      "duration": 334
                     },
                     {
                       "title": "/versements",
-                      "duration": 294
+                      "duration": 281
                     },
                     {
                       "title": "new versement opens as a sheet with its save button on screen",
-                      "duration": 819
+                      "duration": 834
                     },
                     {
                       "title": "what a dépôt sells opens as a sheet with its save button on screen",
-                      "duration": 726
+                      "duration": 711
+                    },
+                    {
+                      "title": "a user's Dépôts opens as a sheet with its save button on screen",
+                      "duration": 1005
                     },
                     {
                       "title": "new règlement fournisseur opens as a sheet with its save button on screen",
-                      "duration": 728
+                      "duration": 744
                     },
                     {
                       "title": "dossier d'importation: Close on screen, the cost sheet and its submit",
-                      "duration": 1509
+                      "duration": 1498
                     },
                     {
                       "title": "chargement: new transfer sheet, then the entry screen and its Validate",
-                      "duration": 1637
+                      "duration": 1609
                     },
                     {
                       "title": "share link of the relevé: the link and the WhatsApp button on screen",
-                      "duration": 835
+                      "duration": 840
                     },
                     {
                       "title": "bulk assign: select a client, the assign sheet and its button on screen",
-                      "duration": 920
+                      "duration": 916
                     },
                     {
                       "title": "team tree: the users page with the manager column and the teams",
-                      "duration": 332
+                      "duration": 342
                     },
                     {
                       "title": "dashboard: the onboarding checklist fits",
-                      "duration": 424
+                      "duration": 416
                     },
                     {
                       "title": "tournées: visit sheet, deliver dialog and cash closing on screen",
-                      "duration": 2240
+                      "duration": 2255
                     },
                     {
                       "title": "flagged operations: the detail sheet, its map and the review buttons",
-                      "duration": 841
+                      "duration": 837
                     },
                     {
                       "title": "incentives: rule sheet and approve dialog with their buttons on screen",
-                      "duration": 1740
+                      "duration": 1685
                     },
                     {
                       "title": "distribution: promotion sheet, packaging return and sale packaging card",
-                      "duration": 1879
+                      "duration": 1876
                     },
                     {
                       "title": "fast sale: a line, then the total and the validate button on screen",
-                      "duration": 539
+                      "duration": 490
                     }
                   ],
-                  "startTime": "2026-11-01T22:15:57.098Z",
+                  "startTime": "2026-11-01T22:31:11.447Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1727,7 +1743,7 @@
           ],
           "id": "e79c838550b25e92508e-3ae71ed9887b579dcab9",
           "file": "mobile.spec.ts",
-          "line": 485,
+          "line": 501,
           "column": 3
         },
         {
@@ -1746,7 +1762,7 @@
                   "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4933,
+                  "duration": 4785,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -1754,26 +1770,26 @@
                   "steps": [
                     {
                       "title": "/admin/login",
-                      "duration": 1063
+                      "duration": 942
                     },
                     {
                       "title": "/inscription",
-                      "duration": 1000
+                      "duration": 977
                     },
                     {
                       "title": "/invitation/[token]",
-                      "duration": 981
+                      "duration": 975
                     },
                     {
                       "title": "/login",
-                      "duration": 1026
+                      "duration": 1028
                     },
                     {
                       "title": "/support",
-                      "duration": 861
+                      "duration": 860
                     }
                   ],
-                  "startTime": "2026-11-01T22:16:33.019Z",
+                  "startTime": "2026-11-01T22:31:48.207Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1783,7 +1799,7 @@
           ],
           "id": "e79c838550b25e92508e-a9b60ff6dea3a938e427",
           "file": "mobile.spec.ts",
-          "line": 841,
+          "line": 876,
           "column": 3
         },
         {
@@ -1802,7 +1818,7 @@
                   "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 8294,
+                  "duration": 11002,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -1810,18 +1826,18 @@
                   "steps": [
                     {
                       "title": "/admin",
-                      "duration": 5768
+                      "duration": 8892
                     },
                     {
                       "title": "/admin/societes/[id]",
-                      "duration": 629
+                      "duration": 403
                     },
                     {
                       "title": "record payment opens as a sheet with its button on screen",
-                      "duration": 765
+                      "duration": 595
                     }
                   ],
-                  "startTime": "2026-11-01T22:16:37.960Z",
+                  "startTime": "2026-11-01T22:31:52.999Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1831,7 +1847,7 @@
           ],
           "id": "e79c838550b25e92508e-336c727c12a3cd6e471b",
           "file": "mobile.spec.ts",
-          "line": 871,
+          "line": 906,
           "column": 3
         },
         {
@@ -1850,7 +1866,7 @@
                   "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 7189,
+                  "duration": 8372,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
@@ -1858,18 +1874,18 @@
                   "steps": [
                     {
                       "title": "/admin",
-                      "duration": 4683
+                      "duration": 5412
                     },
                     {
                       "title": "/admin/societes/[id]",
-                      "duration": 632
+                      "duration": 817
                     },
                     {
                       "title": "record payment opens as a sheet with its button on screen",
-                      "duration": 774
+                      "duration": 983
                     }
                   ],
-                  "startTime": "2026-11-01T22:16:46.260Z",
+                  "startTime": "2026-11-01T22:32:04.009Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1879,7 +1895,7 @@
           ],
           "id": "e79c838550b25e92508e-0e878b8d9f0337c6d555",
           "file": "mobile.spec.ts",
-          "line": 871,
+          "line": 906,
           "column": 3
         }
       ]
@@ -1887,8 +1903,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-01T22:13:19.944Z",
-    "duration": 213704.788,
+    "startTime": "2026-11-01T22:28:34.216Z",
+    "duration": 218536.656,
     "expected": 12,
     "skipped": 0,
     "unexpected": 0,
