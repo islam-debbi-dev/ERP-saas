@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { type ClientDto, type ClientStatementDto, formatDA, money } from '@erp/shared';
+import { type ClientDto, type ClientStatementDto, Feature, formatDA, money } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { PrintButton } from '@/components/shared/print-button';
@@ -57,6 +57,7 @@ import {
   useStatement,
 } from '@/lib/clients';
 import { todayInAlgiers } from '@/lib/purchases';
+import { useFeature } from '@/lib/auth';
 import { cn, isolateLtr } from '@/lib/utils';
 import { useTenantSettings } from '@/lib/settings';
 import { useErrorMessage } from '@/lib/use-error-message';
@@ -235,7 +236,35 @@ function Summary({ client }: { client: ClientDto }) {
           )}
         </CardContent>
       </Card>
+      {client.debtByWarehouse && client.debtByWarehouse.length > 1 ? (
+        <DebtByWarehouse parts={client.debtByWarehouse} />
+      ) : null}
     </div>
+  );
+}
+
+/** One client account split by dépôt (phase 24); the parts add up to the balance. */
+function DebtByWarehouse({ parts }: { parts: NonNullable<ClientDto['debtByWarehouse']> }) {
+  const t = useTranslations('multiUnit');
+  return (
+    <Card className="py-4 sm:col-span-2">
+      <CardContent className="space-y-2">
+        <p className="text-sm text-muted-foreground">{t('debtByWarehouse')}</p>
+        <ul className="divide-y">
+          {parts.map((p) => (
+            <li
+              key={p.warehouse?.id ?? 'none'}
+              className="flex items-center justify-between gap-3 py-2"
+            >
+              <span className="min-w-0 truncate" title={p.warehouse?.name}>
+                {p.warehouse?.name ?? '—'}
+              </span>
+              <BalanceAmount value={p.balance} className="shrink-0" />
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -388,6 +417,8 @@ function Signed({ value }: { value: string }) {
 function StatementTable({ statement }: { statement: ClientStatementDto }) {
   const t = useTranslations('clients');
   const tl = useTranslations('clientLedgerTypes');
+  const tu = useTranslations('multiUnit');
+  const multiUnit = useFeature(Feature.MULTI_UNIT);
   const format = useFormatter();
   const day = (iso: string) =>
     format.dateTime(new Date(`${iso}T12:00:00Z`), { dateStyle: 'medium' });
@@ -431,6 +462,11 @@ function StatementTable({ statement }: { statement: ClientStatementDto }) {
                     })}
                     {e.createdBy ? ` · ${e.createdBy.fullName}` : ''}
                   </p>
+                  {multiUnit && e.warehouse ? (
+                    <p className="truncate text-xs text-muted-foreground">
+                      {e.reduced ? tu('reducedLine', { name: e.warehouse.name }) : e.warehouse.name}
+                    </p>
+                  ) : null}
                 </div>
                 <div className="shrink-0 space-y-1 text-end">
                   <p
@@ -507,6 +543,13 @@ function StatementTable({ statement }: { statement: ClientStatementDto }) {
                       ) : null}
                       {e.createdBy ? (
                         <p className="text-xs text-muted-foreground">{e.createdBy.fullName}</p>
+                      ) : null}
+                      {multiUnit && e.warehouse ? (
+                        <p className="text-xs text-muted-foreground">
+                          {e.reduced
+                            ? tu('reducedLine', { name: e.warehouse.name })
+                            : e.warehouse.name}
+                        </p>
                       ) : null}
                     </div>
                   </TableCell>

@@ -10,6 +10,7 @@ import type {
   UnpaidDocumentDto,
 } from '@erp/shared';
 import { api } from './api-client';
+import { useWarehouseFilter } from './warehouse-scope';
 
 export interface PaymentFilters {
   clientId: string;
@@ -29,8 +30,9 @@ export const paymentKeys = {
 };
 
 export function usePaymentPages(filters: PaymentFilters) {
+  const warehouseId = useWarehouseFilter();
   return useInfiniteQuery({
-    queryKey: paymentKeys.list(filters),
+    queryKey: [...paymentKeys.list(filters), warehouseId],
     initialPageParam: null as string | null,
     queryFn: ({ pageParam, signal }) => {
       const params = new URLSearchParams({ limit: '50', sort: filters.sort });
@@ -39,6 +41,7 @@ export function usePaymentPages(filters: PaymentFilters) {
       if (filters.status) params.set('status', filters.status);
       if (filters.from) params.set('from', filters.from);
       if (filters.to) params.set('to', filters.to);
+      if (warehouseId) params.set('warehouseId', warehouseId);
       if (pageParam) params.set('cursor', pageParam);
       return api.request<PaymentPage>(`/payments?${params.toString()}`, { signal });
     },

@@ -3,6 +3,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { DashboardDto, ReportDto, ReportGroupBy, ReportName } from '@erp/shared';
 import { api } from './api-client';
+import { useWarehouseFilter } from './warehouse-scope';
 
 export interface ReportParams {
   name: ReportName;
@@ -13,6 +14,8 @@ export interface ReportParams {
   sellerId?: string;
   teamOf?: string;
   brandId?: string;
+  /** The header's dépôt (phase 24); '' or absent = every dépôt the user sees. */
+  warehouseId?: string;
 }
 
 export interface FigureFilters {
@@ -28,10 +31,14 @@ export const reportKeys = {
   report: (p: ReportParams) => ['reports', p] as const,
 };
 
-function filterParams(params: URLSearchParams, f: Partial<FigureFilters>): URLSearchParams {
+function filterParams(
+  params: URLSearchParams,
+  f: Partial<FigureFilters> & { warehouseId?: string },
+): URLSearchParams {
   if (f.sellerId) params.set('sellerId', f.sellerId);
   if (f.teamOf) params.set('teamOf', f.teamOf);
   if (f.brandId) params.set('brandId', f.brandId);
+  if (f.warehouseId) params.set('warehouseId', f.warehouseId);
   return params;
 }
 
@@ -44,10 +51,11 @@ function reportQuery(p: ReportParams): string {
 
 /** What the user's role sees today (sections the role does not see are null). */
 export function useDashboard(filters: FigureFilters = NO_FIGURE_FILTERS) {
+  const warehouseId = useWarehouseFilter();
   return useQuery({
-    queryKey: reportKeys.dashboard(filters),
+    queryKey: [...reportKeys.dashboard(filters), warehouseId],
     queryFn: ({ signal }) => {
-      const qs = filterParams(new URLSearchParams(), filters).toString();
+      const qs = filterParams(new URLSearchParams(), { ...filters, warehouseId }).toString();
       return api.request<DashboardDto>(`/dashboard${qs ? `?${qs}` : ''}`, { signal });
     },
     // Keep the figures while another filter loads.
@@ -56,7 +64,8 @@ export function useDashboard(filters: FigureFilters = NO_FIGURE_FILTERS) {
 }
 
 /** Disabled while the period is incomplete or reversed. */
-export function useReport(p: ReportParams) {
+export function useReport(params: ReportParams) {
+  const p = { ...params, warehouseId: useWarehouseFilter() };
   return useQuery({
     queryKey: reportKeys.report(p),
     queryFn: ({ signal }) =>

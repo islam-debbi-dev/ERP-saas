@@ -20,6 +20,7 @@ import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { type AppLocale, LOCALE_LABELS, LOCALES } from '@/i18n/config';
 import { currentNavItem } from './navigation';
+import { WarehouseSwitcher } from './warehouse-switcher';
 
 const THEMES = ['light', 'dark', 'system'] as const;
 const THEME_LABEL = { light: 'themeLight', dark: 'themeDark', system: 'themeSystem' } as const;
@@ -76,6 +77,7 @@ export function SiteHeader() {
       <p className="min-w-0 flex-1 truncate text-base font-medium md:text-sm">
         {current ? t(current.key) : null}
       </p>
+      <WarehouseSwitcher />
       <div className="hidden items-center gap-1 md:flex">
         <LanguageSwitcher variant="ghost" showLabel />
         <ThemeToggle />

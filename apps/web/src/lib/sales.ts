@@ -10,6 +10,7 @@ import type {
   SaleType,
 } from '@erp/shared';
 import { api } from './api-client';
+import { useWarehouseFilter } from './warehouse-scope';
 
 export interface SaleFilters {
   type: SaleType | '';
@@ -26,8 +27,9 @@ export const saleKeys = {
 };
 
 export function useSalePages(filters: SaleFilters) {
+  const warehouseId = useWarehouseFilter();
   return useInfiniteQuery({
-    queryKey: saleKeys.list(filters),
+    queryKey: [...saleKeys.list(filters), warehouseId],
     initialPageParam: null as string | null,
     queryFn: ({ pageParam, signal }) => {
       const params = new URLSearchParams({ limit: '50' });
@@ -36,6 +38,7 @@ export function useSalePages(filters: SaleFilters) {
       if (filters.clientId) params.set('clientId', filters.clientId);
       if (filters.from) params.set('from', filters.from);
       if (filters.to) params.set('to', filters.to);
+      if (warehouseId) params.set('warehouseId', warehouseId);
       if (pageParam) params.set('cursor', pageParam);
       return api.request<SalePage>(`/sales?${params.toString()}`, { signal });
     },

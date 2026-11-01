@@ -14,6 +14,7 @@ import {
   type UpdateOrderInput,
 } from '@erp/shared';
 import { api } from './api-client';
+import { useWarehouseFilter } from './warehouse-scope';
 import { useFeature } from './auth';
 
 export const tourneeKeys = {
@@ -61,14 +62,16 @@ export function useToday() {
 }
 
 export function useOrderPages(filters: OrderFilters = {}) {
+  const warehouseId = useWarehouseFilter();
   const on = useFeature(Feature.TOURNEES);
   return useInfiniteQuery({
-    queryKey: tourneeKeys.orderList(filters),
+    queryKey: [...tourneeKeys.orderList(filters), warehouseId],
     initialPageParam: null as string | null,
     queryFn: ({ pageParam, signal }) => {
       const params = new URLSearchParams({ limit: '50' });
       if (filters.status) params.set('status', filters.status);
       if (filters.livreurId) params.set('livreurId', filters.livreurId);
+      if (warehouseId) params.set('warehouseId', warehouseId);
       if (pageParam) params.set('cursor', pageParam);
       return api.request<OrderPage>(`/orders?${params.toString()}`, { signal });
     },

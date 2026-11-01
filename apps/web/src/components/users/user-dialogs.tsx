@@ -9,10 +9,14 @@ import {
   type InviteMode,
   type InviteResultDto,
   type Permission,
+  PERMISSION_GROUPS,
+  type PermissionGroup,
   PERMISSIONS,
   Role,
   ROLE_PERMISSIONS,
+  SENSITIVE_PERMISSIONS,
   type UserDto,
+  WarehouseAccessLevel,
 } from '@erp/shared';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -28,12 +32,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Switch } from '@/components/ui/switch';
-import { useFeature } from '@/lib/auth';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth, useFeature } from '@/lib/auth';
+import { useWarehouses } from '@/lib/stock';
 import {
   useResetPassword,
   useInviteUser,
   useSetPermissions,
+  useSetUserAccess,
   useUpdateUser,
+  useUserAccess,
   useUsers,
 } from '@/lib/users';
 import { useErrorMessage } from '@/lib/use-error-message';
@@ -432,16 +440,26 @@ export function EditUserDialog({ user, open, onOpenChange }: DialogProps & { use
 }
 
 /**
- * One switch per sensitive permission. What differs from the role's default is
+ * One switch per permission, grouped by module (phase 24, MULTI_UNIT; without the module
+ * only the sensitive actions of phases 1–23). What differs from the role's default is
  * sent as grants / revokes, so a later role change keeps the role's new defaults.
  */
 export function PermissionsDialog({ user, open, onOpenChange }: DialogProps & { user: UserDto }) {
   const t = useTranslations('users');
   const tp = useTranslations('permissions');
+  const tu = useTranslations('multiUnit');
   const errorMessage = useErrorMessage();
   const save = useSetPermissions();
+  const multiUnit = useFeature(Feature.MULTI_UNIT);
   const defaults = new Set<Permission>(ROLE_PERMISSIONS[user.role]);
   const [on, setOn] = useState<Set<Permission>>(new Set(user.permissions));
+  const groups = (Object.entries(PERMISSION_GROUPS) as [PermissionGroup, readonly Permission[]][])
+    .map(
+      ([group, list]) =>
+        [group, multiUnit ? list : list.filter((p) => SENSITIVE_PERMISSIONS.includes(p))] as const,
+    )
+    .filter(([, list]) => list.length > 0);
+  const changed = PERMISSIONS.some((p) => on.has(p) !== defaults.has(p));
 
   const submit = () => {
     const grants = PERMISSIONS.filter((p) => on.has(p) && !defaults.has(p));
@@ -467,39 +485,166 @@ export function PermissionsDialog({ user, open, onOpenChange }: DialogProps & { 
           </ResponsiveDialogTitle>
           <ResponsiveDialogDescription>{t('permissionsHelp')}</ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
-        <ul className="divide-y rounded-md border">
-          {PERMISSIONS.map((p) => (
-            <li key={p} className="flex items-start justify-between gap-4 p-3">
-              <div className="space-y-0.5">
-                <Label htmlFor={`perm-${p}`} className="font-medium">
-                  {tp(`${p}.label`)}
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  {tp(`${p}.help`)}
-                  {defaults.has(p) ? ` · ${t('fromRole')}` : ''}
-                </p>
-              </div>
-              <Switch
-                id={`perm-${p}`}
-                checked={on.has(p)}
-                onCheckedChange={(checked) =>
-                  setOn((prev) => {
-                    const next = new Set(prev);
-                    if (checked) next.add(p);
-                    else next.delete(p);
-                    return next;
-                  })
-                }
-              />
-            </li>
+        <div className="space-y-4">
+          {groups.map(([group, list]) => (
+            <section key={group} aria-labelledby={`perm-group-${group}`} className="space-y-1.5">
+              {groups.length > 1 ? (
+                <h3 id={`perm-group-${group}`} className="text-sm font-semibold">
+                  {tu(`group_${group}`)}
+                </h3>
+              ) : null}
+              <ul className="divide-y rounded-md border">
+                {list.map((p) => (
+                  <li key={p} className="flex items-start justify-between gap-4 p-3">
+                    <div className="min-w-0 space-y-0.5">
+                      <Label htmlFor={`perm-${p}`} className="font-medium">
+                        {tp(`${p}.label`)}
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        {tp(`${p}.help`)}
+                        {defaults.has(p) ? ` · ${t('fromRole')}` : ''}
+                      </p>
+                    </div>
+                    <Switch
+                      id={`perm-${p}`}
+                      checked={on.has(p)}
+                      onCheckedChange={(checked) =>
+                        setOn((prev) => {
+                          const next = new Set(prev);
+                          if (checked) next.add(p);
+                          else next.delete(p);
+                          return next;
+                        })
+                      }
+                    />
+                  </li>
+                ))}
+              </ul>
+            </section>
           ))}
-        </ul>
+        </div>
         <ResponsiveDialogFooter>
+          <Button
+            variant="outline"
+            disabled={!changed || save.isPending}
+            onClick={() => setOn(new Set(defaults))}
+          >
+            {tu('resetDefaults')}
+          </Button>
           <Button onClick={submit} disabled={save.isPending}>
             {save.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
             {t('save')}
           </Button>
         </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
+  );
+}
+
+type AccessChoice = 'NONE' | WarehouseAccessLevel;
+const ACCESS_CHOICES: AccessChoice[] = [
+  'NONE',
+  WarehouseAccessLevel.VIEW_STATS,
+  WarehouseAccessLevel.OPERATE,
+];
+
+/**
+ * The dépôts a user works in or sees the figures of (phase 24): one choice per dépôt,
+ * Aucun / Voir les statistiques / Travailler. Trucks follow their dépôt.
+ */
+export function WarehouseAccessDialog({
+  user,
+  open,
+  onOpenChange,
+}: DialogProps & { user: UserDto }) {
+  const t = useTranslations('multiUnit');
+  const tUsers = useTranslations('users');
+  const errorMessage = useErrorMessage();
+  const access = useUserAccess(user.id);
+  const warehouses = useWarehouses();
+  const save = useSetUserAccess();
+  const { state } = useAuth();
+  const canManage =
+    state.user?.role === Role.OWNER ||
+    (state.user?.permissions.includes('WAREHOUSE_ACCESS_MANAGE') ?? false);
+  const depots = (warehouses.data ?? []).filter((w) => w.type !== 'VEHICLE');
+  const [edits, setEdits] = useState<Record<string, AccessChoice>>({});
+  const levelOf = (warehouseId: string): AccessChoice =>
+    edits[warehouseId] ??
+    access.data?.access.find((a) => a.warehouseId === warehouseId)?.level ??
+    'NONE';
+
+  const submit = () => {
+    const list = depots
+      .map((w) => ({ warehouseId: w.id, level: levelOf(w.id) }))
+      .filter((a): a is { warehouseId: string; level: WarehouseAccessLevel } => a.level !== 'NONE');
+    save.mutate(
+      { id: user.id, body: { access: list } },
+      {
+        onSuccess: () => {
+          toast.success(t('accessSaved'));
+          onOpenChange(false);
+        },
+        onError: (err) => toast.error(errorMessage(err)),
+      },
+    );
+  };
+
+  return (
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="md:max-w-lg">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>{t('accessTitle', { name: user.fullName })}</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>{t('accessHelp')}</ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
+        {access.isPending || warehouses.isPending ? (
+          <div className="space-y-2" aria-busy>
+            <Skeleton className="h-11 w-full" />
+            <Skeleton className="h-11 w-full" />
+          </div>
+        ) : access.isError ? (
+          <p role="alert" className="text-sm text-destructive">
+            {errorMessage(access.error)}
+          </p>
+        ) : access.data.allWarehouses ? (
+          <p className="rounded-md border p-3 text-sm">{t('allAccess')}</p>
+        ) : (
+          <ul className="divide-y rounded-md border">
+            {depots.map((w) => (
+              <li
+                key={w.id}
+                className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <Label htmlFor={`access-${w.id}`} className="min-w-0 truncate font-medium">
+                  {w.name}
+                </Label>
+                <NativeSelect
+                  id={`access-${w.id}`}
+                  className="sm:w-56"
+                  value={levelOf(w.id)}
+                  disabled={!canManage}
+                  onChange={(e) =>
+                    setEdits((prev) => ({ ...prev, [w.id]: e.target.value as AccessChoice }))
+                  }
+                >
+                  {ACCESS_CHOICES.map((c) => (
+                    <option key={c} value={c}>
+                      {t(`level${c}`)}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </li>
+            ))}
+          </ul>
+        )}
+        {canManage && access.data && !access.data.allWarehouses ? (
+          <ResponsiveDialogFooter>
+            <Button onClick={submit} disabled={save.isPending}>
+              {save.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
+              {tUsers('save')}
+            </Button>
+          </ResponsiveDialogFooter>
+        ) : null}
       </ResponsiveDialogContent>
     </ResponsiveDialog>
   );

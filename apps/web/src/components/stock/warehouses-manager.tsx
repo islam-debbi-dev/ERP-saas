@@ -10,10 +10,11 @@ import {
   Truck,
   Warehouse,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Feature, Role, type WarehouseDto, WarehouseType } from '@erp/shared';
+import { Feature, Permission, type WarehouseDto, WarehouseType } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FeatureGate } from '@/components/shared/feature-gate';
 import { PageHeader } from '@/components/shared/page-header';
@@ -44,7 +45,7 @@ import {
 } from '@/components/ui/responsive-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
-import { useAuth } from '@/lib/auth';
+import { useFeature, usePermission } from '@/lib/auth';
 import { useSellers } from '@/lib/sales-force';
 import { useArchiveWarehouse, useSaveWarehouse, useWarehouses } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
@@ -56,6 +57,8 @@ interface Editing {
   isDefault: boolean;
   assignedUserId: string;
   active: boolean;
+  /** The dépôt a truck belongs to (phase 24, MULTI_UNIT); '' = unchanged / MAIN. */
+  parentWarehouseId: string;
 }
 
 /** Stock > Dépôts (phase 15, WAREHOUSES): dépôts and the trucks of the sellers. */
@@ -71,8 +74,10 @@ function Warehouses() {
   const t = useTranslations('warehouses');
   const tc = useTranslations('common');
   const errorMessage = useErrorMessage();
-  const { state } = useAuth();
-  const writer = state.user?.role === Role.OWNER || state.user?.role === Role.MANAGER;
+  const tu = useTranslations('multiUnit');
+  // Phase 24: dépôts are company settings (SETTINGS_EDIT, owner and manager by default).
+  const writer = usePermission(Permission.SETTINGS_EDIT);
+  const multiUnit = useFeature(Feature.MULTI_UNIT);
   const warehouses = useWarehouses();
   const sellers = useSellers();
   const save = useSaveWarehouse();
@@ -87,6 +92,9 @@ function Warehouses() {
           name: editing.name.trim(),
           ...(editing.isDefault ? {} : { active: editing.active }),
           ...(editing.type === WarehouseType.VEHICLE ? { assignedUserId: driver } : {}),
+          ...(multiUnit && editing.type === WarehouseType.VEHICLE && editing.parentWarehouseId
+            ? { parentWarehouseId: editing.parentWarehouseId }
+            : {}),
         }
       : { name: editing.name.trim(), type: editing.type, assignedUserId: driver };
     save.mutate(
@@ -109,6 +117,7 @@ function Warehouses() {
       isDefault: w.isDefault,
       assignedUserId: w.assignedUser?.id ?? '',
       active: w.active,
+      parentWarehouseId: w.parent?.id ?? '',
     });
 
   const list = warehouses.data ?? [];
@@ -129,6 +138,7 @@ function Warehouses() {
                   isDefault: false,
                   assignedUserId: '',
                   active: true,
+                  parentWarehouseId: '',
                 })
               }
             >
@@ -168,12 +178,24 @@ function Warehouses() {
                   <div className="flex min-w-0 items-center gap-3">
                     <Icon className="size-5 shrink-0 text-muted-foreground" aria-hidden />
                     <div className="min-w-0 space-y-1">
-                      <p className="truncate font-medium" title={w.name}>
-                        {w.name}
-                      </p>
+                      {multiUnit && w.type !== WarehouseType.VEHICLE ? (
+                        <Link
+                          href={`/stock/depots/${w.id}`}
+                          className="block truncate font-medium underline-offset-4 hover:underline"
+                          title={w.name}
+                          aria-label={tu('open', { name: w.name })}
+                        >
+                          {w.name}
+                        </Link>
+                      ) : (
+                        <p className="truncate font-medium" title={w.name}>
+                          {w.name}
+                        </p>
+                      )}
                       <p className="truncate text-xs text-muted-foreground">
                         {[
                           t(`type${w.type}`),
+                          multiUnit ? (w.parent?.name ?? w.manager?.fullName ?? null) : null,
                           w.assignedUser?.fullName ??
                             (w.type === WarehouseType.VEHICLE ? t('noDriver') : null),
                           t('productCount', { count: w.productCount }),
@@ -299,6 +321,26 @@ function Warehouses() {
                   ))}
                 </NativeSelect>
                 <p className="text-xs text-muted-foreground">{t('driverHint')}</p>
+              </div>
+            ) : null}
+            {multiUnit && editing?.id && editing.type === 'VEHICLE' ? (
+              <div className="space-y-2">
+                <Label htmlFor="warehouse-parent">{tu('parent')}</Label>
+                <NativeSelect
+                  id="warehouse-parent"
+                  value={editing.parentWarehouseId}
+                  onChange={(e) =>
+                    setEditing((cur) => (cur ? { ...cur, parentWarehouseId: e.target.value } : cur))
+                  }
+                >
+                  {list
+                    .filter((d) => d.type !== WarehouseType.VEHICLE)
+                    .map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name}
+                      </option>
+                    ))}
+                </NativeSelect>
               </div>
             ) : null}
             {editing?.id && !editing.isDefault ? (
