@@ -268,6 +268,33 @@ Per tenant, in one transaction, it locks the tenant's stock rows, creates the ma
 
 **Contract release (later, not with phase 15):** once the backfill has run cleanly in production, move `apps/api/prisma/contract/phase-15-warehouses-contract.sql` into a new migration folder. It makes the dépôt required (`NOT NULL` on movements, retours and inventaires; a `CHECK` on sales and BRs, whose drafts may still have none) and puts back the strict append-only trigger on `stock_movements`. Its first statement fails if any row was missed, so it can't be applied before the backfill.
 
+### Units backfill (once, after the phase 24 deploy, **staging first**)
+
+Phase 24 records the dépôt of every versement and client ledger entry. Rows written before it have none. The deploy migration already gives every user "Travailler" on every existing dépôt and puts every truck under the dépôt principal, so nobody loses access in the meantime, and the app counts a row without a dépôt as the dépôt principal's. The backfill makes it explicit before the contract release turns the columns `NOT NULL`.
+
+Per tenant, in one transaction, with the client balances locked in client order (safe with the app running), it:
+- gives each versement the dépôt of the sale it was taken with, else of the oldest sale it pays, else the dépôt principal;
+- gives each ledger entry the dépôt of its document (sale, avoir, versement), else the dépôt principal;
+- gives any user still without it "Travailler" on every dépôt, and a parent to any truck without one.
+
+It then checks that no row is left without a dépôt, that every client balance still equals its ledger, and that the sum of the balances did not move. **Any mismatch rolls that tenant back and stops the run** (exit code 1, the tenant and client ids in the log). Safe to run twice: the second run fills and creates nothing.
+
+1. On **staging** (restore last night's production backup there first, see Restore):
+   ```bash
+   docker compose -p erp-staging -f /srv/erp/deploy/compose.yml --env-file /srv/erp/staging.env \
+     exec api node dist/reconcile/reconcile.cli.js            # must be clean before
+   docker compose -p erp-staging -f /srv/erp/deploy/compose.yml --env-file /srv/erp/staging.env \
+     exec api node dist/stock/unit-backfill.cli.js            # "Client balances before X, after X"
+   docker compose -p erp-staging -f /srv/erp/deploy/compose.yml --env-file /srv/erp/staging.env \
+     exec api node dist/stock/unit-backfill.cli.js            # second run: all counts 0
+   docker compose -p erp-staging -f /srv/erp/deploy/compose.yml --env-file /srv/erp/staging.env \
+     exec api node dist/reconcile/reconcile.cli.js            # must still be clean
+   ```
+2. Only then the same commands on **production** (`-p erp-production`, `production.env`).
+3. A mismatch means a client's cached balance already disagreed with its ledger (the reconcile would have said so): fix that first, then run the backfill again.
+
+**Contract release (later, not with phase 24):** once the backfill ran cleanly in production, move `apps/api/prisma/contract/phase-24-units-contract.sql` into a new migration folder and make `warehouseId` required on `Payment` and `ClientLedgerEntry` in `schema.prisma`. It also requires a parent dépôt on every live truck and puts back the strict append-only trigger on `client_ledger_entries`. Its first statement fails if any row was missed.
+
 ## Database roles
 
 | Role | Used by | RLS |
