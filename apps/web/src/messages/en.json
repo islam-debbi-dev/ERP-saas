@@ -51,7 +51,8 @@
     "orders": "Orders",
     "deliveries": "Deliveries",
     "flagged": "Flagged operations",
-    "incentives": "Bonuses"
+    "incentives": "Bonuses",
+    "importFiles": "Import files"
   },
   "roles": {
     "OWNER": "Owner",
@@ -187,7 +188,8 @@
       "marginPct": "Margin %",
       "total": "Amount",
       "brand": "Brand",
-      "sector": "Sector"
+      "sector": "Sector",
+      "ecart": "Cost variance"
     },
     "none": {
       "client": "Walk-in client",
@@ -743,7 +745,21 @@
     "cancel": "Cancel",
     "warehouse": "Receiving warehouse",
     "mainWarehouse": "Main warehouse",
-    "statusIN_TRANSIT": "In transit"
+    "statusIN_TRANSIT": "In transit",
+    "exchangeRate": "Exchange rate (DA per 1 {currency})",
+    "exchangeRateHint": "The bank domiciliation rate: how many DA for 1 {currency}.",
+    "importFile": "Import file",
+    "noImportFile": "None (stock in at validation)",
+    "importFileHint": "A receipt of an import file enters stock only when the file is closed, at the landed cost.",
+    "colCostIn": "Price / unit ({currency})",
+    "totalIn": "Total ({currency})",
+    "totalDzd": "Equivalent in DA",
+    "foreignPaidHint": "A foreign supplier is paid by a payment in its currency, from its page.",
+    "validateBodyInTransit": "The supplier is credited now. The goods stay in transit: they enter stock when the import file is closed, at the landed cost.",
+    "readOnlyInTransit": "Receipt in transit: the supplier debt is recorded, the goods enter stock when the import file is closed. They cannot be sold yet.",
+    "currencyRate": "Currency × rate",
+    "landedPerBase": "Landed cost / base unit:",
+    "cancelBodyInTransit": "The receipt leaves the supplier account. Stock is not touched (nothing had entered)."
   },
   "suppliers": {
     "title": "Suppliers",
@@ -767,7 +783,9 @@
     "archived": "Supplier archived",
     "archiveTitle": "Archive this supplier?",
     "archiveBody": "It will no longer be offered; its old receipts stay available.",
-    "code": "Supplier code"
+    "code": "Supplier code",
+    "currency": "Currency",
+    "currencyHint": "Currency of its receipts and account. It cannot change once the supplier has entries."
   },
   "clients": {
     "title": "Clients",
@@ -2315,5 +2333,30 @@
     "targetsSaved": "Targets saved.",
     "archiveTitle": "Archive the plan?",
     "archiveHelp": "An archived plan is no longer used in calculations and cannot be reactivated. Approved calculations stay."
+  },
+  "importFiles": {
+    "title": "Import files",
+    "subtitle": "One file per container: its receipts, its costs and the landed cost.",
+    "new": "New import file",
+    "create": "Create the file",
+    "created": "Import file {number} created.",
+    "saved": "Import file saved.",
+    "editTitle": "Edit the import file",
+    "reference": "Reference (B/L, AWB)",
+    "containerNo": "Container no.",
+    "arrivalDate": "Arrival date",
+    "note": "Note",
+    "colNumber": "No.",
+    "colPurchases": "Receipts",
+    "colLanded": "Total landed cost",
+    "colStatus": "Status",
+    "allStatuses": "All statuses",
+    "statusOPEN": "Open",
+    "statusCLOSED": "Closed",
+    "statusCANCELLED": "Cancelled",
+    "search": "Search (no., reference, container)",
+    "emptyTitle": "No import files",
+    "emptyDescription": "Create a file for a container, then attach its goods receipts and costs.",
+    "loadMore": "Show more"
   }
 }

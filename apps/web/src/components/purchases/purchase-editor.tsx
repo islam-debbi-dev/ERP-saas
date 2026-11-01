@@ -44,6 +44,7 @@ import { NativeSelect } from '@/components/ui/native-select';
 import { api } from '@/lib/api-client';
 import { useFeature } from '@/lib/auth';
 import { findProductByCode, useUnitLabel } from '@/lib/catalog';
+import { useOpenImportFiles } from '@/lib/import-files';
 import { purchaseKeys, useSuppliers } from '@/lib/purchases';
 import { stockKeys, formatQty } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
@@ -66,6 +67,10 @@ interface Header {
   warehouseId: string;
   note: string;
   paidAmount: string;
+  /** Phase 22: bank rate for a foreign supplier (DZD per 1 unit). */
+  exchangeRate: string;
+  /** Phase 22: '' = not in a dossier d'importation. */
+  importFileId: string;
 }
 
 const priceKey = (productId: string, unitId: string, levelId: string) =>
@@ -92,6 +97,14 @@ export function PurchaseEditor({
   const suppliers = useSuppliers();
   const [header, setHeader] = useState<Header>(initialHeader);
   const warehousesOn = useFeature(Feature.WAREHOUSES);
+  const importOn = useFeature(Feature.IMPORT_COSTS);
+  const openFiles = useOpenImportFiles(importOn);
+  const supplier = suppliers.data?.items.find((s) => s.id === header.supplierId);
+  // Phase 22: a foreign supplier's prices are typed in its currency, with no Algerian TVA.
+  const currency = supplier?.currency ?? 'DZD';
+  const foreign = currency !== 'DZD';
+  const rate = parseDA(header.exchangeRate);
+  const rateValid = !foreign || (rate !== null && rate.gt(0) && rate.decimalPlaces() <= 6);
   const [lines, setLines] = useState<EditorLine[]>(initialLines);
   const [code, setCode] = useState('');
   const [looking, setLooking] = useState(false);
@@ -116,12 +129,12 @@ export function PurchaseEditor({
         lines.map((l) => ({
           qty: parseDA(l.qty) ?? '0',
           unitPrice: parseDA(l.unitCost) ?? '0',
-          tvaRate: l.product.tvaRate,
+          tvaRate: foreign ? '0' : l.product.tvaRate,
         })),
         // The supplier charges TVA whatever our regime; assujettiTva only changes the cost.
         true,
       ),
-    [lines],
+    [lines, foreign],
   );
   const paid = parseDA(header.paidAmount) ?? qty(0);
 
@@ -167,7 +180,9 @@ export function PurchaseEditor({
       supplierRef: header.supplierRef,
       note: header.note,
       ...(warehousesOn ? { warehouseId: header.warehouseId || null } : {}),
-      paidAmount: (parseDA(header.paidAmount) ?? qty(0)).toString(),
+      ...(importOn ? { importFileId: header.importFileId || null } : {}),
+      ...(foreign && rate ? { exchangeRate: rate.toString() } : {}),
+      paidAmount: foreign ? '0' : (parseDA(header.paidAmount) ?? qty(0)).toString(),
       lines: lines.map((l) => ({
         productId: l.product.id,
         unitId: l.unitId,
@@ -182,7 +197,7 @@ export function PurchaseEditor({
     const c = parseDA(l.unitCost);
     return q === null || q.lte(0) || c === null || c.isNegative();
   });
-  const canSave = Boolean(header.supplierId) && !invalidLine;
+  const canSave = Boolean(header.supplierId) && !invalidLine && rateValid;
 
   /** Saves the draft (create or replace) and returns the saved BR. */
   async function saveDraft(): Promise<PurchaseDto> {
@@ -300,6 +315,46 @@ export function PurchaseEditor({
             onChange={(warehouseId) => setHeader({ ...header, warehouseId })}
             defaultLabel={t('mainWarehouse')}
           />
+          {foreign ? (
+            <div className="space-y-2">
+              <Label htmlFor="br-rate">{t('exchangeRate', { currency })}</Label>
+              <Input
+                id="br-rate"
+                dir="ltr"
+                inputMode="decimal"
+                className="num"
+                aria-describedby="br-rate-hint"
+                aria-invalid={!rateValid ? true : undefined}
+                value={header.exchangeRate}
+                onChange={(e) => setHeader({ ...header, exchangeRate: e.target.value })}
+              />
+              <p id="br-rate-hint" className="text-xs text-muted-foreground">
+                {t('exchangeRateHint', { currency })}
+              </p>
+            </div>
+          ) : null}
+          {importOn ? (
+            <div className="space-y-2">
+              <Label htmlFor="br-import-file">{t('importFile')}</Label>
+              <NativeSelect
+                id="br-import-file"
+                aria-describedby="br-import-file-hint"
+                value={header.importFileId}
+                onChange={(e) => setHeader({ ...header, importFileId: e.target.value })}
+              >
+                <option value="">{t('noImportFile')}</option>
+                {(openFiles.data?.items ?? []).map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.number}
+                    {f.reference ? ` – ${f.reference}` : ''}
+                  </option>
+                ))}
+              </NativeSelect>
+              <p id="br-import-file-hint" className="text-xs text-muted-foreground">
+                {t('importFileHint')}
+              </p>
+            </div>
+          ) : null}
           <div className="space-y-2">
             <Label htmlFor="supplier-ref">{t('supplierRef')}</Label>
             <Input
@@ -377,7 +432,9 @@ export function PurchaseEditor({
                   <th className="p-2 text-start font-medium">{t('colProduct')}</th>
                   <th className="p-2 text-start font-medium">{t('colUnit')}</th>
                   <th className="p-2 text-start font-medium">{t('colQty')}</th>
-                  <th className="p-2 text-start font-medium">{t('colCost')}</th>
+                  <th className="p-2 text-start font-medium">
+                    {foreign ? t('colCostIn', { currency }) : t('colCost')}
+                  </th>
                   <th className="p-2 text-end font-medium">{t('colTva')}</th>
                   <th className="p-2 text-end font-medium">{t('colLineHt')}</th>
                   <th className="w-10 p-2" />
@@ -470,7 +527,7 @@ export function PurchaseEditor({
                         data-label={t('colTva')}
                         className="num p-2 text-end text-muted-foreground"
                       >
-                        {`${qty(l.product.tvaRate).toString()} %`}
+                        {`${foreign ? '0' : qty(l.product.tvaRate).toString()} %`}
                       </td>
                       <td
                         data-label={t('colLineHt')}
@@ -523,12 +580,28 @@ export function PurchaseEditor({
               </div>
             ))}
             <div className="flex justify-between gap-4 border-t pt-1 text-base font-semibold">
-              <dt>{t('totalTtc')}</dt>
+              <dt>{foreign ? t('totalIn', { currency }) : t('totalTtc')}</dt>
               <dd dir="ltr">
-                <Amount value={totals.totalTtc} />
+                {foreign ? (
+                  <span className="whitespace-nowrap">
+                    {formatDA(totals.totalTtc, { currency: false })} {currency}
+                  </span>
+                ) : (
+                  <Amount value={totals.totalTtc} />
+                )}
               </dd>
             </div>
-            <div className="flex justify-between gap-4 text-muted-foreground">
+            {foreign && rate ? (
+              <div className="flex justify-between gap-4 text-muted-foreground">
+                <dt>{t('totalDzd')}</dt>
+                <dd dir="ltr">
+                  <Amount value={totals.totalTtc.times(rate)} />
+                </dd>
+              </div>
+            ) : null}
+            <div
+              className={`flex justify-between gap-4 text-muted-foreground${foreign ? ' hidden' : ''}`}
+            >
               <dt>{t('rest')}</dt>
               <dd dir="ltr">
                 <Amount
@@ -539,18 +612,24 @@ export function PurchaseEditor({
               </dd>
             </div>
           </dl>
-          <div className="space-y-2 sm:order-1">
-            <Label htmlFor="paid">{t('paid')}</Label>
-            <Input
-              id="paid"
-              dir="ltr"
-              inputMode="decimal"
-              className="num sm:max-w-48"
-              value={header.paidAmount}
-              onChange={(e) => setHeader({ ...header, paidAmount: e.target.value })}
-            />
-            {!assujettiTva ? <p className="text-xs text-muted-foreground">{t('tvaOff')}</p> : null}
-          </div>
+          {foreign ? (
+            <p className="text-xs text-muted-foreground sm:order-1">{t('foreignPaidHint')}</p>
+          ) : (
+            <div className="space-y-2 sm:order-1">
+              <Label htmlFor="paid">{t('paid')}</Label>
+              <Input
+                id="paid"
+                dir="ltr"
+                inputMode="decimal"
+                className="num sm:max-w-48"
+                value={header.paidAmount}
+                onChange={(e) => setHeader({ ...header, paidAmount: e.target.value })}
+              />
+              {!assujettiTva ? (
+                <p className="text-xs text-muted-foreground">{t('tvaOff')}</p>
+              ) : null}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -603,7 +682,9 @@ export function PurchaseEditor({
         <ResponsiveDialogContent className="md:max-w-2xl">
           <ResponsiveDialogHeader>
             <ResponsiveDialogTitle>{t('validateTitle')}</ResponsiveDialogTitle>
-            <ResponsiveDialogDescription>{t('validateBody')}</ResponsiveDialogDescription>
+            <ResponsiveDialogDescription>
+              {header.importFileId ? t('validateBodyInTransit') : t('validateBody')}
+            </ResponsiveDialogDescription>
           </ResponsiveDialogHeader>
           <div className="space-y-3">
             <p className="text-sm font-medium">{t('updatePrices')}</p>

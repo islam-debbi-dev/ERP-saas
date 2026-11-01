@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { type ProductDto, type PurchaseDto, qty, type TenantSettingsResponse } from '@erp/shared';
 import { PageHeader } from '@/components/shared/page-header';
@@ -38,6 +39,8 @@ export function PurchasePage({ id }: { id: string | null }) {
   const t = useTranslations('purchases');
   const errorMessage = useErrorMessage();
   const purchase = usePurchase(id ?? '');
+  // A new BR opened from a dossier d'importation joins it (phase 22).
+  const fromFile = useSearchParams().get('dossier') ?? '';
   const settings = useQuery({
     queryKey: ['tenant-settings'],
     queryFn: () => api.request<TenantSettingsResponse>('/tenant/settings'),
@@ -104,7 +107,8 @@ export function PurchasePage({ id }: { id: string | null }) {
             product,
             unitId: l.unitId,
             qty: qty(l.qty).toString(),
-            unitCost: qty(l.unitCost).toString(),
+            // A foreign line is edited in the supplier's currency.
+            unitCost: qty(l.unitCostCurrency ?? l.unitCost).toString(),
           },
         ]
       : [];
@@ -123,6 +127,8 @@ export function PurchasePage({ id }: { id: string | null }) {
           warehouseId: p?.warehouse?.id ?? '',
           note: p?.note ?? '',
           paidAmount: p && p.paidAmount !== '0.00' ? p.paidAmount : '',
+          exchangeRate: p && p.currency !== 'DZD' ? p.exchangeRate : '',
+          importFileId: p ? (p.importFile?.id ?? '') : fromFile,
         }}
         assujettiTva={settings.data.assujettiTva}
         levels={levels.data}

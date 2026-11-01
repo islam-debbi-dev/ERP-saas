@@ -51,7 +51,8 @@
     "orders": "Bons de commande",
     "deliveries": "Livraisons",
     "flagged": "Opérations signalées",
-    "incentives": "Primes"
+    "incentives": "Primes",
+    "importFiles": "Dossiers d'importation"
   },
   "roles": {
     "OWNER": "Propriétaire",
@@ -187,7 +188,8 @@
       "marginPct": "Marge %",
       "total": "Montant",
       "brand": "Marque",
-      "sector": "Secteur"
+      "sector": "Secteur",
+      "ecart": "Écart de coût"
     },
     "none": {
       "client": "Client comptoir",
@@ -743,7 +745,21 @@
     "cancel": "Annuler",
     "warehouse": "Dépôt de réception",
     "mainWarehouse": "Dépôt principal",
-    "statusIN_TRANSIT": "En transit"
+    "statusIN_TRANSIT": "En transit",
+    "exchangeRate": "Taux de change (DA pour 1 {currency})",
+    "exchangeRateHint": "Le taux de la domiciliation bancaire : combien de DA pour 1 {currency}.",
+    "importFile": "Dossier d'importation",
+    "noImportFile": "Aucun (entrée en stock à la validation)",
+    "importFileHint": "Un bon d'un dossier n'entre en stock qu'à la clôture du dossier, au coût de revient.",
+    "colCostIn": "Prix / unité ({currency})",
+    "totalIn": "Total ({currency})",
+    "totalDzd": "Contre-valeur en DA",
+    "foreignPaidHint": "Un fournisseur étranger se paie par règlement, dans sa devise, depuis sa fiche.",
+    "validateBodyInTransit": "Le fournisseur sera crédité maintenant. Les marchandises restent en transit : elles entreront en stock à la clôture du dossier d'importation, au coût de revient.",
+    "readOnlyInTransit": "Bon en transit : la dette fournisseur est enregistrée, la marchandise entrera en stock à la clôture du dossier. Elle n'est pas encore vendable.",
+    "currencyRate": "Devise × taux",
+    "landedPerBase": "Coût de revient / unité de base :",
+    "cancelBodyInTransit": "Le bon sort du compte fournisseur. Le stock n'est pas touché (rien n'y était entré)."
   },
   "suppliers": {
     "title": "Fournisseurs",
@@ -767,7 +783,9 @@
     "archived": "Fournisseur archivé",
     "archiveTitle": "Archiver ce fournisseur ?",
     "archiveBody": "Il ne sera plus proposé, ses anciens bons restent consultables.",
-    "code": "Code fournisseur"
+    "code": "Code fournisseur",
+    "currency": "Devise",
+    "currencyHint": "Devise de ses bons et de son compte. Elle ne change plus une fois qu'il a des opérations."
   },
   "clients": {
     "title": "Clients",
@@ -2315,5 +2333,30 @@
     "targetsSaved": "Objectifs enregistrés.",
     "archiveTitle": "Archiver le plan ?",
     "archiveHelp": "Un plan archivé n’est plus utilisé pour les calculs et ne peut pas être réactivé. Les calculs déjà validés restent."
+  },
+  "importFiles": {
+    "title": "Dossiers d'importation",
+    "subtitle": "Un dossier par conteneur : ses bons, ses frais et le coût de revient.",
+    "new": "Nouveau dossier",
+    "create": "Créer le dossier",
+    "created": "Dossier {number} créé.",
+    "saved": "Dossier enregistré.",
+    "editTitle": "Modifier le dossier",
+    "reference": "Référence (B/L, LTA)",
+    "containerNo": "N° de conteneur",
+    "arrivalDate": "Date d'arrivée",
+    "note": "Note",
+    "colNumber": "N°",
+    "colPurchases": "Bons",
+    "colLanded": "Coût de revient total",
+    "colStatus": "Statut",
+    "allStatuses": "Tous les statuts",
+    "statusOPEN": "Ouvert",
+    "statusCLOSED": "Clôturé",
+    "statusCANCELLED": "Annulé",
+    "search": "Rechercher (n°, référence, conteneur)",
+    "emptyTitle": "Aucun dossier d'importation",
+    "emptyDescription": "Créez un dossier pour un conteneur, rattachez-y ses bons de réception et ses frais.",
+    "loadMore": "Afficher plus"
   }
 }
