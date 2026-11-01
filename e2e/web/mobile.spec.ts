@@ -102,6 +102,8 @@ interface Ids {
   draftPlanId: string;
   runId: string;
   importFileId: string;
+  /** A dépôt (SECONDARY) for its page (phase 24, MULTI_UNIT). */
+  warehouseId: string;
   productReference: string;
   tenantId: string;
 }
@@ -177,6 +179,15 @@ async function prepareIds(f: Fixture): Promise<Ids> {
         toWarehouseId: truck.id,
         lines: [{ productId: f.productId, unitId: f.baseUnitId, qty: '2' }],
       },
+    })
+  ).body;
+  // Phase 24 (MULTI_UNIT): a second dépôt, so the header switcher shows and the dépôt
+  // page has something to open.
+  const depot = (
+    await call<{ id: string }>('/warehouses', {
+      method: 'POST',
+      token,
+      body: { name: uniq('Dépôt Vaisselle '), type: 'SECONDARY' },
     })
   ).body;
   // Phase 16 (TOURNEES): a route of the owner running every day with the long-named client,
@@ -368,6 +379,7 @@ async function prepareIds(f: Fixture): Promise<Ids> {
     supplierId: supplier.id,
     inventoryId: inventory.id,
     transferId: transfer.id,
+    warehouseId: depot.id,
     routeId: route.id,
     orderId: order.id,
     planId: plan.id,
@@ -385,6 +397,7 @@ function resolve(pattern: string, v: Ids): string {
       .replace('/achats/[id]', `/achats/${v.purchaseId}`)
       .replace('/clients/[id]', `/clients/${v.clientId}`)
       .replace('/produits/[id]', `/produits/${v.productId}`)
+      .replace('/stock/depots/[id]', `/stock/depots/${v.warehouseId}`)
       .replace('/stock/inventaires/[id]', `/stock/inventaires/${v.inventoryId}`)
       .replace('/stock/transferts/[id]', `/stock/transferts/${v.transferId}`)
       .replace('/stock/[productId]', `/stock/${v.productId}`)
@@ -511,6 +524,23 @@ for (const locale of LOCALES) {
         await page.waitForTimeout(400); // the sheet slides in
         await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
         await check(page, '/clients/[id]/versement', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+      });
+
+      await test.step('what a dépôt sells opens as a sheet with its save button on screen', async () => {
+        const path = resolve('/stock/depots/[id]', v);
+        await page.evaluate((to) => {
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
+        }, path);
+        await page.waitForURL((url) => url.pathname === path);
+        await settle(page);
+        await page.getByRole('button', { name: m['multiUnit']?.['editBrands'] }).click();
+        await page.locator('[role="dialog"]').waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        await expectOnScreen(page, '[role="dialog"] button:last-of-type');
+        await check(page, '/stock/depots/[id]/marques', locale, results, { fullPage: false });
         await page.keyboard.press('Escape');
       });
 

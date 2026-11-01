@@ -60,7 +60,6 @@ function Detail({ id }: { id: string }) {
     );
   }
   const w = detail.data;
-  const sellsAll = w.brands.length === 0 && w.categories.length === 0;
 
   return (
     <div className="space-y-4">
@@ -80,7 +79,6 @@ function Detail({ id }: { id: string }) {
 
       <Card className="space-y-3 p-4">
         <h2 className="font-semibold">{t('sells')}</h2>
-        {sellsAll ? <p className="text-sm text-muted-foreground">{t('sellsAll')}</p> : null}
         <SellsRow
           label={t('brands')}
           items={w.brands}
