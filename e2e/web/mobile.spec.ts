@@ -463,7 +463,8 @@ async function signIn(page: Page, email: string): Promise<void> {
   await page.locator('#identifier').fill(email);
   await page.locator('#password').fill(PASSWORD);
   await page.locator('button[type="submit"]').click();
-  await page.waitForURL(/\/tableau-de-bord/);
+  // The dashboard, or the Vue d'ensemble for a user with several dépôts (phase 26).
+  await page.waitForURL(/\/(tableau-de-bord|vue-ensemble)/);
   await page.waitForLoadState('networkidle');
 }
 
@@ -626,7 +627,7 @@ for (const locale of LOCALES) {
         await page.keyboard.press('Escape');
       });
 
-      await test.step('dossier d\'importation: Close on screen, the cost sheet and its submit', async () => {
+      await test.step("dossier d'importation: Close on screen, the cost sheet and its submit", async () => {
         const path = resolve('/achats/dossiers/[id]', v);
         await page.evaluate((to) => {
           (
@@ -687,6 +688,22 @@ for (const locale of LOCALES) {
         await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
         await check(page, '/stock/depots/nouveau', locale, results, { fullPage: false });
         await page.keyboard.press('Escape');
+      });
+
+      await test.step("vue d'ensemble: the Comparer table scrolls inside its box", async () => {
+        const path = '/vue-ensemble';
+        await page.evaluate((to) => {
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
+        }, path);
+        await page.waitForURL((url) => url.pathname === path);
+        await settle(page);
+        const compare = page.getByRole('button', { name: m['overview']?.['view_compare'] });
+        await expectOnScreen(page, `button:has-text("${m['overview']?.['view_compare']}")`);
+        await compare.click();
+        await page.locator('table').first().waitFor();
+        await check(page, '/vue-ensemble/comparer', locale, results, { fullPage: false });
       });
 
       await test.step('share link of the relevé: the link and the WhatsApp button on screen', async () => {
@@ -839,7 +856,10 @@ for (const locale of LOCALES) {
         await check(page, '/primes/calculs/[id]/detail', locale, results);
         await page.getByRole('button', { name: m['incentives']?.['approve'], exact: true }).click();
         await page.waitForTimeout(400);
-        await expectOnScreen(page, `[role="dialog"] button:has-text("${m['incentives']?.['approveConfirm']}")`);
+        await expectOnScreen(
+          page,
+          `[role="dialog"] button:has-text("${m['incentives']?.['approveConfirm']}")`,
+        );
         await check(page, '/primes/calculs/[id]/valider', locale, results, { fullPage: false });
         await page.keyboard.press('Escape');
       });

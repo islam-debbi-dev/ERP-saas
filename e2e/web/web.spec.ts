@@ -42,7 +42,8 @@ async function login(page: Page, email: string, password = PASSWORD): Promise<vo
   await page.locator('#identifier').fill(email);
   await page.locator('#password').fill(password);
   await page.getByRole('button', { name: 'Log in' }).click();
-  await page.waitForURL(/\/tableau-de-bord/);
+  // The dashboard, or the Vue d'ensemble for a user with several dépôts (phase 26).
+  await page.waitForURL(/\/(tableau-de-bord|vue-ensemble)/);
   // The login page redirects on its own: wait for it, or the next navigation
   // is thrown back to the dashboard.
   await page.waitForLoadState('networkidle');
@@ -100,7 +101,8 @@ test.describe('the login itself', () => {
     const f = shared();
     await useEnglish(page);
     await login(page, f.session.email);
-    await expect(page).toHaveURL(/\/tableau-de-bord/);
+    await expect(page).toHaveURL(/\/(tableau-de-bord|vue-ensemble)/);
+    if (!page.url().includes('/tableau-de-bord')) await open(page, '/tableau-de-bord');
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hello');
     // The dashboard loaded its numbers (the card is there, not a skeleton).
     await expect(page.getByText('Sales today')).toBeVisible();
