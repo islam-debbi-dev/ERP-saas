@@ -54,6 +54,8 @@ enum DocType {
   BC
   /// Dossier d'importation (phase 22).
   DI
+  /// Dépense (phase 25).
+  DEP
 }
 
 enum PrintFormat {
@@ -195,6 +197,9 @@ model Tenant {
   userWarehouseAccesses UserWarehouseAccess[]
   warehouseBrands       WarehouseBrand[]
   warehouseCategories   WarehouseCategory[]
+  expenseCategories     ExpenseCategory[]
+  expenses              Expense[]
+  rentContracts         RentContract[]
 
   @@map("tenants")
 }
@@ -1658,6 +1663,8 @@ model Warehouse {
   transfersIn     StockTransfer[]       @relation("TransferTo")
   orders          Order[]
   sellerSessions  SellerSession[]
+  expenses        Expense[]
+  rentContracts   RentContract[]
 
   @@unique([tenantId, name])
   @@index([tenantId, type])
@@ -2597,4 +2604,107 @@ model ClientPackagingBalance {
   @@unique([clientId, packagingTypeId])
   @@index([tenantId, clientId])
   @@map("client_packaging_balances")
+}
+
+// ---------------------------------------------------------------- Dépenses & loyers (phase 25)
+
+enum ExpenseStatus {
+  VALID
+  CANCELLED
+}
+
+enum RentPeriod {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+/// A tenant's list of charge categories (master data, soft delete). Seeded ones keep a
+/// `key` (RENT = Loyer) whatever the owner renames them to.
+model ExpenseCategory {
+  id        String    @id @default(uuid()) @db.Uuid
+  tenantId  String    @db.Uuid
+  name      String    @db.VarChar(60)
+  key       String?   @db.VarChar(20)
+  deletedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3)
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  expenses Expense[]
+
+  @@unique([tenantId, key])
+  @@index([tenantId, name])
+  @@map("expense_categories")
+}
+
+/// Bail: the rent of a dépôt. Never edited after its first payment: a new rent closes it
+/// (endDate) and opens a new one, so past months keep their cost. Its cost is computed by
+/// day from these terms (packages/shared/rent.ts), never stored.
+model RentContract {
+  id            String     @id @default(uuid()) @db.Uuid
+  tenantId      String     @db.Uuid
+  warehouseId   String     @db.Uuid
+  landlordName  String     @db.VarChar(120)
+  landlordPhone String?    @db.VarChar(30)
+  amount        Decimal    @db.Decimal(14, 2)
+  period        RentPeriod
+  startDate     DateTime   @db.Date
+  /// Last day included; null = open-ended.
+  endDate       DateTime?  @db.Date
+  note          String?    @db.VarChar(255)
+  createdBy     String?    @db.Uuid
+  closedBy      String?    @db.Uuid
+  closedAt      DateTime?  @db.Timestamptz(3)
+  version       Int        @default(1)
+  createdAt     DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime   @updatedAt @db.Timestamptz(3)
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  payments  Expense[]
+
+  @@index([tenantId, warehouseId])
+  @@map("rent_contracts")
+}
+
+/// Dépense (DEP): money the company paid for a charge. Immutable once saved: a mistake is
+/// cancelled (reason) and entered again. A Loyer payment links its contract and the
+/// periods it pays; it is cash only, the contract carries the cost.
+model Expense {
+  id             String        @id @default(uuid()) @db.Uuid
+  tenantId       String        @db.Uuid
+  number         String        @db.VarChar(20)
+  /// The Algiers day the money left.
+  date           DateTime      @db.Date
+  warehouseId    String?       @db.Uuid
+  categoryId     String        @db.Uuid
+  amount         Decimal       @db.Decimal(14, 2)
+  mode           PaymentMode
+  reference      String?       @db.VarChar(80)
+  payee          String?       @db.VarChar(120)
+  periodStart    DateTime?     @db.Date
+  periodEnd      DateTime?     @db.Date
+  note           String?       @db.VarChar(255)
+  rentContractId String?       @db.Uuid
+  status         ExpenseStatus @default(VALID)
+  createdBy      String?       @db.Uuid
+  cancelReason   String?       @db.VarChar(255)
+  cancelledBy    String?       @db.Uuid
+  cancelledAt    DateTime?     @db.Timestamptz(3)
+  version        Int           @default(1)
+  createdAt      DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime      @updatedAt @db.Timestamptz(3)
+
+  tenant       Tenant          @relation(fields: [tenantId], references: [id])
+  warehouse    Warehouse?      @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  category     ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  rentContract RentContract?   @relation(fields: [rentContractId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, number])
+  @@index([tenantId, date])
+  @@index([tenantId, warehouseId, date])
+  @@index([tenantId, rentContractId])
+  @@index([tenantId, periodEnd])
+  @@map("expenses")
 }

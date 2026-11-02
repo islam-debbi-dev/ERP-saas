@@ -38,6 +38,8 @@ type TitleKey =
   | 'support.title'
   | 'supplierAccount.title'
   | 'aging.title'
+  | 'nav.expenses'
+  | 'charges.title'
   | 'reminders.title'
   | 'tournees.title'
   | 'tournees.todayTitle'

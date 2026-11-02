@@ -54,6 +54,8 @@ export const DocType = {
   BC: 'BC',
   /** Dossier d'importation: one shipment, its BRs and costs (phase 22). */
   DI: 'DI',
+  /** Dépense: a charge paid by the company (rent, electricity, salaries...; phase 25). */
+  DEP: 'DEP',
 } as const;
 export type DocType = (typeof DocType)[keyof typeof DocType];
 export const DOC_TYPES = Object.values(DocType);
@@ -250,6 +252,46 @@ export const PaymentMode = {
 } as const;
 export type PaymentMode = (typeof PaymentMode)[keyof typeof PaymentMode];
 export const PAYMENT_MODES = Object.values(PaymentMode);
+
+/** A dépense is immutable: a mistake is cancelled and entered again (phase 25). */
+export const ExpenseStatus = {
+  VALID: 'VALID',
+  CANCELLED: 'CANCELLED',
+} as const;
+export type ExpenseStatus = (typeof ExpenseStatus)[keyof typeof ExpenseStatus];
+
+/**
+ * The categories every company starts with (phase 25). The key identifies them whatever
+ * the owner renames them to; `RENT` (Loyer) is the one rent payments use.
+ */
+export const ExpenseCategoryKey = {
+  RENT: 'RENT',
+  UTILITIES: 'UTILITIES',
+  SALARIES: 'SALARIES',
+  TRANSPORT: 'TRANSPORT',
+  TELECOM: 'TELECOM',
+  OTHER: 'OTHER',
+} as const;
+export type ExpenseCategoryKey = (typeof ExpenseCategoryKey)[keyof typeof ExpenseCategoryKey];
+
+/** Default names of the seeded categories (French, as the owner types them). */
+export const DEFAULT_EXPENSE_CATEGORIES: readonly { key: ExpenseCategoryKey; name: string }[] = [
+  { key: ExpenseCategoryKey.RENT, name: 'Loyer' },
+  { key: ExpenseCategoryKey.UTILITIES, name: 'Électricité / eau' },
+  { key: ExpenseCategoryKey.SALARIES, name: 'Salaires' },
+  { key: ExpenseCategoryKey.TRANSPORT, name: 'Transport / carburant' },
+  { key: ExpenseCategoryKey.TELECOM, name: 'Téléphone / internet' },
+  { key: ExpenseCategoryKey.OTHER, name: 'Autre' },
+];
+
+/** How often a rent contract (bail) is due. */
+export const RentPeriod = {
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  YEARLY: 'YEARLY',
+} as const;
+export type RentPeriod = (typeof RentPeriod)[keyof typeof RentPeriod];
+export const RENT_PERIODS = Object.values(RentPeriod);
 
 export const PaymentStatus = {
   VALID: 'VALID',

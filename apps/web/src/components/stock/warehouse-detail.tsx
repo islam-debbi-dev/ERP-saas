@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { type CategoryDto, Feature, Permission, type WarehouseDetailDto } from '@erp/shared';
+import { RentBlock } from '@/components/expenses/rent-block';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FeatureGate } from '@/components/shared/feature-gate';
 import { PageHeader } from '@/components/shared/page-header';
@@ -22,7 +23,7 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { usePermission } from '@/lib/auth';
+import { useFeature, usePermission } from '@/lib/auth';
 import { useCategories } from '@/lib/catalog';
 import { useBrands } from '@/lib/sales-force';
 import { useSaveWarehouse, useSetWarehouseSells, useWarehouseDetail } from '@/lib/stock';
@@ -43,6 +44,10 @@ function Detail({ id }: { id: string }) {
   const errorMessage = useErrorMessage();
   const detail = useWarehouseDetail(id);
   const writer = usePermission(Permission.SETTINGS_EDIT);
+  // Phase 25: the dépôt's rent, next to what it sells (its profit needs it).
+  const expensesOn = useFeature(Feature.EXPENSES);
+  const canSeeRent = usePermission(Permission.EXPENSES_VIEW);
+  const rentOn = expensesOn && canSeeRent;
   const [editing, setEditing] = useState<'brands' | 'categories' | null>(null);
 
   if (detail.isPending) {
@@ -92,6 +97,8 @@ function Detail({ id }: { id: string }) {
           editLabel={t('editCategories')}
         />
       </Card>
+
+      {rentOn && w.type !== 'VEHICLE' ? <RentBlock warehouseId={w.id} /> : null}
 
       <ManagerCard warehouse={w} writer={writer} />
 

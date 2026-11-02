@@ -463,7 +463,13 @@ export function PermissionsDialog({ user, open, onOpenChange }: DialogProps & { 
   const groups = (Object.entries(PERMISSION_GROUPS) as [PermissionGroup, readonly Permission[]][])
     .map(
       ([group, list]) =>
-        [group, multiUnit ? list : list.filter((p) => SENSITIVE_PERMISSIONS.includes(p))] as const,
+        [
+          group,
+          // The dépenses (phase 25) are in every edition, so their rights show without MULTI_UNIT.
+          multiUnit || group === 'expenses'
+            ? list
+            : list.filter((p) => SENSITIVE_PERMISSIONS.includes(p)),
+        ] as const,
     )
     .filter(([, list]) => list.length > 0);
   const changed = PERMISSIONS.some((p) => on.has(p) !== defaults.has(p));

@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarClock, Tags, ChartColumn, Download, Loader2 } from 'lucide-react';
+import { CalendarClock, Tags, ChartColumn, Download, Loader2, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import { type ReactNode, useState } from 'react';
@@ -79,6 +79,9 @@ export function ReportsPage() {
   // Sales force filters (phase 14): office roles narrow sales and versements by seller or
   // team, sales by brand. A seller's figures are always his own (API).
   const salesForce = useFeature(Feature.SALES_FORCE);
+  // Charges (phase 25): managers' finance figures.
+  const expensesOn = useFeature(Feature.EXPENSES);
+  const canFinance = usePermission(Permission.REPORTS_FINANCE);
   const office = useIsOffice();
   const sellers = useSellers();
   const brands = useBrands();
@@ -112,6 +115,12 @@ export function ReportsPage() {
             icon: CalendarClock,
             href: '/rapports/balance-agee',
           },
+          expensesOn &&
+            canFinance && {
+              label: t('chargesLink'),
+              icon: Wallet,
+              href: '/rapports/charges',
+            },
           salesForce &&
             (state.user?.role === 'OWNER' ||
               state.user?.role === 'MANAGER' ||

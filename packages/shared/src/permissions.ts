@@ -83,6 +83,14 @@ export const Permission = {
   WAREHOUSE_ACCESS_MANAGE: 'WAREHOUSE_ACCESS_MANAGE',
   /** Work in and see every dépôt, as the owner does. */
   VIEW_ALL_WAREHOUSES: 'VIEW_ALL_WAREHOUSES',
+
+  // Dépenses and rent (phase 25, module EXPENSES).
+  EXPENSES_VIEW: 'EXPENSES_VIEW',
+  EXPENSES_CREATE: 'EXPENSES_CREATE',
+  /** Cancel a dépense (with a reason). */
+  EXPENSE_CANCEL: 'EXPENSE_CANCEL',
+  /** Expense categories and rent contracts (baux). */
+  RENT_MANAGE: 'RENT_MANAGE',
 } as const;
 export type Permission = (typeof Permission)[keyof typeof Permission];
 export const PERMISSIONS = Object.values(Permission);
@@ -147,6 +155,12 @@ export const PERMISSION_GROUPS = {
     Permission.USERS_MANAGE,
     Permission.WAREHOUSE_ACCESS_MANAGE,
     Permission.VIEW_ALL_WAREHOUSES,
+  ],
+  expenses: [
+    Permission.EXPENSES_VIEW,
+    Permission.EXPENSES_CREATE,
+    Permission.EXPENSE_CANCEL,
+    Permission.RENT_MANAGE,
   ],
   settings: [Permission.SETTINGS_EDIT],
 } as const satisfies Record<string, readonly Permission[]>;

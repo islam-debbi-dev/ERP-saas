@@ -13,8 +13,12 @@ import {
 
 describe('effectiveFeatures', () => {
   it('uses the edition defaults', () => {
-    expect(effectiveFeatures(Edition.ESSENTIEL)).toEqual([]);
-    expect(effectiveFeatures(Edition.IMPORT)).toEqual([Feature.WAREHOUSES, Feature.IMPORT_COSTS]);
+    expect(effectiveFeatures(Edition.ESSENTIEL)).toEqual([Feature.EXPENSES]);
+    expect(effectiveFeatures(Edition.IMPORT)).toEqual([
+      Feature.WAREHOUSES,
+      Feature.IMPORT_COSTS,
+      Feature.EXPENSES,
+    ]);
     expect(effectiveFeatures(Edition.DISTRIBUTION)).not.toContain(Feature.IMPORT_COSTS);
     expect(effectiveFeatures(Edition.DISTRIBUTION)).toContain(Feature.MOBILE_APP);
     expect(effectiveFeatures(Edition.DISTRIBUTION)).toContain(Feature.MULTI_UNIT);
@@ -23,24 +27,35 @@ describe('effectiveFeatures', () => {
   });
 
   it('adds grants and removes revokes', () => {
-    expect(effectiveFeatures(Edition.ESSENTIEL, [Feature.GEO_CHECK])).toEqual([Feature.GEO_CHECK]);
+    expect(effectiveFeatures(Edition.ESSENTIEL, [Feature.GEO_CHECK])).toEqual([
+      Feature.GEO_CHECK,
+      Feature.EXPENSES,
+    ]);
     expect(effectiveFeatures(Edition.IMPORT, [], [Feature.WAREHOUSES])).toEqual([
       Feature.IMPORT_COSTS,
+      Feature.EXPENSES,
     ]);
     // A revoke wins over a grant of the same feature.
-    expect(effectiveFeatures(Edition.ESSENTIEL, [Feature.GEO_CHECK], [Feature.GEO_CHECK])).toEqual(
-      [],
-    );
+    expect(effectiveFeatures(Edition.ESSENTIEL, [Feature.GEO_CHECK], [Feature.GEO_CHECK])).toEqual([
+      Feature.EXPENSES,
+    ]);
+    // Every edition has the dépenses (phase 25); the super-admin can still take them away.
+    for (const e of Object.values(Edition)) {
+      expect(effectiveFeatures(e)).toContain(Feature.EXPENSES);
+    }
+    expect(effectiveFeatures(Edition.ESSENTIEL, [], [Feature.EXPENSES])).toEqual([]);
   });
 
   it('ignores unknown strings', () => {
-    expect(effectiveFeatures(Edition.ESSENTIEL, ['TELEPORT', ''], ['NOPE'])).toEqual([]);
+    expect(effectiveFeatures(Edition.ESSENTIEL, ['TELEPORT', ''], ['NOPE'])).toEqual([
+      Feature.EXPENSES,
+    ]);
   });
 
   it('keeps the FEATURES order whatever the grant order', () => {
     expect(
       effectiveFeatures(Edition.ESSENTIEL, [Feature.IMPORT_COSTS, Feature.SALES_FORCE]),
-    ).toEqual([Feature.SALES_FORCE, Feature.IMPORT_COSTS]);
+    ).toEqual([Feature.SALES_FORCE, Feature.IMPORT_COSTS, Feature.EXPENSES]);
   });
 });
 

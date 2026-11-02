@@ -53,7 +53,8 @@
     "flagged": "العمليات المُبلَّغ عنها",
     "incentives": "المكافآت",
     "importFiles": "ملفات الاستيراد",
-    "promotions": "العروض"
+    "promotions": "العروض",
+    "expenses": "المصاريف"
   },
   "roles": {
     "OWNER": "المالك",
@@ -206,7 +207,8 @@
     "allTeams": "الكل",
     "filterBrand": "العلامة",
     "allBrands": "الكل",
-    "sellOutLink": "المبيعات حسب العلامة"
+    "sellOutLink": "المبيعات حسب العلامة",
+    "chargesLink": "الأعباء والكراء"
   },
   "settings": {
     "title": "الإعدادات",
@@ -422,7 +424,13 @@
     "PROMOTION_INVALID": "منتج أو وحدة أو زبون أو قطاع في العرض غير موجود.",
     "FREE_LINE_NOT_EDITABLE": "الوحدات المجانية تتبع سطرها المدفوع: لا يوجد عرض هنا.",
     "PACKAGING_OPENING_ALREADY_SET": "رصيد التغليف الافتتاحي لهذا الزبون مسجّل مسبقًا.",
-    "PACKAGING_TYPE_NAME_TAKEN": "يوجد تغليف بهذا الاسم."
+    "PACKAGING_TYPE_NAME_TAKEN": "يوجد تغليف بهذا الاسم.",
+    "EXPENSE_NOT_VALID": "هذا المصروف ملغى مسبقاً.",
+    "EXPENSE_CATEGORY_NAME_TAKEN": "هذا الصنف موجود مسبقاً.",
+    "EXPENSE_CATEGORY_PROTECTED": "صنف الكراء تستعمله العقود: يبقى.",
+    "RENT_CONTRACT_LOCKED": "لهذا العقد دفعة: أنهِه وافتح عقداً جديداً.",
+    "RENT_CONTRACT_CLOSED": "هذا العقد منتهٍ.",
+    "RENT_PERIOD_INVALID": "هذه ليست فترة كاملة من العقد، أو أنها مدفوعة مسبقاً."
   },
   "units": {
     "PIECE": "قطعة",
@@ -1555,6 +1563,22 @@
     "VIEW_ALL_WAREHOUSES": {
       "label": "كل المستودعات",
       "help": "العمل في كل المستودعات ورؤية أرقامها."
+    },
+    "EXPENSES_VIEW": {
+      "label": "رؤية المصاريف",
+      "help": "قائمة المصاريف وعقود الكراء."
+    },
+    "EXPENSES_CREATE": {
+      "label": "إدخال مصروف",
+      "help": "حفظ مصروف أو دفع كراء."
+    },
+    "EXPENSE_CANCEL": {
+      "label": "إلغاء مصروف",
+      "help": "إلغاء مصروف مع ذكر السبب."
+    },
+    "RENT_MANAGE": {
+      "label": "تسيير عقود الكراء",
+      "help": "إنشاء عقد وتعديله وإنهاؤه وتسيير الأصناف."
     }
   },
   "sessions": {
@@ -1770,7 +1794,8 @@
     "or": " أو ",
     "lockedContact": "اطلب هذه الوحدة عبر واتساب",
     "lockedWhatsappMessage": "السلام عليكم، أريد إضافة وحدة «{feature}» لشركة {company}.",
-    "lockedBack": "العودة إلى لوحة القيادة"
+    "lockedBack": "العودة إلى لوحة القيادة",
+    "featureEXPENSES": "المصاريف والكراء"
   },
   "share": {
     "button": "مشاركة الرابط",
@@ -2822,6 +2847,119 @@
     "saved": "تم حفظ المستودع",
     "debtByWarehouse": "الدين حسب المستودع",
     "reducedLine": "المستودع {name}: التفاصيل غير متاحة",
-    "notFound": "هذا المستودع غير موجود أو ليس لديك وصول إليه."
+    "notFound": "هذا المستودع غير موجود أو ليس لديك وصول إليه.",
+    "group_expenses": "المصاريف"
+  },
+  "expenses": {
+    "title": "المصاريف",
+    "subtitle": "الكراء، الكهرباء، الأجور… ما يكلّفه كل مستودع.",
+    "new": "مصروف جديد",
+    "newTitle": "مصروف جديد",
+    "newHelp": "المبلغ، الصنف، وانتهى. لا يُعدَّل المصروف: ألغِه وأدخله من جديد.",
+    "tab_list": "المصاريف",
+    "tab_rent": "الكراء",
+    "rentAlert": "كراء يحتاج إلى انتباهك",
+    "amount": "المبلغ",
+    "category": "الصنف",
+    "date": "التاريخ",
+    "mode": "طريقة الدفع",
+    "payee": "دُفع إلى",
+    "reference": "المرجع (شيك، تحويل، فاتورة)",
+    "depot": "المستودع",
+    "pickDepot": "اختر المستودع",
+    "note": "ملاحظة",
+    "status": "الحالة",
+    "actions": "إجراءات",
+    "coversPeriod": "يغطي فترة",
+    "coversPeriodHelp": "فاتورة شهرين تُوزَّع يوماً بيوم على هذين الشهرين.",
+    "periodStart": "من",
+    "periodEnd": "إلى",
+    "covers": "يغطي",
+    "save": "حفظ",
+    "cancelButton": "إلغاء",
+    "close": "إغلاق",
+    "created": "تم حفظ المصروف {number}: {amount}",
+    "allCategories": "كل الأصناف",
+    "allModes": "كل الطرق",
+    "allStatuses": "كل الحالات",
+    "statusVALID": "صالح",
+    "statusCANCELLED": "ملغى",
+    "rentPayment": "كراء مدفوع",
+    "from": "من",
+    "to": "إلى",
+    "loadMore": "عرض المزيد",
+    "emptyTitle": "لا توجد مصاريف",
+    "emptyDescription": "أدخل الكراء أو الكهرباء أو الأجور لمعرفة الربح الحقيقي.",
+    "cancelExpense": "إلغاء",
+    "cancelTitle": "إلغاء المصروف {number}",
+    "cancelHelp": "يبقى المصروف في السجل مع علامة ملغى. أدخل مصروفاً جديداً عند الحاجة.",
+    "reason": "السبب",
+    "confirmCancel": "إلغاء المصروف",
+    "cancelled": "تم إلغاء المصروف {number}",
+    "categories": "الأصناف",
+    "categoriesHelp": "أصناف مصاريفك. صنف الكراء تستعمله العقود ويبقى دائماً.",
+    "rentCategory": "تستعمله العقود",
+    "archiveCategory": "أرشفة {name}",
+    "newCategory": "صنف جديد",
+    "add": "إضافة",
+    "chargesLink": "تقرير الأعباء",
+    "rentTitle": "الكراء",
+    "rentHelp": "عقد كراء المستودع: مدفوع إلى غاية، الاستحقاق القادم، الباقي.",
+    "newContract": "عقد كراء جديد",
+    "editContract": "تعديل العقد",
+    "closeContract": "إنهاء العقد",
+    "noContract": "لا يوجد عقد كراء جارٍ.",
+    "pastContracts": "{count, plural, one {عقد منتهٍ واحد} other {# عقود منتهية}}",
+    "paidUntil": "مدفوع إلى غاية",
+    "notPaidYet": "لم يُدفع شيء",
+    "nextDue": "الاستحقاق القادم",
+    "amountDue": "المستحق إلى اليوم",
+    "alertUNPAID_DUE": "استحقاق غير مدفوع",
+    "alertENDING_SOON": "ينتهي قريباً",
+    "payRent": "دفع الكراء",
+    "payRentTitle": "دفع الكراء",
+    "payRentHelp": "دفع إلى {landlord}، عن فترات كاملة من العقد.",
+    "periodsToPay": "الفترات المدفوعة",
+    "fewerPeriods": "فترة أقل",
+    "morePeriods": "فترة أخرى",
+    "periodCovered": "الفترة:",
+    "nothingToPay": "العقد مدفوع إلى نهايته.",
+    "contractAmount": "مبلغ العقد:",
+    "contractHelp": "العقد المدفوع لا يُعدَّل: أنهِه وافتح عقداً جديداً لكراء جديد.",
+    "landlord": "المالك",
+    "landlordPhone": "الهاتف",
+    "rentAmount": "الكراء",
+    "period": "الدورية",
+    "periodMONTHLY": "شهر",
+    "periodQUARTERLY": "ثلاثي",
+    "periodYEARLY": "سنة",
+    "startDate": "البداية",
+    "endDateOptional": "النهاية (اختياري)",
+    "contractSaved": "تم حفظ العقد",
+    "closeHelp": "يتوقف العقد بعد هذا اليوم. الأشهر الماضية تحتفظ بتكلفتها.",
+    "lastDay": "آخر يوم",
+    "closeTooEarly": "العقد مدفوع إلى غاية",
+    "contractClosed": "تم إنهاء العقد"
+  },
+  "charges": {
+    "title": "الأعباء",
+    "subtitle": "الكراء موزَّعاً يوماً بيوم وباقي مصاريف الفترة.",
+    "back": "العودة إلى التقارير",
+    "export": "تصدير",
+    "managersOnly": "الأعباء خاصة بالمسيّرين.",
+    "from": "من",
+    "to": "إلى",
+    "invalidRange": "تاريخ النهاية قبل تاريخ البداية.",
+    "total": "مجموع الأعباء",
+    "rent": "الكراء (العقد)",
+    "expenses": "المصاريف",
+    "rentPaid": "الكراء المدفوع",
+    "rentPaidHelp": "خزينة، خارج المجموع: العقد يحمل التكلفة.",
+    "empty": "لا توجد أعباء في هذه الفترة.",
+    "byCategory": "حسب الصنف",
+    "byDepot": "حسب المستودع",
+    "colCategory": "الصنف",
+    "colDepot": "المستودع",
+    "noDepot": "بدون مستودع"
   }
 }

@@ -159,6 +159,16 @@ export const ErrorCode = {
   FREE_LINE_NOT_EDITABLE: 'FREE_LINE_NOT_EDITABLE',
   PACKAGING_OPENING_ALREADY_SET: 'PACKAGING_OPENING_ALREADY_SET',
   PACKAGING_TYPE_NAME_TAKEN: 'PACKAGING_TYPE_NAME_TAKEN',
+  // Dépenses and rent (phase 25)
+  EXPENSE_NOT_VALID: 'EXPENSE_NOT_VALID',
+  EXPENSE_CATEGORY_NAME_TAKEN: 'EXPENSE_CATEGORY_NAME_TAKEN',
+  /** The Loyer category is used by rent payments: it is never archived. */
+  EXPENSE_CATEGORY_PROTECTED: 'EXPENSE_CATEGORY_PROTECTED',
+  /** A contract with a payment is never edited: close it and open a new one. */
+  RENT_CONTRACT_LOCKED: 'RENT_CONTRACT_LOCKED',
+  RENT_CONTRACT_CLOSED: 'RENT_CONTRACT_CLOSED',
+  /** A rent payment covers whole periods of its contract, inside it. */
+  RENT_PERIOD_INVALID: 'RENT_PERIOD_INVALID',
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 

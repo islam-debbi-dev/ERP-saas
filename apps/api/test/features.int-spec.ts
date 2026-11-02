@@ -100,14 +100,22 @@ describe('editions and feature flags (phase 13b)', () => {
 
   it('picks the edition from the activity at signup and returns the features', async () => {
     const grossiste = await registerTenant(t, 'Edition Grossiste', { trial: true });
-    expect(grossiste.auth.user).toMatchObject({ edition: Edition.ESSENTIEL, features: [] });
+    // Dépenses are in every edition (phase 25).
+    expect(grossiste.auth.user).toMatchObject({
+      edition: Edition.ESSENTIEL,
+      features: [Feature.EXPENSES],
+    });
 
     const importer = await registerTenant(t, 'Edition Import', {
       trial: true,
       activity: Activity.IMPORTATEUR,
     });
     expect(importer.auth.user.edition).toBe(Edition.IMPORT);
-    expect(importer.auth.user.features).toEqual([Feature.WAREHOUSES, Feature.IMPORT_COSTS]);
+    expect(importer.auth.user.features).toEqual([
+      Feature.WAREHOUSES,
+      Feature.IMPORT_COSTS,
+      Feature.EXPENSES,
+    ]);
 
     const distributor = await registerTenant(t, 'Edition Distribution', {
       trial: true,
@@ -153,14 +161,17 @@ describe('editions and feature flags (phase 13b)', () => {
     }
 
     // Prime the cache, then grant: the change applies on the next request, same token.
-    expect((await me(a)).features).toEqual([]);
+    expect((await me(a)).features).toEqual([Feature.EXPENSES]);
     const granted = await patchSubscription(a.tenantId, {
       featureGrants: [Feature.GEO_CHECK],
     }).expect(200);
-    expect((granted.body as SubscriptionSummary).features).toEqual([Feature.GEO_CHECK]);
+    expect((granted.body as SubscriptionSummary).features).toEqual([
+      Feature.GEO_CHECK,
+      Feature.EXPENSES,
+    ]);
     await getGeo(a).expect(200);
     await postGeo(a).expect(201);
-    expect((await me(a)).features).toEqual([Feature.GEO_CHECK]);
+    expect((await me(a)).features).toEqual([Feature.GEO_CHECK, Feature.EXPENSES]);
 
     // A revoke wins over the edition: DISTRIBUTION minus GEO_CHECK.
     await patchSubscription(a.tenantId, {
@@ -197,7 +208,7 @@ describe('editions and feature flags (phase 13b)', () => {
     await patchSubscription(a.tenantId, { edition: Edition.ENTREPRISE }).expect(200);
     await getGeo(a).expect(200);
     await getGeo(b).expect(403);
-    expect((await me(b)).features).toEqual([]);
+    expect((await me(b)).features).toEqual([Feature.EXPENSES]);
   });
 
   it('only the super-admin changes modules, and every change is audited', async () => {

@@ -383,6 +383,34 @@ async function prepareIds(f: Fixture): Promise<Ids> {
     token,
     body: { name: uniq('Casier ') },
   });
+  // Phase 25: a yearly lease on the dépôt, not paid, so its page shows the Loyer block
+  // with a long landlord name and the Payer button; and one expense for the list.
+  await call('/rent-contracts', {
+    method: 'POST',
+    token,
+    body: {
+      warehouseId: depot.id,
+      landlordName: 'Société immobilière El Djazair Benali et associés',
+      landlordPhone: '0550 12 34 56',
+      amount: '1200000',
+      period: 'YEARLY',
+      startDate: `${today().slice(0, 4)}-01-01`,
+    },
+  });
+  const categories = (
+    await call<{ id: string; key: string | null }[]>('/expense-categories', { token })
+  ).body;
+  await call('/expenses', {
+    method: 'POST',
+    token,
+    idempotencyKey: idemKey('dep'),
+    body: {
+      categoryId: categories.find((c) => c.key === 'UTILITIES')!.id,
+      amount: '18450.75',
+      payee: 'Sonelgaz — Direction de distribution Alger Est',
+      warehouseId: depot.id,
+    },
+  });
   const product = (await call<{ reference: string }>(`/products/${f.productId}`, { token })).body;
   return {
     importFileId: importFile.id,
@@ -847,6 +875,45 @@ for (const locale of LOCALES) {
         await page.locator('[id^="returned-"]').first().waitFor();
         await page.locator('[id^="returned-"]').first().scrollIntoViewIfNeeded();
         await check(page, '/ventes/nouvelle/emballages', locale, results, { fullPage: false });
+      });
+
+      await test.step('dépenses: fast entry, pay the rent, with their save buttons on screen', async () => {
+        const go = async (path: string) => {
+          await page.evaluate((to) => {
+            (
+              window as unknown as { next: { router: { push(href: string): void } } }
+            ).next.router.push(to);
+          }, path);
+          await page.waitForURL((url) => url.pathname === path.split('?')[0]);
+          await settle(page);
+        };
+        // Phase 25: the amount comes first, the category chips wrap, save stays on screen.
+        await go('/depenses');
+        await page.getByRole('button', { name: m['expenses']?.['new'] }).click();
+        await page.locator('#exp-amount').waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        await page.locator('[role="dialog"] [role="radio"]').first().click();
+        await page.locator('[role="dialog"] button[type="submit"]').scrollIntoViewIfNeeded();
+        await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
+        await check(page, '/depenses/nouvelle', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+
+        // The Loyers tab, then the dépôt's Loyer block: Payer prefills the next period.
+        await page.getByRole('tab', { name: m['expenses']?.['tab_rent'] }).click();
+        await page.getByRole('button', { name: m['expenses']?.['payRent'] }).first().waitFor();
+        await check(page, '/depenses/loyers', locale, results);
+        await go(resolve('/stock/depots/[id]', v));
+        const pay = page.getByRole('button', { name: m['expenses']?.['payRent'] }).first();
+        await pay.scrollIntoViewIfNeeded();
+        await check(page, '/stock/depots/[id]/loyer', locale, results);
+        await pay.click();
+        await page.locator('#exp-amount').waitFor();
+        await page.waitForTimeout(400);
+        await expect.soft(page.locator('#exp-amount')).toHaveValue('1200000.00');
+        await page.locator('[role="dialog"] button[type="submit"]').scrollIntoViewIfNeeded();
+        await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
+        await check(page, '/stock/depots/[id]/loyer-payer', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
       });
 
       await test.step('fast sale: a line, then the total and the validate button on screen', async () => {
