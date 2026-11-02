@@ -5,6 +5,7 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as argon2 from 'argon2';
+import { DEFAULT_EXPENSE_CATEGORIES } from '@erp/shared';
 import { EDITION_PRICE_DEFAULTS, PLAN_DEFAULTS } from '../src/billing/plans';
 import { createDefaultUnits, ensurePriceLevels } from '../src/catalog/catalog-defaults';
 import { PrismaClient } from '../src/generated/prisma/client';
@@ -156,6 +157,31 @@ async function main(): Promise<void> {
         WHERE w."tenantId" = ${tenant.id}::uuid AND w.type IN ('MAIN', 'SECONDARY')
           AND w."deletedAt" IS NULL
         ON CONFLICT ("userId", "warehouseId") DO NOTHING`;
+      // Phase 25 (EXPENSES): the default charge categories and a yearly lease of the dépôt
+      // principal, not paid yet (the Loyer block shows it due). No expense is seeded: an
+      // expense takes a DEP number.
+      await tx.expenseCategory.createMany({
+        data: DEFAULT_EXPENSE_CATEGORIES.map((c) => ({ tenantId: tenant.id, ...c })),
+        skipDuplicates: true,
+      });
+      const main = await tx.warehouse.findFirstOrThrow({
+        where: { tenantId: tenant.id, isDefault: true },
+        select: { id: true },
+      });
+      await tx.rentContract.upsert({
+        where: { id: '00000000-0000-4000-8000-0000000025a1' },
+        update: {},
+        create: {
+          id: '00000000-0000-4000-8000-0000000025a1',
+          tenantId: tenant.id,
+          warehouseId: main.id,
+          landlordName: 'M. Hamdi (propriétaire)',
+          landlordPhone: '0550 11 22 33',
+          amount: '1200000.00',
+          period: 'YEARLY',
+          startDate: new Date(`${new Date().getUTCFullYear()}-01-01T00:00:00.000Z`),
+        },
+      });
       const demoClients = [
         {
           id: '00000000-0000-4000-8000-0000000016c1',

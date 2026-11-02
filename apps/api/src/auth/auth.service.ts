@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import {
   ACTIVITY_EDITION,
+  DEFAULT_EXPENSE_CATEGORIES,
   Edition,
   effectiveFeatures,
   type AcceptInvitationInput,
@@ -118,6 +119,10 @@ export class AuthService {
               type: WarehouseType.MAIN,
               isDefault: true,
             },
+          });
+          // The default charge categories (phase 25): Loyer, Électricité / eau...
+          await tx.expenseCategory.createMany({
+            data: DEFAULT_EXPENSE_CATEGORIES.map((c) => ({ tenantId: tenant.id, ...c })),
           });
           await this.billing.createTrial(tx, tenant.id, ACTIVITY_EDITION[input.activity]);
           const user = await tx.user.create({

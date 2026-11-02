@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule } from '../clients/clients.module';
 import { CreditModule } from '../credit/credit.module';
+import { ExpensesModule } from '../expenses/expenses.module';
 import { PaymentsModule } from '../payments/payments.module';
 import { SalesForceModule } from '../sales-force/sales-force.module';
 import { StockModule } from '../stock/stock.module';
@@ -20,6 +21,7 @@ import { SellOutService } from './sell-out.service';
   imports: [
     ClientsModule,
     CreditModule,
+    ExpensesModule,
     PaymentsModule,
     SalesForceModule,
     StockModule,

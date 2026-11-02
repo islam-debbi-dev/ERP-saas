@@ -27,6 +27,7 @@ import { IdempotencyModule } from './idempotency/idempotency.module';
 import { ImportsModule } from './imports/imports.module';
 import { PrintingModule } from './printing/printing.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ExpensesModule } from './expenses/expenses.module';
 import { ImportFilesModule } from './import-files/import-files.module';
 import { PurchasesModule } from './purchases/purchases.module';
 import { ReconcileModule } from './reconcile/reconcile.module';
@@ -93,6 +94,7 @@ import { UsersModule } from './users/users.module';
     StockModule,
     PurchasesModule,
     ImportFilesModule,
+    ExpensesModule,
     ClientsModule,
     SalesModule,
     PaymentsModule,

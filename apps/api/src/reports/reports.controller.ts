@@ -10,11 +10,15 @@ import {
 } from '@nestjs/common';
 import {
   type AgingQuery,
+  type ChargesQuery,
+  chargesQuerySchema,
+  type ChargesReportDto,
   agingQuerySchema,
   type AgingReportDto,
   type DashboardDto,
   type DashboardQuery,
   dashboardQuerySchema,
+  Feature,
   type OnboardingStatus,
   Permission,
   type ReportDto,
@@ -28,14 +32,16 @@ import {
   sellOutQuerySchema,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
-import { CurrentUser, RequirePermission, Roles } from '../auth/decorators';
+import { CurrentUser, RequireFeature, RequirePermission, Roles } from '../auth/decorators';
 import { requirePermission } from '../auth/permissions';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { AgingService } from '../credit/aging.service';
 import { TenantsService } from '../tenants/tenants.service';
 import { DashboardService } from './dashboard.service';
 import { OnboardingService } from './onboarding.service';
+import { ChargesService } from '../expenses/charges.service';
 import { agingFileName, buildAgingXlsx } from './aging-xlsx';
+import { buildChargesXlsx, chargesFileName } from './charges-xlsx';
 import { buildReportXlsx, reportFileName } from './report-xlsx';
 import { ReportsService } from './reports.service';
 import {
@@ -95,6 +101,7 @@ export class ReportsController {
     private readonly reports: ReportsService,
     private readonly aging: AgingService,
     private readonly sellOuts: SellOutService,
+    private readonly charges: ChargesService,
   ) {}
 
   // Balance âgée (phase 21), declared before ':name'. Managers only, like the accounts.
@@ -132,6 +139,37 @@ export class ReportsController {
   ): Promise<StreamableFile> {
     requirePermission(user, Permission.EXPORT_DATA, { message: 'You may not export data' });
     return agingFile(await this.aging.suppliers(query.asOf));
+  }
+
+  /**
+   * Charges of a period (phase 25): rent by day from the contracts + other expenses.
+   * Managers (finance figures), over the dépôts whose figures the user sees.
+   */
+  @Get('charges')
+  @RequireFeature(Feature.EXPENSES)
+  @RequirePermission(Permission.REPORTS_FINANCE)
+  chargesReport(
+    @Query(new ZodValidationPipe(chargesQuerySchema)) query: ChargesQuery,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<ChargesReportDto> {
+    return this.charges.report(query, user);
+  }
+
+  @Get('charges/export.xlsx')
+  @RequireFeature(Feature.EXPENSES)
+  @RequirePermission(Permission.REPORTS_FINANCE)
+  async chargesExport(
+    @Query(new ZodValidationPipe(chargesQuerySchema)) query: ChargesQuery,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<StreamableFile> {
+    requirePermission(user, Permission.EXPORT_DATA, { message: 'You may not export data' });
+    const report = await this.charges.report(query, user);
+    const buffer = await buildChargesXlsx(report);
+    return new StreamableFile(buffer, {
+      type: XLSX_MIME,
+      disposition: `attachment; filename="${chargesFileName(report)}"`,
+      length: buffer.length,
+    });
   }
 
   /** Sell-out par marque (phase 20). Declared before ':name'. */
