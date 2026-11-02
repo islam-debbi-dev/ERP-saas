@@ -792,6 +792,8 @@ model SupplierPayment {
   note           String?               @db.VarChar(255)
   paidBy         String?               @db.Uuid
   paidAt         DateTime              @default(now()) @db.Timestamptz(3)
+  /// Phase 26: the dépôt that paid (figures per dépôt); null = the dépôt principal's.
+  warehouseId    String?               @db.Uuid
   cancelReason   String?               @db.VarChar(255)
   cancelledBy    String?               @db.Uuid
   cancelledAt    DateTime?             @db.Timestamptz(3)
@@ -799,12 +801,14 @@ model SupplierPayment {
   createdAt      DateTime              @default(now()) @db.Timestamptz(3)
   updatedAt      DateTime              @updatedAt @db.Timestamptz(3)
 
-  tenant   Tenant   @relation(fields: [tenantId], references: [id])
-  supplier Supplier @relation(fields: [supplierId], references: [id])
+  tenant    Tenant     @relation(fields: [tenantId], references: [id])
+  supplier  Supplier   @relation(fields: [supplierId], references: [id])
+  warehouse Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
 
   @@unique([tenantId, number])
   @@index([tenantId, supplierId])
   @@index([tenantId, paidAt])
+  @@index([tenantId, warehouseId, paidAt])
   @@index([tenantId, mode, status, dueDate])
   @@map("supplier_payments")
 }
@@ -1642,29 +1646,30 @@ model Warehouse {
   createdAt         DateTime      @default(now()) @db.Timestamptz(3)
   updatedAt         DateTime      @updatedAt @db.Timestamptz(3)
 
-  tenant          Tenant                @relation(fields: [tenantId], references: [id])
-  assignedUser    User?                 @relation("WarehouseDriver", fields: [assignedUserId], references: [id], onDelete: Restrict)
-  manager         User?                 @relation("WarehouseManager", fields: [managerUserId], references: [id], onDelete: Restrict)
-  parent          Warehouse?            @relation("WarehouseTrucks", fields: [parentWarehouseId], references: [id], onDelete: Restrict)
-  trucks          Warehouse[]           @relation("WarehouseTrucks")
-  brands          WarehouseBrand[]
-  categories      WarehouseCategory[]
-  access          UserWarehouseAccess[]
-  payments        Payment[]
-  ledgerEntries   ClientLedgerEntry[]
-  stocks          WarehouseStock[]
-  movements       StockMovement[]
-  purchases       Purchase[]
-  purchaseReturns PurchaseReturn[]
-  sales           Sale[]
-  saleReturns     SaleReturn[]
-  inventories     Inventory[]
-  transfersOut    StockTransfer[]       @relation("TransferFrom")
-  transfersIn     StockTransfer[]       @relation("TransferTo")
-  orders          Order[]
-  sellerSessions  SellerSession[]
-  expenses        Expense[]
-  rentContracts   RentContract[]
+  tenant           Tenant                @relation(fields: [tenantId], references: [id])
+  assignedUser     User?                 @relation("WarehouseDriver", fields: [assignedUserId], references: [id], onDelete: Restrict)
+  manager          User?                 @relation("WarehouseManager", fields: [managerUserId], references: [id], onDelete: Restrict)
+  parent           Warehouse?            @relation("WarehouseTrucks", fields: [parentWarehouseId], references: [id], onDelete: Restrict)
+  trucks           Warehouse[]           @relation("WarehouseTrucks")
+  brands           WarehouseBrand[]
+  categories       WarehouseCategory[]
+  access           UserWarehouseAccess[]
+  payments         Payment[]
+  ledgerEntries    ClientLedgerEntry[]
+  stocks           WarehouseStock[]
+  movements        StockMovement[]
+  purchases        Purchase[]
+  purchaseReturns  PurchaseReturn[]
+  sales            Sale[]
+  saleReturns      SaleReturn[]
+  inventories      Inventory[]
+  transfersOut     StockTransfer[]       @relation("TransferFrom")
+  transfersIn      StockTransfer[]       @relation("TransferTo")
+  orders           Order[]
+  sellerSessions   SellerSession[]
+  expenses         Expense[]
+  rentContracts    RentContract[]
+  supplierPayments SupplierPayment[]
 
   @@unique([tenantId, name])
   @@index([tenantId, type])

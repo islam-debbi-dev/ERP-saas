@@ -15,7 +15,8 @@ import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
 import { type Prisma } from '../generated/prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { ScopeService } from '../sales-force/scope.service';
 import { convert } from './currency';
 import { SupplierAccountService } from './supplier-account.service';
 
@@ -61,6 +62,7 @@ export class SupplierPaymentsService {
     private readonly account: SupplierAccountService,
     private readonly numbering: DocumentNumberingService,
     private readonly audit: AuditService,
+    private readonly scope: ScopeService,
   ) {}
 
   async create(
@@ -80,6 +82,7 @@ export class SupplierPaymentsService {
       }
       // The amount is typed in the supplier's currency (phase 22): DZD at the bank rate.
       const paid = convert(supplier.currency, input.amount, input.exchangeRate);
+      const warehouseId = await this.warehouseFor(tx, input.warehouseId, user);
       const number = await this.numbering.next(tx, tenantId, DocType.RGF);
       const payment = await tx.supplierPayment.create({
         data: {
@@ -96,6 +99,7 @@ export class SupplierPaymentsService {
           dueDate: input.dueDate ? new Date(`${input.dueDate}T00:00:00.000Z`) : null,
           note: input.note,
           paidBy: user.id,
+          warehouseId,
         },
       });
       await this.account.post(tx, [
@@ -121,11 +125,32 @@ export class SupplierPaymentsService {
             ? { currency: supplier.currency, amountCurrency: input.amount, rate: paid.rate }
             : {}),
           mode: input.mode,
+          warehouseId,
         },
       });
       return payment.id;
     });
     return this.get(id);
+  }
+
+  /**
+   * The dépôt a règlement counts for (phase 26): the one asked for, which must be in the
+   * user's reach, else the only dépôt he works in, else none (the dépôt principal's in
+   * the figures). The fallback is never refused, so paying works as before phase 26.
+   */
+  private async warehouseFor(
+    tx: Tx,
+    requested: string | undefined,
+    user: CurrentUserInfo,
+  ): Promise<string | null> {
+    if (!requested) return this.scope.onlyWarehouse(user, tx);
+    const w = await tx.warehouse.findFirst({
+      where: { id: requested, deletedAt: null },
+      select: { id: true },
+    });
+    if (!w) throw new AppException(ErrorCode.WAREHOUSE_NOT_FOUND, 'Warehouse not found');
+    await this.scope.assertWarehouse(tx, user, w.id);
+    return w.id;
   }
 
   /** Input mistake or a cheque that never left: the debt comes back. Never deleted. */
