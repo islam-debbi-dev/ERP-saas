@@ -90,6 +90,11 @@ Sidebar help links come from the web env (`NEXT_PUBLIC_SUPPORT_WHATSAPP`, `NEXT_
 - Rapports → Charges et loyers (`/rapports/charges`): rent by day from the baux plus the other dépenses, by category and by dépôt, Excel export with "Exporter". Rules: `docs/domain.md`, "Charges et loyers".
 - The demo seed adds a yearly lease (1 200 000 DA, not paid) on the dépôt principal.
 
+## Vue d'ensemble (phase 26)
+
+- With `MULTI_UNIT`, a manager who sees more than one dépôt lands on **Vue d'ensemble** (`/vue-ensemble`, first item of the menu): one card per dépôt (CA, cash in / out, marge, charges, résultat net, créances, stock, top seller, daily CA) for Aujourd'hui / Cette semaine / Ce mois / Mois dernier / a custom period. Tapping a card opens the dashboard on that dépôt; "Comparer" shows the dépôts side by side, with an Excel export. Rules: `docs/domain.md`, "Vue d'ensemble".
+- The dashboard gains a "Résultat net du mois" card (every edition). A règlement fournisseur now records its dépôt (the header's, else the user's only one). One expand-only migration; nothing to run after deploying.
+
 ## Everyday commands
 
 ```bash
