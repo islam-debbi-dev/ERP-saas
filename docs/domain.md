@@ -158,6 +158,17 @@
   - Same ledger rules as money: `ClientPackagingEntry` is append-only, the cached `ClientPackagingBalance` is updated in the same transaction (locked after the client balance) and checked by the nightly reconcile.
 - **Sell-out par marque** (`GET /reports/sell-out`, owner, manager, supervisor for his team): month × brand × product × sector × seller × client type, in base units and HT. Same counting rules as the other reports (a sale in the month it is validated, an avoir in the month it is made, factures from BLs excluded). Sold, free (UG) and returned quantities are separate columns; free units brought back lower the free columns. The sector is the client's current one; the client type is the one frozen at validation. The Excel export has fixed French column titles (`SELL_OUT_COLUMNS`): never rename or reorder them, only add at the end.
 
+## Charges et loyers (phase 25, module EXPENSES)
+- In **every edition**. Dépôt-level parts (the Loyer block of a dépôt, figures by dépôt) only show with `MULTI_UNIT`.
+- **Dépense** (`DEP-YYYY-000001`): date, dépôt, category, amount, mode (espèces / chèque / virement), reference, payee, optional period covered (`periodStart..periodEnd`), note. Immutable once saved: a mistake is cancelled (reason, `EXPENSE_CANCEL`) and entered again. Idempotent POST, audited.
+- **Dépôt of a dépense**: with `MULTI_UNIT` the one chosen, else the user's only dépôt, else the dépôt principal, and the user must work there (phase 24 rules: outside his reach a dépense is not there). Without it the dépôt is optional. A truck's dépenses count for its dépôt in the reports.
+- **Categories**: a tenant list seeded at signup (Loyer, Électricité / eau, Salaires, Transport / carburant, Téléphone / internet, Autre), master data with soft delete. Seeded ones keep a `key`; `RENT` (Loyer) is never archived.
+- **Bail** (`RentContract`): dépôt (never a truck), landlord, amount, `MONTHLY` / `QUARTERLY` / `YEARLY`, start, optional end. Periods start on the contract's start day (a lease from the 15th runs 15th → 14th; from the 31st, the day is clipped to short months). A bail is **never edited after a valid payment**: a new rent closes it (`endDate`, never before what is already paid) and opens a new one, so past months keep their cost. Never deleted.
+- **Rent cost of any period is computed, never stored** (`packages/shared/src/rent.ts`): each day inside a contract period costs `amount / days of that period`, so October of a 1 200 000 DA yearly lease is 1 200 000 × 31 / 365. It is the charged cost (accrual), whatever was paid. No rounding inside the computation.
+- **Rent payment** = a dépense linked to its bail, category Loyer, covering **whole periods** of the bail, inside it and not already paid (`RENT_PERIOD_INVALID`). Its amount is what was really paid. The bail shows *payé jusqu'au* (end of the first run of paid periods), the next due date and the amount due (periods started and not paid). Alerts: a period due and unpaid, and 30 days before the bail's end. Cancelling a payment makes its periods due again.
+- **Charges of a period** (`GET /reports/charges`, managers, over the dépôts whose figures the user sees): rent from the baux (accrual) + every other dépense, spread by day over its period, or on its date without one. **Loyer payments linked to a bail are cash only**: they are shown apart (*loyers payés*) and never added, so rent is not counted twice. A Loyer dépense without a bail counts like any dépense. Each category × dépôt cell is rounded once (half-up, 2 decimals); every total is the sum of the rounded cells, so the parts always add up.
+- Not in this phase: payroll, supplier invoices for services, depreciation, a full cash book, attachments.
+
 ## Typical edge cases to always consider
 - Selling the last carton from two devices at the same time.
 - Negative stock (allow with warning? tenant setting) – common in real shops because entries are late.
@@ -206,4 +217,5 @@
 - **Emballage consigné**: returnable packaging tracked per client (`PackagingType`, `ClientPackagingEntry`).
 - **Sell-out**: what the distributor sold to its clients, per brand, sent to the brand every month.
 - **Règlement fournisseur**: payment to a supplier, prefix `RGF`.
+- **Dépense**: a charge the company paid (rent, electricity, salaries...), prefix `DEP`. **Bail**: a rent contract of a dépôt (`RentContract`). **Charges**: rent by day + other dépenses of a period.
 - **Dossier d'importation (DI)**: one import shipment grouping BRs and their costs. **Coût de revient**: landed unit cost.

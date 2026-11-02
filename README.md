@@ -83,6 +83,13 @@ Sidebar help links come from the web env (`NEXT_PUBLIC_SUPPORT_WHATSAPP`, `NEXT_
 - Permissions are now per module (view / create / edit / cancel); the role defaults give everyone exactly what they had before.
 - **After deploying phase 24, run the units backfill once** (`docs/runbook.md`, "Units backfill"); locally: `pnpm --filter @erp/api build && pnpm --filter @erp/api db:backfill-units`.
 
+## Dépenses et loyers (phase 25)
+
+- Module `EXPENSES`, in every edition. Menu Gestion → Dépenses (owner, gérant): fast entry (amount first, category chip, today by default), cancel with a reason, categories (Loyer is kept). The migration adds the six default categories to every existing company; nothing to run after deploying.
+- Baux: Dépenses → Loyers, or the Loyer block of a dépôt (with `MULTI_UNIT`). "Payer le loyer" prefills the next unpaid periods. A paid bail is closed, never edited.
+- Rapports → Charges et loyers (`/rapports/charges`): rent by day from the baux plus the other dépenses, by category and by dépôt, Excel export with "Exporter". Rules: `docs/domain.md`, "Charges et loyers".
+- The demo seed adds a yearly lease (1 200 000 DA, not paid) on the dépôt principal.
+
 ## Everyday commands
 
 ```bash
