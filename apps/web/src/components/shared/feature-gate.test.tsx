@@ -2,7 +2,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { Package } from 'lucide-react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Feature, Role } from '@erp/shared';
+import { Feature, Permission, Role, ROLE_PERMISSIONS } from '@erp/shared';
 import messages from '@/messages/fr.json';
 import { NAV_ITEMS, visibleNavGroups } from '@/components/layout/navigation';
 import { FeatureGate } from './feature-gate';
@@ -85,6 +85,25 @@ describe('visibleNavGroups', () => {
     expect(keys(Role.MANAGER)).toEqual(expect.arrayContaining(['tournees', 'orders']));
     expect(keys(Role.LIVREUR)).toContain('deliveries');
     expect(keys(Role.LIVREUR)).not.toContain('orders');
+  });
+
+  it('shows Dépenses to whoever has EXPENSES_VIEW, whatever the role (phase 25)', () => {
+    const keys = (role: Role, permissions: readonly Permission[]) =>
+      visibleNavGroups([Feature.EXPENSES], undefined, role, permissions).flatMap((g) =>
+        g.items.map((i) => i.key),
+      );
+    expect(keys(Role.MANAGER, ROLE_PERMISSIONS[Role.MANAGER])).toContain('expenses');
+    expect(keys(Role.SELLER, ROLE_PERMISSIONS[Role.SELLER])).not.toContain('expenses');
+    // A storekeeper the owner granted the dépenses to.
+    expect(
+      keys(Role.STOREKEEPER, [...ROLE_PERMISSIONS[Role.STOREKEEPER], Permission.EXPENSES_VIEW]),
+    ).toContain('expenses');
+    // Without the module, nobody.
+    expect(
+      visibleNavGroups([], undefined, Role.OWNER, ROLE_PERMISSIONS[Role.OWNER]).flatMap((g) =>
+        g.items.map((i) => i.key),
+      ),
+    ).not.toContain('expenses');
   });
 
   it('hides the items of a module the company does not have, then empty groups', () => {

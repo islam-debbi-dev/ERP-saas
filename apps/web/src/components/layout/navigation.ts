@@ -19,7 +19,7 @@ import {
   Ship,
   Wallet,
 } from 'lucide-react';
-import { Feature, Role } from '@erp/shared';
+import { Feature, Permission, Role } from '@erp/shared';
 
 export type NavKey =
   | 'dashboard'
@@ -49,6 +49,8 @@ export interface NavItem {
   feature?: Feature;
   /** Only these roles see it (the API checks anyway); everyone when absent. */
   roles?: readonly Role[];
+  /** Only users with this permission see it (phase 25), whatever their role. */
+  permission?: Permission;
 }
 
 const PLANNERS = [Role.OWNER, Role.MANAGER, Role.SUPERVISOR];
@@ -137,13 +139,13 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         feature: Feature.INCENTIVES,
         roles: [Role.OWNER, Role.MANAGER],
       },
-      // Phase 25, in every edition; the API checks EXPENSES_VIEW.
+      // Phase 25, in every edition: anyone who may see the dépenses.
       {
         key: 'expenses',
         url: '/depenses',
         icon: Wallet,
         feature: Feature.EXPENSES,
-        roles: [Role.OWNER, Role.MANAGER],
+        permission: Permission.EXPENSES_VIEW,
       },
       { key: 'reports', url: '/rapports', icon: ChartColumn },
       { key: 'settings', url: '/parametres', icon: Settings },
@@ -156,12 +158,14 @@ export const NAV_ITEMS: readonly NavItem[] = NAV_GROUPS.flatMap((g) => g.items);
 
 /**
  * The menu of a company: items of modules it does not have are left out, then items of
- * other roles (when the role is known), then empty groups.
+ * other roles (when the role is known), then items needing a permission the user lacks
+ * (when his permissions are known), then empty groups.
  */
 export function visibleNavGroups(
   features: readonly Feature[],
   groups: readonly NavGroup[] = NAV_GROUPS,
   role?: Role,
+  permissions?: readonly Permission[],
 ): NavGroup[] {
   return groups
     .map((g) => ({
@@ -169,7 +173,8 @@ export function visibleNavGroups(
       items: g.items.filter(
         (item) =>
           (!item.feature || features.includes(item.feature)) &&
-          (!item.roles || !role || item.roles.includes(role)),
+          (!item.roles || !role || item.roles.includes(role)) &&
+          (!item.permission || !permissions || permissions.includes(item.permission)),
       ),
     }))
     .filter((g) => g.items.length > 0);
