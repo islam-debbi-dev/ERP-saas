@@ -6,6 +6,7 @@ import {
   monthToDate,
   money,
   type Money,
+  netResult,
   Permission,
   previousMonthToDate,
   Role,
@@ -17,6 +18,7 @@ import { can } from '../auth/permissions';
 import { ClientsService } from '../clients/clients.service';
 import { algiersRange } from '../common/algiers';
 import { AgingService } from '../credit/aging.service';
+import { ChargesService } from '../expenses/charges.service';
 import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
 import { PaymentsService } from '../payments/payments.service';
@@ -43,6 +45,7 @@ export class DashboardService {
     private readonly stock: StockQueriesService,
     private readonly aging: AgingService,
     private readonly scopes: ScopeService,
+    private readonly charges: ChargesService,
   ) {}
 
   /**
@@ -68,7 +71,10 @@ export class DashboardService {
     // Phase 24: the dépôts whose figures he sees (works in or VIEW_STATS), narrowed by
     // the dépôt switcher. null = all.
     const units = await this.scopes.warehouses(user);
-    const warehouseIds = this.scopes.narrowWarehouses(units.statsWarehouseIds, filters.warehouseId);
+    const warehouseIds = await this.scopes.figureWarehouses(
+      units.statsWarehouseIds,
+      filters.warehouseId,
+    );
     const scope: Scope = {
       tenantId: tenantContext.requireTenantId(),
       sellerIds: await this.scopes.figuresSellerIds(user, filters),
@@ -92,6 +98,16 @@ export class DashboardService {
       seesStock ? this.stock.dashboardSummary(seesCost, warehouseIds) : null,
       manager ? this.aging.dueCheques(date) : null,
     ]);
+    // Phase 26: résultat net of the month = marge − charges (phase 25), same dépôts.
+    const margin = sales?.margin ?? null;
+    const charges =
+      manager && margin !== null && (await this.scopes.expensesOn(scope.tenantId))
+        ? await this.charges.report(
+            { from: monthToDate(date).from, to: date, warehouseId: filters.warehouseId },
+            user,
+          )
+        : null;
+    const result = charges ? netResult(margin, charges.total) : null;
     return {
       date,
       sales,
@@ -108,6 +124,10 @@ export class DashboardService {
           : null,
       stock,
       cheques,
+      net:
+        charges && margin !== null && result !== null
+          ? { margin, charges: charges.total, result }
+          : null,
     };
   }
 

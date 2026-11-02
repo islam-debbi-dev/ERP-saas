@@ -8,6 +8,7 @@ import { StockModule } from '../stock/stock.module';
 import { TenantsModule } from '../tenants/tenants.module';
 import { DashboardService } from './dashboard.service';
 import { OnboardingService } from './onboarding.service';
+import { OverviewService } from './overview.service';
 import { DashboardController, ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
 import { SellOutService } from './sell-out.service';
@@ -28,6 +29,6 @@ import { SellOutService } from './sell-out.service';
     TenantsModule,
   ],
   controllers: [DashboardController, ReportsController],
-  providers: [DashboardService, ReportsService, OnboardingService, SellOutService],
+  providers: [DashboardService, ReportsService, OnboardingService, OverviewService, SellOutService],
 })
 export class ReportsModule {}
