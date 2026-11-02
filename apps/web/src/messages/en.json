@@ -53,7 +53,8 @@
     "flagged": "Flagged operations",
     "incentives": "Bonuses",
     "importFiles": "Import files",
-    "promotions": "Promotions"
+    "promotions": "Promotions",
+    "expenses": "Expenses"
   },
   "roles": {
     "OWNER": "Owner",
@@ -206,7 +207,8 @@
     "allTeams": "All",
     "filterBrand": "Brand",
     "allBrands": "All",
-    "sellOutLink": "Sell-out by brand"
+    "sellOutLink": "Sell-out by brand",
+    "chargesLink": "Charges and rent"
   },
   "settings": {
     "title": "Settings",
@@ -422,7 +424,13 @@
     "PROMOTION_INVALID": "A product, unit, client or sector of the promotion was not found.",
     "FREE_LINE_NOT_EDITABLE": "Free units follow their paid line: no promotion applies here.",
     "PACKAGING_OPENING_ALREADY_SET": "This client’s opening packaging count is already set.",
-    "PACKAGING_TYPE_NAME_TAKEN": "A packaging type already has this name."
+    "PACKAGING_TYPE_NAME_TAKEN": "A packaging type already has this name.",
+    "EXPENSE_NOT_VALID": "This expense is already cancelled.",
+    "EXPENSE_CATEGORY_NAME_TAKEN": "This category already exists.",
+    "EXPENSE_CATEGORY_PROTECTED": "The Rent category is used by leases: it stays.",
+    "RENT_CONTRACT_LOCKED": "This lease has a payment: close it and open a new lease.",
+    "RENT_CONTRACT_CLOSED": "This lease is closed.",
+    "RENT_PERIOD_INVALID": "This is not a whole period of the lease, or it is already paid."
   },
   "units": {
     "PIECE": "Piece",
@@ -1555,6 +1563,22 @@
     "VIEW_ALL_WAREHOUSES": {
       "label": "All dépôts",
       "help": "Work in every dépôt and see its figures."
+    },
+    "EXPENSES_VIEW": {
+      "label": "See expenses",
+      "help": "The expenses list and the leases."
+    },
+    "EXPENSES_CREATE": {
+      "label": "Enter an expense",
+      "help": "Save an expense or pay a rent."
+    },
+    "EXPENSE_CANCEL": {
+      "label": "Cancel an expense",
+      "help": "Cancel an expense, with a reason."
+    },
+    "RENT_MANAGE": {
+      "label": "Manage leases",
+      "help": "Create, edit, close a lease and manage the categories."
     }
   },
   "sessions": {
@@ -1770,7 +1794,8 @@
     "or": " or ",
     "lockedContact": "Ask for this module on WhatsApp",
     "lockedWhatsappMessage": "Hello, I would like to add the “{feature}” module for {company}.",
-    "lockedBack": "Back to the dashboard"
+    "lockedBack": "Back to the dashboard",
+    "featureEXPENSES": "Expenses and rent"
   },
   "share": {
     "button": "Share link",
@@ -2822,6 +2847,119 @@
     "saved": "Dépôt saved",
     "debtByWarehouse": "Debt by dépôt",
     "reducedLine": "Dépôt {name}: details not available",
-    "notFound": "This dépôt does not exist or you have no access to it."
+    "notFound": "This dépôt does not exist or you have no access to it.",
+    "group_expenses": "Expenses"
+  },
+  "expenses": {
+    "title": "Expenses",
+    "subtitle": "Rent, electricity, salaries… what each depot costs.",
+    "new": "New expense",
+    "newTitle": "New expense",
+    "newHelp": "Amount, category, done. An expense is never edited: cancel it and enter it again.",
+    "tab_list": "Expenses",
+    "tab_rent": "Rent",
+    "rentAlert": "A rent needs your attention",
+    "amount": "Amount",
+    "category": "Category",
+    "date": "Date",
+    "mode": "Mode",
+    "payee": "Paid to",
+    "reference": "Reference (cheque, transfer, invoice)",
+    "depot": "Depot",
+    "pickDepot": "Pick the depot",
+    "note": "Note",
+    "status": "Status",
+    "actions": "Actions",
+    "coversPeriod": "Covers a period",
+    "coversPeriodHelp": "A 2-month bill is spread day by day over those months.",
+    "periodStart": "From",
+    "periodEnd": "To",
+    "covers": "Covers",
+    "save": "Save",
+    "cancelButton": "Cancel",
+    "close": "Close",
+    "created": "Expense {number} saved: {amount}",
+    "allCategories": "All categories",
+    "allModes": "All modes",
+    "allStatuses": "All statuses",
+    "statusVALID": "Valid",
+    "statusCANCELLED": "Cancelled",
+    "rentPayment": "Rent paid",
+    "from": "From",
+    "to": "To",
+    "loadMore": "Load more",
+    "emptyTitle": "No expenses",
+    "emptyDescription": "Enter rent, electricity or salaries to see the real profit.",
+    "cancelExpense": "Cancel",
+    "cancelTitle": "Cancel expense {number}",
+    "cancelHelp": "The expense stays in the history, marked cancelled. Enter a new one if needed.",
+    "reason": "Reason",
+    "confirmCancel": "Cancel the expense",
+    "cancelled": "Expense {number} cancelled",
+    "categories": "Categories",
+    "categoriesHelp": "Your expense categories. Rent is used by leases and always stays.",
+    "rentCategory": "Used by leases",
+    "archiveCategory": "Archive {name}",
+    "newCategory": "New category",
+    "add": "Add",
+    "chargesLink": "Charges report",
+    "rentTitle": "Rent",
+    "rentHelp": "The depot’s lease: paid until, next due date, what is still owed.",
+    "newContract": "New lease",
+    "editContract": "Edit the lease",
+    "closeContract": "Close the lease",
+    "noContract": "No current lease.",
+    "pastContracts": "{count, plural, one {# ended lease} other {# ended leases}}",
+    "paidUntil": "Paid until",
+    "notPaidYet": "Nothing paid",
+    "nextDue": "Next due date",
+    "amountDue": "Due to date",
+    "alertUNPAID_DUE": "Unpaid period",
+    "alertENDING_SOON": "Ending soon",
+    "payRent": "Pay the rent",
+    "payRentTitle": "Pay the rent",
+    "payRentHelp": "Payment to {landlord}, for whole periods of the lease.",
+    "periodsToPay": "Periods to pay",
+    "fewerPeriods": "One period less",
+    "morePeriods": "One period more",
+    "periodCovered": "Period:",
+    "nothingToPay": "The lease is paid up to its end.",
+    "contractAmount": "Lease amount:",
+    "contractHelp": "A paid lease is no longer edited: close it and open a new one for a new rent.",
+    "landlord": "Landlord",
+    "landlordPhone": "Phone",
+    "rentAmount": "Rent",
+    "period": "Period",
+    "periodMONTHLY": "month",
+    "periodQUARTERLY": "quarter",
+    "periodYEARLY": "year",
+    "startDate": "Start",
+    "endDateOptional": "End (optional)",
+    "contractSaved": "Lease saved",
+    "closeHelp": "The lease stops after this day. Past months keep their cost.",
+    "lastDay": "Last day",
+    "closeTooEarly": "The lease is paid until",
+    "contractClosed": "Lease closed"
+  },
+  "charges": {
+    "title": "Charges",
+    "subtitle": "Rent spread day by day and the other expenses of the period.",
+    "back": "Back to reports",
+    "export": "Export",
+    "managersOnly": "Charges are for managers.",
+    "from": "From",
+    "to": "To",
+    "invalidRange": "The end date is before the start date.",
+    "total": "Total charges",
+    "rent": "Rent (lease)",
+    "expenses": "Expenses",
+    "rentPaid": "Rent paid",
+    "rentPaidHelp": "Cash, not in the total: the lease carries the cost.",
+    "empty": "No charges in this period.",
+    "byCategory": "By category",
+    "byDepot": "By depot",
+    "colCategory": "Category",
+    "colDepot": "Depot",
+    "noDepot": "No depot"
   }
 }

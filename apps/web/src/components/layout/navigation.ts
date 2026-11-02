@@ -17,6 +17,7 @@ import {
   Users,
   Warehouse,
   Ship,
+  Wallet,
 } from 'lucide-react';
 import { Feature, Role } from '@erp/shared';
 
@@ -36,6 +37,7 @@ export type NavKey =
   | 'stock'
   | 'flagged'
   | 'incentives'
+  | 'expenses'
   | 'reports'
   | 'settings';
 
@@ -133,6 +135,14 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         url: '/primes',
         icon: Trophy,
         feature: Feature.INCENTIVES,
+        roles: [Role.OWNER, Role.MANAGER],
+      },
+      // Phase 25, in every edition; the API checks EXPENSES_VIEW.
+      {
+        key: 'expenses',
+        url: '/depenses',
+        icon: Wallet,
+        feature: Feature.EXPENSES,
         roles: [Role.OWNER, Role.MANAGER],
       },
       { key: 'reports', url: '/rapports', icon: ChartColumn },

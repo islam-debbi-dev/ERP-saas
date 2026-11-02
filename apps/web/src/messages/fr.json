@@ -53,7 +53,8 @@
     "flagged": "Opérations signalées",
     "incentives": "Primes",
     "importFiles": "Dossiers d'importation",
-    "promotions": "Promotions"
+    "promotions": "Promotions",
+    "expenses": "Dépenses"
   },
   "roles": {
     "OWNER": "Propriétaire",
@@ -206,7 +207,8 @@
     "allTeams": "Toutes",
     "filterBrand": "Marque",
     "allBrands": "Toutes",
-    "sellOutLink": "Sell-out par marque"
+    "sellOutLink": "Sell-out par marque",
+    "chargesLink": "Charges et loyers"
   },
   "settings": {
     "title": "Paramètres",
@@ -422,7 +424,13 @@
     "PROMOTION_INVALID": "Un produit, une unité, un client ou un secteur de la promotion est introuvable.",
     "FREE_LINE_NOT_EDITABLE": "Les unités gratuites suivent leur ligne payante : aucune promotion ne s’applique ici.",
     "PACKAGING_OPENING_ALREADY_SET": "Le stock initial d’emballages de ce client est déjà saisi.",
-    "PACKAGING_TYPE_NAME_TAKEN": "Un emballage porte déjà ce nom."
+    "PACKAGING_TYPE_NAME_TAKEN": "Un emballage porte déjà ce nom.",
+    "EXPENSE_NOT_VALID": "Cette dépense est déjà annulée.",
+    "EXPENSE_CATEGORY_NAME_TAKEN": "Cette catégorie existe déjà.",
+    "EXPENSE_CATEGORY_PROTECTED": "La catégorie Loyer est utilisée par les baux : elle reste.",
+    "RENT_CONTRACT_LOCKED": "Ce bail a un paiement : clôturez-le et ouvrez un nouveau bail.",
+    "RENT_CONTRACT_CLOSED": "Ce bail est clôturé.",
+    "RENT_PERIOD_INVALID": "Cette période n’est pas une période entière du bail, ou elle est déjà payée."
   },
   "units": {
     "PIECE": "Pièce",
@@ -1555,6 +1563,22 @@
     "VIEW_ALL_WAREHOUSES": {
       "label": "Tous les dépôts",
       "help": "Travailler dans tous les dépôts et voir leurs chiffres."
+    },
+    "EXPENSES_VIEW": {
+      "label": "Voir les dépenses",
+      "help": "La liste des dépenses et les baux."
+    },
+    "EXPENSES_CREATE": {
+      "label": "Saisir une dépense",
+      "help": "Enregistrer une dépense ou payer un loyer."
+    },
+    "EXPENSE_CANCEL": {
+      "label": "Annuler une dépense",
+      "help": "Annuler une dépense, avec une raison."
+    },
+    "RENT_MANAGE": {
+      "label": "Gérer les baux",
+      "help": "Créer, modifier, clôturer un bail et gérer les catégories."
     }
   },
   "sessions": {
@@ -1770,7 +1794,8 @@
     "or": " ou ",
     "lockedContact": "Demander ce module sur WhatsApp",
     "lockedWhatsappMessage": "Bonjour, je voudrais ajouter le module « {feature} » pour {company}.",
-    "lockedBack": "Retour au tableau de bord"
+    "lockedBack": "Retour au tableau de bord",
+    "featureEXPENSES": "Dépenses et loyers"
   },
   "share": {
     "button": "Partager le lien",
@@ -2822,6 +2847,119 @@
     "saved": "Dépôt enregistré",
     "debtByWarehouse": "Dette par dépôt",
     "reducedLine": "Dépôt {name} : détail non accessible",
-    "notFound": "Ce dépôt n’existe pas ou vous n’y avez pas accès."
+    "notFound": "Ce dépôt n’existe pas ou vous n’y avez pas accès.",
+    "group_expenses": "Dépenses"
+  },
+  "expenses": {
+    "title": "Dépenses",
+    "subtitle": "Loyer, électricité, salaires… ce que coûte chaque dépôt.",
+    "new": "Nouvelle dépense",
+    "newTitle": "Nouvelle dépense",
+    "newHelp": "Le montant, la catégorie, et c’est enregistré. Une dépense ne se modifie pas : annulez-la et saisissez-la à nouveau.",
+    "tab_list": "Dépenses",
+    "tab_rent": "Loyers",
+    "rentAlert": "Un loyer demande votre attention",
+    "amount": "Montant",
+    "category": "Catégorie",
+    "date": "Date",
+    "mode": "Mode",
+    "payee": "Payé à",
+    "reference": "Référence (chèque, virement, facture)",
+    "depot": "Dépôt",
+    "pickDepot": "Choisir le dépôt",
+    "note": "Note",
+    "status": "Statut",
+    "actions": "Actions",
+    "coversPeriod": "Couvre une période",
+    "coversPeriodHelp": "Une facture de 2 mois est répartie jour par jour sur ces mois.",
+    "periodStart": "Du",
+    "periodEnd": "Au",
+    "covers": "Couvre",
+    "save": "Enregistrer",
+    "cancelButton": "Annuler",
+    "close": "Fermer",
+    "created": "Dépense {number} enregistrée : {amount}",
+    "allCategories": "Toutes les catégories",
+    "allModes": "Tous les modes",
+    "allStatuses": "Tous les statuts",
+    "statusVALID": "Valide",
+    "statusCANCELLED": "Annulée",
+    "rentPayment": "Loyer payé",
+    "from": "Du",
+    "to": "Au",
+    "loadMore": "Afficher plus",
+    "emptyTitle": "Aucune dépense",
+    "emptyDescription": "Saisissez le loyer, l’électricité ou les salaires pour connaître le vrai bénéfice.",
+    "cancelExpense": "Annuler",
+    "cancelTitle": "Annuler la dépense {number}",
+    "cancelHelp": "La dépense reste dans l’historique, marquée annulée. Saisissez-en une nouvelle si besoin.",
+    "reason": "Raison",
+    "confirmCancel": "Annuler la dépense",
+    "cancelled": "Dépense {number} annulée",
+    "categories": "Catégories",
+    "categoriesHelp": "Les catégories de vos dépenses. Loyer est utilisée par les baux et reste toujours.",
+    "rentCategory": "Utilisée par les baux",
+    "archiveCategory": "Archiver {name}",
+    "newCategory": "Nouvelle catégorie",
+    "add": "Ajouter",
+    "chargesLink": "Rapport des charges",
+    "rentTitle": "Loyer",
+    "rentHelp": "Le bail du dépôt : payé jusqu’au, prochaine échéance, ce qui reste dû.",
+    "newContract": "Nouveau bail",
+    "editContract": "Modifier le bail",
+    "closeContract": "Clôturer le bail",
+    "noContract": "Aucun bail en cours.",
+    "pastContracts": "{count, plural, one {# bail terminé} other {# baux terminés}}",
+    "paidUntil": "Payé jusqu’au",
+    "notPaidYet": "Rien payé",
+    "nextDue": "Prochaine échéance",
+    "amountDue": "Dû à ce jour",
+    "alertUNPAID_DUE": "Échéance impayée",
+    "alertENDING_SOON": "Se termine bientôt",
+    "payRent": "Payer le loyer",
+    "payRentTitle": "Payer le loyer",
+    "payRentHelp": "Paiement à {landlord}, pour des périodes entières du bail.",
+    "periodsToPay": "Périodes à payer",
+    "fewerPeriods": "Une période de moins",
+    "morePeriods": "Une période de plus",
+    "periodCovered": "Période :",
+    "nothingToPay": "Le bail est payé jusqu’à sa fin.",
+    "contractAmount": "Montant du bail :",
+    "contractHelp": "Un bail payé ne se modifie plus : clôturez-le et ouvrez-en un nouveau pour un nouveau loyer.",
+    "landlord": "Propriétaire",
+    "landlordPhone": "Téléphone",
+    "rentAmount": "Loyer",
+    "period": "Périodicité",
+    "periodMONTHLY": "mois",
+    "periodQUARTERLY": "trimestre",
+    "periodYEARLY": "an",
+    "startDate": "Début",
+    "endDateOptional": "Fin (facultatif)",
+    "contractSaved": "Bail enregistré",
+    "closeHelp": "Le bail s’arrête après ce jour. Les mois passés gardent leur coût.",
+    "lastDay": "Dernier jour",
+    "closeTooEarly": "Le bail est payé jusqu’au",
+    "contractClosed": "Bail clôturé"
+  },
+  "charges": {
+    "title": "Charges",
+    "subtitle": "Loyer réparti jour par jour et autres dépenses de la période.",
+    "back": "Retour aux rapports",
+    "export": "Exporter",
+    "managersOnly": "Les charges sont réservées aux gérants.",
+    "from": "Du",
+    "to": "Au",
+    "invalidRange": "La date de fin est avant la date de début.",
+    "total": "Total des charges",
+    "rent": "Loyer (bail)",
+    "expenses": "Dépenses",
+    "rentPaid": "Loyers payés",
+    "rentPaidHelp": "Trésorerie, hors total : le bail porte le coût.",
+    "empty": "Aucune charge sur la période.",
+    "byCategory": "Par catégorie",
+    "byDepot": "Par dépôt",
+    "colCategory": "Catégorie",
+    "colDepot": "Dépôt",
+    "noDepot": "Sans dépôt"
   }
 }
