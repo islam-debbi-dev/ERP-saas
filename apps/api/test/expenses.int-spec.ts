@@ -32,7 +32,12 @@ interface Member {
   auth: AuthResponse;
 }
 
-const YEAR = new Date().getUTCFullYear();
+/** The Algiers year, the one document numbers use. */
+const YEAR = Number(
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Algiers', year: 'numeric' }).format(
+    new Date(),
+  ),
+);
 
 /** Dépenses, baux and the charges report (phase 25). */
 describe('expenses and rent (phase 25)', () => {

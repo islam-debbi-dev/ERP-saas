@@ -35,7 +35,8 @@ import {
   withoutGeoCheck,
 } from './helpers';
 
-const TODAY = new Date().toISOString().slice(0, 10);
+// The Algiers day, as the API counts it (a UTC date is the next day's from 23:00 UTC).
+const TODAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Algiers' }).format(new Date());
 const errorOf = (res: { body: unknown }) => res.body as ApiError;
 type Who = { auth: { accessToken: string } };
 interface Member {
