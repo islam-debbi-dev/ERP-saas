@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import {
-  DEFAULT_EXPENSE_CATEGORIES,
   type ExpenseCategoryDto,
   type ExpenseCategoryInput,
   ExpenseCategoryKey,
@@ -34,14 +33,6 @@ export class ExpenseCategoriesService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
   ) {}
-
-  /** The default list, for a new company (signup, seed). Safe to run twice. */
-  async seedDefaults(tx: Tx, tenantId: string): Promise<void> {
-    await tx.expenseCategory.createMany({
-      data: DEFAULT_EXPENSE_CATEGORIES.map((c) => ({ tenantId, name: c.name, key: c.key })),
-      skipDuplicates: true,
-    });
-  }
 
   async list(includeArchived = false): Promise<ExpenseCategoryDto[]> {
     const rows = await this.prisma.db.expenseCategory.findMany({
