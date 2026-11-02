@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   addBuckets,
   addDays,
+  agedOver90,
   AGING_BUCKETS,
   type AgingBucket,
   type AgingDocument,
@@ -59,10 +60,14 @@ export class AgingService {
   }
 
   /**
-   * What each client owes each dépôt (phase 26), aged like the balance âgée: the account
-   * is split by the dépôt of each ledger entry (a truck's are its dépôt's, none = the dépôt
-   * principal's) and `computeAging` spreads each part over that dépôt's unpaid documents.
-   * Only the parts a live client owes (> 0). `warehouseIds` limits the dépôts (null = all).
+   * What each client owes each dépôt (phase 26) and how much of it is over 90 days, as the
+   * balance âgée would age it: the account is split by the dépôt of each ledger entry (a
+   * truck's are its dépôt's, none = the dépôt principal's) and each part is aged over that
+   * dépôt's documents. A document only counts the versements of its own dépôt: one paid
+   * from another dépôt is in that dépôt's part of the ledger, so it lowers that part.
+   * One SQL pass returns three sums per part and `agedOver90` gives the 90+ bucket, so the
+   * documents never leave the database. Only the parts a live client owes (> 0).
+   * `warehouseIds` limits the dépôts (null = all).
    */
   async clientsByUnit(
     defaultWarehouseId: string | null,
@@ -71,71 +76,80 @@ export class AgingService {
   ): Promise<{ clientId: string; unitId: string; balance: Money; over90: Money }[]> {
     const tenantId = tenantContext.requireTenantId();
     const end = algiersMidnight(addDays(asOf, 1));
+    // Over 90 days (`agingBucketOf`): a document of `asOf` − 91 days or older.
+    const cutoff = addDays(asOf, -90);
     const e = businessUnit('e."warehouseId"', defaultWarehouseId);
     const s = businessUnit('s."warehouseId"', defaultWarehouseId);
     const p = businessUnit('p."warehouseId"', defaultWarehouseId, 'pw');
     const inReach = (u: Prisma.Sql) =>
       warehouseIds ? Prisma.sql`AND ${u} = ANY(${warehouseIds}::uuid[])` : Prisma.empty;
-    const balances = await this.prisma.db.$queryRaw<
-      { clientId: string; unitId: string; balance: Prisma.Decimal }[]
-    >`
-      SELECT e."clientId", ${e.unit} AS "unitId", SUM(e.amount) AS balance
-      FROM client_ledger_entries e ${e.join}
-      JOIN clients c ON c.id = e."clientId" AND c."deletedAt" IS NULL
-      WHERE e."tenantId" = ${tenantId}::uuid AND e."createdAt" < ${end}
-      GROUP BY 1, 2
-      HAVING SUM(e.amount) > 0`;
-    const owing = balances.filter((b) => !warehouseIds || warehouseIds.includes(b.unitId));
-    if (owing.length === 0) return [];
-    // The same documents as `clientAging`, each with the dépôt it counts for. A document
-    // only counts the versements of its own dépôt: one paid from another dépôt is in that
-    // dépôt's part of the ledger, so it lowers that part, not this one.
-    const docs = await this.prisma.db.$queryRaw<
+    const rows = await this.prisma.db.$queryRaw<
       {
-        partyId: string;
-        date: Date;
-        total: Prisma.Decimal;
-        returned: Prisma.Decimal;
-        paid: Prisma.Decimal;
+        clientId: string;
+        unitId: string;
+        balance: Prisma.Decimal;
+        open: Prisma.Decimal;
+        openOver90: Prisma.Decimal;
       }[]
     >`
-      SELECT s."clientId" || '|' || ${s.unit} AS "partyId", s."documentDate" AS date,
-        s."totalTtc" + s.timbre AS total,
-        COALESCE((SELECT SUM(r."totalTtc") FROM sale_returns r
-                  WHERE r."saleId" = s.id AND r."createdAt" < ${end}), 0) AS returned,
-        COALESCE((SELECT SUM(a.amount) FROM payment_allocations a
-                  JOIN payments p ON p.id = a."paymentId" ${p.join}
-                  WHERE a."saleId" = s.id AND p."receivedAt" < ${end} AND ${p.unit} = ${s.unit}
-                    AND (p.status = 'VALID'
-                         OR (p.status = 'CANCELLED' AND p."cancelledAt" >= ${end})
-                         OR (p.status = 'BOUNCED' AND p."bouncedAt" >= ${end}))), 0) AS paid
-      FROM sales s ${s.join}
-      WHERE s."tenantId" = ${tenantId}::uuid AND s."clientId" IS NOT NULL
-        AND s."validatedAt" < ${end}
-        AND (s.status = 'VALIDATED' OR (s.status = 'CANCELLED' AND s."cancelledAt" >= ${end}))
-        AND NOT EXISTS (SELECT 1 FROM sales b WHERE b."invoiceId" = s.id)
-        ${inReach(s.unit)}`;
-    const debits = await this.prisma.db.$queryRaw<
-      { partyId: string; date: string; total: Prisma.Decimal }[]
-    >`
-      SELECT e."clientId" || '|' || ${e.unit} AS "partyId",
-             to_char((e."createdAt" AT TIME ZONE 'Africa/Algiers')::date, 'YYYY-MM-DD') AS date,
-             e.amount AS total
-      FROM client_ledger_entries e ${e.join}
-      WHERE e."tenantId" = ${tenantId}::uuid AND e."createdAt" < ${end} AND e.amount > 0
-        AND e.type::text IN ('OPENING', 'ADJUSTMENT') ${inReach(e.unit)}`;
-    const aged = this.combine(
-      owing.map((b) => ({
-        party: { id: `${b.clientId}|${b.unitId}`, code: '', name: '', phone: null },
-        balance: b.balance,
-      })),
-      docs,
-      debits,
-      asOf,
-    );
-    return aged.map((a) => {
-      const [clientId = '', unitId = ''] = a.party.id.split('|');
-      return { clientId, unitId, balance: a.balance, over90: a.buckets.d90 };
+      WITH parts AS (
+        SELECT e."clientId", ${e.unit} AS "unitId", SUM(e.amount) AS balance
+        FROM client_ledger_entries e ${e.join}
+        JOIN clients c ON c.id = e."clientId" AND c."deletedAt" IS NULL
+        WHERE e."tenantId" = ${tenantId}::uuid AND e."createdAt" < ${end}
+        GROUP BY 1, 2
+        HAVING SUM(e.amount) > 0
+      ),
+      returned AS (
+        SELECT r."saleId", SUM(r."totalTtc") AS amount FROM sale_returns r
+        WHERE r."tenantId" = ${tenantId}::uuid AND r."createdAt" < ${end}
+        GROUP BY 1
+      ),
+      paid AS (
+        SELECT a."saleId", ${p.unit} AS "unitId", SUM(a.amount) AS amount
+        FROM payment_allocations a JOIN payments p ON p.id = a."paymentId" ${p.join}
+        WHERE a."tenantId" = ${tenantId}::uuid AND p."receivedAt" < ${end}
+          AND (p.status = 'VALID'
+               OR (p.status = 'CANCELLED' AND p."cancelledAt" >= ${end})
+               OR (p.status = 'BOUNCED' AND p."bouncedAt" >= ${end}))
+        GROUP BY 1, 2
+      ),
+      -- The documents of clientAging: sales as of then, then opening and manual debits.
+      docs AS (
+        SELECT d."clientId", d."unitId", d.day,
+               d.total - COALESCE(ret.amount, 0) - COALESCE(pay.amount, 0) AS "left"
+        FROM (
+          SELECT s.id, s."clientId", ${s.unit} AS "unitId", s."documentDate" AS day,
+                 s."totalTtc" + s.timbre AS total
+          FROM sales s ${s.join}
+          WHERE s."tenantId" = ${tenantId}::uuid AND s."clientId" IS NOT NULL
+            AND s."validatedAt" < ${end}
+            AND (s.status = 'VALIDATED' OR (s.status = 'CANCELLED' AND s."cancelledAt" >= ${end}))
+            AND NOT EXISTS (SELECT 1 FROM sales b WHERE b."tenantId" = s."tenantId" AND b."invoiceId" = s.id)
+        ) d
+        LEFT JOIN returned ret ON ret."saleId" = d.id
+        LEFT JOIN paid pay ON pay."saleId" = d.id AND pay."unitId" = d."unitId"
+        UNION ALL
+        SELECT e."clientId", ${e.unit}, (e."createdAt" AT TIME ZONE 'Africa/Algiers')::date, e.amount
+        FROM client_ledger_entries e ${e.join}
+        WHERE e."tenantId" = ${tenantId}::uuid AND e."createdAt" < ${end} AND e.amount > 0
+          AND e.type::text IN ('OPENING', 'ADJUSTMENT')
+      )
+      SELECT pa."clientId", pa."unitId", pa.balance,
+             COALESCE(SUM(d."left") FILTER (WHERE d."left" > 0), 0) AS open,
+             COALESCE(SUM(d."left") FILTER (WHERE d."left" > 0 AND d.day < ${cutoff}::date), 0) AS "openOver90"
+      FROM parts pa
+      LEFT JOIN docs d ON d."clientId" = pa."clientId" AND d."unitId" = pa."unitId"
+      WHERE TRUE ${inReach(Prisma.raw('pa."unitId"'))}
+      GROUP BY 1, 2, 3`;
+    return rows.map((r) => {
+      const balance = money(r.balance.toString());
+      return {
+        clientId: r.clientId,
+        unitId: r.unitId,
+        balance,
+        over90: agedOver90(r.open.toString(), r.openOver90.toString(), balance),
+      };
     });
   }
 
@@ -274,10 +288,11 @@ export class AgingService {
     >`
       SELECT s."clientId" AS "partyId", s."documentDate" AS date, s."totalTtc" + s.timbre AS total,
         COALESCE((SELECT SUM(r."totalTtc") FROM sale_returns r
-                  WHERE r."saleId" = s.id AND r."createdAt" < ${end}), 0) AS returned,
+                  WHERE r."tenantId" = s."tenantId" AND r."saleId" = s.id
+                    AND r."createdAt" < ${end}), 0) AS returned,
         COALESCE((SELECT SUM(a.amount) FROM payment_allocations a
                   JOIN payments p ON p.id = a."paymentId"
-                  WHERE a."saleId" = s.id AND p."receivedAt" < ${end}
+                  WHERE a."tenantId" = s."tenantId" AND a."saleId" = s.id AND p."receivedAt" < ${end}
                     AND (p.status = 'VALID'
                          OR (p.status = 'CANCELLED' AND p."cancelledAt" >= ${end})
                          OR (p.status = 'BOUNCED' AND p."bouncedAt" >= ${end}))), 0) AS paid
@@ -285,7 +300,7 @@ export class AgingService {
       WHERE s."tenantId" = ${tenantId}::uuid AND s."clientId" IS NOT NULL
         AND s."validatedAt" < ${end}
         AND (s.status = 'VALIDATED' OR (s.status = 'CANCELLED' AND s."cancelledAt" >= ${end}))
-        AND NOT EXISTS (SELECT 1 FROM sales b WHERE b."invoiceId" = s.id)`;
+        AND NOT EXISTS (SELECT 1 FROM sales b WHERE b."tenantId" = s."tenantId" AND b."invoiceId" = s.id)`;
     const debits = await this.datedDebits('client_ledger_entries', 'clientId', end, [
       'OPENING',
       'ADJUSTMENT',

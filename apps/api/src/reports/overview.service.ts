@@ -130,11 +130,10 @@ export class OverviewService {
     const at = (unitId: string | null): Unit | undefined =>
       unitId ? byUnit.get(unitId) : undefined;
 
-    const [sales, margins, sellers, cashIn, supplierPayments, expenses, charges, credit, stock] =
+    const [sales, margins, cashIn, supplierPayments, expenses, charges, credit, stock] =
       await Promise.all([
         this.salesByDay(scope, previous.from, range.to),
         seesCost ? this.margins(scope, range) : [],
-        this.sellers(scope, range),
         this.cashIn(scope, range),
         this.supplierPayments(scope, range),
         this.expenses(scope, range),
@@ -147,16 +146,17 @@ export class OverviewService {
       const u = at(r.unitId);
       if (!u) continue;
       const ttc = dec(r.ttc);
-      if (r.day >= range.from) u.perDay.set(r.day, { ttc, count: Number(r.count) });
-      else u.previousTtc = u.previousTtc.plus(ttc);
+      if (r.day < range.from) {
+        u.previousTtc = u.previousTtc.plus(ttc);
+        continue;
+      }
+      const day = u.perDay.get(r.day) ?? { ttc: ZERO, count: 0 };
+      u.perDay.set(r.day, { ttc: day.ttc.plus(ttc), count: day.count + Number(r.count) });
+      if (r.seller) u.sellers.set(r.seller, (u.sellers.get(r.seller) ?? ZERO).plus(ttc));
     }
     for (const r of margins) {
       const u = at(r.unitId);
       if (u) u.margin = dec(r.net).minus(dec(r.cost));
-    }
-    for (const r of sellers) {
-      const u = at(r.unitId);
-      if (u && r.seller) u.sellers.set(r.seller, dec(r.ttc));
     }
     for (const r of cashIn) {
       const u = at(r.unitId);
@@ -210,16 +210,23 @@ export class OverviewService {
     };
   }
 
+  /** CA per dépôt, day and seller: the sparkline, the comparison and the top seller. */
   private salesByDay(scope: Scope, from: string, to: string) {
     const { start, end } = algiersRange(from, to);
     const u = businessUnit('f."warehouseId"', scope.defaultWarehouseId ?? null);
     return this.prisma.db.$queryRaw<
-      { unitId: string | null; day: string; ttc: Prisma.Decimal; count: bigint }[]
+      {
+        unitId: string | null;
+        day: string;
+        seller: string | null;
+        ttc: Prisma.Decimal;
+        count: bigint;
+      }[]
     >`
-      SELECT ${u.unit} AS "unitId", ${algiersDayOf('f.at')} AS day,
+      SELECT ${u.unit} AS "unitId", ${algiersDayOf('f.at')} AS day, f.seller,
              SUM(f.ttc - f."retTtc") AS ttc, SUM(f.docs) AS count
       FROM (${saleDocumentFacts(scope, start, end)}) f ${u.join}
-      GROUP BY 1, 2`;
+      GROUP BY 1, 2, 3`;
   }
 
   private margins(scope: Scope, range: DayRange) {
@@ -231,17 +238,6 @@ export class OverviewService {
       SELECT ${u.unit} AS "unitId", SUM(f.ht - f."retHt") AS net, SUM(f.cost) AS cost
       FROM (${saleLineFacts(scope, start, end)}) f ${u.join}
       GROUP BY 1`;
-  }
-
-  private sellers(scope: Scope, range: DayRange) {
-    const { start, end } = algiersRange(range.from, range.to);
-    const u = businessUnit('f."warehouseId"', scope.defaultWarehouseId ?? null);
-    return this.prisma.db.$queryRaw<
-      { unitId: string | null; seller: string | null; ttc: Prisma.Decimal }[]
-    >`
-      SELECT ${u.unit} AS "unitId", f.seller, SUM(f.ttc - f."retTtc") AS ttc
-      FROM (${saleDocumentFacts(scope, start, end)}) f ${u.join}
-      GROUP BY 1, 2`;
   }
 
   /** Versements received, as in the payments report. */
