@@ -115,7 +115,7 @@ function ContractRow({ contract: c, onEdit }: { contract: RentContractDto; onEdi
   const due = parseDA(c.amountDue)?.gt(0) ?? false;
 
   return (
-    <li className="grid gap-3 p-4">
+    <li className="grid grid-cols-[minmax(0,1fr)] gap-3 p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate font-medium" title={c.landlordName}>
