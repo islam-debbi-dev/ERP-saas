@@ -76,6 +76,9 @@ export const TENANT_SCOPED_MODELS = new Set<string>([
   'ExpenseCategory',
   'RentContract',
   'Expense',
+  'ImportFile',
+  'ImportCost',
+  'ImportCostAllocation',
 ]);
 
 /** Append-only models: any update or delete is a bug (AGENTS.md rules 1 and 7). */

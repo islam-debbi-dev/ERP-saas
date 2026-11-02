@@ -10,10 +10,6 @@ import { TENANT_SCOPED_MODELS } from './tenant-extension';
 const NOT_SCOPED = new Set<string>([
   // Platform journal: written by the super-admin, tenantId is optional.
   'PlatformAuditLog',
-  // Phase 22, not scoped yet (found in phase 25): reads rely on RLS alone.
-  'ImportFile',
-  'ImportCost',
-  'ImportCostAllocation',
 ]);
 
 describe('tenant extension', () => {
