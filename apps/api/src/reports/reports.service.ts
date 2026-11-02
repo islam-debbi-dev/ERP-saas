@@ -87,7 +87,7 @@ export class ReportsService {
       sellerIds: await this.scopes.figuresSellerIds(user, query),
       brandId: query.brandId ?? null,
       // Figures: the dépôts he works in or sees statistics of (phase 24).
-      warehouseIds: this.scopes.narrowWarehouses(units.statsWarehouseIds, query.warehouseId),
+      warehouseIds: await this.scopes.figureWarehouses(units.statsWarehouseIds, query.warehouseId),
       defaultWarehouseId: units.defaultWarehouseId,
     };
     const { start, end } = algiersRange(query.from, query.to);

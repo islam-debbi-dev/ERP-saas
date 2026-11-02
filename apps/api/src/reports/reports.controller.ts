@@ -20,6 +20,9 @@ import {
   dashboardQuerySchema,
   Feature,
   type OnboardingStatus,
+  type OverviewDto,
+  type OverviewQuery,
+  overviewQuerySchema,
   Permission,
   type ReportDto,
   type ReportName,
@@ -42,6 +45,8 @@ import { OnboardingService } from './onboarding.service';
 import { ChargesService } from '../expenses/charges.service';
 import { agingFileName, buildAgingXlsx } from './aging-xlsx';
 import { buildChargesXlsx, chargesFileName } from './charges-xlsx';
+import { buildOverviewXlsx, overviewFileName } from './overview-xlsx';
+import { OverviewService } from './overview.service';
 import { buildReportXlsx, reportFileName } from './report-xlsx';
 import { ReportsService } from './reports.service';
 import {
@@ -102,7 +107,39 @@ export class ReportsController {
     private readonly aging: AgingService,
     private readonly sellOuts: SellOutService,
     private readonly charges: ChargesService,
+    private readonly overview: OverviewService,
   ) {}
+
+  /**
+   * Vue d'ensemble (phase 26): one card per dépôt whose figures the user sees. Finance
+   * figures (cash, credit, charges), so managers only, like the charges report.
+   */
+  @Get('overview')
+  @RequireFeature(Feature.MULTI_UNIT)
+  @RequirePermission(Permission.REPORTS_FINANCE)
+  overviewReport(
+    @Query(new ZodValidationPipe(overviewQuerySchema)) query: OverviewQuery,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<OverviewDto> {
+    return this.overview.get(query, user);
+  }
+
+  @Get('overview/export.xlsx')
+  @RequireFeature(Feature.MULTI_UNIT)
+  @RequirePermission(Permission.REPORTS_FINANCE)
+  async overviewExport(
+    @Query(new ZodValidationPipe(overviewQuerySchema)) query: OverviewQuery,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<StreamableFile> {
+    requirePermission(user, Permission.EXPORT_DATA, { message: 'You may not export data' });
+    const report = await this.overview.get(query, user);
+    const buffer = await buildOverviewXlsx(report);
+    return new StreamableFile(buffer, {
+      type: XLSX_MIME,
+      disposition: `attachment; filename="${overviewFileName(report)}"`,
+      length: buffer.length,
+    });
+  }
 
   // Balance âgée (phase 21), declared before ':name'. Managers only, like the accounts.
   @Get('aging')

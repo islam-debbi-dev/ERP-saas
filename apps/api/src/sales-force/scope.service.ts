@@ -172,6 +172,25 @@ export class ScopeService {
     return ids === null || ids.includes(filter) ? [filter] : [];
   }
 
+  /**
+   * The dépôts a figure covers (dashboard, reports, overview): `narrowWarehouses`, plus the
+   * trucks of the dépôts it keeps (phase 26). A truck is part of its dépôt's business unit,
+   * as in the charges report. null = every dépôt.
+   */
+  async figureWarehouses(
+    ids: string[] | null,
+    filter: string | undefined,
+    db: Db = this.prisma.db,
+  ): Promise<string[] | null> {
+    const narrowed = this.narrowWarehouses(ids, filter);
+    if (!narrowed || narrowed.length === 0) return narrowed;
+    const trucks = await db.warehouse.findMany({
+      where: { type: WarehouseType.VEHICLE, parentWarehouseId: { in: narrowed } },
+      select: { id: true },
+    });
+    return [...new Set([...narrowed, ...trucks.map((t) => t.id)])];
+  }
+
   async multiUnitOn(tenantId: string): Promise<boolean> {
     return (await this.features.of(tenantId)).features.includes(Feature.MULTI_UNIT);
   }
@@ -198,6 +217,10 @@ export class ScopeService {
     if (filters.teamOf) narrow(await this.teamIds(filters.teamOf));
     if (filters.sellerId) narrow([filters.sellerId]);
     return ids;
+  }
+
+  async expensesOn(tenantId: string): Promise<boolean> {
+    return (await this.features.of(tenantId)).features.includes(Feature.EXPENSES);
   }
 
   async salesForceOn(tenantId: string): Promise<boolean> {

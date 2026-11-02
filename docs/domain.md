@@ -169,6 +169,16 @@
 - **Charges of a period** (`GET /reports/charges`, managers, over the dépôts whose figures the user sees): rent from the baux (accrual) + every other dépense, spread by day over its period, or on its date without one. **Loyer payments linked to a bail are cash only**: they are shown apart (*loyers payés*) and never added, so rent is not counted twice. A Loyer dépense without a bail counts like any dépense. Each category × dépôt cell is rounded once (half-up, 2 decimals); every total is the sum of the rounded cells, so the parts always add up.
 - Not in this phase: payroll, supplier invoices for services, depreciation, a full cash book, attachments.
 
+## Vue d'ensemble (phase 26, module MULTI_UNIT)
+- `GET /reports/overview?from=&to=` (managers: `REPORTS_FINANCE`): one card per dépôt (MAIN / SECONDARY) whose figures the user sees (OPERATE or VIEW_STATS), then the total. A dépôt outside his reach never appears, not even its name. An archived dépôt shows only while it has figures in the period.
+- **What counts for a dépôt**: its own rows and its trucks' (a truck is part of its dépôt's business unit); a row without a dépôt is the dépôt principal's. Since phase 26 the dashboard and the reports filtered on a dépôt include its trucks too, so a card always equals the dashboard filtered on its dépôt.
+- **Same definitions as the other screens**: CA = TTC net of avoirs (dashboard, `saleDocumentFacts`); marge = HT net − cost at sale (`saleLineFacts`, without the late-import écart, as in every dépôt-scoped figure); charges = the phase 25 charges report; résultat net = marge − charges. Comparison: the same number of days just before the period; no % when it had no sales.
+- **Cash**: encaissements = versements received; décaissements = règlements fournisseur + dépenses paid in the period (rent payments included: this is cash, not the charged cost). A **règlement fournisseur records its dépôt** (phase 26): the one asked for (in the user's reach), else his only dépôt, else none (counts for the dépôt principal).
+- **Créances** are today's, whatever the period: what each client owes each dépôt (his ledger split by dépôt; only positive parts count, so the total can exceed the dashboard's when a client has a credit in one dépôt and a debt in another). The share over 90 days ages each part like the balance âgée, over that dépôt's documents and that dépôt's versements (`agedOver90`, the 90+ bucket of `computeAging` from three sums).
+- **Totals** are the sum of the cards; only counts are company-wide (a product low in two dépôts counts once, a client owing two dépôts is one debtor). Margin, stock value and net result need `VIEW_COST_AND_MARGIN`; charges need the EXPENSES module. Excel export (`EXPORT_DATA`) with fixed French column titles.
+- The dashboard shows the **résultat net du mois** (marge − charges, same dépôt filter) for managers with `VIEW_COST_AND_MARGIN`, with or without `MULTI_UNIT`.
+- Not in this phase: budgets / objectives per dépôt, forecasting, the Flutter owner app.
+
 ## Typical edge cases to always consider
 - Selling the last carton from two devices at the same time.
 - Negative stock (allow with warning? tenant setting) – common in real shops because entries are late.
@@ -217,5 +227,6 @@
 - **Emballage consigné**: returnable packaging tracked per client (`PackagingType`, `ClientPackagingEntry`).
 - **Sell-out**: what the distributor sold to its clients, per brand, sent to the brand every month.
 - **Règlement fournisseur**: payment to a supplier, prefix `RGF`.
+- **Vue d'ensemble**: the owner's one-screen view of every dépôt (`/vue-ensemble`). **Résultat net**: marge brute − charges of a period. **Encaissements / décaissements**: cash in (versements) / cash out (règlements fournisseur + dépenses).
 - **Dépense**: a charge the company paid (rent, electricity, salaries...), prefix `DEP`. **Bail**: a rent contract of a dépôt (`RentContract`). **Charges**: rent by day + other dépenses of a period.
 - **Dossier d'importation (DI)**: one import shipment grouping BRs and their costs. **Coût de revient**: landed unit cost.

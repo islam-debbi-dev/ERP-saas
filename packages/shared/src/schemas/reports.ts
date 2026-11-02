@@ -76,6 +76,16 @@ export const dashboardQuerySchema = z.object({
 });
 export type DashboardQuery = z.infer<typeof dashboardQuerySchema>;
 
+/** Vue d'ensemble (phase 26): Algiers days, both included, at most a year. */
+export const overviewQuerySchema = z
+  .object({ from: dateString, to: dateString })
+  .refine((q) => q.from <= q.to, { message: 'invalid_range', path: ['to'] })
+  .refine((q) => q.from > q.to || rangeLength(q) <= MAX_REPORT_DAYS, {
+    message: 'range_too_long',
+    path: ['from'],
+  });
+export type OverviewQuery = z.infer<typeof overviewQuerySchema>;
+
 // ---------------------------------------------------------------- responses
 
 /** How a cell is formatted: `enum` values are codes the client translates. */
@@ -179,4 +189,56 @@ export interface DashboardDto {
   } | null;
   /** Client and supplier cheques due in the next 7 days (phase 21); managers only. */
   cheques: DueChequesDto | null;
+  /**
+   * Month to date (phase 26): marge brute − charges (phase 25). Managers with
+   * VIEW_COST_AND_MARGIN, when the EXPENSES module is on; null otherwise.
+   */
+  net: { margin: string; charges: string; result: string } | null;
+}
+
+/**
+ * The figures of one dépôt (or of all of them) over a period (phase 26). A dépôt includes
+ * its trucks. Amounts are decimal strings; percentages one-decimal strings.
+ */
+export interface OverviewFigures {
+  sales: {
+    /** TTC net of avoirs, as on the dashboard. */
+    ttc: string;
+    count: number;
+    /** The same number of days just before. */
+    previousTtc: string;
+    /** null when the previous period had no sales. */
+    changePct: string | null;
+    /** One entry per day of the period. */
+    perDay: { date: string; ttc: string }[];
+  };
+  /** Versements received. */
+  cashIn: string;
+  /** Règlements fournisseur + dépenses paid. */
+  cashOut: { supplierPayments: string; expenses: string; total: string };
+  netCash: string;
+  /** null without VIEW_COST_AND_MARGIN. */
+  margin: string | null;
+  /** Rent by day + other expenses (phase 25); null without the EXPENSES module. */
+  charges: string | null;
+  /** margin − charges; null when either is null. */
+  netResult: string | null;
+  /** What clients owe this dépôt today. */
+  credit: { total: string; over90: string; over90Pct: string | null; debtorCount: number };
+  stock: { value: string | null; lowStock: number };
+  topSeller: { id: string; fullName: string; ttc: string } | null;
+}
+
+export interface OverviewWarehouse extends OverviewFigures {
+  warehouse: { id: string; name: string; isDefault: boolean };
+}
+
+export interface OverviewDto {
+  from: string;
+  to: string;
+  previousFrom: string;
+  previousTo: string;
+  /** Every dépôt the user sees: the sum of the cards (counts are company-wide). */
+  total: OverviewFigures;
+  warehouses: OverviewWarehouse[];
 }

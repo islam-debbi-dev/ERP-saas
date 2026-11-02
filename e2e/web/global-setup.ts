@@ -38,7 +38,8 @@ export default async function globalSetup(): Promise<void> {
     await page.locator('#identifier').fill(fixture.session.email);
     await page.locator('#password').fill(PASSWORD);
     await page.getByRole('button', { name: 'Log in' }).click();
-    await page.waitForURL(/\/tableau-de-bord/);
+    // The dashboard, or the Vue d'ensemble for a user with several dépôts (phase 26).
+    await page.waitForURL(/\/(tableau-de-bord|vue-ensemble)/);
     await page.waitForLoadState('networkidle');
     await context.storageState({ path: `${authDir}state.json` });
   } finally {

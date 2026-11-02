@@ -172,6 +172,43 @@ export class StockQueriesService {
     };
   }
 
+  /**
+   * `dashboardSummary` for each dépôt (phase 26): a dépôt's stock includes its trucks'.
+   * One pass over products × warehouses in reach (null = all).
+   */
+  async summaryByUnit(
+    showCost: boolean,
+    warehouseIds: string[] | null,
+  ): Promise<Map<string, { lowStock: number; value: string | null }>> {
+    const tenantId = tenantContext.requireTenantId();
+    const rows = await this.prisma.db.$queryRaw<{ unitId: string; value: Dec; lowStock: bigint }[]>`
+      SELECT q."unitId", COALESCE(SUM(CASE WHEN q.qty > 0 THEN ROUND(q.qty * q."avgCost", 2) ELSE 0 END), 0) AS value,
+             COUNT(*) FILTER (WHERE q.qty <= q."minStock") AS "lowStock"
+      FROM (
+        SELECT CASE WHEN w.type = 'VEHICLE' AND w."parentWarehouseId" IS NOT NULL
+                    THEN w."parentWarehouseId" ELSE w.id END AS "unitId",
+               p.id, p."minStock", COALESCE(s."avgCost", 0) AS "avgCost",
+               SUM(${warehouseQtySql(tenantId, 's')}) AS qty
+        FROM products p
+        LEFT JOIN product_stocks s ON s."productId" = p.id
+        JOIN warehouses w ON w."tenantId" = ${tenantId}::uuid
+          ${warehouseIds ? Prisma.sql`AND w.id = ANY(${warehouseIds}::uuid[])` : Prisma.empty}
+        LEFT JOIN warehouse_stocks ws ON ws."warehouseId" = w.id AND ws."productId" = p.id
+        WHERE p."tenantId" = ${tenantId}::uuid AND p."deletedAt" IS NULL
+        GROUP BY 1, p.id, p."minStock", s."avgCost"
+      ) q
+      GROUP BY q."unitId"`;
+    return new Map(
+      rows.map((r) => [
+        r.unitId,
+        {
+          lowStock: Number(r.lowStock),
+          value: showCost ? toMoneyString(r.value.toString()) : null,
+        },
+      ]),
+    );
+  }
+
   /** Adds the quantity of every live dépôt to each row (stock list columns, stock card). */
   private async addSplit(items: StockLevelDto[], reach: string[] | null = null): Promise<void> {
     if (items.length === 0) return;

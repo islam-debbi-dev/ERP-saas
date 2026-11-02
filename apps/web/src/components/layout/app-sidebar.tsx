@@ -29,6 +29,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { useAuth, useFeatures } from '@/lib/auth';
+import { useHasOverview } from '@/lib/overview';
 import { tutorials, whatsappLink } from '@/lib/support';
 import { isActive, type NavItem, visibleNavGroups } from './navigation';
 
@@ -60,9 +61,17 @@ export function AppSidebar() {
   const user = useAuth().state.user;
   const role = user?.role;
   const permissions = user?.permissions;
+  // The Vue d'ensemble only for a user with more than one dépôt (phase 26).
+  const hasOverview = useHasOverview() === true;
   const groups = useMemo(
-    () => visibleNavGroups(features, undefined, role, permissions),
-    [features, role, permissions],
+    () =>
+      visibleNavGroups(features, undefined, role, permissions)
+        .map((g) => ({
+          ...g,
+          items: g.items.filter((i) => i.key !== 'overview' || hasOverview),
+        }))
+        .filter((g) => g.items.length > 0),
+    [features, role, permissions, hasOverview],
   );
   const items = useMemo(() => groups.flatMap((g) => g.items), [groups]);
   useNavShortcuts(items);

@@ -31,6 +31,7 @@ import { api } from '@/lib/api-client';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { useIdempotencyKey } from '@/lib/use-idempotency-key';
 import { isolateLtr } from '@/lib/utils';
+import { useWarehouseFilter } from '@/lib/warehouse-scope';
 import { SupplierBalance } from './supplier-balance';
 
 /** Nouveau règlement fournisseur (RGF, phase 21). */
@@ -49,6 +50,8 @@ export function SupplierPaymentDialog({
   const errorMessage = useErrorMessage();
   const queryClient = useQueryClient();
   const key = useIdempotencyKey(open);
+  // Phase 26: the règlement counts for the header's dépôt (else the user's only one).
+  const warehouseId = useWarehouseFilter();
   const [amount, setAmount] = useState('');
   const [mode, setMode] = useState<PaymentMode>('ESPECES');
   const [reference, setReference] = useState('');
@@ -83,6 +86,7 @@ export function SupplierPaymentDialog({
           bank: mode === 'CHEQUE' ? bank.trim() : '',
           dueDate: mode === 'CHEQUE' && dueDate ? dueDate : null,
           note: note.trim(),
+          ...(warehouseId ? { warehouseId } : {}),
         },
       }),
     onSuccess: (p) => {

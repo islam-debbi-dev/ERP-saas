@@ -3,7 +3,7 @@
  * Pure functions, no I/O. The account balance is the ledger; aging only spreads it
  * over the buckets, and the buckets always sum to it.
  */
-import { money, type Money } from './money';
+import { money, type Money, type MoneyInput } from './money';
 import { AGING_BUCKETS, type AgingBucket } from './schemas/credit';
 
 /** A document (or an opening debit) that put money on the account. */
@@ -94,6 +94,19 @@ export function computeAging(
     oldestDays: oldest === null ? null : daysBetween(oldest, asOf),
     oldestDate: oldest,
   };
+}
+
+/**
+ * The 90+ bucket of `computeAging` from three sums, so SQL can age many accounts without
+ * sending every document (phase 26). `open` = what is left on the documents (those with
+ * something left), `openOver90` = the part of it on documents older than 90 days. A
+ * credit the documents do not explain (open − balance) pays the oldest first, and every
+ * 90+ document is older than the others, so it comes off the 90+ part first.
+ */
+export function agedOver90(open: MoneyInput, openOver90: MoneyInput, balance: MoneyInput): Money {
+  const credit = money(open).minus(balance);
+  const left = money(openOver90).minus(credit.gt(0) ? credit : 0);
+  return left.gt(0) ? left : money(0);
 }
 
 /** Adds `b` into `a`, bucket by bucket. */

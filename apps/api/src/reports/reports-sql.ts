@@ -93,17 +93,20 @@ export function algiersMonthOf(column: string): Prisma.Sql {
 
 /**
  * Sales and avoirs at document level, one row each: `at`, `clientId`, `seller`,
- * `docs` (1 for a sale), `ht`/`ttc` (sales) and `retHt`/`retTtc` (avoirs).
+ * `docs` (1 for a sale), `ht`/`ttc` (sales), `retHt`/`retTtc` (avoirs) and the sale's
+ * `warehouseId` (an avoir counts for the dépôt of its sale).
  */
 export function saleDocumentFacts(scope: Scope, start: Date, end: Date): Prisma.Sql {
   if (scope.brandId) return brandDocumentFacts(scope, start, end);
   return Prisma.sql`
     SELECT s."validatedAt" AS at, s."clientId", ${sellerOf()} AS seller, 1 AS docs,
-           s."totalHt" AS ht, s."totalTtc" AS ttc, 0::numeric AS "retHt", 0::numeric AS "retTtc"
+           s."totalHt" AS ht, s."totalTtc" AS ttc, 0::numeric AS "retHt", 0::numeric AS "retTtc",
+           s."warehouseId"
     FROM sales s
     WHERE ${countedSale(scope)} AND ${within('s."validatedAt"', start, end)}
     UNION ALL
-    SELECT r."createdAt", s."clientId", ${sellerOf()}, 0, 0, 0, r."totalHt", r."totalTtc"
+    SELECT r."createdAt", s."clientId", ${sellerOf()}, 0, 0, 0, r."totalHt", r."totalTtc",
+           s."warehouseId"
     FROM sale_returns r JOIN sales s ON s.id = r."saleId"
     WHERE r."tenantId" = ${scope.tenantId}::uuid AND ${countedSale(scope)}
       AND ${within('r."createdAt"', start, end)}`;
@@ -116,7 +119,7 @@ export function saleDocumentFacts(scope: Scope, start: Date, end: Date): Prisma.
 function brandDocumentFacts(scope: Scope, start: Date, end: Date): Prisma.Sql {
   return Prisma.sql`
     SELECT s."validatedAt" AS at, s."clientId", ${sellerOf()} AS seller, 1 AS docs,
-           x.ht, x.ttc, 0::numeric AS "retHt", 0::numeric AS "retTtc"
+           x.ht, x.ttc, 0::numeric AS "retHt", 0::numeric AS "retTtc", s."warehouseId"
     FROM sales s
     JOIN LATERAL (
       SELECT SUM(l."lineHt") AS ht, SUM(${lineTtc('l."lineHt"', 'l."tvaRate"', 's')}) AS ttc
@@ -125,7 +128,7 @@ function brandDocumentFacts(scope: Scope, start: Date, end: Date): Prisma.Sql {
     ) x ON x.ht IS NOT NULL
     WHERE ${countedSale(scope)} AND ${within('s."validatedAt"', start, end)}
     UNION ALL
-    SELECT r."createdAt", s."clientId", ${sellerOf()}, 0, 0, 0, x.ht, x.ttc
+    SELECT r."createdAt", s."clientId", ${sellerOf()}, 0, 0, 0, x.ht, x.ttc, s."warehouseId"
     FROM sale_returns r JOIN sales s ON s.id = r."saleId"
     JOIN LATERAL (
       SELECT SUM(rl."lineHt") AS ht, SUM(${lineTtc('rl."lineHt"', 'sl."tvaRate"', 's')}) AS ttc
@@ -143,20 +146,22 @@ function brandDocumentFacts(scope: Scope, start: Date, end: Date): Prisma.Sql {
  * avoir), signed `qty` (base unit) and `ht`, `retHt`, `ttc`, `retTtc` (line TTC, see
  * `lineTtc`), and `cost` at the CUMP frozen on the sale line. A DAMAGED return gives the
  * revenue back but not the cost: the goods are lost, so their cost stays in the margin.
+ * Last column: the sale's `warehouseId`.
  */
 export function saleLineFacts(scope: Scope, start: Date, end: Date): Prisma.Sql {
   return Prisma.sql`
     SELECT s."validatedAt" AS at, l."productId", p."brandId", s.id AS "saleId", l."qtyBase" AS qty,
            l."lineHt" AS ht, 0::numeric AS "retHt",
            ${lineTtc('l."lineHt"', 'l."tvaRate"', 's')} AS ttc, 0::numeric AS "retTtc",
-           l."qtyBase" * l."unitCostBase" AS cost
+           l."qtyBase" * l."unitCostBase" AS cost, s."warehouseId"
     FROM sale_lines l JOIN sales s ON s.id = l."saleId" JOIN products p ON p.id = l."productId"
     WHERE l."tenantId" = ${scope.tenantId}::uuid AND ${countedSale(scope)}
       AND ${within('s."validatedAt"', start, end)} ${brandFilter(scope, 'p')}
     UNION ALL
     SELECT r."createdAt", rl."productId", p."brandId", NULL, -rl."qtyBase", 0, rl."lineHt",
            0, ${lineTtc('rl."lineHt"', 'sl."tvaRate"', 's')},
-           CASE WHEN r.disposition = 'RESTOCK' THEN -rl."qtyBase" * sl."unitCostBase" ELSE 0 END
+           CASE WHEN r.disposition = 'RESTOCK' THEN -rl."qtyBase" * sl."unitCostBase" ELSE 0 END,
+           s."warehouseId"
     FROM sale_return_lines rl
     JOIN sale_returns r ON r.id = rl."returnId"
     JOIN sale_lines sl ON sl.id = rl."saleLineId"
@@ -178,7 +183,7 @@ export function marginFacts(scope: Scope, start: Date, end: Date): Prisma.Sql {
       ? Prisma.empty
       : Prisma.sql`
     UNION ALL
-    SELECT a."createdAt", a."productId", p."brandId", NULL, 0, 0, 0, 0, 0, 0, a.ecart
+    SELECT a."createdAt", a."productId", p."brandId", NULL, 0, 0, 0, 0, 0, 0, NULL::uuid, a.ecart
     FROM import_cost_allocations a JOIN products p ON p.id = a."productId"
     WHERE a."tenantId" = ${scope.tenantId}::uuid AND a.ecart <> 0
       AND ${within('a."createdAt"', start, end)} ${brandFilter(scope, 'p')}`;

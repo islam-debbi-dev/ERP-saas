@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  DEFAULT_EXPENSE_CATEGORIES,
   type ExpenseCategoryDto,
   type ExpenseCategoryInput,
   ExpenseCategoryKey,
@@ -39,7 +40,23 @@ export class ExpenseCategoriesService {
       where: includeArchived ? {} : { deletedAt: null },
       orderBy: [{ deletedAt: { sort: 'asc', nulls: 'first' } }, { createdAt: 'asc' }],
     });
-    return rows.map(toDto);
+    // The seeded categories share one createdAt (one insert): keep them in seed order,
+    // then by name, so the list is the same on every call.
+    const seed = (key: string | null) => {
+      const i = DEFAULT_EXPENSE_CATEGORIES.findIndex((c) => c.key === key);
+      return i === -1 ? DEFAULT_EXPENSE_CATEGORIES.length : i;
+    };
+    return rows
+      .map((r, i) => ({ r, i }))
+      .sort(
+        (a, b) =>
+          Number(a.r.deletedAt !== null) - Number(b.r.deletedAt !== null) ||
+          a.r.createdAt.getTime() - b.r.createdAt.getTime() ||
+          seed(a.r.key) - seed(b.r.key) ||
+          a.r.name.localeCompare(b.r.name) ||
+          a.i - b.i,
+      )
+      .map(({ r }) => toDto(r));
   }
 
   /** The Loyer category, created again if a very old company lost it. */

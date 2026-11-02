@@ -30,7 +30,7 @@ import { useAuth, useFeature } from '@/lib/auth';
 import { type FigureFilters, NO_FIGURE_FILTERS, useDashboard } from '@/lib/reports';
 import { useBrands, useIsOffice, useSellers } from '@/lib/sales-force';
 import { useErrorMessage } from '@/lib/use-error-message';
-import { cn } from '@/lib/utils';
+import { cn, isolateLtr } from '@/lib/utils';
 import { MyObjectivesCard } from '@/components/incentives/my-objectives-card';
 import { OnboardingCard } from './onboarding-card';
 import { SalesChart } from './sales-chart';
@@ -183,6 +183,17 @@ function Sections({ d }: { d: DashboardDto }) {
               />
               {d.sales.margin !== null ? (
                 <Stat label={t('marginMonth')} value={formatDA(d.sales.margin)} />
+              ) : null}
+              {d.net ? (
+                <Stat
+                  label={t('netMonth')}
+                  value={formatDA(d.net.result)}
+                  negative={money(d.net.result).isNegative()}
+                  hint={t('netHint', {
+                    margin: isolateLtr(formatDA(d.net.margin)),
+                    charges: isolateLtr(formatDA(d.net.charges)),
+                  })}
+                />
               ) : null}
             </>
           ) : null}
@@ -350,12 +361,15 @@ function Stat({
   hint,
   href,
   tone,
+  negative,
 }: {
   label: string;
   value: string;
   hint?: ReactNode;
   href?: string;
   tone?: 'warn';
+  /** A loss: red, with its minus sign (never colour alone). */
+  negative?: boolean;
 }) {
   const body = (
     <Card
@@ -367,7 +381,13 @@ function Stat({
     >
       <CardContent className="space-y-1">
         <p className="text-sm text-muted-foreground">{label}</p>
-        <p dir="ltr" className="num text-start text-2xl font-semibold rtl:text-end">
+        <p
+          dir="ltr"
+          className={cn(
+            'num text-start text-2xl font-semibold rtl:text-end',
+            negative && 'text-destructive',
+          )}
+        >
           {value}
         </p>
         {hint ? <div className="text-xs text-muted-foreground">{hint}</div> : null}

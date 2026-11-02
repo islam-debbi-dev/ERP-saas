@@ -45,6 +45,8 @@ export const createSupplierPaymentSchema = z.object({
   /** Cheque due date (échéance). */
   dueDate: dateString.nullable().default(null),
   note: optionalText(255),
+  /** Phase 26: the dépôt that pays (figures per dépôt); else the user's only one. */
+  warehouseId: id.optional(),
 });
 export type CreateSupplierPaymentInput = z.infer<typeof createSupplierPaymentSchema>;
 

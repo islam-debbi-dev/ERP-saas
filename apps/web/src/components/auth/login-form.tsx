@@ -37,7 +37,8 @@ export function LoginForm({ expired }: { expired: boolean }) {
   const { errors, isSubmitting } = form.formState;
 
   useEffect(() => {
-    if (state.status === 'authenticated') router.replace('/tableau-de-bord');
+    // '/' picks the dashboard or the Vue d'ensemble (phase 26).
+    if (state.status === 'authenticated') router.replace('/');
   }, [state.status, router]);
 
   const onSubmit = form.handleSubmit(async (values) => {

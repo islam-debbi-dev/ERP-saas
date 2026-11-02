@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 type TitleKey =
+  | 'nav.overview'
   | 'nav.dashboard'
   | 'nav.products'
   | 'nav.purchases'

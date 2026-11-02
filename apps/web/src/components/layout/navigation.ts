@@ -2,6 +2,7 @@ import {
   BadgePercent,
   Banknote,
   ClipboardList,
+  LayoutGrid,
   MapPinCheck,
   MapPinned,
   Navigation,
@@ -22,6 +23,7 @@ import {
 import { Feature, Permission, Role } from '@erp/shared';
 
 export type NavKey =
+  | 'overview'
   | 'dashboard'
   | 'sales'
   | 'versements'
@@ -65,6 +67,14 @@ export const NAV_GROUPS: readonly NavGroup[] = [
   {
     key: 'groupMain',
     items: [
+      // Phase 26: first for whoever sees more than one dépôt (the sidebar checks the count).
+      {
+        key: 'overview',
+        url: '/vue-ensemble',
+        icon: LayoutGrid,
+        feature: Feature.MULTI_UNIT,
+        permission: Permission.REPORTS_FINANCE,
+      },
       { key: 'dashboard', url: '/tableau-de-bord', icon: LayoutDashboard },
       { key: 'sales', url: '/ventes', icon: ReceiptText },
       { key: 'versements', url: '/versements', icon: Banknote },
