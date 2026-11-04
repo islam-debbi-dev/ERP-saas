@@ -37,6 +37,7 @@ Each phase is one branch, one PR and one Claude Code session. Prompts live in [`
 | 28 | [Relances automatiques](prompts/phase-28-auto-reminders.md) | Scheduled debtor reminders on WhatsApp, per-client exclude / pause, preview and log | 21, 27 | v2 |
 | 29 | [Édition mono-société](prompts/phase-29-single-company-edition.md) | `DEPLOYMENT_MODE=single`, signed license, installer for one company on its own VPS | 28 | v2 |
 | 32 | [Verrouillage automatique](prompts/phase-32-idle-lock.md) | Idle lock screen enforced by the API, per-user PIN, lock across tabs, owner sets the delay | 11 | v1.1 |
+| 30 | [Assistant IA](prompts/phase-30-ai-assistant.md) | In-app help assistant (Claude): how-to answers in ar / darja / fr, read-only questions on the user's own data, quotas per plan | 13b, 24 | v2 |
 
 **MVP = phases 1 to 12b.** Put the pilot grossiste on it after phase 12b (traders open it on their phones); phase 13 can follow during the free pilot month.
 
@@ -81,3 +82,7 @@ Every phase that adds a screen follows [`ui.md`](ui.md): phone first, RTL, Playw
 - Lots and dates de péremption (DLC), stock reservation on orders, route optimisation, payroll / CNAS, B2B ordering portal for retailers.
 - Thermal 80mm tickets.
 - E-invoicing / tax exports if the law requires it.
+
+## Phase 30 (plan of 2026-11-04)
+- Independent of 23, 27, 28: can be built any time after 26.
+- Read-only by design: the assistant never creates or changes business data.
