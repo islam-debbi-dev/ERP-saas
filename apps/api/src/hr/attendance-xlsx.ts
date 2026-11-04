@@ -1,20 +1,5 @@
 import ExcelJS from 'exceljs';
-import { type AttendanceMonthDto, DayStatus } from '@erp/shared';
-
-/** One letter per status, same as the month grid's legend. */
-export const STATUS_LETTERS: Record<DayStatus, string> = {
-  [DayStatus.PRESENT]: 'P',
-  [DayStatus.ABSENT_UNJUSTIFIED]: 'A',
-  [DayStatus.ABSENT_JUSTIFIED]: 'J',
-  [DayStatus.SICK]: 'M',
-  [DayStatus.LEAVE_PAID]: 'C',
-  [DayStatus.LEAVE_UNPAID]: 'S',
-  [DayStatus.HALF_DAY]: 'D',
-  [DayStatus.REST]: 'R',
-  [DayStatus.HOLIDAY]: 'F',
-  [DayStatus.NOT_EMPLOYED]: '-',
-  [DayStatus.UNMARKED]: '?',
-};
+import { type AttendanceMonthDto, STATUS_LETTERS } from '@erp/shared';
 
 /** The month grid. Fixed French column titles, like the other exports. */
 export async function buildMonthXlsx(month: AttendanceMonthDto): Promise<Buffer> {

@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import {
   IMPORT_MAX_FILE_BYTES,
   Feature,
+  Permission,
   IMPORT_TYPES,
   type ImportFieldDef,
   type ImportIssue,
@@ -47,7 +48,7 @@ import {
   priceSlot,
 } from '@/lib/imports';
 import { useErrorMessage } from '@/lib/use-error-message';
-import { useFeature } from '@/lib/auth';
+import { useFeature, usePermission } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 
 const PAGE_SIZE = 100;
@@ -86,6 +87,11 @@ export function ImportWizard() {
   const t = useTranslations('imports');
   // Phase 20: the packaging import only with the module.
   const packagingOn = useFeature(Feature.PACKAGING);
+  // The personnel file carries salaries (phase 31): the API refuses it to the others too.
+  const hrOn = useFeature(Feature.HR);
+  const canManageHr = usePermission(Permission.HR_MANAGE);
+  const canSeePay = usePermission(Permission.SALARY_VIEW);
+  const employeesOn = hrOn && canManageHr && canSeePay;
   const errorMessage = useErrorMessage();
   const queryClient = useQueryClient();
   const fileInputId = useId();
@@ -148,7 +154,10 @@ export function ImportWizard() {
         </CardHeader>
         <CardContent className="grid gap-4">
           <div role="radiogroup" aria-label={t('type')} className="grid gap-3 sm:grid-cols-3">
-            {IMPORT_TYPES.filter((k) => k !== 'PACKAGING_OPENING' || packagingOn).map((kind) => (
+            {IMPORT_TYPES.filter(
+              (k) =>
+                (k !== 'PACKAGING_OPENING' || packagingOn) && (k !== 'EMPLOYEES' || employeesOn),
+            ).map((kind) => (
               <div
                 key={kind}
                 className={cn(

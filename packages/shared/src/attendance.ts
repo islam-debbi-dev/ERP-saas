@@ -19,6 +19,21 @@ export const DEFAULT_DAILY_HOURS = 8;
 /** Congé days earned by a full month of work. */
 export const DEFAULT_LEAVE_ACCRUAL_DAYS = '2.5';
 
+/** One letter per status, on the month grid and in its Excel export. */
+export const STATUS_LETTERS: Record<DayStatus, string> = {
+  [DayStatus.PRESENT]: 'P',
+  [DayStatus.ABSENT_UNJUSTIFIED]: 'A',
+  [DayStatus.ABSENT_JUSTIFIED]: 'J',
+  [DayStatus.SICK]: 'M',
+  [DayStatus.LEAVE_PAID]: 'C',
+  [DayStatus.LEAVE_UNPAID]: 'S',
+  [DayStatus.HALF_DAY]: 'D',
+  [DayStatus.REST]: 'R',
+  [DayStatus.HOLIDAY]: 'F',
+  [DayStatus.NOT_EMPLOYED]: '-',
+  [DayStatus.UNMARKED]: '?',
+};
+
 export interface AttendanceDayEvent {
   kind: AttendanceEventKind;
   absenceReason?: AbsenceReason | null;
