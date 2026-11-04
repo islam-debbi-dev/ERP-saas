@@ -1,0 +1,50 @@
+Read AGENTS.md, docs/domain.md (DRH: personnel et pointage, Charges et loyers, Objectifs & primes) and docs/architecture.md before doing anything. Read `packages/shared/src/attendance.ts`, `packages/shared/src/money.ts`, `packages/shared/src/rent.ts`, `apps/api/src/hr` (phase 31), `apps/api/src/incentives` (approved runs, DB freeze triggers) and `apps/api/src/printing`.
+
+## Task: Phase 31b — DRH part 2: paie mensuelle, bulletin de paie, paiement des salaires
+
+Branch: `phase-31b-payroll`. Phase 31 is merged. Feature flag: new `PAYROLL` (same editions as `HR`, needs `HR`).
+
+The need: at month end the owner gets every worker's salary computed from the pointage, sees why each amount is what it is, approves, pays (cash or virement), and prints a bulletin de paie. Declared workers get CNAS and IRG; undeclared ones get a simple "reçu de paie".
+
+**Legal warning, keep it in the PR summary:** the rates and the IRG barème below are what was known when this prompt was written (2026). Before the first real payslip, islam must have an Algerian comptable check them and the rounding; the comptable's worked examples become unit tests.
+
+### Domain rules
+- **Rates are dated settings, never constants in code.** `PayrollRateSet` (country-wide, owned by the super-admin, `effectiveFrom`, append-only) holds: CNAS employee share (9 %), employer share (26 %), the IRG barème (annual brackets: 0–240 000 → 0 %; 240 001–480 000 → 23 %; 480 001–960 000 → 27 %; 960 001–1 920 000 → 30 %; 1 920 001–3 840 000 → 33 %; above → 35 %, applied monthly on 1/12 of each bracket), the abattement (40 % of the tax, min 1 000, max 1 500 DA / month), the exemption threshold (monthly taxable ≤ 30 000 DA → 0) and the lissage between 30 000 and 35 000 DA (`IRG × 137/51 − 27 925/8`), and the SNMG. A run uses the rate set valid on the month's last day and stores its id. Seed the current set marked `toVerify: true`; the payslip screen shows a banner while it is.
+- **Tenant payroll settings**: day divisor for an absence (30 by default; 26 or 22 allowed), hourly divisor for overtime (173.33 by default = 40 h × 52 / 12), overtime rate (+50 % by default), whether lateness is deducted (off by default).
+- **Primes et indemnités** (`PayItemType`, tenant list, master data): name, `cotisable` (subject to CNAS), `imposable` (subject to IRG), fixed or per day present. Seed: Prime de rendement (cotisable, imposable), Panier (per day, not cotisable, imposable), Transport (per day, not cotisable, imposable), Prime exceptionnelle. Each employee has recurring items (dated rows like the salary); one-off items are added on the draft run. **Approved phase 18 incentive runs** are pulled in as a prime line per seller (their employee via `userId`), read only.
+- **Computation** (`packages/shared/src/payroll.ts`, pure, decimal.js, unit-tested, one function per step so the bulletin can explain each line):
+  1. Days from phase 31's derived statuses for the month (all days must be marked: `UNMARKED` days block approval with the list, `PAYROLL_UNMARKED_DAYS`).
+  2. MONTHLY: base − base / divisor × (absences non justifiées + justifiées non payées + congé sans solde), half day = 0.5. DAILY: daily rate × days present (half = 0.5) + paid leave days + paid holidays. Sick days with an arrêt are not paid by the employer (CNAS pays): deducted like unpaid, shown apart.
+  3. + overtime (hours × base / hourly divisor × (1 + rate)) + primes.
+  4. **Salaire brut cotisable** = base after absences + overtime + cotisable primes. CNAS employee = cotisable × 9 %, employer = cotisable × 26 % (both only when `declared`).
+  5. **Imposable** = cotisable − CNAS employee + non-cotisable imposable items. IRG from the barème (step above), rounded as the comptable says (default: tax rounded down to the DA, per the usual practice; to confirm).
+  6. **Net** = imposable − IRG + non-imposable items. **Net à payer** = net − avances outstanding (the employee ledger balance, capped at the net; the rest carries to next month) − other retenues (manual line, note).
+  - Undeclared employee: no CNAS, no IRG, net = brut; his document is a *reçu de paie*, never called a bulletin.
+  - Rounding: each line half-up to 2 decimals, totals = sum of rounded lines (like phase 25 cells), so the bulletin adds up exactly.
+- **PayrollRun** per tenant, month and dépôt (or all): `DRAFT` (recompute any time, editable one-off lines) → `APPROVED` (`PAYROLL_APPROVE`, owner by default) → frozen. Approving, in one transaction: freezes the run and each `Payslip` with every line, label, rate and the rate-set id (DB triggers refuse updates: `PERIOD_APPROVED`), locks the month's attendance, posts `SALARY_DUE` (net) and the avance deduction on each employee ledger. Number `PAIE-YYYY-000001` (new `DocType.PAIE`) per run. A mistake after approval is fixed by a **régularisation** line in a later month, never by reopening (a reopen needs a cancel with reason by the owner and only while nothing was paid).
+- **Paying salaries**: `POST /payroll-runs/:id/payments` (idempotent; whole run or chosen employees; mode espèces / virement / chèque) creates, per employee, `SALARY_PAID` on his ledger and one phase 25 dépense (category Salaires, linked run + employee) in one transaction. Partial payment allowed; the run shows paid / remaining.
+- **Charges**: the charges and overview reports (phases 25–26) count the **approved run** cost (brut + employer CNAS, by the run's month and dépôt, accrual like rent). Salary payments and avances linked to an employee are **cash only** and are never added to charges (same rule as Loyer payments). Write the test that proves a month is not counted twice.
+
+### API
+- `/payroll-settings`, `/pay-item-types` CRUD, `/employees/:id/pay-items` (dated rows).
+- `POST /payroll-runs` (month, dépôt) → draft computed; `POST /payroll-runs/:id/recompute`; `PATCH` one-off lines on a draft; `POST /payroll-runs/:id/approve`; `POST /payroll-runs/:id/cancel` (rules above); `GET /payroll-runs/:id` with each payslip's explained lines.
+- `POST /payroll-runs/:id/payments` (idempotent).
+- PDFs (French, phase 8 printing): bulletin de paie A4 (company NIF / NIS / RC / adresse, employee matricule, NSS, poste, period, days, every line with base × rate, cumuls annuels brut / IRG), reçu de paie A5 for undeclared, bulk PDF of a run.
+- Exports (Excel, fixed French column titles): livre de paie of the month; état CNAS of the month (NSS, name, cotisable, shares); récapitulatif IRG of the month (for the G50); **DAS annuelle** (per employee per year). The official CNAS electronic file format (e-déclaration / Damancom) must be checked with the comptable before building it: until then Excel only, and say so in the summary.
+
+### Web
+- Every screen follows [`docs/ui.md`](../ui.md): phone first (360 px, `ar` RTL), card lists below `md`, `ResponsiveDialog`, sticky main action. Load the UI skills before building screens and run the audit skill on them at the end.
+- Paie list (by month), run screen: one card per employee (net à payer big, brut, retenues, avances), tap → explained payslip; blocking issues on top (unmarked days, employee without salary, rate set to verify); Approve, then Payer.
+- Employee fiche: payslips history, ledger (dû / payé / avances).
+- "Mes bulletins" for a user linked to an employee (only his own, PDF).
+
+### Tests
+- Playwright mobile (`e2e/web/mobile.spec.ts`): each new screen at 360 and 393 px in `ar` and `fr`, no horizontal overflow, main action visible; screenshots in `e2e/artifacts/mobile/`.
+- Unit (`payroll.ts`): IRG at 0, 30 000, 32 500, 35 000, 50 000, 120 000, 400 000 DA taxable (exemption, lissage, abattement min / max, top bracket); absence deduction with divisor 30 / 26; daily worker; overtime; non-cotisable imposable primes; undeclared; avance bigger than the net carries over; totals equal the sum of lines to the centime. Leave placeholders for the comptable's worked examples (`it.todo` is not allowed in the final PR: add them when islam provides them, or list them as not done).
+- Integration: draft → approve freezes payslips (update refused by trigger) and locks attendance; approve refused with unmarked days; idempotent payment replay; partial payment; charges report counts brut + employer CNAS once and ignores payments and avances; a new rate set does not change an approved run; incentives approved run appears as a prime; `SALARY_VIEW` hides everything; scope by dépôt; tenant isolation (RLS policy + rls int-spec); numbering without gaps under concurrency.
+
+### Not in this phase
+CNAS electronic filing, bank transfer files, IRG for special cases (retraités, handicapés, second job at 10 %), 13th month, leave pay indemnity (indemnité de congé payé computed as 1/12 of the year: parked until the comptable confirms how the pilot does it), sick pay advance by the employer, end-of-contract settlement (solde de tout compte, parked).
+
+### Definition of done
+AGENTS.md §10. Summary ends with What / How to test manually / Decisions / Next phase.
