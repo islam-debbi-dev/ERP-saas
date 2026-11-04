@@ -213,6 +213,8 @@ Every night at 03:00 Algiers, the API checks every tenant:
 - the cached stock (`product_stocks`) equals the sum of `stock_movements`
 - each movement's `balanceAfter` chain is consistent
 - each client balance (`client_balances`) equals the sum of `client_ledger_entries`
+- each employee's avance and congé balances (`employee_balances`) equal `employee_ledger_entries` and `leave_entries`
+- each cached day (`attendance_days`) equals what its events, leaves and calendar give, outside locked months
 - each supplier balance (`supplier_balances`) equals the sum of `supplier_ledger_entries` (phase 21)
 - no cache row is missing
 

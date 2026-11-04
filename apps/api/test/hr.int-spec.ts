@@ -6,6 +6,7 @@ import {
   algiersDay,
   type AttendanceDayDto,
   type AttendanceMonthDto,
+  type AttendanceTodayDto,
   type AuditLogPage,
   type AuthResponse,
   type ChargesReportDto,
@@ -395,6 +396,30 @@ describe('hr attendance (phase 31)', () => {
       expect(row.counts.unmarked).toBe(
         row.days.filter((x) => x.date <= TODAY && x.status === 'UNMARKED').length,
       );
+    });
+
+    it('gives the dashboard card its counts, within the reach of the user', async () => {
+      const fresh = await registerTenant(t, 'Carte RH', { activity: Activity.DISTRIBUTEUR });
+      const main = ((await as(fresh).get('/warehouses').expect(200)).body as WarehouseDto[])[0]!;
+      const [a, b, c] = [
+        await employee({ warehouseId: main.id }, fresh),
+        await employee({ warehouseId: main.id }, fresh),
+        await employee({ warehouseId: main.id }, fresh),
+      ];
+      await mark(fresh, DAY, [{ employeeId: a.id, kind: 'PRESENT' }]).expect(201);
+      expect(c.id).toBeTruthy();
+      const today = async () =>
+        (await as(fresh).get('/attendance/today').expect(200)).body as AttendanceTodayDto;
+      const before = await today();
+      await mark(fresh, TODAY, [
+        { employeeId: a.id, kind: 'HALF_DAY' },
+        { employeeId: b.id, kind: 'ABSENT', absenceReason: 'SICK' },
+      ]).expect(201);
+      const after = await today();
+      // Today may be a rest day or a fête: the marks count either way, an absence only on a
+      // working day, and nothing here depends on which.
+      expect(after.present).toBe(before.present + 1);
+      expect(after.unmarked).toBeLessThanOrEqual(before.unmarked);
     });
 
     it('refuses a second mark and a future day', async () => {
