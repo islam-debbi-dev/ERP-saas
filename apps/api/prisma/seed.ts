@@ -5,7 +5,7 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as argon2 from 'argon2';
-import { DEFAULT_EXPENSE_CATEGORIES } from '@erp/shared';
+import { DEFAULT_EXPENSE_CATEGORIES, FIXED_PUBLIC_HOLIDAYS } from '@erp/shared';
 import { EDITION_PRICE_DEFAULTS, PLAN_DEFAULTS } from '../src/billing/plans';
 import { createDefaultUnits, ensurePriceLevels } from '../src/catalog/catalog-defaults';
 import { PrismaClient } from '../src/generated/prisma/client';
@@ -248,6 +248,72 @@ async function main(): Promise<void> {
           clientId: c.id,
           position: i + 1,
         })),
+        skipDuplicates: true,
+      });
+
+      // DRH demo data (phase 31): four workers of the dépôt principal, so "Pointage du jour"
+      // has rows. The seller has a file too, for "Mon pointage". Fixed ids: a rerun adds
+      // nothing, and the append-only salaries are only written with their employee.
+      const depot = await tx.warehouse.findFirstOrThrow({
+        where: { tenantId: tenant.id, isDefault: true },
+        select: { id: true },
+      });
+      const staff = [
+        { n: 1, fullName: 'Karim Benali', position: 'Magasinier', salary: '45000', userId: null },
+        { n: 2, fullName: 'Nadia Cherif', position: 'Caissière', salary: '42000', userId: null },
+        { n: 3, fullName: 'Samir Haddad', position: 'Chauffeur', salary: '48000', userId: null },
+        {
+          n: 4,
+          fullName: 'Vendeur Demo',
+          position: 'Vendeur',
+          salary: '50000',
+          userId: DEMO_SELLER_ID,
+        },
+      ];
+      for (const s of staff) {
+        const id = `00000000-0000-4000-8000-0000000031${String(s.n).padStart(2, '0')}`;
+        if (await tx.employee.findUnique({ where: { id }, select: { id: true } })) continue;
+        await tx.employee.create({
+          data: {
+            id,
+            tenantId: tenant.id,
+            matricule: `EMP-${String(s.n).padStart(6, '0')}`,
+            fullName: s.fullName,
+            position: s.position,
+            warehouseId: depot.id,
+            userId: s.userId,
+            hireDate: new Date('2024-01-01T00:00:00.000Z'),
+            contract: 'CDI',
+            declared: true,
+          },
+        });
+        await tx.employeeBalance.create({ data: { tenantId: tenant.id, employeeId: id } });
+        await tx.employeeSalary.create({
+          data: {
+            tenantId: tenant.id,
+            employeeId: id,
+            amount: s.salary,
+            payType: 'MONTHLY',
+            effectiveFrom: new Date('2024-01-01T00:00:00.000Z'),
+            reason: 'Embauche',
+          },
+        });
+      }
+      await tx.documentSequence.upsert({
+        where: { tenantId_docType_year: { tenantId: tenant.id, docType: 'EMP', year: 0 } },
+        update: {},
+        create: { tenantId: tenant.id, docType: 'EMP', year: 0, lastNumber: staff.length },
+      });
+      const thisYear = new Date().getUTCFullYear();
+      await tx.publicHoliday.createMany({
+        data: [thisYear, thisYear + 1].flatMap((y) =>
+          FIXED_PUBLIC_HOLIDAYS.map((h) => ({
+            tenantId: tenant.id,
+            date: new Date(`${y}-${h.monthDay}T00:00:00.000Z`),
+            name: h.name,
+            key: h.key,
+          })),
+        ),
         skipDuplicates: true,
       });
 

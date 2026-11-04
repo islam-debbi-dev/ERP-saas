@@ -27,12 +27,25 @@ export class DocumentNumberingService {
    * consecutive numbers, and a rolled-back transaction gives its number back (no gaps).
    */
   async next(tx: Tx, tenantId: string, docType: DocType, date: Date = new Date()): Promise<string> {
+    const year = documentYear(date);
+    return formatDocumentNumber(docType, year, await this.bump(tx, tenantId, docType, year));
+  }
+
+  /**
+   * Next number of a sequence that never restarts, e.g. the matricule `EMP-000001`: same
+   * locking and no gaps as `next`, kept under year 0.
+   */
+  async nextPerTenant(tx: Tx, tenantId: string, docType: DocType): Promise<string> {
+    const n = await this.bump(tx, tenantId, docType, 0);
+    return `${docType}-${String(n).padStart(6, '0')}`;
+  }
+
+  private async bump(tx: Tx, tenantId: string, docType: DocType, year: number): Promise<number> {
     const ctxTenant = tenantContext.get();
     if (!ctxTenant?.system && ctxTenant?.tenantId !== tenantId) {
       // Raw SQL bypasses the tenant extension, so check the argument against the token.
       throw new Error('DocumentNumberingService.next: tenantId does not match the request tenant');
     }
-    const year = documentYear(date);
 
     // Create the row for a new year/type if needed. ON CONFLICT DO NOTHING waits for a
     // concurrent insert to commit instead of failing.
@@ -53,6 +66,6 @@ export class DocumentNumberingService {
       UPDATE document_sequences SET "lastNumber" = ${next}
       WHERE "tenantId" = ${tenantId}::uuid AND "docType" = ${docType}::"DocType" AND "year" = ${year}`;
 
-    return formatDocumentNumber(docType, year, next);
+    return next;
   }
 }

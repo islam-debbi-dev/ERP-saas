@@ -138,6 +138,10 @@ export class WarehousesService {
       productCount: w._count.stocks,
       manager: w.manager,
       parent: w.parent,
+      location:
+        w.lat && w.lng
+          ? { lat: w.lat.toNumber(), lng: w.lng.toNumber(), radiusM: w.radiusM }
+          : null,
     }));
   }
 
@@ -268,6 +272,13 @@ export class WarehousesService {
             active: input.active,
             managerUserId: input.managerUserId,
             parentWarehouseId: input.parentWarehouseId,
+            ...(input.location === undefined
+              ? {}
+              : {
+                  lat: input.location?.lat ?? null,
+                  lng: input.location?.lng ?? null,
+                  radiusM: input.location?.radiusM ?? null,
+                }),
           },
         }),
       );

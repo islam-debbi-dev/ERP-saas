@@ -169,6 +169,27 @@ export const ErrorCode = {
   RENT_CONTRACT_CLOSED: 'RENT_CONTRACT_CLOSED',
   /** A rent payment covers whole periods of its contract, inside it. */
   RENT_PERIOD_INVALID: 'RENT_PERIOD_INVALID',
+  // DRH (phase 31)
+  /** This account is already linked to another employee. */
+  EMPLOYEE_USER_TAKEN: 'EMPLOYEE_USER_TAKEN',
+  /** The signed-in user has no employee file. */
+  EMPLOYEE_NOT_LINKED: 'EMPLOYEE_NOT_LINKED',
+  /** The day is outside the employee's hire and exit dates. */
+  EMPLOYEE_NOT_EMPLOYED: 'EMPLOYEE_NOT_EMPLOYED',
+  /** The day already has a status: replacing it is a correction. */
+  ATTENDANCE_ALREADY_MARKED: 'ATTENDANCE_ALREADY_MARKED',
+  ATTENDANCE_FUTURE_DAY: 'ATTENDANCE_FUTURE_DAY',
+  /** Self check-in is off for this company. */
+  SELF_CHECK_IN_DISABLED: 'SELF_CHECK_IN_DISABLED',
+  /** Check-out without a check-in, or a second check-in. */
+  CHECK_IN_STATE_INVALID: 'CHECK_IN_STATE_INVALID',
+  LEAVE_NOT_PENDING: 'LEAVE_NOT_PENDING',
+  LEAVE_NOT_APPROVED: 'LEAVE_NOT_APPROVED',
+  /** The dates overlap another pending or approved leave. */
+  LEAVE_OVERLAP: 'LEAVE_OVERLAP',
+  /** The range has no working day: nothing to take. */
+  LEAVE_NO_WORKING_DAY: 'LEAVE_NO_WORKING_DAY',
+  PUBLIC_HOLIDAY_TAKEN: 'PUBLIC_HOLIDAY_TAKEN',
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 

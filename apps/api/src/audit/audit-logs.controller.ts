@@ -1,6 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { type AuditLogPage, type AuditLogQuery, auditLogQuerySchema, Role } from '@erp/shared';
-import { Roles } from '../auth/decorators';
+import type { CurrentUserInfo } from '../auth/auth.types';
+import { CurrentUser, Roles } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { AuditLogsService } from './audit-logs.service';
 
@@ -13,12 +14,13 @@ export class AuditLogsController {
   @Get()
   list(
     @Query(new ZodValidationPipe(auditLogQuerySchema)) query: AuditLogQuery,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<AuditLogPage> {
-    return this.logs.list(query);
+    return this.logs.list(query, user);
   }
 
   @Get('facets')
-  facets(): Promise<{ entities: string[]; actions: string[] }> {
-    return this.logs.facets();
+  facets(@CurrentUser() user: CurrentUserInfo): Promise<{ entities: string[]; actions: string[] }> {
+    return this.logs.facets(user);
   }
 }

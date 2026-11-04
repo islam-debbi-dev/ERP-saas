@@ -7,7 +7,7 @@
 export interface ReconcileCheck {
   name: string;
   /** What the rows point at, for the audit row and the alert. */
-  entity: 'Product' | 'Client' | 'Supplier';
+  entity: 'Product' | 'Client' | 'Supplier' | 'Employee';
   sql: string;
 }
 
@@ -175,5 +175,45 @@ export const RECONCILE_CHECKS: ReconcileCheck[] = [
        AND pb."packagingTypeId" = pe."packagingTypeId"
       WHERE pb.id IS NULL
       GROUP BY pe."tenantId", pe."clientId", pe."packagingTypeId"`,
+  },
+  {
+    // Phase 31: what each worker owes in avances equals his account.
+    name: 'employee_advance_equals_ledger',
+    entity: 'Employee',
+    sql: `
+      SELECT eb."tenantId"::text AS "tenantId", eb."employeeId"::text AS "entityId",
+             eb."advanceBalance"::text AS cached, COALESCE(SUM(le.amount), 0)::text AS ledger
+      FROM employee_balances eb
+      LEFT JOIN employee_ledger_entries le
+        ON le."tenantId" = eb."tenantId" AND le."employeeId" = eb."employeeId"
+      GROUP BY eb."tenantId", eb."employeeId", eb."advanceBalance"
+      HAVING eb."advanceBalance" <> COALESCE(SUM(le.amount), 0)`,
+  },
+  {
+    // Phase 31: the congé balance equals the sum of its ledger.
+    name: 'employee_leave_equals_ledger',
+    entity: 'Employee',
+    sql: `
+      SELECT eb."tenantId"::text AS "tenantId", eb."employeeId"::text AS "entityId",
+             eb."leaveDays"::text AS cached, COALESCE(SUM(le.days), 0)::text AS ledger
+      FROM employee_balances eb
+      LEFT JOIN leave_entries le
+        ON le."tenantId" = eb."tenantId" AND le."employeeId" = eb."employeeId"
+      GROUP BY eb."tenantId", eb."employeeId", eb."leaveDays"
+      HAVING eb."leaveDays" <> COALESCE(SUM(le.days), 0)`,
+  },
+  {
+    name: 'employee_missing_balance',
+    entity: 'Employee',
+    sql: `
+      SELECT x."tenantId"::text AS "tenantId", x."employeeId"::text AS "entityId",
+             NULL AS cached, 'ledger rows without a balance' AS ledger
+      FROM (
+        SELECT "tenantId", "employeeId" FROM employee_ledger_entries
+        UNION SELECT "tenantId", "employeeId" FROM leave_entries
+      ) x
+      LEFT JOIN employee_balances eb
+        ON eb."tenantId" = x."tenantId" AND eb."employeeId" = x."employeeId"
+      WHERE eb.id IS NULL`,
   },
 ];

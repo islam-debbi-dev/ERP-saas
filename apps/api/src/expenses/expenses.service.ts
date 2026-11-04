@@ -11,16 +11,19 @@ import {
   type ExpensePage,
   ExpenseStatus,
   Feature,
+  Permission,
   type RentPeriod,
   toMoneyString,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
+import { can } from '../auth/permissions';
 import { FeaturesService } from '../billing/features.service';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
 import { type Prisma } from '../generated/prisma/client';
+import { EmployeeLedgerService } from '../hr/employee-ledger.service';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
 import { WarehousesService } from '../stock/warehouses.service';
@@ -74,6 +77,7 @@ export class ExpensesService {
     private readonly warehouses: WarehousesService,
     private readonly features: FeaturesService,
     private readonly categories: ExpenseCategoriesService,
+    private readonly employeeLedger: EmployeeLedgerService,
   ) {}
 
   async create(input: CreateExpenseInput, user: CurrentUserInfo): Promise<ExpenseDto> {
@@ -136,6 +140,46 @@ export class ExpensesService {
     return this.get(id, user);
   }
 
+  /**
+   * The dépense of an avance sur salaire (phase 31), inside the caller's transaction: the
+   * caller writes the employee ledger entry and the audit row. Category Salaires, linked
+   * to the employee, in his dépôt. It is hidden without SALARY_VIEW and never a charge.
+   */
+  async createAdvanceInTx(
+    tx: Tx,
+    input: {
+      employeeId: string;
+      employeeName: string;
+      warehouseId: string | null;
+      amount: string;
+      mode: ExpenseRow['mode'];
+      date: string;
+      reference: string | null;
+      note: string | null;
+    },
+    user: CurrentUserInfo,
+  ): Promise<{ id: string; number: string }> {
+    const tenantId = tenantContext.requireTenantId();
+    const warehouseId = await this.warehouseFor(tx, input.warehouseId, user);
+    return tx.expense.create({
+      data: {
+        tenantId,
+        number: await this.numbering.next(tx, tenantId, DocType.DEP),
+        date: fromDay(input.date),
+        warehouseId,
+        categoryId: await this.categories.salariesId(tx),
+        amount: input.amount,
+        mode: input.mode,
+        reference: input.reference,
+        payee: input.employeeName,
+        note: input.note,
+        employeeId: input.employeeId,
+        createdBy: user.id,
+      },
+      select: { id: true, number: true },
+    });
+  }
+
   /** Input mistake: the expense stays, marked cancelled, with the reason. Never deleted. */
   async cancel(id: string, reason: string, user: CurrentUserInfo): Promise<ExpenseDto> {
     await this.prisma.db.$transaction(async (tx) => {
@@ -145,10 +189,11 @@ export class ExpensesService {
           status: ExpenseStatus;
           warehouseId: string | null;
           rentContractId: string | null;
+          employeeId: string | null;
           createdBy: string | null;
         }[]
       >`
-        SELECT id, status, "warehouseId", "rentContractId", "createdBy" FROM expenses
+        SELECT id, status, "warehouseId", "rentContractId", "employeeId", "createdBy" FROM expenses
         WHERE id = ${id}::uuid AND "tenantId" = ${tenantContext.requireTenantId()}::uuid
         FOR UPDATE`;
       const e = rows[0];
@@ -170,9 +215,13 @@ export class ExpensesService {
           version: { increment: 1 },
         },
       });
+      // An avance is reversed with its dépense, and its journal line stays behind SALARY_VIEW.
+      if (e.employeeId) {
+        await this.employeeLedger.reverseExpense(tx, e.employeeId, id, reason, user.id);
+      }
       await this.audit.log(tx, {
-        action: 'EXPENSE_CANCELLED',
-        entity: 'Expense',
+        action: e.employeeId ? 'ADVANCE_CANCELLED' : 'EXPENSE_CANCELLED',
+        entity: e.employeeId ? 'EmployeeAdvance' : 'Expense',
         entityId: id,
         before: { status: e.status },
         after: { reason },
@@ -184,7 +233,7 @@ export class ExpensesService {
   async get(id: string, user: CurrentUserInfo): Promise<ExpenseDto> {
     const scope = await this.scope.of(user);
     const e = await this.prisma.db.expense.findFirst({
-      where: { id, ...this.where(scope) },
+      where: { id, AND: [this.where(scope), this.payWhere(user)] },
       include: expenseInclude,
     });
     if (!e) throw new AppException(ErrorCode.NOT_FOUND, 'Expense not found');
@@ -197,6 +246,7 @@ export class ExpensesService {
     const where: Prisma.ExpenseWhereInput = {
       AND: [
         this.where({ ...scope, warehouseIds: ids }),
+        this.payWhere(user),
         query.categoryId ? { categoryId: query.categoryId } : {},
         query.rentContractId ? { rentContractId: query.rentContractId } : {},
         query.mode ? { mode: query.mode } : {},
@@ -225,11 +275,17 @@ export class ExpensesService {
     return this.scope.warehouseWhere(scope, scope.warehouseIds, 'createdBy') ?? {};
   }
 
+  /** Avances are pay: without SALARY_VIEW they are not there (phase 31). */
+  private payWhere(user: CurrentUserInfo): Prisma.ExpenseWhereInput {
+    return can(user, Permission.SALARY_VIEW) ? {} : { employeeId: null };
+  }
+
   private async visible(
     tx: Tx,
     user: CurrentUserInfo,
-    e: { warehouseId: string | null; createdBy: string | null },
+    e: { warehouseId: string | null; employeeId: string | null; createdBy: string | null },
   ): Promise<boolean> {
+    if (e.employeeId && !can(user, Permission.SALARY_VIEW)) return false;
     const scope = await this.scope.of(user, tx);
     if (!scope.warehouseIds) return true;
     if (e.warehouseId) return scope.warehouseIds.includes(e.warehouseId);

@@ -51,7 +51,9 @@ export class ImportsController {
   @Get('templates/:type')
   async template(
     @Param('type', new ZodValidationPipe(importTypeSchema)) type: ImportType,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<StreamableFile> {
+    await this.imports.assertTypeAllowed(type, user);
     const buffer = await buildTemplate(type, await this.imports.priceLevels());
     return new StreamableFile(buffer, {
       type: XLSX_MIME,
@@ -70,8 +72,9 @@ export class ImportsController {
     @Param('type', new ZodValidationPipe(importTypeSchema)) type: ImportType,
     @UploadedFile() file: UploadedImportFile | undefined,
     @Body(new ZodValidationPipe(importPreviewBodySchema)) body: ImportPreviewBody,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<ImportPreviewDto> {
-    return this.imports.preview(type, { file, jobId: body.jobId, mapping: body.mapping });
+    return this.imports.preview(type, { file, jobId: body.jobId, mapping: body.mapping }, user);
   }
 
   @Post(':id/confirm')

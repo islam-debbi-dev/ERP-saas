@@ -29,6 +29,8 @@ export const Feature = {
   MULTI_UNIT: 'MULTI_UNIT',
   /** Dépenses and dépôt rent (phase 25). In every edition: a small grossiste pays rent too. */
   EXPENSES: 'EXPENSES',
+  /** DRH: personnel, pointage, congés, avances (phase 31). */
+  HR: 'HR',
 } as const;
 export type Feature = (typeof Feature)[keyof typeof Feature];
 export const FEATURES = Object.values(Feature);
@@ -59,6 +61,7 @@ export const EDITION_FEATURES: Record<Edition, readonly Feature[]> = {
     Feature.PACKAGING,
     Feature.MULTI_UNIT,
     Feature.EXPENSES,
+    Feature.HR,
   ],
   [Edition.ENTREPRISE]: FEATURES,
 };

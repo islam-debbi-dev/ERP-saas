@@ -169,6 +169,23 @@
 - **Charges of a period** (`GET /reports/charges`, managers, over the dépôts whose figures the user sees): rent from the baux (accrual) + every other dépense, spread by day over its period, or on its date without one. **Loyer payments linked to a bail are cash only**: they are shown apart (*loyers payés*) and never added, so rent is not counted twice. A Loyer dépense without a bail counts like any dépense. Each category × dépôt cell is rounded once (half-up, 2 decimals); every total is the sum of the rounded cells, so the parts always add up.
 - Not in this phase: payroll, supplier invoices for services, depreciation, a full cash book, attachments.
 
+## DRH: personnel et pointage (phase 31, module HR)
+- Editions DISTRIBUTION and ENTREPRISE, grantable per tenant. Dépôt-level parts only show with `MULTI_UNIT`. Payroll is phase 31b: this phase stores what it needs.
+- **Employé** (master data, soft delete, matricule `EMP-000001` per tenant, never restarting). Most have no app account; `userId` links at most one. With `MULTI_UNIT` a dépôt (never a truck) is required. `declared` is free: the app never refuses an undeclared worker.
+- **Salary** is append-only (`EmployeeSalary`): the salary of a day is the last row on or before it, so a raise never changes a past month.
+- **Pointage = append-only events** (`AttendanceEvent`). Each event keeps the employee's dépôt at the time. A second status on a marked day is refused (`ATTENDANCE_ALREADY_MARKED`): replacing it is a `CORRECTION` (reason, `ATTENDANCE_CORRECT`). A correction back to `UNMARKED` undoes a wrong tap. Future days are refused. "Tous présents" skips days already marked, leaves and days off, so it never overwrites an absence.
+- **Day status is derived** (`deriveDayStatus`, `packages/shared/src/attendance.ts`). First match wins: `NOT_EMPLOYED` → a correction → an approved leave on a working day → a day worked on a rest day or holiday → `HOLIDAY` (beats a rest day) → `REST` → the day's last mark → `UNMARKED`. `LATE` and `CHECK_IN` mean present; `OVERTIME` and `CHECK_OUT` change nothing. A day never marked stays `UNMARKED`, never "present". A day still to come counts for nothing in the month's figures.
+- **`AttendanceDay`** caches days that have an event or an approved leave, in the same transaction, and is reconciled nightly. Other days have no row: they are derived on read by the same function.
+- **Month lock**: `AttendanceMonthLock` (written by 31b when a payroll is approved; a dépôt, or null for the company) refuses new events and freezes cached days (`PERIOD_APPROVED`, services first, DB trigger behind). Until then a manager may correct any past day.
+- **Calendar**: tenant rest days (default Friday), daily hours, an employee's own rest days override. Fixed fêtes are seeded for this year and the next, at the first employee and every night. Lunar fêtes are entered by the tenant, with a reminder. A fête entered or removed late recomputes that date and posts an `ADJUST` on approved paid leaves covering it, so nobody loses a congé day because Aïd was entered late. Refused inside a locked month.
+- **Congés**: `LeaveEntry` ledger in days (`ACCRUAL`, `TAKEN`, `ADJUST`, `OPENING`), balance cached and reconciled. Accrual: 2.5 days per month (tenant setting) for every contract type, prorated by calendar days employed, one decimal half-up, posted nightly for the previous month to whoever lacks it (one per employee and month). A request goes `PENDING` → `APPROVED` / `REJECTED`. **Only a `PAID` leave posts `TAKEN`** (working days only); `UNPAID` / `SICK` / `OTHER` only change the day's status. Beyond the balance is a warning, never a refusal. Cancelling an approved leave posts the reverse entry.
+- **Avance sur salaire**: one transaction: a dépense (category Salaires, `employeeId`), an `EmployeeLedgerEntry` `ADVANCE` and the audit row. Cancelled with the dépense (`REVERSAL`). **Cash, not a charge**: the charges report leaves it out, the overview's cash figures keep it. `OPENING` is an avance already running at import: no dépense behind it.
+- **Pay is hidden** without `SALARY_VIEW` (owner by default): salaries, RIB, pay type, avances, the employee ledger, avance dépenses (not there in `/expenses`, even by id) and their journal lines. So a manager's dépenses list can be lower than the overview's cash out. `ADVANCE_PAY` is the owner's by default too, and needs `SALARY_VIEW`.
+- **Who sees whom**: the employees of the dépôts where the user has OPERATE; statistics access gives counts only; outside his reach an employee is not there (404).
+- **Self check-in** (`GEO_CHECK` and the tenant setting): the phase 17 rules against the dépôt's point, one position per tap, never tracking (law 18-07). Flag, not block: a far or mocked check-in needs a note and is reviewed in Opérations signalées. A tap never overrules a manager's absence or an approved leave.
+- **Excel import** creates employees only, with salary and opening congé and avance balances: a name already on file is refused, so a second run doubles nothing. It needs `HR_MANAGE` and `SALARY_VIEW`.
+- Not in this phase: payslips, CNAS / IRG, salary payment (31b), biometric devices, shifts, recruitment, staff documents.
+
 ## Vue d'ensemble (phase 26, module MULTI_UNIT)
 - `GET /reports/overview?from=&to=` (managers: `REPORTS_FINANCE`): one card per dépôt (MAIN / SECONDARY) whose figures the user sees (OPERATE or VIEW_STATS), then the total. A dépôt outside his reach never appears, not even its name. An archived dépôt shows only while it has figures in the period.
 - **What counts for a dépôt**: its own rows and its trucks' (a truck is part of its dépôt's business unit); a row without a dépôt is the dépôt principal's. Since phase 26 the dashboard and the reports filtered on a dépôt include its trucks too, so a card always equals the dashboard filtered on its dépôt.
@@ -200,6 +217,10 @@
 | `geoCheckMode` | `OFF` / `FLAG` / `BLOCK`, default `FLAG` | sales, versements, visits of sellers (GEO_CHECK) |
 | `geoRadiusM` | 20 to 5000 m, default 150 | distance still counted "at the client" (GEO_CHECK) |
 | `geoMaxAccuracyM` | 10 to 5000 m, default 200 | positions less precise are `LOW_ACCURACY` (GEO_CHECK) |
+| `hrRestDays` | one or two weekdays (0 = Sunday), default Friday | calendar, day status, leave days (HR) |
+| `hrDailyHours` | 1 to 24, default 8 | calendar (HR, used by 31b) |
+| `hrLeaveAccrualDays` | default 2.5 | congés earned per month (HR) |
+| `hrSelfCheckIn` | true / false, default false | check-in from the phone (HR + GEO_CHECK) |
 | Timbre fiscal rule | configurable rate, min, max, threshold; off by default | factures paid in cash |
 
 ## Glossary (French term → meaning in code)
@@ -229,4 +250,5 @@
 - **Règlement fournisseur**: payment to a supplier, prefix `RGF`.
 - **Vue d'ensemble**: the owner's one-screen view of every dépôt (`/vue-ensemble`). **Résultat net**: marge brute − charges of a period. **Encaissements / décaissements**: cash in (versements) / cash out (règlements fournisseur + dépenses).
 - **Dépense**: a charge the company paid (rent, electricity, salaries...), prefix `DEP`. **Bail**: a rent contract of a dépôt (`RentContract`). **Charges**: rent by day + other dépenses of a period.
+- **Pointage**: attendance (`AttendanceEvent`, `AttendanceDay`). **Congé**: leave (`LeaveRequest`, `LeaveEntry`). **Avance sur salaire**: an advance on pay (`EmployeeLedgerEntry` `ADVANCE`). **Matricule**: employee number, prefix `EMP`. **Fête légale**: `PublicHoliday`.
 - **Dossier d'importation (DI)**: one import shipment grouping BRs and their costs. **Coût de revient**: landed unit cost.

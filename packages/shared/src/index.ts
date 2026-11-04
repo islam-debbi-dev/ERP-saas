@@ -1,5 +1,6 @@
 export * from './aging';
 export * from './amount-in-words';
+export * from './attendance';
 export * from './documents';
 export * from './imports';
 export * from './enums';

@@ -16,9 +16,16 @@ import {
   ImportType,
   detectMapping,
   StockMovementType,
+  EmployeeLedgerType,
+  Feature,
+  LeaveEntryType,
+  Permission,
+  WarehouseType,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
+import { requirePermission } from '../auth/permissions';
+import { FeaturesService } from '../billing/features.service';
 import { CatalogService } from '../catalog/catalog.service';
 import { ClientAccountService } from '../clients/client-account.service';
 import { ClientsService } from '../clients/clients.service';
@@ -26,6 +33,8 @@ import { AppException } from '../common/app-exception';
 import { chunks } from '../common/chunks';
 import { tenantContext } from '../common/tenant-context';
 import { type ImportJob, Prisma } from '../generated/prisma/client';
+import { EmployeeLedgerService } from '../hr/employee-ledger.service';
+import { EmployeesService } from '../hr/employees.service';
 import { PackagingLedgerService } from '../packaging/packaging-ledger.service';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { SupplierAccountService } from '../purchases/supplier-account.service';
@@ -34,6 +43,7 @@ import { StockService } from '../stock/stock.service';
 import { WarehousesService } from '../stock/warehouses.service';
 import { type ImportTable, readTable } from './file-reader';
 import { type ClientPlan, validateClients } from './validators/clients';
+import { type EmployeePlan, validateEmployees } from './validators/employees';
 import { type OpeningStockPlan, validateOpeningStock } from './validators/opening-stock';
 import {
   type PackagingOpeningPlan,
@@ -61,7 +71,8 @@ export interface UploadedImportFile {
   buffer: Buffer;
 }
 
-type AnyPlan = ProductPlan | OpeningStockPlan | ClientPlan | SupplierPlan | PackagingOpeningPlan;
+type AnyPlan =
+  ProductPlan | OpeningStockPlan | ClientPlan | SupplierPlan | PackagingOpeningPlan | EmployeePlan;
 
 interface Validation {
   fields: ImportFieldDef[];
@@ -128,12 +139,33 @@ export class ImportsService {
     private readonly suppliers: SuppliersService,
     private readonly supplierAccounts: SupplierAccountService,
     private readonly packaging: PackagingLedgerService,
+    private readonly features: FeaturesService,
+    private readonly employees: EmployeesService,
+    private readonly employeeLedger: EmployeeLedgerService,
   ) {}
+
+  /**
+   * The personnel file carries salaries and opening avances: on top of the controller's
+   * roles it takes the HR module, HR_MANAGE and SALARY_VIEW (phase 31).
+   */
+  async assertTypeAllowed(type: ImportType, user: CurrentUserInfo): Promise<void> {
+    if (type !== ImportType.EMPLOYEES) return;
+    const { features } = await this.features.of(user.tenantId);
+    if (!features.includes(Feature.HR)) {
+      throw new AppException(ErrorCode.FEATURE_NOT_IN_PLAN, 'Module not in this edition', {
+        feature: Feature.HR,
+      });
+    }
+    requirePermission(user, Permission.HR_MANAGE);
+    requirePermission(user, Permission.SALARY_VIEW);
+  }
 
   async preview(
     type: ImportType,
     source: { file?: UploadedImportFile; jobId?: string; mapping?: ImportMapping },
+    user: CurrentUserInfo,
   ): Promise<ImportPreviewDto> {
+    await this.assertTypeAllowed(type, user);
     let file: { name: string; mime: string; data: Buffer };
     let job: { id: string } | null = null;
     if (source.file) {
@@ -224,6 +256,7 @@ export class ImportsService {
     try {
       return await this.prisma.db.$transaction(async (tx) => {
         const job = await this.lockJob(tx, id);
+        await this.assertTypeAllowed(job.type, user);
         if (job.status !== ImportStatus.PREVIEWED) {
           throw new AppException(
             ErrorCode.IMPORT_NOT_PENDING,
@@ -353,11 +386,33 @@ export class ImportsService {
     } else if (type === ImportType.SUPPLIERS) {
       const codes = columnValues(table, mapping, 'code');
       rows = validateSuppliers(table, mapping, fields, await this.suppliers.byCodes(tx, codes));
+    } else if (type === ImportType.EMPLOYEES) {
+      rows = validateEmployees(table, mapping, fields, await this.employeeLookups(tx));
     } else {
       const codes = columnValues(table, mapping, 'code');
       rows = validateClients(table, mapping, fields, await this.clients.byCodes(tx, codes));
     }
     return { fields, mapping, fileErrors, rows };
+  }
+
+  private async employeeLookups(tx: Tx) {
+    const tenantId = tenantContext.requireTenantId();
+    const [employees, depots, features] = await Promise.all([
+      tx.employee.findMany({ select: { fullName: true } }),
+      tx.warehouse.findMany({
+        where: { deletedAt: null, type: { not: WarehouseType.VEHICLE } },
+        select: { id: true, name: true },
+      }),
+      this.features.of(tenantId),
+    ]);
+    return {
+      existing: new Set(employees.map((e) => e.fullName.toLowerCase())),
+      warehouses: new Map(depots.map((w) => [w.name.toLowerCase(), w.id])),
+      // Like every other import, a row that names no dépôt goes to the dépôt principal.
+      defaultWarehouseId: features.features.includes(Feature.MULTI_UNIT)
+        ? await this.warehouses.defaultId(tx)
+        : null,
+    };
   }
 
   // ---------------------------------------------------------------- writes
@@ -378,7 +433,38 @@ export class ImportsService {
     if (job.type === ImportType.PACKAGING_OPENING) {
       return this.writePackagingOpening(tx, job, plans as PackagingOpeningPlan[]);
     }
+    if (job.type === ImportType.EMPLOYEES) {
+      return this.writeEmployees(tx, plans as EmployeePlan[], user);
+    }
     return this.writeClients(tx, job, plans as ClientPlan[], user);
+  }
+
+  /** Employees and their opening balances: an avance here has no dépense behind it. */
+  private async writeEmployees(tx: Tx, plans: EmployeePlan[], user: CurrentUserInfo) {
+    let opening = 0;
+    for (const p of plans) {
+      const employeeId = await this.employees.createInTx(tx, p.input, user);
+      if (p.openingLeave) {
+        await this.employeeLedger.postLeave(tx, {
+          employeeId,
+          type: LeaveEntryType.OPENING,
+          days: p.openingLeave,
+          note: 'Solde initial (import)',
+          userId: user.id,
+        });
+      }
+      if (p.openingAdvance) {
+        await this.employeeLedger.post(tx, {
+          employeeId,
+          type: EmployeeLedgerType.OPENING,
+          amount: p.openingAdvance,
+          note: 'Solde initial (import)',
+          userId: user.id,
+        });
+      }
+      if (p.openingLeave || p.openingAdvance) opening++;
+    }
+    return { created: plans.length, updated: 0, opening };
   }
 
   /** Suppliers and their solde initial (OPENING on the supplier account, phase 21). */

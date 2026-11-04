@@ -2,6 +2,7 @@ import {
   BadgePercent,
   Banknote,
   ClipboardList,
+  Fingerprint,
   LayoutGrid,
   MapPinCheck,
   MapPinned,
@@ -15,6 +16,7 @@ import {
   Settings,
   Trophy,
   Truck,
+  UserCheck,
   Users,
   Warehouse,
   Ship,
@@ -40,6 +42,8 @@ export type NavKey =
   | 'flagged'
   | 'incentives'
   | 'expenses'
+  | 'hr'
+  | 'myAttendance'
   | 'reports'
   | 'settings';
 
@@ -157,6 +161,15 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         feature: Feature.EXPENSES,
         permission: Permission.EXPENSES_VIEW,
       },
+      // Phase 31: managers of the DRH; "Mon pointage" only for a user with an employee file.
+      {
+        key: 'hr',
+        url: '/rh',
+        icon: UserCheck,
+        feature: Feature.HR,
+        permission: Permission.HR_VIEW,
+      },
+      { key: 'myAttendance', url: '/mon-pointage', icon: Fingerprint, feature: Feature.HR },
       { key: 'reports', url: '/rapports', icon: ChartColumn },
       { key: 'settings', url: '/parametres', icon: Settings },
     ],

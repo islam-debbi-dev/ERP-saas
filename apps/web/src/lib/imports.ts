@@ -56,6 +56,7 @@ const TEMPLATE_NAMES: Record<ImportType, string> = {
   CLIENTS: 'modele-import-clients.xlsx',
   SUPPLIERS: 'modele-import-fournisseurs.xlsx',
   PACKAGING_OPENING: 'modele-import-emballages.xlsx',
+  EMPLOYEES: 'modele-import-personnel.xlsx',
 };
 
 /** Saves the .xlsx template (with the tenant's price level names) through a temporary link. */

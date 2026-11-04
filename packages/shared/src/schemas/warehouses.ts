@@ -38,17 +38,32 @@ export const updateWarehouseSchema = z.object({
   managerUserId: id.nullable().optional(),
   /** The dépôt a truck belongs to (VEHICLE only): it inherits its team and brands. */
   parentWarehouseId: id.nullable().optional(),
+  /** The point self check-ins are measured from (phase 31). Null clears it. */
+  location: z
+    .object({
+      lat: z.number().min(-90).max(90),
+      lng: z.number().min(-180).max(180),
+      radiusM: z.number().int().min(20).max(5000).nullable().default(null),
+    })
+    .nullable()
+    .optional(),
 });
 export type UpdateWarehouseInput = z.infer<typeof updateWarehouseSchema>;
 
 /** What a dépôt sells (phase 24): empty = everything. Replaces the whole list. */
 export const warehouseBrandsSchema = z.object({
-  brandIds: z.array(id).max(500).transform((v) => [...new Set(v)]),
+  brandIds: z
+    .array(id)
+    .max(500)
+    .transform((v) => [...new Set(v)]),
 });
 export type WarehouseBrandsInput = z.infer<typeof warehouseBrandsSchema>;
 
 export const warehouseCategoriesSchema = z.object({
-  categoryIds: z.array(id).max(500).transform((v) => [...new Set(v)]),
+  categoryIds: z
+    .array(id)
+    .max(500)
+    .transform((v) => [...new Set(v)]),
 });
 export type WarehouseCategoriesInput = z.infer<typeof warehouseCategoriesSchema>;
 
@@ -63,6 +78,7 @@ export interface WarehouseDto {
   productCount: number;
   manager: { id: string; fullName: string } | null;
   parent: { id: string; name: string } | null;
+  location: { lat: number; lng: number; radiusM: number | null } | null;
 }
 
 /** One dépôt with its team (phase 24): who works there, who sees its figures, its trucks. */

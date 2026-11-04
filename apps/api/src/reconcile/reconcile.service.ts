@@ -10,7 +10,8 @@ import { AuditService } from '../audit/audit.service';
 import { nextAlgiersTime } from '../common/algiers';
 import { tenantContext } from '../common/tenant-context';
 import { APP_CONFIG, type AppConfig } from '../config/app-config';
-import { PrismaService } from '../prisma/prisma.service';
+import { AttendanceDaysService } from '../hr/attendance-days.service';
+import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { RECONCILE_CHECKS } from './reconcile-sql';
 
 export interface LedgerMismatch {
@@ -46,6 +47,7 @@ export class ReconcileService implements OnApplicationBootstrap, OnApplicationSh
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly attendanceDays: AttendanceDaysService,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
@@ -76,7 +78,62 @@ export class ReconcileService implements OnApplicationBootstrap, OnApplicationSh
     }
   }
 
-  run(): Promise<ReconcileResult> {
+  async run(): Promise<ReconcileResult> {
+    const ledgers = await this.ledgers();
+    if (!ledgers.ran) return ledgers;
+    const mismatches = [...ledgers.mismatches, ...(await this.attendance())];
+    this.report(mismatches);
+    return { ran: true, mismatches };
+  }
+
+  /**
+   * Cached day statuses against their events (phase 31). The rules live in TypeScript, so
+   * this cannot be one of the SQL checks; each company gets its own transaction, so a
+   * large pointage history never pushes the ledger checks past their timeout.
+   */
+  private attendance(): Promise<LedgerMismatch[]> {
+    return tenantContext.runAsSystem(async () => {
+      const tenants = await this.prisma.db.attendanceEvent.findMany({
+        distinct: ['tenantId'],
+        select: { tenantId: true },
+      });
+      const mismatches: LedgerMismatch[] = [];
+      for (const { tenantId } of tenants) {
+        const found = await this.prisma.db.$transaction(
+          async (tx) => {
+            const diffs = await this.attendanceDays.diffs(tx, tenantId);
+            const rows = diffs.map((d) => ({
+              check: 'attendance_day_equals_events',
+              tenantId,
+              entity: 'Employee',
+              entityId: d.employee.id,
+              cached: d.cached ? `${d.day} ${d.cached}` : null,
+              ledger: `${d.day} ${d.expected}`,
+            }));
+            for (const m of rows) await this.logMismatch(tx, m);
+            return rows;
+          },
+          { timeout: 120_000 },
+        );
+        mismatches.push(...found);
+      }
+      return mismatches;
+    });
+  }
+
+  private logMismatch(tx: Tx, m: LedgerMismatch): Promise<void> {
+    return this.audit.log(tx, {
+      tenantId: m.tenantId,
+      userId: null,
+      action: 'LEDGER_MISMATCH',
+      entity: m.entity,
+      entityId: m.entityId,
+      before: { cached: m.cached },
+      after: { ledger: m.ledger, check: m.check },
+    });
+  }
+
+  private ledgers(): Promise<ReconcileResult> {
     return tenantContext.runAsSystem(() =>
       this.prisma.db.$transaction(
         async (tx) => {
@@ -94,18 +151,7 @@ export class ReconcileService implements OnApplicationBootstrap, OnApplicationSh
             );
           }
 
-          for (const m of mismatches) {
-            await this.audit.log(tx, {
-              tenantId: m.tenantId,
-              userId: null,
-              action: 'LEDGER_MISMATCH',
-              entity: m.entity,
-              entityId: m.entityId,
-              before: { cached: m.cached },
-              after: { ledger: m.ledger, check: m.check },
-            });
-          }
-          this.report(mismatches);
+          for (const m of mismatches) await this.logMismatch(tx, m);
           return { ran: true, mismatches };
         },
         { timeout: 120_000 },

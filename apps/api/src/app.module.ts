@@ -28,6 +28,7 @@ import { ImportsModule } from './imports/imports.module';
 import { PrintingModule } from './printing/printing.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ExpensesModule } from './expenses/expenses.module';
+import { HrModule } from './hr/hr.module';
 import { ImportFilesModule } from './import-files/import-files.module';
 import { PurchasesModule } from './purchases/purchases.module';
 import { ReconcileModule } from './reconcile/reconcile.module';
@@ -95,6 +96,7 @@ import { UsersModule } from './users/users.module';
     PurchasesModule,
     ImportFilesModule,
     ExpensesModule,
+    HrModule,
     ClientsModule,
     SalesModule,
     PaymentsModule,

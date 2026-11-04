@@ -28,6 +28,20 @@ const HEADERS: Record<string, string> = {
   openingBalance: 'Solde initial',
   clientCode: 'Code client',
   packaging: 'Emballage',
+  hireDate: "Date d'embauche",
+  position: 'Poste',
+  warehouse: 'Dépôt',
+  contract: 'Contrat',
+  contractEndDate: 'Fin de contrat',
+  payType: 'Type de paie',
+  salary: 'Salaire',
+  declared: 'Déclaré',
+  nss: 'NSS',
+  nin: 'NIN',
+  birthDate: 'Date de naissance',
+  bankAccount: 'RIB / CCP',
+  openingLeave: 'Solde congés',
+  openingAdvance: 'Solde avances',
 };
 
 export function templateHeader(field: ImportFieldDef): string {
@@ -87,6 +101,29 @@ const EXAMPLES: Record<ImportType, Record<string, string | number>[]> = {
     },
     { code: 'C002', name: 'Superette Nour', phone: '0661 98 76 54', openingBalance: '-2 000,00' },
   ],
+  EMPLOYEES: [
+    {
+      name: 'Karim Benali',
+      hireDate: '01/03/2024',
+      phone: '0550 12 34 56',
+      position: 'Magasinier',
+      contract: 'CDI',
+      payType: 'Mensuel',
+      salary: '45 000,00',
+      declared: 'Oui',
+      openingLeave: '12,5',
+      openingAdvance: '5 000,00',
+    },
+    {
+      name: 'Samir Haddad',
+      hireDate: '15/09/2025',
+      position: 'Manutentionnaire',
+      contract: 'Journalier',
+      payType: 'Journalier',
+      salary: '2 000,00',
+      declared: 'Non',
+    },
+  ],
   SUPPLIERS: [
     {
       code: 'F001',
@@ -134,4 +171,5 @@ export const TEMPLATE_FILE_NAMES: Record<ImportType, string> = {
   [ImportType.CLIENTS]: 'modele-import-clients.xlsx',
   [ImportType.SUPPLIERS]: 'modele-import-fournisseurs.xlsx',
   [ImportType.PACKAGING_OPENING]: 'modele-import-emballages.xlsx',
+  [ImportType.EMPLOYEES]: 'modele-import-personnel.xlsx',
 };

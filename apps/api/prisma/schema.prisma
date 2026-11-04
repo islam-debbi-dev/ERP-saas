@@ -56,6 +56,8 @@ enum DocType {
   DI
   /// Dépense (phase 25).
   DEP
+  /// Matricule of an employee (phase 31): per tenant, stored under year 0.
+  EMP
 }
 
 enum PrintFormat {
@@ -115,6 +117,12 @@ model Tenant {
   geoCheckMode    GeoCheckMode @default(FLAG)
   geoRadiusM      Int          @default(150) @db.SmallInt
   geoMaxAccuracyM Int          @default(200) @db.SmallInt
+
+  // DRH calendar (phase 31). Weekly rest days: 0 = Sunday, default Friday.
+  hrRestDays         Int[]   @default([5])
+  hrDailyHours       Int     @default(8) @db.SmallInt
+  hrLeaveAccrualDays Decimal @default(2.5) @db.Decimal(3, 1)
+  hrSelfCheckIn      Boolean @default(false)
 
   /// The owner hid the dashboard onboarding checklist (phase 13).
   onboardingDismissedAt DateTime? @db.Timestamptz(3)
@@ -200,6 +208,16 @@ model Tenant {
   expenseCategories     ExpenseCategory[]
   expenses              Expense[]
   rentContracts         RentContract[]
+  employees             Employee[]
+  employeeSalaries      EmployeeSalary[]
+  employeeBalances      EmployeeBalance[]
+  employeeLedgerEntries EmployeeLedgerEntry[]
+  attendanceEvents      AttendanceEvent[]
+  attendanceDays        AttendanceDay[]
+  attendanceMonthLocks  AttendanceMonthLock[]
+  publicHolidays        PublicHoliday[]
+  leaveRequests         LeaveRequest[]
+  leaveEntries          LeaveEntry[]
 
   @@map("tenants")
 }
@@ -248,6 +266,7 @@ model User {
   sellerDays        SellerSession[]       @relation("SessionSeller")
   managedWarehouses Warehouse[]           @relation("WarehouseManager")
   warehouseAccess   UserWarehouseAccess[] @relation("AccessUser")
+  employee          Employee?
 
   @@index([tenantId, role])
   @@index([tenantId, managerId])
@@ -1338,6 +1357,8 @@ enum ImportType {
   SUPPLIERS
   /// Emballages chez les clients, opening counts (phase 20).
   PACKAGING_OPENING
+  /// Personnel, with opening congé and avance balances (phase 31).
+  EMPLOYEES
 }
 
 enum ImportStatus {
@@ -1642,11 +1663,16 @@ model Warehouse {
   managerUserId     String?       @db.Uuid
   /// A truck belongs to one dépôt (MAIN / SECONDARY) and inherits its team and brands.
   parentWarehouseId String?       @db.Uuid
+  /// The point self check-ins are measured from (phase 31); radius overrides geoRadiusM.
+  lat               Decimal?      @db.Decimal(9, 6)
+  lng               Decimal?      @db.Decimal(9, 6)
+  radiusM           Int?          @db.SmallInt
   deletedAt         DateTime?     @db.Timestamptz(3)
   createdAt         DateTime      @default(now()) @db.Timestamptz(3)
   updatedAt         DateTime      @updatedAt @db.Timestamptz(3)
 
   tenant           Tenant                @relation(fields: [tenantId], references: [id])
+  employees        Employee[]
   assignedUser     User?                 @relation("WarehouseDriver", fields: [assignedUserId], references: [id], onDelete: Restrict)
   manager          User?                 @relation("WarehouseManager", fields: [managerUserId], references: [id], onDelete: Restrict)
   parent           Warehouse?            @relation("WarehouseTrucks", fields: [parentWarehouseId], references: [id], onDelete: Restrict)
@@ -2056,6 +2082,8 @@ enum GeoRefType {
   SALE
   PAYMENT
   VISIT
+  /// A self check-in or check-out (phase 31).
+  ATTENDANCE
 }
 
 enum GeoReviewStatus {
@@ -2692,6 +2720,8 @@ model Expense {
   periodEnd      DateTime?     @db.Date
   note           String?       @db.VarChar(255)
   rentContractId String?       @db.Uuid
+  /// An avance sur salaire (phase 31): cash, never a charge; hidden without SALARY_VIEW.
+  employeeId     String?       @db.Uuid
   status         ExpenseStatus @default(VALID)
   createdBy      String?       @db.Uuid
   cancelReason   String?       @db.VarChar(255)
@@ -2705,11 +2735,333 @@ model Expense {
   warehouse    Warehouse?      @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
   category     ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   rentContract RentContract?   @relation(fields: [rentContractId], references: [id], onDelete: Restrict)
+  employee     Employee?       @relation(fields: [employeeId], references: [id], onDelete: Restrict)
 
   @@unique([tenantId, number])
+  @@index([tenantId, employeeId])
   @@index([tenantId, date])
   @@index([tenantId, warehouseId, date])
   @@index([tenantId, rentContractId])
   @@index([tenantId, periodEnd])
   @@map("expenses")
+}
+
+// ---------------------------------------------------------------- DRH (phase 31)
+
+enum EmployeeContract {
+  CDI
+  CDD
+  JOURNALIER
+}
+
+enum PayType {
+  MONTHLY
+  DAILY
+}
+
+enum AttendanceEventKind {
+  PRESENT
+  ABSENT
+  HALF_DAY
+  LATE
+  CHECK_IN
+  CHECK_OUT
+  OVERTIME
+  CORRECTION
+}
+
+enum AttendanceSource {
+  MANAGER
+  SELF
+  IMPORT
+}
+
+enum AbsenceReason {
+  JUSTIFIED
+  SICK
+  UNJUSTIFIED
+}
+
+enum DayStatus {
+  PRESENT
+  ABSENT_UNJUSTIFIED
+  ABSENT_JUSTIFIED
+  SICK
+  LEAVE_PAID
+  LEAVE_UNPAID
+  HALF_DAY
+  REST
+  HOLIDAY
+  NOT_EMPLOYED
+  UNMARKED
+}
+
+enum LeaveType {
+  PAID
+  UNPAID
+  SICK
+  OTHER
+}
+
+enum LeaveRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum LeaveEntryType {
+  ACCRUAL
+  TAKEN
+  ADJUST
+  OPENING
+}
+
+enum EmployeeLedgerType {
+  ADVANCE
+  REVERSAL
+  OPENING
+}
+
+/// A worker (master data, soft delete). Most have no app account: `userId` is optional.
+model Employee {
+  id              String           @id @default(uuid()) @db.Uuid
+  tenantId        String           @db.Uuid
+  /// EMP-000001, per tenant.
+  matricule       String           @db.VarChar(20)
+  fullName        String           @db.VarChar(120)
+  phone           String?          @db.VarChar(40)
+  position        String?          @db.VarChar(80)
+  warehouseId     String?          @db.Uuid
+  userId          String?          @unique @db.Uuid
+  hireDate        DateTime         @db.Date
+  exitDate        DateTime?        @db.Date
+  contract        EmployeeContract
+  contractEndDate DateTime?        @db.Date
+  /// Declared to the CNAS. Many small grossistes have undeclared workers: never refused.
+  declared        Boolean          @default(false)
+  nss             String?          @db.VarChar(30)
+  nin             String?          @db.VarChar(30)
+  birthDate       DateTime?        @db.Date
+  /// RIB or CCP. Hidden without SALARY_VIEW.
+  bankAccount     String?          @db.VarChar(40)
+  /// Overrides the company's rest days; empty = the company's.
+  restDays        Int[]            @default([]) @db.SmallInt
+  createdBy       String?          @db.Uuid
+  deletedAt       DateTime?        @db.Timestamptz(3)
+  createdAt       DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime         @updatedAt @db.Timestamptz(3)
+
+  tenant        Tenant                @relation(fields: [tenantId], references: [id])
+  warehouse     Warehouse?            @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  user          User?                 @relation(fields: [userId], references: [id], onDelete: Restrict)
+  salaries      EmployeeSalary[]
+  balance       EmployeeBalance?
+  ledger        EmployeeLedgerEntry[]
+  events        AttendanceEvent[]
+  days          AttendanceDay[]
+  leaveRequests LeaveRequest[]
+  leaveEntries  LeaveEntry[]
+  expenses      Expense[]
+
+  @@unique([tenantId, matricule])
+  @@index([tenantId, warehouseId])
+  @@index([tenantId, fullName])
+  @@map("employees")
+}
+
+/// Append-only: the salary of a day is the last row on or before it.
+model EmployeeSalary {
+  id            String   @id @default(uuid()) @db.Uuid
+  seq           BigInt   @unique @default(autoincrement())
+  tenantId      String   @db.Uuid
+  employeeId    String   @db.Uuid
+  amount        Decimal  @db.Decimal(14, 2)
+  payType       PayType
+  effectiveFrom DateTime @db.Date
+  reason        String?  @db.VarChar(255)
+  createdBy     String?  @db.Uuid
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId, employeeId, effectiveFrom])
+  @@map("employee_salaries")
+}
+
+/// Cached balances, written with their ledger row; reconciled nightly.
+model EmployeeBalance {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @db.Uuid
+  employeeId     String   @unique @db.Uuid
+  /// What the worker owes the company in avances.
+  advanceBalance Decimal  @default(0) @db.Decimal(14, 2)
+  leaveDays      Decimal  @default(0) @db.Decimal(6, 1)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(3)
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId])
+  @@map("employee_balances")
+}
+
+/// The employee's account, like the supplier ledger. Append-only.
+model EmployeeLedgerEntry {
+  id           String             @id @default(uuid()) @db.Uuid
+  seq          BigInt             @unique @default(autoincrement())
+  tenantId     String             @db.Uuid
+  employeeId   String             @db.Uuid
+  type         EmployeeLedgerType
+  /// Signed: + the worker owes more, − he owes less.
+  amount       Decimal            @db.Decimal(14, 2)
+  balanceAfter Decimal            @db.Decimal(14, 2)
+  expenseId    String?            @db.Uuid
+  note         String?            @db.VarChar(255)
+  createdBy    String?            @db.Uuid
+  createdAt    DateTime           @default(now()) @db.Timestamptz(3)
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId, employeeId, seq])
+  @@index([tenantId, expenseId])
+  @@map("employee_ledger_entries")
+}
+
+/// What happened on a day. Append-only: a mistake is fixed by a CORRECTION event.
+model AttendanceEvent {
+  id            String              @id @default(uuid()) @db.Uuid
+  /// Insertion order (createdAt is shared by a transaction).
+  seq           BigInt              @unique @default(autoincrement())
+  tenantId      String              @db.Uuid
+  employeeId    String              @db.Uuid
+  /// The employee's dépôt at the time: a move never dodges a dépôt's month lock.
+  warehouseId   String?             @db.Uuid
+  /// The Algiers day.
+  day           DateTime            @db.Date
+  kind          AttendanceEventKind
+  at            DateTime            @default(now()) @db.Timestamptz(3)
+  source        AttendanceSource
+  absenceReason AbsenceReason?
+  correctedTo   DayStatus?
+  lateMinutes   Int?                @db.SmallInt
+  overtimeHours Decimal?            @db.Decimal(4, 2)
+  note          String?             @db.VarChar(255)
+  createdBy     String?             @db.Uuid
+  createdAt     DateTime            @default(now()) @db.Timestamptz(3)
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId, employeeId, day, seq])
+  @@index([tenantId, day])
+  @@map("attendance_events")
+}
+
+/// Cached status of a day that has an event or an approved leave, written with it and
+/// reconcilable. REST, HOLIDAY, UNMARKED and NOT_EMPLOYED days have no row: they are
+/// derived on read by the same function.
+model AttendanceDay {
+  id            String    @id @default(uuid()) @db.Uuid
+  tenantId      String    @db.Uuid
+  employeeId    String    @db.Uuid
+  warehouseId   String?   @db.Uuid
+  day           DateTime  @db.Date
+  status        DayStatus
+  lateMinutes   Int       @default(0) @db.SmallInt
+  overtimeHours Decimal   @default(0) @db.Decimal(5, 2)
+  updatedAt     DateTime  @updatedAt @db.Timestamptz(3)
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@unique([tenantId, employeeId, day])
+  @@index([tenantId, day, status])
+  @@map("attendance_days")
+}
+
+/// A month whose payroll is approved (phase 31b writes it): no new event, for one dépôt
+/// or (warehouseId null) the whole company. Enforced by trigger.
+model AttendanceMonthLock {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  /// YYYY-MM
+  month       String   @db.VarChar(7)
+  warehouseId String?  @db.Uuid
+  createdBy   String?  @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, month])
+  @@map("attendance_month_locks")
+}
+
+/// Fêtes légales. Fixed ones are seeded every year with a key; lunar ones are entered by
+/// the tenant because their dates move. Calendar settings, so a wrong row can be removed.
+model PublicHoliday {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @db.Uuid
+  date      DateTime @db.Date
+  name      String   @db.VarChar(80)
+  key       String?  @db.VarChar(30)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, date])
+  @@map("public_holidays")
+}
+
+model LeaveRequest {
+  id             String             @id @default(uuid()) @db.Uuid
+  tenantId       String             @db.Uuid
+  employeeId     String             @db.Uuid
+  startDate      DateTime           @db.Date
+  endDate        DateTime           @db.Date
+  type           LeaveType
+  status         LeaveRequestStatus @default(PENDING)
+  /// Working days covered, at request time; recomputed on approval.
+  days           Decimal            @db.Decimal(6, 1)
+  note           String?            @db.VarChar(255)
+  decisionReason String?            @db.VarChar(255)
+  decidedBy      String?            @db.Uuid
+  decidedAt      DateTime?          @db.Timestamptz(3)
+  createdBy      String?            @db.Uuid
+  createdAt      DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime           @updatedAt @db.Timestamptz(3)
+
+  tenant   Tenant       @relation(fields: [tenantId], references: [id])
+  employee Employee     @relation(fields: [employeeId], references: [id])
+  entries  LeaveEntry[]
+
+  @@index([tenantId, status, startDate])
+  @@index([tenantId, employeeId, startDate])
+  @@map("leave_requests")
+}
+
+/// The congé ledger, in days. Append-only; balance = sum.
+model LeaveEntry {
+  id             String         @id @default(uuid()) @db.Uuid
+  seq            BigInt         @unique @default(autoincrement())
+  tenantId       String         @db.Uuid
+  employeeId     String         @db.Uuid
+  type           LeaveEntryType
+  /// Signed days.
+  days           Decimal        @db.Decimal(6, 1)
+  /// YYYY-MM of an accrual: one per employee and month (partial unique index).
+  month          String?        @db.VarChar(7)
+  leaveRequestId String?        @db.Uuid
+  note           String?        @db.VarChar(255)
+  createdBy      String?        @db.Uuid
+  createdAt      DateTime       @default(now()) @db.Timestamptz(3)
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  employee     Employee      @relation(fields: [employeeId], references: [id])
+  leaveRequest LeaveRequest? @relation(fields: [leaveRequestId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, employeeId, seq])
+  @@map("leave_entries")
 }

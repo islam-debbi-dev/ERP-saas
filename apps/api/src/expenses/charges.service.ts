@@ -90,7 +90,8 @@ export class ChargesService {
         where: {
           AND: [
             scopeWhere,
-            { status: ExpenseStatus.VALID, rentContractId: null },
+            // An avance sur salaire (phase 31) is cash, not a charge: 31b counts the salary.
+            { status: ExpenseStatus.VALID, rentContractId: null, employeeId: null },
             {
               OR: [
                 { periodStart: null, date: { gte: from, lte: to } },

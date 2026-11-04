@@ -204,7 +204,7 @@ function CheckRow({ check, onOpen }: { check: GeoCheckDto; onOpen: () => void })
     >
       <div className="min-w-0">
         <p className="truncate font-medium" title={check.client?.name}>
-          {check.client?.name ?? t('noClient')}
+          {check.client?.name ?? t(check.refType === 'ATTENDANCE' ? 'noClientDepot' : 'noClient')}
         </p>
         <p className="truncate text-xs text-muted-foreground">
           {t(`ref${check.refType}`)}
@@ -292,7 +292,8 @@ function CheckDialog({ check, onClose }: { check: GeoCheckDto | null; onClose: (
           <div className="grid grid-cols-1 gap-4">
             <ResponsiveDialogHeader>
               <ResponsiveDialogTitle className="truncate">
-                {check.client?.name ?? t('noClient')}
+                {check.client?.name ??
+                  t(check.refType === 'ATTENDANCE' ? 'noClientDepot' : 'noClient')}
               </ResponsiveDialogTitle>
               <ResponsiveDialogDescription>
                 {t(`ref${check.refType}`)}

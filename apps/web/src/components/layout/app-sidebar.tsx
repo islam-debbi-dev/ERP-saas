@@ -63,15 +63,21 @@ export function AppSidebar() {
   const permissions = user?.permissions;
   // The Vue d'ensemble only for a user with more than one dépôt (phase 26).
   const hasOverview = useHasOverview() === true;
+  // "Mon pointage" only for a user with an employee file (phase 31).
+  const hasEmployeeFile = Boolean(user?.employeeId);
   const groups = useMemo(
     () =>
       visibleNavGroups(features, undefined, role, permissions)
         .map((g) => ({
           ...g,
-          items: g.items.filter((i) => i.key !== 'overview' || hasOverview),
+          items: g.items.filter(
+            (i) =>
+              (i.key !== 'overview' || hasOverview) &&
+              (i.key !== 'myAttendance' || hasEmployeeFile),
+          ),
         }))
         .filter((g) => g.items.length > 0),
-    [features, role, permissions, hasOverview],
+    [features, role, permissions, hasOverview, hasEmployeeFile],
   );
   const items = useMemo(() => groups.flatMap((g) => g.items), [groups]);
   useNavShortcuts(items);

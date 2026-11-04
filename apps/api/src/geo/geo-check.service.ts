@@ -8,8 +8,9 @@ import {
   type GeoErrorDetails,
   type GeoInput,
   type GeoReading,
-  type GeoRefType,
+  GeoRefType,
   GeoStatus,
+  type LatLng,
   Permission,
   Role,
 } from '@erp/shared';
@@ -51,6 +52,38 @@ export class GeoCheckService {
     private readonly audit: AuditService,
   ) {}
 
+  /**
+   * A self check-in or check-out (phase 31): the phase 17 rules against the dépôt's point,
+   * one position per tap. The HR service has already decided the employee may check in,
+   * so unlike `checkInTx` every role is checked. Same transaction, same refusal rules.
+   */
+  async checkAttendanceInTx(
+    tx: Tx,
+    req: {
+      eventId: string;
+      geo: GeoInput | undefined;
+      user: CurrentUserInfo;
+      point: LatLng | null;
+      radiusM: number | null;
+    },
+  ): Promise<GeoCheckResultDto | null> {
+    const tenantId = tenantContext.requireTenantId();
+    const tenant = await tx.tenant.findUniqueOrThrow({
+      where: { id: tenantId },
+      select: { geoCheckMode: true, geoRadiusM: true, geoMaxAccuracyM: true },
+    });
+    if (tenant.geoCheckMode === GeoCheckMode.OFF) return null;
+    return this.record(tx, {
+      refType: GeoRefType.ATTENDANCE,
+      refId: req.eventId,
+      clientId: null,
+      geo: req.geo,
+      user: req.user,
+      point: req.point,
+      tenant: { ...tenant, geoRadiusM: req.radiusM ?? tenant.geoRadiusM },
+    });
+  }
+
   async checkInTx(tx: Tx, req: GeoCheckRequest): Promise<GeoCheckResultDto | null> {
     // The client comptoir has no point to compare with.
     if (!req.clientId || !FIELD_ROLES.has(req.user.role)) return null;
@@ -61,9 +94,20 @@ export class GeoCheckService {
       select: { geoCheckMode: true, geoRadiusM: true, geoMaxAccuracyM: true },
     });
     if (tenant.geoCheckMode === GeoCheckMode.OFF) return null;
+    const point = await this.locations.pointInTx(tx, req.clientId);
+    return this.record(tx, { ...req, point, tenant });
+  }
 
+  private async record(
+    tx: Tx,
+    req: GeoCheckRequest & {
+      point: LatLng | null;
+      tenant: { geoCheckMode: string; geoRadiusM: number; geoMaxAccuracyM: number };
+    },
+  ): Promise<GeoCheckResultDto> {
+    const { tenant, point: client } = req;
+    const tenantId = tenantContext.requireTenantId();
     const reading = readingOf(req.geo);
-    const client = await this.locations.pointInTx(tx, req.clientId);
     const receivedAt = new Date();
     const result = evaluateGeo({
       geo: reading,

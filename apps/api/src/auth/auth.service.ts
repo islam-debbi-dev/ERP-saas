@@ -517,13 +517,14 @@ export class AuthService {
   }
 
   async me(user: CurrentUserInfo): Promise<AuthUser> {
-    const [tenant, { edition, features }, units] = await Promise.all([
+    const [tenant, { edition, features }, units, employeeId] = await Promise.all([
       this.prisma.db.tenant.findUniqueOrThrow({
         where: { id: user.tenantId },
         select: { name: true },
       }),
       this.features.of(user.tenantId),
       this.scope.warehouses(user),
+      this.employeeIdOf(user),
     ]);
     return {
       id: user.id,
@@ -538,9 +539,19 @@ export class AuthService {
       features,
       warehouseIds: units.warehouseIds,
       statsWarehouseIds: units.statsWarehouseIds,
+      employeeId,
       mustChangePassword: user.mustChangePassword,
       ...(user.impersonatedBy ? { impersonating: true } : {}),
     };
+  }
+
+  /** tenantId explicit: login reads this outside a tenant context. */
+  private async employeeIdOf(user: { id: string; tenantId: string }): Promise<string | null> {
+    const employee = await this.prisma.db.employee.findFirst({
+      where: { tenantId: user.tenantId, userId: user.id, deletedAt: null },
+      select: { id: true },
+    });
+    return employee?.id ?? null;
   }
 
   private async revokeForReuse(sessionId: string, tenantId: string, userId: string): Promise<void> {
@@ -625,6 +636,7 @@ export class AuthService {
         features: effectiveFeatures(edition, user.tenant.featureGrants, user.tenant.featureRevokes),
         warehouseIds: units.warehouseIds,
         statsWarehouseIds: units.statsWarehouseIds,
+        employeeId: await this.employeeIdOf(user),
         mustChangePassword: user.mustChangePassword,
       },
     };
