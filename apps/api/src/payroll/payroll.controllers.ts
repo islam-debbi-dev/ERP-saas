@@ -156,6 +156,21 @@ export class EmployeePayItemsController {
   }
 }
 
+@Controller('employees/:id/payslips')
+@RequireFeature(Feature.PAYROLL)
+@RequirePermission(Permission.SALARY_VIEW)
+export class EmployeePayslipsController {
+  constructor(private readonly documents: PayrollDocumentsService) {}
+
+  @Get()
+  list(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<MyPayslipDto[]> {
+    return this.documents.ofEmployee(id, user);
+  }
+}
+
 @Controller('payroll-runs')
 @RequireFeature(Feature.PAYROLL)
 @RequirePermission(Permission.SALARY_VIEW)

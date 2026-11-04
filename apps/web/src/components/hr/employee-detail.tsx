@@ -49,6 +49,7 @@ import {
 } from '@/lib/hr';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { useIdempotencyKey } from '@/lib/use-idempotency-key';
+import { EmployeePayrollCards } from '@/components/payroll/employee-payroll-cards';
 import { EmployeeDialog } from './employee-dialog';
 import { LeaveDialog } from './leave-dialog';
 
@@ -100,6 +101,7 @@ function Detail({ id }: { id: string }) {
         <Leave employeeId={e.id} />
         {canPay ? <Salaries employeeId={e.id} canAdd={canManage} /> : null}
         {canPay ? <Advances e={e} /> : null}
+        <EmployeePayrollCards employeeId={e.id} />
       </div>
       <EmployeeDialog open={editing} employee={e} onOpenChange={setEditing} />
     </>
@@ -323,6 +325,12 @@ function Advances({ e }: { e: EmployeeDto }) {
         <h2 className="font-semibold">{t('advanceBalance')}</h2>
         <Amount value={ledger.data?.balance ?? e.pay?.advanceBalance ?? '0'} />
       </div>
+      {ledger.data && ledger.data.salaryDue !== '0.00' ? (
+        <div className="flex items-center justify-between gap-2 text-sm">
+          <span>{t('salaryDue')}</span>
+          <Amount value={ledger.data.salaryDue} />
+        </div>
+      ) : null}
       <ul className="divide-y text-sm">
         {items.map((i) => (
           <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 py-1.5">

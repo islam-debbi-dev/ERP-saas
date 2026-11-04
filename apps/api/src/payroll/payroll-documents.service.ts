@@ -171,6 +171,16 @@ export class PayrollDocumentsService {
   /** The signed-in worker's own approved payslips. */
   async mine(user: CurrentUserInfo): Promise<MyPayslipDto[]> {
     const { id } = await this.access.own(this.prisma.db, user);
+    return this.approvedOf(id);
+  }
+
+  /** An employee's payslips, on his fiche. */
+  async ofEmployee(id: string, user: CurrentUserInfo): Promise<MyPayslipDto[]> {
+    await this.access.assertReach(this.prisma.db, user, id);
+    return this.approvedOf(id);
+  }
+
+  private async approvedOf(id: string): Promise<MyPayslipDto[]> {
     const rows = await this.prisma.db.payslip.findMany({
       where: { employeeId: id, run: { status: PayrollRunStatus.APPROVED } },
       orderBy: { month: 'desc' },

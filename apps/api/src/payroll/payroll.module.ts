@@ -14,6 +14,7 @@ import { PayrollRunsService } from './payroll-runs.service';
 import { PayrollSettingsService } from './payroll-settings.service';
 import {
   EmployeePayItemsController,
+  EmployeePayslipsController,
   MyPayslipsController,
   PayItemTypesController,
   PayrollRunsController,
@@ -37,6 +38,7 @@ import {
     PayrollSettingsController,
     PayItemTypesController,
     EmployeePayItemsController,
+    EmployeePayslipsController,
     PayrollRunsController,
     MyPayslipsController,
   ],
