@@ -262,7 +262,8 @@ FROM information_schema.tables t
 WHERE t.table_schema = 'public'
   AND t.table_type = 'BASE TABLE'
   AND t.table_name <> '_prisma_migrations'
-  AND t.table_name NOT IN ('tenants')
+  -- payroll_rate_sets: country-wide CNAS and IRG rates, owned by the super-admin.
+  AND t.table_name NOT IN ('tenants', 'payroll_rate_sets')
   AND NOT EXISTS (
     SELECT 1 FROM information_schema.columns c
     WHERE c.table_schema = 'public' AND c.table_name = t.table_name AND c.column_name = 'tenantId');
