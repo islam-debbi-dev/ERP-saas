@@ -13,6 +13,8 @@ export const ImportType = {
   SUPPLIERS: 'SUPPLIERS',
   /** Emballages chez les clients, opening counts (phase 20, PACKAGING). */
   PACKAGING_OPENING: 'PACKAGING_OPENING',
+  /** Personnel, with opening congé and avance balances (phase 31, HR). */
+  EMPLOYEES: 'EMPLOYEES',
 } as const;
 export type ImportType = (typeof ImportType)[keyof typeof ImportType];
 export const IMPORT_TYPES = Object.values(ImportType);
@@ -325,6 +327,26 @@ const SUPPLIER_FIELDS: ImportFieldDef[] = [
   ]),
 ];
 
+/** Personnel (phase 31). Creates employees only: a re-import never doubles a balance. */
+const EMPLOYEE_FIELDS: ImportFieldDef[] = [
+  f('name', 'text', true, ['nom', 'nom complet', 'employe', 'employé', 'name', 'الاسم']),
+  f('hireDate', 'text', true, ['date embauche', "date d'embauche", 'embauche', 'hire date']),
+  f('phone', 'text', false, ['telephone', 'tel', 'tél', 'mobile', 'phone', 'الهاتف']),
+  f('position', 'text', false, ['poste', 'fonction', 'position', 'المنصب']),
+  f('warehouse', 'text', false, ['depot', 'dépôt', 'warehouse', 'المستودع']),
+  f('contract', 'text', false, ['contrat', 'type contrat', 'contract', 'العقد']),
+  f('contractEndDate', 'text', false, ['fin contrat', 'fin de contrat', 'date fin']),
+  f('payType', 'text', false, ['type paie', 'type de paie', 'mode paie', 'pay type']),
+  f('salary', 'money', false, ['salaire', 'salaire de base', 'salaire journalier', 'الراتب']),
+  f('declared', 'text', false, ['declare', 'déclaré', 'cnas', 'declared']),
+  f('nss', 'text', false, ['nss', 'numero securite sociale']),
+  f('nin', 'text', false, ['nin', 'numero identification']),
+  f('birthDate', 'text', false, ['date naissance', 'date de naissance', 'birth date']),
+  f('bankAccount', 'text', false, ['rib', 'ccp', 'rib / ccp', 'compte']),
+  f('openingLeave', 'text', false, ['solde conges', 'solde congés', 'conges', 'congés']),
+  f('openingAdvance', 'money', false, ['solde avances', 'avances', 'avance']),
+];
+
 /** Emballages chez les clients (phase 20): one row per client and packaging type. */
 const PACKAGING_OPENING_FIELDS: ImportFieldDef[] = [
   f('clientCode', 'text', true, ['code client', 'code', 'client', 'الرمز', 'الزبون']),
@@ -348,6 +370,7 @@ export function importFields(
   if (type === ImportType.OPENING_STOCK) return OPENING_STOCK_FIELDS;
   if (type === ImportType.SUPPLIERS) return SUPPLIER_FIELDS;
   if (type === ImportType.PACKAGING_OPENING) return PACKAGING_OPENING_FIELDS;
+  if (type === ImportType.EMPLOYEES) return EMPLOYEE_FIELDS;
   return CLIENT_FIELDS;
 }
 

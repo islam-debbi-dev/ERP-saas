@@ -56,6 +56,8 @@ export const DocType = {
   DI: 'DI',
   /** Dépense: a charge paid by the company (rent, electricity, salaries...; phase 25). */
   DEP: 'DEP',
+  /** Matricule of an employee (phase 31): per tenant, not per year (`EMP-000001`). */
+  EMP: 'EMP',
 } as const;
 export type DocType = (typeof DocType)[keyof typeof DocType];
 export const DOC_TYPES = Object.values(DocType);
@@ -408,6 +410,8 @@ export const GeoRefType = {
   SALE: 'SALE',
   PAYMENT: 'PAYMENT',
   VISIT: 'VISIT',
+  /** A self check-in or check-out (phase 31): measured from the dépôt, not a client. */
+  ATTENDANCE: 'ATTENDANCE',
 } as const;
 export type GeoRefType = (typeof GeoRefType)[keyof typeof GeoRefType];
 export const GEO_REF_TYPES = Object.values(GeoRefType);
@@ -466,3 +470,122 @@ export const IncentiveRunStatus = {
 } as const;
 export type IncentiveRunStatus = (typeof IncentiveRunStatus)[keyof typeof IncentiveRunStatus];
 export const INCENTIVE_RUN_STATUSES = Object.values(IncentiveRunStatus);
+
+// ---------------------------------------------------------------- DRH (phase 31)
+
+export const EmployeeContract = {
+  CDI: 'CDI',
+  CDD: 'CDD',
+  JOURNALIER: 'JOURNALIER',
+} as const;
+export type EmployeeContract = (typeof EmployeeContract)[keyof typeof EmployeeContract];
+export const EMPLOYEE_CONTRACTS = Object.values(EmployeeContract);
+
+/** Salaire de base (per month) or salaire journalier (per day). */
+export const PayType = {
+  MONTHLY: 'MONTHLY',
+  DAILY: 'DAILY',
+} as const;
+export type PayType = (typeof PayType)[keyof typeof PayType];
+export const PAY_TYPES = Object.values(PayType);
+
+/** What happened on a day. Append-only: a mistake is fixed by a `CORRECTION`, never an update. */
+export const AttendanceEventKind = {
+  PRESENT: 'PRESENT',
+  ABSENT: 'ABSENT',
+  HALF_DAY: 'HALF_DAY',
+  /** Came late: the worker is present, `lateMinutes` says by how much. */
+  LATE: 'LATE',
+  CHECK_IN: 'CHECK_IN',
+  CHECK_OUT: 'CHECK_OUT',
+  OVERTIME: 'OVERTIME',
+  CORRECTION: 'CORRECTION',
+} as const;
+export type AttendanceEventKind = (typeof AttendanceEventKind)[keyof typeof AttendanceEventKind];
+export const ATTENDANCE_EVENT_KINDS = Object.values(AttendanceEventKind);
+
+export const AttendanceSource = {
+  /** Marked from the "Pointage du jour" screen. */
+  MANAGER: 'MANAGER',
+  /** The employee's own phone. */
+  SELF: 'SELF',
+  IMPORT: 'IMPORT',
+} as const;
+export type AttendanceSource = (typeof AttendanceSource)[keyof typeof AttendanceSource];
+export const ATTENDANCE_SOURCES = Object.values(AttendanceSource);
+
+export const AbsenceReason = {
+  /** Authorised, unpaid. */
+  JUSTIFIED: 'JUSTIFIED',
+  /** Arrêt maladie. */
+  SICK: 'SICK',
+  UNJUSTIFIED: 'UNJUSTIFIED',
+} as const;
+export type AbsenceReason = (typeof AbsenceReason)[keyof typeof AbsenceReason];
+export const ABSENCE_REASONS = Object.values(AbsenceReason);
+
+/** The status of an employee's day, always derived (`attendance.ts`). */
+export const DayStatus = {
+  PRESENT: 'PRESENT',
+  ABSENT_UNJUSTIFIED: 'ABSENT_UNJUSTIFIED',
+  ABSENT_JUSTIFIED: 'ABSENT_JUSTIFIED',
+  SICK: 'SICK',
+  LEAVE_PAID: 'LEAVE_PAID',
+  LEAVE_UNPAID: 'LEAVE_UNPAID',
+  HALF_DAY: 'HALF_DAY',
+  REST: 'REST',
+  HOLIDAY: 'HOLIDAY',
+  /** Before the hire date or after the exit date. */
+  NOT_EMPLOYED: 'NOT_EMPLOYED',
+  /** Nobody said anything: never counted as present. */
+  UNMARKED: 'UNMARKED',
+} as const;
+export type DayStatus = (typeof DayStatus)[keyof typeof DayStatus];
+export const DAY_STATUSES = Object.values(DayStatus);
+
+/** What a correction may set a day to. `UNMARKED` undoes a wrong tap. */
+export const CORRECTABLE_STATUSES = [
+  DayStatus.PRESENT,
+  DayStatus.ABSENT_UNJUSTIFIED,
+  DayStatus.ABSENT_JUSTIFIED,
+  DayStatus.SICK,
+  DayStatus.HALF_DAY,
+  DayStatus.UNMARKED,
+] as const;
+export type CorrectableStatus = (typeof CORRECTABLE_STATUSES)[number];
+
+export const LeaveType = {
+  PAID: 'PAID',
+  UNPAID: 'UNPAID',
+  SICK: 'SICK',
+  OTHER: 'OTHER',
+} as const;
+export type LeaveType = (typeof LeaveType)[keyof typeof LeaveType];
+export const LEAVE_TYPES = Object.values(LeaveType);
+
+export const LeaveRequestStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+export type LeaveRequestStatus = (typeof LeaveRequestStatus)[keyof typeof LeaveRequestStatus];
+export const LEAVE_REQUEST_STATUSES = Object.values(LeaveRequestStatus);
+
+/** The congé ledger, in days. Balance = sum of the signed entries. */
+export const LeaveEntryType = {
+  ACCRUAL: 'ACCRUAL',
+  TAKEN: 'TAKEN',
+  ADJUST: 'ADJUST',
+  OPENING: 'OPENING',
+} as const;
+export type LeaveEntryType = (typeof LeaveEntryType)[keyof typeof LeaveEntryType];
+
+/** The employee's account. Phase 31b adds `SALARY_DUE` and `SALARY_PAID`. */
+export const EmployeeLedgerType = {
+  ADVANCE: 'ADVANCE',
+  REVERSAL: 'REVERSAL',
+  /** An avance already running when the company started (Excel import): no dépense behind it. */
+  OPENING: 'OPENING',
+} as const;
+export type EmployeeLedgerType = (typeof EmployeeLedgerType)[keyof typeof EmployeeLedgerType];

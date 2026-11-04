@@ -91,6 +91,20 @@ export const Permission = {
   EXPENSE_CANCEL: 'EXPENSE_CANCEL',
   /** Expense categories and rent contracts (baux). */
   RENT_MANAGE: 'RENT_MANAGE',
+
+  // DRH (phase 31, module HR).
+  /** See the employees, their pointage and their congés (never their pay). */
+  HR_VIEW: 'HR_VIEW',
+  /** Employees and the calendar. */
+  HR_MANAGE: 'HR_MANAGE',
+  ATTENDANCE_MARK: 'ATTENDANCE_MARK',
+  /** Replace the status of a day already marked (with a reason). */
+  ATTENDANCE_CORRECT: 'ATTENDANCE_CORRECT',
+  LEAVE_APPROVE: 'LEAVE_APPROVE',
+  /** Pay an avance sur salaire (also needs SALARY_VIEW). */
+  ADVANCE_PAY: 'ADVANCE_PAY',
+  /** See salaries, avances and the employee ledger. Without it they do not exist. */
+  SALARY_VIEW: 'SALARY_VIEW',
 } as const;
 export type Permission = (typeof Permission)[keyof typeof Permission];
 export const PERMISSIONS = Object.values(Permission);
@@ -162,6 +176,15 @@ export const PERMISSION_GROUPS = {
     Permission.EXPENSE_CANCEL,
     Permission.RENT_MANAGE,
   ],
+  hr: [
+    Permission.HR_VIEW,
+    Permission.HR_MANAGE,
+    Permission.ATTENDANCE_MARK,
+    Permission.ATTENDANCE_CORRECT,
+    Permission.LEAVE_APPROVE,
+    Permission.ADVANCE_PAY,
+    Permission.SALARY_VIEW,
+  ],
   settings: [Permission.SETTINGS_EDIT],
 } as const satisfies Record<string, readonly Permission[]>;
 export type PermissionGroup = keyof typeof PERMISSION_GROUPS;
@@ -213,6 +236,9 @@ const OWNER_ONLY: readonly Permission[] = [
   Permission.SELL_ANY_PRODUCT,
   Permission.WAREHOUSE_ACCESS_MANAGE,
   Permission.VIEW_ALL_WAREHOUSES,
+  // A dépôt manager marks attendance but does not see pay (phase 31).
+  Permission.SALARY_VIEW,
+  Permission.ADVANCE_PAY,
 ];
 
 /** What each role can do by default. The OWNER always has everything. */

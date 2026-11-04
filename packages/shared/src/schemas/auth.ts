@@ -77,6 +77,8 @@ export interface AuthUser {
    */
   warehouseIds: string[] | null;
   statsWarehouseIds: string[] | null;
+  /** The user's employee file (phase 31): "Mon pointage" only shows with one. */
+  employeeId: string | null;
   /** Set by a temporary password: every other route answers PASSWORD_CHANGE_REQUIRED. */
   mustChangePassword: boolean;
   /** A super-admin viewing the company read-only (phase 13). */

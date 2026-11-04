@@ -24,6 +24,8 @@ describe('effectiveFeatures', () => {
     expect(effectiveFeatures(Edition.DISTRIBUTION)).toContain(Feature.MULTI_UNIT);
     expect(effectiveFeatures(Edition.IMPORT)).not.toContain(Feature.MULTI_UNIT);
     expect(effectiveFeatures(Edition.ENTREPRISE)).toEqual(FEATURES);
+    // The DRH (phase 31): the two big editions, grantable to the others.
+    expect(editionsWith(Feature.HR)).toEqual([Edition.DISTRIBUTION, Edition.ENTREPRISE]);
   });
 
   it('adds grants and removes revokes', () => {

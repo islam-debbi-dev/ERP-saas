@@ -22,3 +22,4 @@ export * from './incentives';
 export * from './import-files';
 export * from './promotions';
 export * from './expenses';
+export * from './hr';
