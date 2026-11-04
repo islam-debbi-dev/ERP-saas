@@ -37,6 +37,8 @@ Each phase is one branch, one PR and one Claude Code session. Prompts live in [`
 | 28 | [Relances automatiques](prompts/phase-28-auto-reminders.md) | Scheduled debtor reminders on WhatsApp, per-client exclude / pause, preview and log | 21, 27 | v2 |
 | 29 | [Édition mono-société](prompts/phase-29-single-company-edition.md) | `DEPLOYMENT_MODE=single`, signed license, installer for one company on its own VPS | 28 | v2 |
 | 30 | [Assistant IA](prompts/phase-30-ai-assistant.md) | In-app help assistant (Claude): how-to answers in ar / darja / fr, read-only questions on the user's own data, quotas per plan | 13b, 24 | v2 |
+| 31 | [DRH: personnel et pointage](prompts/phase-31-hr-attendance.md) | Employés, pointage du jour présent / absent (manager or self check-in with GPS), congés ledger, avances sur salaire | 24, 25 | v2 |
+| 31b | [DRH: paie](prompts/phase-31b-payroll.md) | Monthly payroll run from the pointage, CNAS + IRG as dated rate sets, bulletin de paie PDF, salary payments, CNAS / IRG / DAS exports | 31 | v2 |
 
 **MVP = phases 1 to 12b.** Put the pilot grossiste on it after phase 12b (traders open it on their phones); phase 13 can follow during the free pilot month.
 
@@ -71,14 +73,12 @@ Every phase that adds a screen follows [`ui.md`](ui.md): phone first, RTL, Playw
 - TOTP replay protection (remember the last used step per admin) and admin 2FA enrolment from the UI.
 
 ## Later
-- **RH / DRH module (when needed)**, same codebase behind an `HR` feature flag, in two steps:
-  1. Employees (linked to users when they have an account), contracts, attendance (pointage from the phone, with the phase 17 GPS check for field staff), absences and congés, avances sur salaire (cash out through phase 25 expenses).
-  2. Paie: bulletin de paie with IRG barème and CNAS rates kept as dated settings (the law changes), DAS annuelle export. Validate every rule with an Algerian comptable before the first real payslip.
+- **RH / DRH**: now phases 31 (personnel, pointage, congés, avances) and 31b (paie). Have a comptable validate the CNAS / IRG rules before the first real payslip.
 - **Online shop (phase 30 when needed)**: a separate storefront repo (Next.js) that reads catalog, prices and stock from the ERP and sends orders into it as `Order` with source WEB (phase 16 flow: confirm → BL). ERP side: public API with hashed per-tenant API keys, catalog / stock endpoints, idempotent `POST` order, status webhook. The same API can serve WooCommerce or Shopify connectors.
 - Flutter owner dashboard app (the vendeur app is phase 19).
 - Flutter desktop caisse with offline mode (SQLite/drift, operation queue, idempotent resync).
 - CRM (tasks, notes per client; visits are phase 16).
-- Lots and dates de péremption (DLC), stock reservation on orders, route optimisation, payroll / CNAS, B2B ordering portal for retailers.
+- Lots and dates de péremption (DLC), stock reservation on orders, route optimisation, B2B ordering portal for retailers.
 - Thermal 80mm tickets.
 - E-invoicing / tax exports if the law requires it.
 
