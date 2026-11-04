@@ -20,6 +20,7 @@ import {
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { type Prisma } from '../generated/prisma/client';
+import { PayrollCostService } from '../payroll/payroll-cost.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
 import { ExpenseCategoriesService } from './expense-categories.service';
@@ -45,6 +46,7 @@ export class ChargesService {
     private readonly prisma: PrismaService,
     private readonly scope: ScopeService,
     private readonly categories: ExpenseCategoriesService,
+    private readonly payroll: PayrollCostService,
   ) {}
 
   async report(query: ChargesQuery, user: CurrentUserInfo): Promise<ChargesReportDto> {
@@ -77,7 +79,7 @@ export class ChargesService {
       'createdBy',
     ) ?? {}) as Prisma.ExpenseWhereInput;
 
-    const [contracts, expenses, paid, rentCategoryId] = await Promise.all([
+    const [contracts, expenses, paid, rentCategoryId, payroll] = await Promise.all([
       db.rentContract.findMany({
         where: {
           ...(ids ? { warehouseId: { in: ids } } : {}),
@@ -90,7 +92,7 @@ export class ChargesService {
         where: {
           AND: [
             scopeWhere,
-            // An avance sur salaire (phase 31) is cash, not a charge: 31b counts the salary.
+            // Avances and salary payments are cash, not charges: the approved run counts.
             { status: ExpenseStatus.VALID, rentContractId: null, employeeId: null },
             {
               OR: [
@@ -120,6 +122,7 @@ export class ChargesService {
         select: { amount: true },
       }),
       this.categories.rentId(db),
+      this.payroll.ofRange(range, db),
     ]);
 
     const byId = new Map(depots.map((w) => [w.id, w]));
@@ -159,6 +162,25 @@ export class ChargesService {
           range,
         ),
       );
+    }
+    // A payslip without dépôt is the dépôt principal's, like a dépense without one.
+    const inScope = payroll.filter((p) => {
+      const id = p.warehouseId ?? mainId;
+      return ids === null || (id !== null && ids.includes(id));
+    });
+    const payrollCells = new Map<string, Money>();
+    if (inScope.length > 0) {
+      const salaries = await this.categories.salariesId(db);
+      for (const p of inScope) {
+        const unit = unitOf(p.warehouseId);
+        const key = unit ?? '';
+        payrollCells.set(key, (payrollCells.get(key) ?? ZERO).plus(p.amount));
+        cell(salaries, unit);
+      }
+      for (const c of cells.values()) {
+        if (c.categoryId !== salaries) continue;
+        c.expenses = c.expenses.plus(payrollCells.get(c.warehouseId ?? '') ?? ZERO);
+      }
     }
     const rounded = [...cells.values()]
       .map((c) => ({ ...c, rent: round2(c.rent), expenses: round2(c.expenses) }))
@@ -213,6 +235,7 @@ export class ChargesService {
       rent: toMoneyString(rent),
       expenses: toMoneyString(exp),
       total: toMoneyString(rent.plus(exp)),
+      payroll: toMoneyString(sum([...payrollCells.values()].map((v) => round2(v)))),
       rentPaid: toMoneyString(sum(paid.map((p) => p.amount.toString()))),
       byCategory,
       byWarehouse,

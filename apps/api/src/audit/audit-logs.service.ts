@@ -7,7 +7,14 @@ import { type Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 /** Journal lines that carry pay: not there without SALARY_VIEW (phase 31). */
-export const PAY_AUDIT_ENTITIES = ['EmployeeSalary', 'EmployeeAdvance', 'EmployeeLedgerEntry'];
+export const PAY_AUDIT_ENTITIES = [
+  'EmployeeSalary',
+  'EmployeeAdvance',
+  'EmployeeLedgerEntry',
+  'EmployeePayItem',
+  'PayrollRun',
+  'SalaryPayment',
+];
 
 /** Read side of the audit log. There is no write or delete path: rows are append-only. */
 @Injectable()

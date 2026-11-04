@@ -46,6 +46,6 @@ import { MonthCloseService } from './month-close.service';
     LeaveService,
     MonthCloseService,
   ],
-  exports: [EmployeesService, MonthCloseService],
+  exports: [EmployeeAccessService, EmployeesService, MonthCloseService],
 })
 export class HrModule {}

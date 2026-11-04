@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { BillingModule } from '../billing/billing.module';
 import { DocumentsModule } from '../documents/documents.module';
 import { HrCoreModule } from '../hr/hr-core.module';
+import { PayrollCoreModule } from '../payroll/payroll-core.module';
 import { SalesForceModule } from '../sales-force/sales-force.module';
 import { StockModule } from '../stock/stock.module';
 import { ChargesService } from './charges.service';
@@ -19,7 +20,14 @@ import { RentContractsService } from './rent-contracts.service';
  * and reads through ChargesService.
  */
 @Module({
-  imports: [BillingModule, DocumentsModule, HrCoreModule, SalesForceModule, StockModule],
+  imports: [
+    BillingModule,
+    DocumentsModule,
+    HrCoreModule,
+    PayrollCoreModule,
+    SalesForceModule,
+    StockModule,
+  ],
   controllers: [ExpenseCategoriesController, ExpensesController, RentContractsController],
   providers: [ExpenseCategoriesService, ExpensesService, RentContractsService, ChargesService],
   exports: [ExpenseCategoriesService, ExpensesService, ChargesService],

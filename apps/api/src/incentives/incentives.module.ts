@@ -27,5 +27,6 @@ import { TargetsService } from './targets.service';
     MyObjectivesController,
   ],
   providers: [IncentiveMetricsService, TargetsService, PlansService, RunsService, ObjectivesService],
+  exports: [RunsService],
 })
 export class IncentivesModule {}
