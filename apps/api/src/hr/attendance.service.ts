@@ -456,6 +456,12 @@ export class AttendanceService {
     };
   }
 
+  /** A day that has not happened is nobody's backlog: it counts for nothing yet. */
+  private upToToday<T extends { date: string }>(days: T[]): T[] {
+    const today = algiersDay();
+    return days.filter((d) => d.date <= today);
+  }
+
   private monthRow(
     e: { id: string; matricule: string; fullName: string },
     days: string[],
@@ -465,7 +471,7 @@ export class AttendanceService {
     return {
       employee: { id: e.id, matricule: e.matricule, fullName: e.fullName },
       days: list.map(({ date, status }) => ({ date, status })),
-      counts: monthCounts(list),
+      counts: monthCounts(this.upToToday(list)),
     };
   }
 
@@ -497,7 +503,11 @@ export class AttendanceService {
     return {
       month: query.month,
       days,
-      totals: monthCounts([...views.values()].flatMap((v) => [...v.values()])),
+      totals: monthCounts(
+        this.upToToday(
+          [...views.values()].flatMap((v) => [...v].map(([date, day]) => ({ date, ...day }))),
+        ),
+      ),
       rows: visible.map((e) => this.monthRow(e, days, views.get(e.id)!)),
       countsOnly: stats.length > 0 && visible.length === 0,
     };

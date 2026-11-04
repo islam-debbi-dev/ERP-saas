@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { DAY_STATUSES, DayStatus, STATUS_LETTERS } from '@erp/shared';
+import { algiersDay, DAY_STATUSES, DayStatus, STATUS_LETTERS } from '@erp/shared';
 import { cn } from '@/lib/utils';
 
 /**
@@ -41,21 +41,38 @@ export function DayStatusBadge({ status, className }: { status: DayStatus; class
   );
 }
 
-/** One square of the month grid. The full word is in the title and for screen readers. */
-export function DayStatusCell({ status, date }: { status: DayStatus; date: string }) {
+/**
+ * One square of the month grid. `showDay` prints the day number in the square, for the
+ * phone cards: there is no column header there, and a title never shows on a touch screen.
+ * A day still to come has no letter: it is not a task yet.
+ */
+export function DayStatusCell({
+  status,
+  date,
+  showDay = false,
+}: {
+  status: DayStatus;
+  date: string;
+  showDay?: boolean;
+}) {
   const t = useTranslations('hr');
-  const label = `${date}: ${t(`status_${status}`)}`;
+  const future = date > algiersDay() && status === DayStatus.UNMARKED;
+  const label = future ? date : `${date}: ${t(`status_${status}`)}`;
   return (
     <span
       title={label}
       aria-label={label}
       role="img"
       className={cn(
-        'inline-flex size-7 items-center justify-center rounded text-xs font-semibold',
-        TONE[status],
+        'inline-flex flex-col items-center justify-center rounded text-xs font-semibold',
+        showDay ? 'h-10 w-8' : 'size-7',
+        future ? 'text-muted-foreground' : TONE[status],
       )}
     >
-      {STATUS_LETTERS[status]}
+      {showDay ? (
+        <span className="num text-xs font-normal">{Number(date.slice(8, 10))}</span>
+      ) : null}
+      {future ? null : STATUS_LETTERS[status]}
     </span>
   );
 }

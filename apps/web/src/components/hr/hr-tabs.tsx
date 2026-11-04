@@ -6,22 +6,24 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
 const TABS = [
-  { key: 'tabToday', href: '/rh/pointage' },
+  { key: 'tabToday', href: '/rh' },
   { key: 'tabMonth', href: '/rh/mois' },
   { key: 'tabEmployees', href: '/rh/employes' },
   { key: 'tabLeaves', href: '/rh/conges' },
   { key: 'tabCalendar', href: '/rh/calendrier' },
 ] as const;
 
-/** The DRH's sections. Scrolls inside itself on a phone, never the page. */
+/** The DRH's sections. They wrap on a phone: a tab hidden to the side is never found. */
 export function HrTabs() {
   const t = useTranslations('hr');
   const pathname = usePathname();
   return (
-    <nav aria-label={t('title')} className="-mx-1 overflow-x-auto px-1">
-      <ul className="flex w-max gap-1">
+    <nav aria-label={t('title')}>
+      <ul className="flex flex-wrap gap-1">
         {TABS.map((tab) => {
-          const active = pathname === tab.href || pathname.startsWith(`${tab.href}/`);
+          // `/rh` is the Pointage: only its own path, not every section under it.
+          const active =
+            pathname === tab.href || (tab.href !== '/rh' && pathname.startsWith(`${tab.href}/`));
           return (
             <li key={tab.href}>
               <Link

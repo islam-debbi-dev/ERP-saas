@@ -136,7 +136,7 @@ function Mine() {
         <CountsList counts={d.month.counts} />
         <div className="flex flex-wrap gap-1">
           {d.month.days.map((day) => (
-            <DayStatusCell key={day.date} status={day.status} date={day.date} />
+            <DayStatusCell key={day.date} status={day.status} date={day.date} showDay />
           ))}
         </div>
       </Card>

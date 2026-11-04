@@ -16,7 +16,7 @@ export function AttendanceTodayCard() {
   return (
     <Card className="p-0">
       <Link
-        href="/rh/pointage"
+        href="/rh"
         className="flex min-h-16 flex-wrap items-center justify-between gap-x-6 gap-y-1 rounded-xl p-4 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <h2 className="font-semibold">{t('cardTitle')}</h2>

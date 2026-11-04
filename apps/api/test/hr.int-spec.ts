@@ -377,6 +377,26 @@ describe('hr attendance (phase 31)', () => {
       expect((await dayOf(d, DAY, e.id))?.status).toBe('UNMARKED');
     });
 
+    it('never counts a day that has not happened as unmarked', async () => {
+      const e = await employee();
+      const next = addDays(monthBounds(TODAY.slice(0, 7)).to, 1).slice(0, 7);
+      const future = (
+        await as(d).get(`/attendance/month?month=${next}&employeeId=${e.id}`).expect(200)
+      ).body as AttendanceMonthDto;
+      expect(future.rows[0]?.counts.unmarked).toBe(0);
+      expect(future.totals.unmarked).toBe(0);
+
+      const now = (
+        await as(d)
+          .get(`/attendance/month?month=${TODAY.slice(0, 7)}&employeeId=${e.id}`)
+          .expect(200)
+      ).body as AttendanceMonthDto;
+      const row = now.rows[0]!;
+      expect(row.counts.unmarked).toBe(
+        row.days.filter((x) => x.date <= TODAY && x.status === 'UNMARKED').length,
+      );
+    });
+
     it('refuses a second mark and a future day', async () => {
       const e = await employee();
       await mark(d, DAY, [{ employeeId: e.id, kind: 'PRESENT' }]).expect(201);

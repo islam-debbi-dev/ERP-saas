@@ -46,6 +46,17 @@ async function expectOnScreen(page: Page, selector: string): Promise<void> {
     .toBe(true);
 }
 
+/** How many days back the nth working day is: no Friday, no fixed fête (phase 31). */
+function pointageDaysBack(nth: number): number {
+  const fixed = ['01-01', '01-12', '05-01', '07-05', '11-01'];
+  let found = -1;
+  for (let back = 0; ; back++) {
+    const day = new Date(Date.now() + 3_600_000 - back * 86_400_000);
+    const open = day.getUTCDay() !== 5 && !fixed.includes(day.toISOString().slice(5, 10));
+    if (open && ++found === nth) return back;
+  }
+}
+
 /** Route groups whose pages need a session; the others are opened anonymous. */
 const AUTH_GROUP = '(auth)';
 /** The super-admin area: its own login, checked by its own test. */
@@ -104,6 +115,8 @@ interface Ids {
   importFileId: string;
   /** A dépôt (SECONDARY) for its page (phase 24, MULTI_UNIT). */
   warehouseId: string;
+  /** An employee for his file (phase 31). */
+  employeeId: string;
   /** A seller whose Dépôts dialog is opened (phase 24). */
   sellerName: string;
   productReference: string;
@@ -205,6 +218,60 @@ async function prepareIds(f: Fixture): Promise<Ids> {
       password: 'Audit1234!',
     },
   });
+  // Phase 31 (HR): 15 workers for the pointage, the first with a long name, one pending
+  // leave, one avance, self check-in on. The owner gets a file for "Mon pointage" (only
+  // once: both phone projects share this tenant and a user has one file).
+  let employeeId = '';
+  for (let i = 0; i < 15; i++) {
+    const e = (
+      await call<{ id: string }>('/employees', {
+        method: 'POST',
+        token,
+        body: {
+          fullName: i === 0 ? 'Abdelmadjid Benmohamed El Ouahrani Ben Youcef' : uniq('Ouvrier '),
+          position: 'Manutentionnaire polyvalent',
+          hireDate: '2024-01-01',
+          contract: 'CDI',
+          warehouseId: warehouses.find((w) => w.isDefault)!.id,
+          salary: {
+            amount: '45000',
+            payType: 'MONTHLY',
+            effectiveFrom: '2024-01-01',
+            reason: null,
+          },
+        },
+      })
+    ).body;
+    if (i === 0) employeeId = e.id;
+  }
+  await call(`/employees/${employeeId}/advances`, {
+    method: 'POST',
+    token,
+    idempotencyKey: idemKey('adv'),
+    body: { amount: '5000', mode: 'ESPECES' },
+  });
+  await call('/leave-requests', {
+    method: 'POST',
+    token,
+    idempotencyKey: idemKey('leave'),
+    body: { employeeId, startDate: '2030-06-02', endDate: '2030-06-06', type: 'PAID' },
+  });
+  await call('/hr-settings', {
+    method: 'PUT',
+    token,
+    body: { restDays: [5], dailyHours: 8, leaveAccrualDays: '2.5', selfCheckIn: true },
+  });
+  await call('/employees', {
+    method: 'POST',
+    token,
+    body: {
+      fullName: 'Propriétaire pointage',
+      hireDate: '2024-01-01',
+      contract: 'CDI',
+      warehouseId: warehouses.find((w) => w.isDefault)!.id,
+      userId: f.session.userId,
+    },
+  }).catch(() => undefined);
   // Phase 16 (TOURNEES): a route of the owner running every day with the long-named client,
   // so "Ma tournée" has a stop, and a confirmed bon de commande to deliver.
   const route = (
@@ -413,6 +480,7 @@ async function prepareIds(f: Fixture): Promise<Ids> {
   });
   const product = (await call<{ reference: string }>(`/products/${f.productId}`, { token })).body;
   return {
+    employeeId,
     importFileId: importFile.id,
     productReference: product.reference,
     clientId: client.id,
@@ -442,6 +510,7 @@ function resolve(pattern: string, v: Ids): string {
       .replace('/clients/[id]', `/clients/${v.clientId}`)
       .replace('/produits/[id]', `/produits/${v.productId}`)
       .replace('/stock/depots/[id]', `/stock/depots/${v.warehouseId}`)
+      .replace('/rh/employes/[id]', `/rh/employes/${v.employeeId}`)
       .replace('/stock/inventaires/[id]', `/stock/inventaires/${v.inventoryId}`)
       .replace('/stock/transferts/[id]', `/stock/transferts/${v.transferId}`)
       .replace('/stock/[productId]', `/stock/${v.productId}`)
@@ -587,6 +656,52 @@ for (const locale of LOCALES) {
         await expectOnScreen(page, '[role="dialog"] button:last-of-type');
         await check(page, '/stock/depots/[id]/marques', locale, results, { fullPage: false });
         await page.keyboard.press('Escape');
+      });
+
+      await test.step('pointage: 15 workers in under 30 seconds, sheets on screen', async () => {
+        await page.evaluate((to) => {
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
+        }, '/rh');
+        await page.waitForURL((url) => url.pathname === '/rh');
+        await settle(page);
+        // A working day of its own: the two locales and the two phone projects share a tenant.
+        const width = page.viewportSize()?.width ?? 0;
+        const back = pointageDaysBack(LOCALES.indexOf(locale) * 2 + (width > 380 ? 1 : 0));
+        const previous = m['hr']?.['previousDay'] ?? '';
+        for (let i = 0; i < back; i++) {
+          await page.getByRole('button', { name: previous }).click();
+          await page.waitForTimeout(150);
+        }
+        const hr = m['hr'] ?? {};
+        const rows = page.getByTestId('pointage-row');
+        await rows.first().getByRole('button', { name: hr['markPresent'] }).waitFor();
+        const started = Date.now();
+
+        await rows.nth(0).getByRole('button', { name: hr['markAbsent'], exact: true }).click();
+        await page.locator('[role="dialog"]').waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        await expectOnScreen(page, '[role="dialog"] button:last-of-type');
+        await check(page, '/rh/absence', locale, results, { fullPage: false });
+        await page.getByRole('button', { name: hr['absence_SICK'] }).click();
+        await page.locator('[role="dialog"]').waitFor({ state: 'hidden' });
+
+        await rows.nth(1).getByRole('button', { name: hr['markLate'], exact: true }).click();
+        await page
+          .getByRole('button', { name: (hr['lateMinutes'] ?? '').replace('{n}', '15') })
+          .click();
+        await page.locator('[role="dialog"]').waitFor({ state: 'hidden' });
+
+        const all = page.getByRole('button', {
+          name: new RegExp((hr['allPresent'] ?? '').replace(/\(\{n\}\)/, '')),
+        });
+        await expectOnScreen(page, 'button:has(svg.lucide-check-check)');
+        await all.click();
+        await expect(all).toBeDisabled();
+        const seconds = (Date.now() - started) / 1000;
+        expect.soft(seconds, 'pointage of the whole team').toBeLessThan(30);
+        await check(page, '/rh/marque', locale, results);
       });
 
       await test.step("a user's Dépôts opens as a sheet with its save button on screen", async () => {

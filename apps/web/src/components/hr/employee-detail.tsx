@@ -95,7 +95,7 @@ function Detail({ id }: { id: string }) {
           },
         ]}
       />
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Infos e={e} />
         <Leave employeeId={e.id} />
         {canPay ? <Salaries employeeId={e.id} canAdd={canManage} /> : null}
@@ -126,7 +126,7 @@ function Infos({ e }: { e: EmployeeDto }) {
   return (
     <Card className="gap-3 p-4">
       <h2 className="font-semibold">{t('infos')}</h2>
-      <dl className="grid gap-x-4 gap-y-1.5 text-sm sm:grid-cols-2">
+      <dl className="grid grid-cols-1 gap-x-4 gap-y-1.5 text-sm sm:grid-cols-2">
         {rows
           .filter(([, value]) => value)
           .map(([label, value]) => (
@@ -325,8 +325,8 @@ function Advances({ e }: { e: EmployeeDto }) {
       </div>
       <ul className="divide-y text-sm">
         {items.map((i) => (
-          <li key={i.id} className="flex items-center justify-between gap-2 py-1.5">
-            <span className="min-w-0 truncate">
+          <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 py-1.5">
+            <span className="min-w-0 break-words">
               {t(`ledger_${i.type}`)}
               {i.expenseNumber ? (
                 <>

@@ -122,7 +122,7 @@ function Month() {
                   <CountsList counts={r.counts} />
                   <div className="flex flex-wrap gap-1">
                     {r.days.map((day) => (
-                      <DayStatusCell key={day.date} status={day.status} date={day.date} />
+                      <DayStatusCell key={day.date} status={day.status} date={day.date} showDay />
                     ))}
                   </div>
                 </Card>
