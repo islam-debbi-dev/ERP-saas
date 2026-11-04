@@ -5,12 +5,16 @@ import { ExpensesModule } from '../expenses/expenses.module';
 import { HrCoreModule } from '../hr/hr-core.module';
 import { HrModule } from '../hr/hr.module';
 import { IncentivesModule } from '../incentives/incentives.module';
+import { PrintingModule } from '../printing/printing.module';
 import { SalesForceModule } from '../sales-force/sales-force.module';
+import { TenantsModule } from '../tenants/tenants.module';
 import { PayrollComputeService } from './payroll-compute.service';
+import { PayrollDocumentsService } from './payroll-documents.service';
 import { PayrollRunsService } from './payroll-runs.service';
 import { PayrollSettingsService } from './payroll-settings.service';
 import {
   EmployeePayItemsController,
+  MyPayslipsController,
   PayItemTypesController,
   PayrollRunsController,
   PayrollSettingsController,
@@ -25,14 +29,22 @@ import {
     HrCoreModule,
     HrModule,
     IncentivesModule,
+    PrintingModule,
     SalesForceModule,
+    TenantsModule,
   ],
   controllers: [
     PayrollSettingsController,
     PayItemTypesController,
     EmployeePayItemsController,
     PayrollRunsController,
+    MyPayslipsController,
   ],
-  providers: [PayrollComputeService, PayrollRunsService, PayrollSettingsService],
+  providers: [
+    PayrollComputeService,
+    PayrollDocumentsService,
+    PayrollRunsService,
+    PayrollSettingsService,
+  ],
 })
 export class PayrollModule {}

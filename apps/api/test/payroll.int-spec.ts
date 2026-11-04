@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import ExcelJS from 'exceljs';
 import {
   Activity,
   addDays,
@@ -11,6 +12,7 @@ import {
   FIXED_PUBLIC_HOLIDAYS,
   type InviteResultDto,
   listDays,
+  type MyPayslipDto,
   money,
   monthBounds,
   type PayItemTypeDto,
@@ -25,6 +27,12 @@ import {
 import type { CurrentUserInfo } from '../src/auth/auth.types';
 import { tenantContext } from '../src/common/tenant-context';
 import { PayrollComputeService } from '../src/payroll/payroll-compute.service';
+import {
+  DAS_COLUMNS,
+  ETAT_CNAS_COLUMNS,
+  LIVRE_DE_PAIE_COLUMNS,
+  RECAP_IRG_COLUMNS,
+} from '../src/payroll/payroll-xlsx';
 import { ReconcileService } from '../src/reconcile/reconcile.service';
 import {
   bearer,
@@ -90,16 +98,27 @@ describe('payroll (phase 31b)', () => {
   const read = <T>(sql: TemplateStringsArray, ...values: unknown[]) =>
     tenantContext.runAsSystem(() => t.prisma.db.$queryRaw<T>(sql, ...values));
 
-  const invite = async (role: 'MANAGER'): Promise<Member> => {
-    const email = uniqueEmail(role.toLowerCase());
+  const newUser = async (): Promise<{ id: string; email: string }> => {
+    const email = uniqueEmail('manager');
     const res = await as(d)
       .post(
         '/users/invite',
-        { fullName: `${role} ${++seq}`, email, role, mode: 'PASSWORD', password: 'Password123!' },
+        {
+          fullName: `Manager ${++seq}`,
+          email,
+          role: 'MANAGER',
+          mode: 'PASSWORD',
+          password: 'Password123!',
+        },
         null,
       )
       .expect(201);
-    const user = (res.body as InviteResultDto).user;
+    return { id: (res.body as InviteResultDto).user.id, email };
+  };
+
+  /** Two logins each, and the login route is rate limited: only for who really signs in. */
+  const invite = async (): Promise<Member> => {
+    const { id, email } = await newUser();
     const login = await t
       .http()
       .post('/auth/login')
@@ -115,7 +134,7 @@ describe('payroll (phase 31b)', () => {
       .post('/auth/login')
       .send({ email, password: 'Password456!' })
       .expect(200);
-    return { id: user.id, auth: relog.body as AuthResponse };
+    return { id, auth: relog.body as AuthResponse };
   };
 
   const depot = async (who: Who = d): Promise<WarehouseDto> =>
@@ -817,7 +836,7 @@ describe('payroll (phase 31b)', () => {
     };
 
     it('pulls an approved bonus as a prime, once', async () => {
-      const seller = await invite('MANAGER');
+      const seller = await newUser();
       const w = await depot();
       const e = await employee(w.id, '60000', { userId: seller.id });
       await markMonth([e.id]);
@@ -844,7 +863,7 @@ describe('payroll (phase 31b)', () => {
     });
 
     it('names a seller with a bonus and no employee file', async () => {
-      const seller = await invite('MANAGER');
+      const seller = await newUser();
       await approvedBonus(seller.id, '900');
       const { w } = await ready();
       const run = await draft(w.id);
@@ -854,11 +873,91 @@ describe('payroll (phase 31b)', () => {
     });
   });
 
+  describe('documents', () => {
+    const binary = (url: string, who: Who = d) =>
+      as(who)
+        .get(url)
+        .buffer(true)
+        .parse((res, done) => {
+          const chunks: Buffer[] = [];
+          res.on('data', (c: Buffer) => chunks.push(c));
+          res.on('end', () => done(null, Buffer.concat(chunks)));
+        });
+    const rowsOf = async (url: string) => {
+      const res = await binary(url).expect(200);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(res.body as never);
+      const rows: unknown[][] = [];
+      workbook.worksheets[0]!.eachRow((r) => rows.push((r.values as unknown[]).slice(1)));
+      return rows;
+    };
+
+    it('exports the month with fixed titles, and leaves undeclared workers out of CNAS and IRG', async () => {
+      const w = await depot();
+      const declared = await employee(w.id, '60000', { nss: '123456789012' });
+      const undeclared = await employee(w.id, '30000', { declared: false });
+      await markMonth([declared.id, undeclared.id]);
+      const run = await approve(await draft(w.id));
+
+      const livre = await rowsOf(`/payroll-runs/${run.id}/livre-de-paie.xlsx`);
+      expect(livre[1]).toEqual(LIVRE_DE_PAIE_COLUMNS);
+      expect(livre).toHaveLength(5);
+      const cnas = await rowsOf(`/payroll-runs/${run.id}/etat-cnas.xlsx`);
+      expect(cnas[1]).toEqual(ETAT_CNAS_COLUMNS);
+      expect(cnas[2]).toEqual(['123456789012', declared.fullName, 60000, 5400, 15600, 21000]);
+      expect(cnas).toHaveLength(4);
+      const irg = await rowsOf(`/payroll-runs/${run.id}/recap-irg.xlsx`);
+      expect(irg[1]).toEqual(RECAP_IRG_COLUMNS);
+      expect(irg).toHaveLength(4);
+
+      const das = await rowsOf(`/payroll-runs/das.xlsx?year=${MONTH.slice(0, 4)}`);
+      expect(das[1]).toEqual(DAS_COLUMNS);
+      expect(das.some((r) => r[2] === declared.fullName)).toBe(true);
+      expect(das.some((r) => r[2] === undeclared.fullName)).toBe(false);
+    });
+
+    it('prints an approved run, never a draft', async () => {
+      const w = await depot();
+      const a = await employee(w.id);
+      const b = await employee(w.id, '30000', { declared: false });
+      await markMonth([a.id, b.id]);
+      const run = await draft(w.id);
+      const refused = await as(d).get(`/payroll-runs/${run.id}/pdf`).expect(409);
+      expect((refused.body as { code: string }).code).toBe('PAYROLL_RUN_STATUS');
+      const approved = await approve(run);
+      const bulk = await binary(`/payroll-runs/${run.id}/pdf`).expect(200);
+      expect(bulk.headers['content-type']).toContain('application/pdf');
+      const one = await binary(`/payroll-runs/payslips/${slipOf(approved, a.id).id}/pdf`).expect(
+        200,
+      );
+      expect((one.body as Buffer).subarray(0, 4).toString()).toBe('%PDF');
+    }, 60_000);
+
+    it('gives a worker his own payslips only, without SALARY_VIEW', async () => {
+      const worker = await invite();
+      const w = await depot();
+      const e = await employee(w.id, '60000', { userId: worker.id });
+      const colleague = await employee(w.id);
+      await markMonth([e.id, colleague.id]);
+      const unapproved = (await as(worker).get('/me/payslips').expect(200)).body as MyPayslipDto[];
+      expect(unapproved).toEqual([]);
+      const run = await approve(await draft(w.id));
+
+      const mine = (await as(worker).get('/me/payslips').expect(200)).body as MyPayslipDto[];
+      expect(mine.map((m) => m.id)).toEqual([slipOf(run, e.id).id]);
+      await binary(`/me/payslips/${mine[0]!.id}/pdf`, worker).expect(200);
+      await as(worker)
+        .get(`/me/payslips/${slipOf(run, colleague.id).id}/pdf`)
+        .expect(404);
+      await as(worker).get(`/payroll-runs/payslips/${mine[0]!.id}/pdf`).expect(403);
+    }, 60_000);
+  });
+
   describe('who sees what', () => {
     it('hides everything without SALARY_VIEW', async () => {
       const { w } = await ready();
       const run = await approve(await draft(w.id));
-      const manager = await invite('MANAGER');
+      const manager = await invite();
       await as(manager).get('/payroll-runs').expect(403);
       await as(manager).get(`/payroll-runs/${run.id}`).expect(403);
       await as(manager).get('/payroll-settings').expect(403);
@@ -874,7 +973,7 @@ describe('payroll (phase 31b)', () => {
     it('needs the owner for approval, by default', async () => {
       const { w } = await ready();
       const run = await draft(w.id);
-      const manager = await invite('MANAGER');
+      const manager = await invite();
       await as(d)
         .put(`/users/${manager.id}/permissions`, {
           grants: ['SALARY_VIEW', 'PAYROLL_MANAGE'],
@@ -892,7 +991,7 @@ describe('payroll (phase 31b)', () => {
       const theirs = await ready();
       const runMine = await draft(mine.w.id);
       const runTheirs = await draft(theirs.w.id);
-      const manager = await invite('MANAGER');
+      const manager = await invite();
       await as(d)
         .put(`/users/${manager.id}/access`, {
           access: [{ warehouseId: mine.w.id, level: 'OPERATE' }],

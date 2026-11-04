@@ -45,5 +45,6 @@ import { ShareLinksService } from './share-links.service';
     PublicShareController,
   ],
   providers: [PrintingService, PdfRendererService, ShareLinksService],
+  exports: [PdfRendererService],
 })
 export class PrintingModule {}

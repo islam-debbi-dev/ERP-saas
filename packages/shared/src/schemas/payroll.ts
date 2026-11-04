@@ -87,6 +87,9 @@ export const payrollRunListQuerySchema = z.object({
 });
 export type PayrollRunListQuery = z.infer<typeof payrollRunListQuerySchema>;
 
+export const dasQuerySchema = z.object({ year: z.string().regex(/^\d{4}$/, 'invalid_year') });
+export type DasQuery = z.infer<typeof dasQuerySchema>;
+
 export const payrollManualLineSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal(PayrollManualKind.ITEM),

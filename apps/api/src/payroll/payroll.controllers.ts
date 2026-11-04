@@ -11,6 +11,7 @@ import {
   Post,
   Put,
   Query,
+  StreamableFile,
 } from '@nestjs/common';
 import {
   type ApprovePayrollRunInput,
@@ -19,10 +20,13 @@ import {
   cancelPayrollRunSchema,
   type CreatePayrollRunInput,
   createPayrollRunSchema,
+  dasQuerySchema,
+  type DasQuery,
   type EmployeePayItemDto,
   type EmployeePayItemInput,
   employeePayItemSchema,
   Feature,
+  type MyPayslipDto,
   type PatchPayrollRunParsed,
   patchPayrollRunSchema,
   type PayItemTypeDto,
@@ -43,8 +47,31 @@ import type { CurrentUserInfo } from '../auth/auth.types';
 import { CurrentUser, RequireFeature, RequirePermission } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { Idempotent } from '../idempotency/idempotent.decorator';
+import {
+  type PayrollExport,
+  PayrollDocumentsService,
+  type PayrollFile,
+} from './payroll-documents.service';
 import { PayrollRunsService } from './payroll-runs.service';
 import { PayrollSettingsService } from './payroll-settings.service';
+
+const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+function pdf(file: PayrollFile): StreamableFile {
+  return new StreamableFile(file.buffer, {
+    type: 'application/pdf',
+    disposition: `inline; filename="${file.filename}"`,
+    length: file.buffer.length,
+  });
+}
+
+function xlsx(file: PayrollFile): StreamableFile {
+  return new StreamableFile(file.buffer, {
+    type: XLSX_MIME,
+    disposition: `attachment; filename="${file.filename}"`,
+    length: file.buffer.length,
+  });
+}
 
 /** Everything here is pay: without SALARY_VIEW it does not exist (phase 31b). */
 @Controller('payroll-settings')
@@ -133,7 +160,57 @@ export class EmployeePayItemsController {
 @RequireFeature(Feature.PAYROLL)
 @RequirePermission(Permission.SALARY_VIEW)
 export class PayrollRunsController {
-  constructor(private readonly runs: PayrollRunsService) {}
+  constructor(
+    private readonly runs: PayrollRunsService,
+    private readonly documents: PayrollDocumentsService,
+  ) {}
+
+  @Get('das.xlsx')
+  async das(
+    @Query(new ZodValidationPipe(dasQuerySchema)) query: DasQuery,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<StreamableFile> {
+    return xlsx(await this.documents.das(query.year, user));
+  }
+
+  @Get('payslips/:id/pdf')
+  async slipPdf(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<StreamableFile> {
+    return pdf(await this.documents.slipPdf(id, user));
+  }
+
+  @Get(':id/pdf')
+  async runPdf(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<StreamableFile> {
+    return pdf(await this.documents.runPdf(id, user));
+  }
+
+  @Get(':id/livre-de-paie.xlsx')
+  livre(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: CurrentUserInfo) {
+    return this.export(id, 'livre-de-paie', user);
+  }
+
+  @Get(':id/etat-cnas.xlsx')
+  cnas(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: CurrentUserInfo) {
+    return this.export(id, 'etat-cnas', user);
+  }
+
+  @Get(':id/recap-irg.xlsx')
+  irg(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: CurrentUserInfo) {
+    return this.export(id, 'recap-irg', user);
+  }
+
+  private async export(
+    id: string,
+    kind: PayrollExport,
+    user: CurrentUserInfo,
+  ): Promise<StreamableFile> {
+    return xlsx(await this.documents.runExport(id, kind, user));
+  }
 
   @Get()
   list(
@@ -205,5 +282,25 @@ export class PayrollRunsController {
     @CurrentUser() user: CurrentUserInfo,
   ): Promise<PayrollRunDetailDto> {
     return this.runs.pay(id, body, user);
+  }
+}
+
+/** A worker's own payslips: no SALARY_VIEW needed, and only his (phase 31b). */
+@Controller('me/payslips')
+@RequireFeature(Feature.PAYROLL)
+export class MyPayslipsController {
+  constructor(private readonly documents: PayrollDocumentsService) {}
+
+  @Get()
+  list(@CurrentUser() user: CurrentUserInfo): Promise<MyPayslipDto[]> {
+    return this.documents.mine(user);
+  }
+
+  @Get(':id/pdf')
+  async pdf(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<StreamableFile> {
+    return pdf(await this.documents.minePdf(id, user));
   }
 }
