@@ -58,6 +58,8 @@ export const DocType = {
   DEP: 'DEP',
   /** Matricule of an employee (phase 31): per tenant, not per year (`EMP-000001`). */
   EMP: 'EMP',
+  /** Paie: one approved payroll run (phase 31b). */
+  PAIE: 'PAIE',
 } as const;
 export type DocType = (typeof DocType)[keyof typeof DocType];
 export const DOC_TYPES = Object.values(DocType);
@@ -587,5 +589,66 @@ export const EmployeeLedgerType = {
   REVERSAL: 'REVERSAL',
   /** An avance already running when the company started (Excel import): no dépense behind it. */
   OPENING: 'OPENING',
+  /** Phase 31b: an approved payslip, what the company now owes the worker. */
+  SALARY_DUE: 'SALARY_DUE',
+  /** Phase 31b: a salary payment, linked to its dépense. */
+  SALARY_PAID: 'SALARY_PAID',
+  /** Phase 31b: an avance taken back from a payslip; moves both balances. */
+  ADVANCE_DEDUCTION: 'ADVANCE_DEDUCTION',
+  /** Phase 31b: undoes a SALARY_DUE (run cancelled) or a SALARY_PAID (dépense cancelled). */
+  SALARY_REVERSAL: 'SALARY_REVERSAL',
 } as const;
 export type EmployeeLedgerType = (typeof EmployeeLedgerType)[keyof typeof EmployeeLedgerType];
+
+// Paie (phase 31b).
+
+export const PayrollRunStatus = {
+  DRAFT: 'DRAFT',
+  APPROVED: 'APPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+export type PayrollRunStatus = (typeof PayrollRunStatus)[keyof typeof PayrollRunStatus];
+export const PAYROLL_RUN_STATUSES = Object.values(PayrollRunStatus);
+
+/** A prime is a fixed amount, or an amount per day present (panier, transport). */
+export const PayItemMode = { FIXED: 'FIXED', PER_DAY: 'PER_DAY' } as const;
+export type PayItemMode = (typeof PayItemMode)[keyof typeof PayItemMode];
+export const PAY_ITEM_MODES = Object.values(PayItemMode);
+
+/** What a line entered by hand on a draft run is. */
+export const PayrollManualKind = {
+  /** A one-off prime of a tenant type. */
+  ITEM: 'ITEM',
+  /** Fixes a past month: signed, never a reopening of the run. */
+  REGULARISATION: 'REGULARISATION',
+  /** Comes off the net à payer, with a note. */
+  RETENUE: 'RETENUE',
+} as const;
+export type PayrollManualKind = (typeof PayrollManualKind)[keyof typeof PayrollManualKind];
+export const PAYROLL_MANUAL_KINDS = Object.values(PayrollManualKind);
+
+/** Every line of a payslip: the screen translates the code, the PDF prints the frozen label. */
+export const PayLineCode = {
+  BASE_SALARY: 'BASE_SALARY',
+  DAYS_WORKED: 'DAYS_WORKED',
+  LEAVE_PAID: 'LEAVE_PAID',
+  HOLIDAY_PAID: 'HOLIDAY_PAID',
+  ABSENCE_UNJUSTIFIED: 'ABSENCE_UNJUSTIFIED',
+  ABSENCE_JUSTIFIED: 'ABSENCE_JUSTIFIED',
+  HALF_DAY: 'HALF_DAY',
+  LEAVE_UNPAID: 'LEAVE_UNPAID',
+  SICK: 'SICK',
+  NOT_EMPLOYED: 'NOT_EMPLOYED',
+  LATENESS: 'LATENESS',
+  REST_WORKED: 'REST_WORKED',
+  OVERTIME: 'OVERTIME',
+  ITEM: 'ITEM',
+  INCENTIVE: 'INCENTIVE',
+  REGULARISATION: 'REGULARISATION',
+  CNAS_EMPLOYEE: 'CNAS_EMPLOYEE',
+  IRG: 'IRG',
+  RETENUE: 'RETENUE',
+  ADVANCE: 'ADVANCE',
+} as const;
+export type PayLineCode = (typeof PayLineCode)[keyof typeof PayLineCode];
+export const PAY_LINE_CODES = Object.values(PayLineCode);

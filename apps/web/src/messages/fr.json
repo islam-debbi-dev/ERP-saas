@@ -447,7 +447,16 @@
     "LEAVE_NOT_APPROVED": "Ce congé ne peut plus être annulé.",
     "LEAVE_OVERLAP": "Ces dates chevauchent un autre congé.",
     "LEAVE_NO_WORKING_DAY": "Ces dates ne contiennent aucun jour ouvré.",
-    "PUBLIC_HOLIDAY_TAKEN": "Ce jour est déjà une fête."
+    "PUBLIC_HOLIDAY_TAKEN": "Ce jour est déjà une fête.",
+    "PAYROLL_UNMARKED_DAYS": "Des jours du mois n'ont pas de statut : complétez le pointage avant d'approuver.",
+    "PAYROLL_NO_SALARY": "Un employé n'a pas de salaire pour ce mois.",
+    "PAYROLL_NEGATIVE_NET": "Les retenues dépassent le net d'un employé.",
+    "PAYROLL_STALE": "Les chiffres ont changé depuis votre lecture : vérifiez la paie puis approuvez à nouveau.",
+    "PAYROLL_RUN_EXISTS": "Une paie couvre déjà ce mois.",
+    "PAYROLL_RUN_STATUS": "Cette action n'est pas possible dans l'état actuel de la paie.",
+    "PAYROLL_ALREADY_PAID": "Des salaires sont déjà payés : corrigez par une régularisation le mois suivant.",
+    "PAYROLL_OVERPAYMENT": "Le montant dépasse ce qui reste à payer.",
+    "PAYROLL_NO_RATE_SET": "Aucun barème ne couvre ce mois."
   },
   "units": {
     "PIECE": "Pièce",
@@ -1648,6 +1657,18 @@
     "SALARY_VIEW": {
       "label": "Voir les salaires",
       "help": "Voir les salaires, les avances et le compte des employés."
+    },
+    "PAYROLL_MANAGE": {
+      "label": "Gérer la paie",
+      "help": "Réglages de paie, primes et brouillons de paie (demande aussi « Voir les salaires »)."
+    },
+    "PAYROLL_APPROVE": {
+      "label": "Approuver la paie",
+      "help": "Approuver ou annuler une paie, qui est alors figée (demande aussi « Voir les salaires »)."
+    },
+    "PAYROLL_PAY": {
+      "label": "Payer les salaires",
+      "help": "Enregistrer le paiement des salaires d'une paie approuvée (demande aussi « Voir les salaires »)."
     }
   },
   "sessions": {
@@ -1865,7 +1886,8 @@
     "lockedWhatsappMessage": "Bonjour, je voudrais ajouter le module « {feature} » pour {company}.",
     "lockedBack": "Retour au tableau de bord",
     "featureEXPENSES": "Dépenses et loyers",
-    "featureHR": "DRH"
+    "featureHR": "DRH",
+    "featurePAYROLL": "Paie et bulletins"
   },
   "share": {
     "button": "Partager le lien",
@@ -3303,6 +3325,10 @@
     "weekday_6": "Samedi",
     "mode_ESPECES": "Espèces",
     "mode_CHEQUE": "Chèque",
-    "mode_VIREMENT": "Virement"
+    "mode_VIREMENT": "Virement",
+    "ledger_SALARY_DUE": "Salaire dû",
+    "ledger_SALARY_PAID": "Salaire payé",
+    "ledger_ADVANCE_DEDUCTION": "Avance retenue sur salaire",
+    "ledger_SALARY_REVERSAL": "Annulation salaire"
   }
 }

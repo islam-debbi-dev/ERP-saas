@@ -101,12 +101,19 @@ WHERE cb.id IS NULL
 GROUP BY le."tenantId", le."clientId";
 
 -- name: employee_balances_equal_ledgers
--- Phase 31: avance and congé balances equal the sum of their ledgers.
-SELECT eb."tenantId", eb."employeeId", eb."advanceBalance", eb."leaveDays"
+-- Phase 31: avance and congé balances equal the sum of their ledgers. Phase 31b: salary
+-- rows move salaryDue instead; an avance taken back from a payslip moves both.
+SELECT eb."tenantId", eb."employeeId", eb."advanceBalance", eb."salaryDue", eb."leaveDays"
 FROM employee_balances eb
 WHERE eb."advanceBalance" <> COALESCE((
         SELECT SUM(l.amount) FROM employee_ledger_entries l
-        WHERE l."tenantId" = eb."tenantId" AND l."employeeId" = eb."employeeId"), 0)
+        WHERE l."tenantId" = eb."tenantId" AND l."employeeId" = eb."employeeId"
+          AND l.type NOT IN ('SALARY_DUE', 'SALARY_PAID', 'SALARY_REVERSAL')), 0)
+   OR eb."salaryDue" <> COALESCE((
+        SELECT SUM(CASE WHEN l.type = 'ADVANCE_DEDUCTION' THEN l.amount ELSE -l.amount END)
+        FROM employee_ledger_entries l
+        WHERE l."tenantId" = eb."tenantId" AND l."employeeId" = eb."employeeId"
+          AND l.type IN ('SALARY_DUE', 'SALARY_PAID', 'SALARY_REVERSAL', 'ADVANCE_DEDUCTION')), 0)
    OR eb."leaveDays" <> COALESCE((
         SELECT SUM(e.days) FROM leave_entries e
         WHERE e."tenantId" = eb."tenantId" AND e."employeeId" = eb."employeeId"), 0);
@@ -122,6 +129,7 @@ WITH used AS (
   UNION ALL SELECT "tenantId", 'RF',  "number" FROM purchase_returns
   UNION ALL SELECT "tenantId", 'VER', "number" FROM payments
   UNION ALL SELECT "tenantId", 'INV', "number" FROM inventories
+  UNION ALL SELECT "tenantId", 'PAIE', "number" FROM payroll_runs WHERE "number" IS NOT NULL
 ),
 parsed AS (
   SELECT "tenantId", doctype, "number",
@@ -171,6 +179,7 @@ WITH used AS (
   UNION ALL SELECT "tenantId", 'RF',  "number" FROM purchase_returns
   UNION ALL SELECT "tenantId", 'VER', "number" FROM payments
   UNION ALL SELECT "tenantId", 'INV', "number" FROM inventories
+  UNION ALL SELECT "tenantId", 'PAIE', "number" FROM payroll_runs WHERE "number" IS NOT NULL
 ),
 counts AS (
   SELECT "tenantId", doctype, SUBSTRING("number" FROM '^[A-Z]+-([0-9]{4})-')::int AS yr,
@@ -193,7 +202,8 @@ FROM information_schema.columns
 WHERE table_schema = 'public'
   AND table_name IN ('stock_movements', 'client_ledger_entries', 'payment_allocations',
                      'audit_logs', 'document_prints', 'attendance_events',
-                     'employee_salaries', 'employee_ledger_entries', 'leave_entries')
+                     'employee_salaries', 'employee_ledger_entries', 'leave_entries',
+                     'payroll_rate_sets', 'employee_pay_items')
   AND column_name IN ('updated_at', 'updatedat');
 
 -- name: money_columns_are_numeric

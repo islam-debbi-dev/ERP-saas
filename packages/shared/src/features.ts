@@ -31,6 +31,8 @@ export const Feature = {
   EXPENSES: 'EXPENSES',
   /** DRH: personnel, pointage, congés, avances (phase 31). */
   HR: 'HR',
+  /** DRH part 2: paie, bulletins, salary payments (phase 31b). Needs HR. */
+  PAYROLL: 'PAYROLL',
 } as const;
 export type Feature = (typeof Feature)[keyof typeof Feature];
 export const FEATURES = Object.values(Feature);
@@ -62,6 +64,7 @@ export const EDITION_FEATURES: Record<Edition, readonly Feature[]> = {
     Feature.MULTI_UNIT,
     Feature.EXPENSES,
     Feature.HR,
+    Feature.PAYROLL,
   ],
   [Edition.ENTREPRISE]: FEATURES,
 };
@@ -95,6 +98,8 @@ export function effectiveFeatures(
   const set = new Set<string>(EDITION_FEATURES[edition]);
   for (const g of grants) set.add(g);
   for (const r of revokes) set.delete(r);
+  // The paie reads the pointage: without the DRH there is nothing to pay from.
+  if (!set.has(Feature.HR)) set.delete(Feature.PAYROLL);
   return FEATURES.filter((f) => set.has(f));
 }
 

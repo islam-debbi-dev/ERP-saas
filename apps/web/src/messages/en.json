@@ -447,7 +447,16 @@
     "LEAVE_NOT_APPROVED": "This leave can no longer be cancelled.",
     "LEAVE_OVERLAP": "These dates overlap another leave.",
     "LEAVE_NO_WORKING_DAY": "These dates contain no working day.",
-    "PUBLIC_HOLIDAY_TAKEN": "This day is already a holiday."
+    "PUBLIC_HOLIDAY_TAKEN": "This day is already a holiday.",
+    "PAYROLL_UNMARKED_DAYS": "Some days of the month have no status: complete the attendance before approving.",
+    "PAYROLL_NO_SALARY": "An employee has no salary for this month.",
+    "PAYROLL_NEGATIVE_NET": "Deductions exceed an employee's net pay.",
+    "PAYROLL_STALE": "The figures changed since you read them: check the payroll, then approve again.",
+    "PAYROLL_RUN_EXISTS": "A payroll already covers this month.",
+    "PAYROLL_RUN_STATUS": "This action is not possible in the current payroll status.",
+    "PAYROLL_ALREADY_PAID": "Salaries were already paid: fix it with an adjustment next month.",
+    "PAYROLL_OVERPAYMENT": "The amount is more than what remains to pay.",
+    "PAYROLL_NO_RATE_SET": "No rate set covers this month."
   },
   "units": {
     "PIECE": "Piece",
@@ -1648,6 +1657,18 @@
     "SALARY_VIEW": {
       "label": "See salaries",
       "help": "See salaries, advances and employee accounts."
+    },
+    "PAYROLL_MANAGE": {
+      "label": "Manage payroll",
+      "help": "Payroll settings, bonuses and draft runs (also needs “See salaries”)."
+    },
+    "PAYROLL_APPROVE": {
+      "label": "Approve payroll",
+      "help": "Approve or cancel a payroll run, which is then frozen (also needs “See salaries”)."
+    },
+    "PAYROLL_PAY": {
+      "label": "Pay salaries",
+      "help": "Record salary payments on an approved run (also needs “See salaries”)."
     }
   },
   "sessions": {
@@ -1865,7 +1886,8 @@
     "lockedWhatsappMessage": "Hello, I would like to add the “{feature}” module for {company}.",
     "lockedBack": "Back to the dashboard",
     "featureEXPENSES": "Expenses and rent",
-    "featureHR": "HR"
+    "featureHR": "HR",
+    "featurePAYROLL": "Payroll and payslips"
   },
   "share": {
     "button": "Share link",
@@ -3303,6 +3325,10 @@
     "weekday_6": "Saturday",
     "mode_ESPECES": "Cash",
     "mode_CHEQUE": "Cheque",
-    "mode_VIREMENT": "Bank transfer"
+    "mode_VIREMENT": "Bank transfer",
+    "ledger_SALARY_DUE": "Salary due",
+    "ledger_SALARY_PAID": "Salary paid",
+    "ledger_ADVANCE_DEDUCTION": "Advance taken from salary",
+    "ledger_SALARY_REVERSAL": "Salary reversal"
   }
 }

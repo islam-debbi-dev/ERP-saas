@@ -221,7 +221,7 @@ export class LeaveService {
       const from = toDay(request.startDate);
       const to = toDay(request.endDate);
       const range = listDays(from, to);
-      await this.days.assertUnlocked(tx, tenantId, employee.warehouseId, range);
+      await this.days.assertUnlocked(tx, tenantId, employee.warehouseId, range, employee.id);
       // The calendar may have changed since the request (a fête entered in between).
       const days = await this.workingDays(tx, employee, from, to);
       await tx.leaveRequest.update({
@@ -313,7 +313,8 @@ export class LeaveService {
         });
       }
       const range = listDays(toDay(request.startDate), toDay(request.endDate));
-      if (approved) await this.days.assertUnlocked(tx, tenantId, employee.warehouseId, range);
+      if (approved)
+        await this.days.assertUnlocked(tx, tenantId, employee.warehouseId, range, employee.id);
       await tx.leaveRequest.update({
         where: { id },
         data: {

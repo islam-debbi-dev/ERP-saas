@@ -313,6 +313,7 @@ export class EmployeesService {
     const numbers = new Map(expenses.map((e) => [e.id, e.number]));
     return {
       balance: toMoneyString(balance?.advanceBalance.toString() ?? '0'),
+      salaryDue: toMoneyString(balance?.salaryDue.toString() ?? '0'),
       items: page.map((r) => ({
         id: r.id,
         type: r.type,

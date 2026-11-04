@@ -105,6 +105,14 @@ export const Permission = {
   ADVANCE_PAY: 'ADVANCE_PAY',
   /** See salaries, avances and the employee ledger. Without it they do not exist. */
   SALARY_VIEW: 'SALARY_VIEW',
+
+  // Paie (phase 31b, module PAYROLL). Each also needs SALARY_VIEW.
+  /** Payroll settings, primes, draft runs and their lines. */
+  PAYROLL_MANAGE: 'PAYROLL_MANAGE',
+  /** Approve a run (frozen) or cancel one. */
+  PAYROLL_APPROVE: 'PAYROLL_APPROVE',
+  /** Pay the salaries of an approved run. */
+  PAYROLL_PAY: 'PAYROLL_PAY',
 } as const;
 export type Permission = (typeof Permission)[keyof typeof Permission];
 export const PERMISSIONS = Object.values(Permission);
@@ -184,6 +192,9 @@ export const PERMISSION_GROUPS = {
     Permission.LEAVE_APPROVE,
     Permission.ADVANCE_PAY,
     Permission.SALARY_VIEW,
+    Permission.PAYROLL_MANAGE,
+    Permission.PAYROLL_APPROVE,
+    Permission.PAYROLL_PAY,
   ],
   settings: [Permission.SETTINGS_EDIT],
 } as const satisfies Record<string, readonly Permission[]>;
@@ -239,6 +250,9 @@ const OWNER_ONLY: readonly Permission[] = [
   // A dépôt manager marks attendance but does not see pay (phase 31).
   Permission.SALARY_VIEW,
   Permission.ADVANCE_PAY,
+  Permission.PAYROLL_MANAGE,
+  Permission.PAYROLL_APPROVE,
+  Permission.PAYROLL_PAY,
 ];
 
 /** What each role can do by default. The OWNER always has everything. */

@@ -179,7 +179,7 @@ export class AttendanceService {
       await this.days.assertUnlockedMany(
         tx,
         tenantId,
-        rows.map((r) => r.employee.warehouseId),
+        rows.map((r) => r.employee),
         date,
       );
       if (rows.length > 0) {
@@ -237,7 +237,7 @@ export class AttendanceService {
       if (!this.employed(employee, input.date)) {
         throw new AppException(ErrorCode.EMPLOYEE_NOT_EMPLOYED, 'Not employed on this day');
       }
-      await this.days.assertUnlocked(tx, tenantId, employee.warehouseId, [input.date]);
+      await this.days.assertUnlocked(tx, tenantId, employee.warehouseId, [input.date], employee.id);
       const before = await tx.attendanceDay.findFirst({
         where: { employeeId: employee.id, day: fromDay(input.date) },
         select: { status: true },
@@ -306,7 +306,7 @@ export class AttendanceService {
       if (!this.employed(employee, today)) {
         throw new AppException(ErrorCode.EMPLOYEE_NOT_EMPLOYED, 'Not employed on this day');
       }
-      await this.days.assertUnlocked(tx, tenantId, employee.warehouseId, [today]);
+      await this.days.assertUnlocked(tx, tenantId, employee.warehouseId, [today], employee.id);
       await this.assertSelfState(tx, tenantId, employee.id, today, kind);
 
       const event = await tx.attendanceEvent.create({

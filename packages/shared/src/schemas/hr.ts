@@ -173,7 +173,10 @@ export interface EmployeeLedgerEntryDto {
 }
 
 export interface EmployeeLedgerPage {
+  /** Avances outstanding. */
   balance: string;
+  /** Salary approved and not paid yet (phase 31b). */
+  salaryDue: string;
   items: EmployeeLedgerEntryDto[];
   nextCursor: string | null;
 }

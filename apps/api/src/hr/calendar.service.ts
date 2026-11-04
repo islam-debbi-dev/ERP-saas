@@ -126,7 +126,7 @@ export class CalendarService {
   async createHoliday(input: PublicHolidayInput): Promise<PublicHolidayDto> {
     return this.prisma.db.$transaction(async (tx) => {
       const tenantId = tenantContext.requireTenantId();
-      await this.days.assertUnlocked(tx, tenantId, null, [input.date]);
+      await this.days.assertNoLock(tx, tenantId, [input.date]);
       await this.assertFree(tx, input.date);
       const row = await tx.publicHoliday.create({
         data: { tenantId, date: fromDay(input.date), name: input.name, key: input.key },
@@ -149,7 +149,7 @@ export class CalendarService {
       const oldDate = toDay(before.date);
       const moved = oldDate !== input.date;
       if (moved) {
-        await this.days.assertUnlocked(tx, tenantId, null, [oldDate, input.date]);
+        await this.days.assertNoLock(tx, tenantId, [oldDate, input.date]);
         await this.assertFree(tx, input.date);
       }
       const row = await tx.publicHoliday.update({
@@ -175,7 +175,7 @@ export class CalendarService {
     await this.prisma.db.$transaction(async (tx) => {
       const before = await this.find(tx, id);
       const date = toDay(before.date);
-      await this.days.assertUnlocked(tx, tenantContext.requireTenantId(), null, [date]);
+      await this.days.assertNoLock(tx, tenantContext.requireTenantId(), [date]);
       await tx.publicHoliday.delete({ where: { id } });
       await this.dateChanged(tx, date, 'removed');
       await this.audit.log(tx, {

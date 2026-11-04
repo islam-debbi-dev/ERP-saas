@@ -179,6 +179,24 @@ export const ErrorCode = {
   /** The day already has a status: replacing it is a correction. */
   ATTENDANCE_ALREADY_MARKED: 'ATTENDANCE_ALREADY_MARKED',
   ATTENDANCE_FUTURE_DAY: 'ATTENDANCE_FUTURE_DAY',
+  /** Some days of the month have no status: the run cannot be approved. */
+  PAYROLL_UNMARKED_DAYS: 'PAYROLL_UNMARKED_DAYS',
+  /** An employee of the run has no salary on the month's last day. */
+  PAYROLL_NO_SALARY: 'PAYROLL_NO_SALARY',
+  /** What was left after the retenues is below zero. */
+  PAYROLL_NEGATIVE_NET: 'PAYROLL_NEGATIVE_NET',
+  /** The figures moved since the owner read them: he must look again before approving. */
+  PAYROLL_STALE: 'PAYROLL_STALE',
+  /** A live run already covers this month (or part of it). */
+  PAYROLL_RUN_EXISTS: 'PAYROLL_RUN_EXISTS',
+  /** The action needs a run in another status. */
+  PAYROLL_RUN_STATUS: 'PAYROLL_RUN_STATUS',
+  /** A run with salaries paid cannot be cancelled: use a régularisation. */
+  PAYROLL_ALREADY_PAID: 'PAYROLL_ALREADY_PAID',
+  /** More than what remains to pay this employee on this run. */
+  PAYROLL_OVERPAYMENT: 'PAYROLL_OVERPAYMENT',
+  /** No rate set covers this month. */
+  PAYROLL_NO_RATE_SET: 'PAYROLL_NO_RATE_SET',
   /** Self check-in is off for this company. */
   SELF_CHECK_IN_DISABLED: 'SELF_CHECK_IN_DISABLED',
   /** Check-out without a check-in, or a second check-in. */

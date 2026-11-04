@@ -177,17 +177,42 @@ export const RECONCILE_CHECKS: ReconcileCheck[] = [
       GROUP BY pe."tenantId", pe."clientId", pe."packagingTypeId"`,
   },
   {
-    // Phase 31: what each worker owes in avances equals his account.
+    // Phase 31: what each worker owes in avances equals his account. The salary types of
+    // phase 31b move the other balance (`employeeBalanceDelta`).
     name: 'employee_advance_equals_ledger',
     entity: 'Employee',
     sql: `
       SELECT eb."tenantId"::text AS "tenantId", eb."employeeId"::text AS "entityId",
-             eb."advanceBalance"::text AS cached, COALESCE(SUM(le.amount), 0)::text AS ledger
+             eb."advanceBalance"::text AS cached,
+             COALESCE(SUM(le.amount) FILTER (
+               WHERE le.type NOT IN ('SALARY_DUE', 'SALARY_PAID', 'SALARY_REVERSAL')), 0)::text AS ledger
       FROM employee_balances eb
       LEFT JOIN employee_ledger_entries le
         ON le."tenantId" = eb."tenantId" AND le."employeeId" = eb."employeeId"
       GROUP BY eb."tenantId", eb."employeeId", eb."advanceBalance"
-      HAVING eb."advanceBalance" <> COALESCE(SUM(le.amount), 0)`,
+      HAVING eb."advanceBalance" <> COALESCE(SUM(le.amount) FILTER (
+        WHERE le.type NOT IN ('SALARY_DUE', 'SALARY_PAID', 'SALARY_REVERSAL')), 0)`,
+  },
+  {
+    // Phase 31b: what the company owes each worker: salaries due, less payments and the
+    // avances taken back from them.
+    name: 'employee_salary_due_equals_ledger',
+    entity: 'Employee',
+    sql: `
+      SELECT eb."tenantId"::text AS "tenantId", eb."employeeId"::text AS "entityId",
+             eb."salaryDue"::text AS cached,
+             COALESCE(SUM(CASE
+               WHEN le.type IN ('SALARY_DUE', 'SALARY_PAID', 'SALARY_REVERSAL') THEN -le.amount
+               WHEN le.type = 'ADVANCE_DEDUCTION' THEN le.amount
+               ELSE 0 END), 0)::text AS ledger
+      FROM employee_balances eb
+      LEFT JOIN employee_ledger_entries le
+        ON le."tenantId" = eb."tenantId" AND le."employeeId" = eb."employeeId"
+      GROUP BY eb."tenantId", eb."employeeId", eb."salaryDue"
+      HAVING eb."salaryDue" <> COALESCE(SUM(CASE
+        WHEN le.type IN ('SALARY_DUE', 'SALARY_PAID', 'SALARY_REVERSAL') THEN -le.amount
+        WHEN le.type = 'ADVANCE_DEDUCTION' THEN le.amount
+        ELSE 0 END), 0)`,
   },
   {
     // Phase 31: the congé balance equals the sum of its ledger.
