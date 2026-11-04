@@ -79,6 +79,9 @@ export interface PayDaySummary {
   notEmployed: number;
   /** The same, on working days only. */
   notEmployedWorking: number;
+  /** Length of the month, in calendar days and in working days. */
+  monthDays: number;
+  monthWorkingDays: number;
   unmarked: number;
   lateMinutes: number;
   overtimeHours: string;
@@ -105,6 +108,8 @@ export function summarizeDays(days: readonly PayDay[]): PayDaySummary {
     offDaysWorked: money(offFull).add(money(offHalf).div(2)).toFixed(1),
     notEmployed: count(is(DayStatus.NOT_EMPLOYED)),
     notEmployedWorking: count((d) => d.status === DayStatus.NOT_EMPLOYED && d.workingDay),
+    monthDays: days.length,
+    monthWorkingDays: count((d) => d.workingDay),
     unmarked: count(is(DayStatus.UNMARKED)),
     lateMinutes: days.reduce((n, d) => n + (d.lateMinutes ?? 0), 0),
     overtimeHours: sum(days.map((d) => d.overtimeHours ?? '0')).toFixed(2),
@@ -212,9 +217,15 @@ export function hourlyRate(
     : money(salary).div(money(settings.hourDivisor));
 }
 
-/** Days outside the employment, in the unit of the divisor: calendar days for 30. */
-function notEmployedDays(days: PayDaySummary, dayDivisor: number): number {
-  return dayDivisor === DEFAULT_PAYROLL_DAY_DIVISOR ? days.notEmployed : days.notEmployedWorking;
+/**
+ * Days outside the employment, against the month's own length: never the divisor, or
+ * someone hired on the 31st of a 31-day month would lose 30 / 30 and get nothing for the
+ * day he worked. Calendar days with divisor 30, working days with 26 or 22.
+ */
+function notEmployedShare(days: PayDaySummary, dayDivisor: number): { count: number; of: number } {
+  return dayDivisor === DEFAULT_PAYROLL_DAY_DIVISOR
+    ? { count: days.notEmployed, of: days.monthDays }
+    : { count: days.notEmployedWorking, of: days.monthWorkingDays };
 }
 
 /** Step 2, monthly worker: the base, then each deduction, never more than the base. */
@@ -241,11 +252,14 @@ export function monthlyBaseLines(input: PayslipInput): PayLine[] {
       base: toMoneyString(unit),
     });
 
-  perDay(
-    PayLineCode.NOT_EMPLOYED,
-    'Jours hors contrat',
-    notEmployedDays(days, settings.dayDivisor),
-  );
+  const outside = notEmployedShare(days, settings.dayDivisor);
+  if (outside.count > 0 && outside.of > 0) {
+    const share = money(salary).div(outside.of);
+    deduct(PayLineCode.NOT_EMPLOYED, 'Jours hors contrat', share.times(outside.count), {
+      quantity: money(outside.count).toFixed(1),
+      base: toMoneyString(share),
+    });
+  }
   perDay(PayLineCode.ABSENCE_UNJUSTIFIED, 'Absences non justifiées', days.absentUnjustified);
   perDay(PayLineCode.ABSENCE_JUSTIFIED, 'Absences justifiées non payées', days.absentJustified);
   perDay(PayLineCode.HALF_DAY, 'Demi-journées', money(days.halfDays).div(2));

@@ -472,6 +472,30 @@ describe('payroll (phase 31b)', () => {
       expect(slipOf(dropped, e.id).retenues).toBe('0.00');
     });
 
+    it('pays the days worked by someone hired during the month', async () => {
+      const w = await depot();
+      const hired = WORKING_DAYS.at(-1)!;
+      const e = await employee(w.id, null, { hireDate: hired });
+      await as(d)
+        .post(`/employees/${e.id}/salaries`, {
+          amount: '62000',
+          payType: 'MONTHLY',
+          effectiveFrom: hired,
+        })
+        .expect(201);
+      await as(d)
+        .post('/attendance/events', {
+          date: hired,
+          marks: [{ employeeId: e.id, kind: 'PRESENT' }],
+        })
+        .expect(201);
+      const slip = slipOf(await draft(w.id), e.id);
+      const left = listDays(hired, TO).length;
+      const days = listDays(FROM, TO).length;
+      expect(slip.gross).toBe(money('62000').times(left).div(days).toFixed(2));
+      expect(slip.issues).toEqual([]);
+    });
+
     it('refuses a line for someone not on the run', async () => {
       const { w } = await ready();
       const stranger = await employee((await depot()).id);

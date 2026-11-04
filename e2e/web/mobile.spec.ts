@@ -117,6 +117,9 @@ interface Ids {
   warehouseId: string;
   /** An employee for his file (phase 31). */
   employeeId: string;
+  /** A draft paie with an unmarked worker, and an approved one to pay (phase 31b). */
+  payrollDraftId: string;
+  payrollApprovedId: string;
   /** A seller whose Dépôts dialog is opened (phase 24). */
   sellerName: string;
   productReference: string;
@@ -478,9 +481,70 @@ async function prepareIds(f: Fixture): Promise<Ids> {
       warehouseId: depot.id,
     },
   });
+  // Phase 31b: each run in a dépôt of its own, the two phone projects share this tenant.
+  // Hired on the month's last day: the approved run needs only that day marked.
+  const lastMonthEnd = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 0))
+    .toISOString()
+    .slice(0, 10);
+  const payrollMonth = lastMonthEnd.slice(0, 7);
+  const payrollRun = async (name: string, hireDate: string) => {
+    const unit = (
+      await call<{ id: string }>('/warehouses', {
+        method: 'POST',
+        token,
+        body: { name: uniq(`Dépôt ${name} `), type: 'SECONDARY' },
+      })
+    ).body;
+    const worker = (
+      await call<{ id: string }>('/employees', {
+        method: 'POST',
+        token,
+        body: {
+          // Last in the day's list: the pointage step works on the first rows.
+          fullName: 'Zineddine Benmohamed El Ouahrani Ben Youcef',
+          position: 'Manutentionnaire polyvalent',
+          hireDate,
+          contract: 'CDI',
+          declared: true,
+          warehouseId: unit.id,
+          salary: { amount: '45000', payType: 'MONTHLY', effectiveFrom: hireDate, reason: null },
+        },
+      })
+    ).body;
+    return { unit, worker };
+  };
+  const unmarked = await payrollRun('paie brouillon', '2024-01-01');
+  const payrollDraft = (
+    await call<{ id: string }>('/payroll-runs', {
+      method: 'POST',
+      token,
+      body: { month: payrollMonth, warehouseId: unmarked.unit.id },
+    })
+  ).body;
+  const marked = await payrollRun('paie approuvée', lastMonthEnd);
+  await call('/attendance/events', {
+    method: 'POST',
+    token,
+    idempotencyKey: idemKey('paie'),
+    body: { date: lastMonthEnd, marks: [{ employeeId: marked.worker.id, kind: 'PRESENT' }] },
+  });
+  const toApprove = (
+    await call<{ id: string; version: number }>('/payroll-runs', {
+      method: 'POST',
+      token,
+      body: { month: payrollMonth, warehouseId: marked.unit.id },
+    })
+  ).body;
+  await call(`/payroll-runs/${toApprove.id}/approve`, {
+    method: 'POST',
+    token,
+    body: { version: toApprove.version },
+  });
   const product = (await call<{ reference: string }>(`/products/${f.productId}`, { token })).body;
   return {
     employeeId,
+    payrollDraftId: payrollDraft.id,
+    payrollApprovedId: toApprove.id,
     importFileId: importFile.id,
     productReference: product.reference,
     clientId: client.id,
@@ -511,6 +575,7 @@ function resolve(pattern: string, v: Ids): string {
       .replace('/produits/[id]', `/produits/${v.productId}`)
       .replace('/stock/depots/[id]', `/stock/depots/${v.warehouseId}`)
       .replace('/rh/employes/[id]', `/rh/employes/${v.employeeId}`)
+      .replace('/rh/paie/[id]', `/rh/paie/${v.payrollDraftId}`)
       .replace('/stock/inventaires/[id]', `/stock/inventaires/${v.inventoryId}`)
       .replace('/stock/transferts/[id]', `/stock/transferts/${v.transferId}`)
       .replace('/stock/[productId]', `/stock/${v.productId}`)
@@ -702,6 +767,44 @@ for (const locale of LOCALES) {
         const seconds = (Date.now() - started) / 1000;
         expect.soft(seconds, 'pointage of the whole team').toBeLessThan(30);
         await check(page, '/rh/marque', locale, results);
+      });
+
+      await test.step('paie: approve, payslip and payment on screen', async () => {
+        const pay = m['payroll'] ?? {};
+        const go = async (to: string) => {
+          await page.evaluate((target) => {
+            (
+              window as unknown as { next: { router: { push(href: string): void } } }
+            ).next.router.push(target);
+          }, to);
+          await page.waitForURL((url) => url.pathname === to);
+          await settle(page);
+        };
+        await go(`/rh/paie/${v.payrollDraftId}`);
+        const approve = page.getByRole('button', { name: pay['approve'] });
+        await approve.waitFor();
+        await expect(approve).toBeInViewport();
+        await expect(approve).toBeDisabled();
+        await check(page, '/rh/paie/brouillon', locale, results);
+
+        await go(`/rh/paie/${v.payrollApprovedId}`);
+        await page.getByRole('button', { name: /Zineddine/ }).click();
+        await page.locator('[role="dialog"]').waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        await expect(page.getByRole('button', { name: pay['printBulletin'] })).toBeInViewport();
+        await check(page, '/rh/paie/bulletin', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+        await page.locator('[role="dialog"]').waitFor({ state: 'hidden' });
+
+        const payButton = page.getByRole('button', { name: pay['pay'], exact: true });
+        await expect(payButton).toBeInViewport();
+        await payButton.click();
+        await page.locator('[role="dialog"]').waitFor();
+        await page.waitForTimeout(400);
+        await expectOnScreen(page, '[role="dialog"] button:last-of-type');
+        await check(page, '/rh/paie/payer', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+        await page.locator('[role="dialog"]').waitFor({ state: 'hidden' });
       });
 
       await test.step("a user's Dépôts opens as a sheet with its save button on screen", async () => {
@@ -1146,6 +1249,14 @@ for (const locale of LOCALES) {
         });
       }
       await test.step('record payment opens as a sheet with its button on screen', async () => {
+        const tenantPage = resolve('/admin/societes/[id]', v);
+        await page.evaluate((to) => {
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
+        }, tenantPage);
+        await page.waitForURL((url) => url.pathname === tenantPage);
+        await settle(page);
         await page.getByRole('button', { name: m['admin']?.['recordPayment'] }).first().click();
         await page.locator('#pay-amount').waitFor();
         await page.waitForTimeout(400); // the sheet slides in

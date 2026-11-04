@@ -134,6 +134,8 @@ describe('summarizeDays', () => {
       holidays: 1,
       notEmployed: 2,
       notEmployedWorking: 1,
+      monthDays: 9,
+      monthWorkingDays: 4,
       unmarked: 1,
       lateMinutes: 10,
       overtimeHours: '1.50',
@@ -172,11 +174,35 @@ describe('monthly worker', () => {
     expect(amountOf(r, PayLineCode.ABSENCE_JUSTIFIED)).toBe('-2000.00');
   });
 
-  it('takes out the days outside the contract, in the unit of the divisor', () => {
-    const days = { ...noDays, notEmployed: 15, notEmployedWorking: 11 };
+  it('takes out the days outside the contract, against the length of the month', () => {
+    const days = {
+      ...noDays,
+      notEmployed: 15,
+      notEmployedWorking: 11,
+      monthDays: 30,
+      monthWorkingDays: 22,
+    };
     expect(amountOf(computePayslip(slip({ days })), PayLineCode.NOT_EMPLOYED)).toBe('-30000.00');
     const r = computePayslip(slip({ days, settings: { ...settings, dayDivisor: 22 } }));
     expect(amountOf(r, PayLineCode.NOT_EMPLOYED)).toBe('-30000.00');
+  });
+
+  it.each([30, 26, 22])('pays the day worked by someone hired on the last day (÷%i)', (d) => {
+    const days = {
+      ...noDays,
+      notEmployed: 30,
+      notEmployedWorking: 26,
+      monthDays: 31,
+      monthWorkingDays: 27,
+    };
+    const r = computePayslip(slip({ days, settings: { ...settings, dayDivisor: d } }));
+    expect(money(r.gross).gt(0)).toBe(true);
+  });
+
+  it('keeps the month whole for someone employed all month', () => {
+    const r = computePayslip(slip({ days: { ...noDays, monthDays: 31, monthWorkingDays: 27 } }));
+    expect(amountOf(r, PayLineCode.NOT_EMPLOYED)).toBeUndefined();
+    expect(r.gross).toBe('60000.00');
   });
 
   it('never deducts more than the base', () => {

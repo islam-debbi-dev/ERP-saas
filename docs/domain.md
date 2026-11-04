@@ -128,7 +128,7 @@
 ### Objectifs & primes
 - Companies set monthly targets per seller or team (CA HT, quantity by brand/product, encaissements, margin, new clients, visits) and bonus rules from five types: fixed on target, tiers (highest reached or progressive), commission %, amount per unit, manager override on the team; with gates (e.g. recouvrement ≥ 70 %) and a cap.
 - An avoir counts in the month it is validated, so a return after an approved month lowers the next month.
-- Month end: preview → owner approves → frozen → Excel export for payroll. The software computes bonuses; it does not do payroll.
+- Month end: preview → owner approves → frozen → Excel export. With the PAYROLL module (phase 31b) an approved run is also pulled into the paie as a prime.
 - Rules (phase 18, module INCENTIVES), so an approved month is never rewritten:
   - A sale counts in the month it is validated; if it is cancelled later, what was left of it (not returned yet) is taken back in the month of the cancellation. An avoir counts in the month it is made, for the seller of the sale (of the BL when the avoir is on a facture made from BLs). A facture made from BLs never counts: its BLs did.
   - A versement counts when received; a cancel or a bounce takes it back in its own month. Legacy documents (no seller / collector) count for their creator / receiver.
@@ -184,7 +184,30 @@
 - **Who sees whom**: the employees of the dépôts where the user has OPERATE; statistics access gives counts only; outside his reach an employee is not there (404).
 - **Self check-in** (`GEO_CHECK` and the tenant setting): the phase 17 rules against the dépôt's point, one position per tap, never tracking (law 18-07). Flag, not block: a far or mocked check-in needs a note and is reviewed in Opérations signalées. A tap never overrules a manager's absence or an approved leave.
 - **Excel import** creates employees only, with salary and opening congé and avance balances: a name already on file is refused, so a second run doubles nothing. It needs `HR_MANAGE` and `SALARY_VIEW`.
-- Not in this phase: payslips, CNAS / IRG, salary payment (31b), biometric devices, shifts, recruitment, staff documents.
+- Not in this phase: biometric devices, shifts, recruitment, staff documents. Payslips, CNAS / IRG and salary payment are phase 31b.
+
+## DRH: paie (phase 31b, module PAYROLL)
+- Editions DISTRIBUTION and ENTREPRISE, grantable per tenant, and off without HR. Everything here needs `SALARY_VIEW`; approving (`PAYROLL_APPROVE`), managing (`PAYROLL_MANAGE`) and paying (`PAYROLL_PAY`) are the owner's by default.
+- **An Algerian comptable must check the rates, the barème and the rounding before the first real payslip.** Rates are dated rows, never constants.
+- **`PayrollRateSet`**: country-wide, owned by the super-admin, append-only (a correction is a new row; latest date, then latest row, valid on the month's last day). `toVerify` shows a banner and a line on the PDF; it never blocks. Seeded in the migration, because production does not run the seed.
+- **Computation** (`packages/shared/src/payroll.ts`, pure, one function per step). Each line is rounded half-up to 2 decimals and totals are the sum of the rounded lines, so a bulletin adds up to the centime. The IRG is rounded down to the dinar.
+  - **Monthly**: base − base / day divisor × (unjustified, justified, unpaid leave, sick days; a half day 0.5). Deductions never exceed the base. A rest day or holiday worked adds base / day divisor, without premium. All justified absences are deducted (nothing marks one as paid): a one-off line gives the money back.
+  - **Hired or left during the month**: days outside the contract are taken **against the month's own length, never the divisor** (calendar days with divisor 30, working days with 26 / 22), so the days worked always keep their pay. Hired on 31 October, a 45 000 DA salary pays 45 000 / 31.
+  - **Daily**: rate × days present + paid leave + paid holidays. Overtime and lateness use rate / `hrDailyHours`; a monthly worker, base / hourly divisor.
+  - A salary changed during the month applies to the whole month (the one on the last day).
+  - **Brut cotisable** = base after absences + overtime + cotisable primes. **CNAS** on it, only when `declared`. **Imposable** = brut − CNAS − non-imposable items. **IRG**: barème on 1/12 of each annual bracket, abattement 40 % between 1 000 and 1 500, 0 up to 30 000, and between 30 000 and 35 000 the lissage on the IRG after abattement. **Net** = brut − CNAS − IRG. **Net à payer** = net − retenues − avances (retenues first; the avance takes what is left and the rest carries over).
+  - Undeclared: no CNAS, no IRG, net = brut; his document is a *reçu de paie*, never a bulletin.
+- **`PayrollRun`** per month and dépôt, or for the company (`warehouseId` null). One live run per month and dépôt; a company run and a dépôt run of the same month are refused; someone on an approved payslip of the month is left out of other runs. Without `MULTI_UNIT` a run is the company's. A company run needs a user who reaches every dépôt.
+- **DRAFT** is computed again at will; manual lines (one-off prime, signed régularisation, retenue) survive it. **Approve** recomputes in the transaction under employee locks and refuses `PAYROLL_STALE` if anything moved since the owner read it; unmarked days (future days included), a missing salary or a net below zero block it. Then, in one transaction: number `PAIE-YYYY-000001` (given here, so abandoned drafts leave no gap), month lock, ledgers, audit. Triggers refuse any change to an approved run and its payslips (`PERIOD_APPROVED`).
+- **Month lock**: the dépôt's row, plus one row per employee of a dépôt run, because a worker who moved keeps days in his old dépôt and a worker without dépôt has none. The calendar is the company's: any lock of a month stops a fête change there.
+- **Employee ledger, two balances**: `advanceBalance` and `salaryDue`, so an unpaid salary never hides a running avance. `SALARY_DUE` (net − retenues), `SALARY_PAID`, `SALARY_REVERSAL` move the salary owed; `ADVANCE_DEDUCTION` moves both (`employeeBalanceDelta`); the rest moves the avances. `balanceAfter` is the balance the type moves.
+- **Payments** (`POST /payroll-runs/:id/payments`, idempotent): whole run, chosen employees, or part of what remains. Per employee, one dépense (Salaires, linked to the run and the employee) and one `SALARY_PAID`. Paid / remaining is always derived from the VALID dépenses: cancelling the dépense in *Dépenses* makes the salary due again.
+- **Cancel**: a draft is dropped; an approved run only while nothing is paid: ledgers reversed, month reopened, number kept on the cancelled run. After a payment a mistake is a **régularisation** in a later month.
+- **Charges**: the approved run costs brut + employer CNAS in its month, spread by day like rent, in the Salaires × dépôt cell of the payslip. Salary payments and avances are cash only. A Salaires dépense entered by hand, with no employee, still counts: the run screen warns about it. Managers without `SALARY_VIEW` see the Salaires total in charges, or the résultat net would not add up.
+- **Incentives**: approved and exported runs ending this month or the one before come in as one cotisable, imposable line per run and seller, read only, linked to his employee by `userId`. A run is paid once (each line keeps its source), so one approved late goes to the next payroll. Older periods went through the Excel export. A seller with no employee file is named on the run.
+- **Documents**: bulletin A4, reçu A5, bulk PDF, approved runs only. Excel with fixed French titles, never renamed or reordered: livre de paie, état CNAS, récapitulatif IRG, DAS annuelle. Declared workers only in the last three.
+- **Mes bulletins**: a user with an employee file sees his own approved payslips, without `SALARY_VIEW`.
+- Not in this phase: CNAS electronic filing (Excel only until the format is checked with the comptable), bank transfer files, special IRG cases, 13th month, leave pay indemnity, sick pay advance, solde de tout compte.
 
 ## Vue d'ensemble (phase 26, module MULTI_UNIT)
 - `GET /reports/overview?from=&to=` (managers: `REPORTS_FINANCE`): one card per dépôt (MAIN / SECONDARY) whose figures the user sees (OPERATE or VIEW_STATS), then the total. A dépôt outside his reach never appears, not even its name. An archived dépôt shows only while it has figures in the period.
@@ -218,9 +241,13 @@
 | `geoRadiusM` | 20 to 5000 m, default 150 | distance still counted "at the client" (GEO_CHECK) |
 | `geoMaxAccuracyM` | 10 to 5000 m, default 200 | positions less precise are `LOW_ACCURACY` (GEO_CHECK) |
 | `hrRestDays` | one or two weekdays (0 = Sunday), default Friday | calendar, day status, leave days (HR) |
-| `hrDailyHours` | 1 to 24, default 8 | calendar (HR, used by 31b) |
+| `hrDailyHours` | 1 to 24, default 8 | calendar, hourly rate of a daily worker (HR, PAYROLL) |
 | `hrLeaveAccrualDays` | default 2.5 | congés earned per month (HR) |
 | `hrSelfCheckIn` | true / false, default false | check-in from the phone (HR + GEO_CHECK) |
+| `payrollDayDivisor` | 30, 26 or 22, default 30 | value of an absent day (PAYROLL) |
+| `payrollHourDivisor` | default 173.33 | hourly rate of a monthly worker (PAYROLL) |
+| `payrollOvertimeRate` | default 0.50 (+50 %) | overtime (PAYROLL) |
+| `payrollDeductLateness` | true / false, default false | lateness taken from pay (PAYROLL) |
 | Timbre fiscal rule | configurable rate, min, max, threshold; off by default | factures paid in cash |
 
 ## Glossary (French term → meaning in code)
