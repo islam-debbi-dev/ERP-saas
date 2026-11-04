@@ -60,18 +60,20 @@ export class ExpenseCategoriesService {
   }
 
   /** The Loyer category, created again if a very old company lost it. */
-  async rentId(db: Db): Promise<string> {
-    const found = await db.expenseCategory.findFirst({
-      where: { key: ExpenseCategoryKey.RENT },
-      select: { id: true },
-    });
+  rentId(db: Db): Promise<string> {
+    return this.seededId(db, ExpenseCategoryKey.RENT, 'Loyer');
+  }
+
+  /** The Salaires category avances go to (phase 31), even if the owner archived it. */
+  salariesId(db: Db): Promise<string> {
+    return this.seededId(db, ExpenseCategoryKey.SALARIES, 'Salaires');
+  }
+
+  private async seededId(db: Db, key: ExpenseCategoryKey, name: string): Promise<string> {
+    const found = await db.expenseCategory.findFirst({ where: { key }, select: { id: true } });
     if (found) return found.id;
     const created = await db.expenseCategory.create({
-      data: {
-        tenantId: tenantContext.requireTenantId(),
-        name: 'Loyer',
-        key: ExpenseCategoryKey.RENT,
-      },
+      data: { tenantId: tenantContext.requireTenantId(), name, key },
       select: { id: true },
     });
     return created.id;

@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { CatalogModule } from '../catalog/catalog.module';
+import { BillingModule } from '../billing/billing.module';
 import { ClientsModule } from '../clients/clients.module';
+import { HrCoreModule } from '../hr/hr-core.module';
+import { HrModule } from '../hr/hr.module';
 import { PackagingModule } from '../packaging/packaging.module';
 import { PurchasesModule } from '../purchases/purchases.module';
 import { StockModule } from '../stock/stock.module';
@@ -13,7 +16,16 @@ import { ImportsService } from './imports.service';
  * and suppliers services.
  */
 @Module({
-  imports: [CatalogModule, StockModule, ClientsModule, PurchasesModule, PackagingModule],
+  imports: [
+    BillingModule,
+    CatalogModule,
+    StockModule,
+    ClientsModule,
+    HrCoreModule,
+    HrModule,
+    PurchasesModule,
+    PackagingModule,
+  ],
   controllers: [ImportsController],
   providers: [ImportsService, ImportFilesJanitor],
 })

@@ -119,6 +119,25 @@ export class RowReader {
     return parsed.toString();
   }
 
+  /**
+   * A calendar day as `YYYY-MM-DD`, from `JJ/MM/AAAA`, `AAAA-MM-JJ` or a real Excel date.
+   * `''` when the cell is empty, null (and an error) when it is not a date.
+   */
+  date(key: string): string | null {
+    const v = this.text(key);
+    if (v === '') return '';
+    const fr = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/.exec(v);
+    const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(v);
+    const [y, m, d] = fr ? [fr[3], fr[2], fr[1]] : iso ? [iso[1], iso[2], iso[3]] : [];
+    if (y && m && d) {
+      const day = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      const parsed = new Date(`${day}T00:00:00.000Z`);
+      if (!Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === day) return day;
+    }
+    this.error(key, 'invalid_date', { value: v });
+    return null;
+  }
+
   toDto(action: ImportRowAction | null): ImportRowDto {
     return {
       rowNumber: this.rowNumber,

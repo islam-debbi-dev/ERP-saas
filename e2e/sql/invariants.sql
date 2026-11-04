@@ -170,7 +170,9 @@ SELECT ds."tenantId", ds."docType"::text, ds.year, ds."lastNumber", counts.n AS 
 FROM document_sequences ds
 LEFT JOIN counts
   ON counts."tenantId" = ds."tenantId" AND counts.doctype = ds."docType"::text AND counts.yr = ds.year
-WHERE ds."lastNumber" <> COALESCE(counts.n, 0);
+WHERE ds."lastNumber" <> COALESCE(counts.n, 0)
+  -- Matricules never restart (year 0) and are not documents.
+  AND ds."docType"::text <> 'EMP';
 
 -- name: ledger_tables_have_no_updated_at
 -- Append-only tables must not even have an updatedAt column: an UPDATE would
