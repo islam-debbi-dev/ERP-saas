@@ -308,7 +308,7 @@ describe("vue d'ensemble (phase 26)", () => {
       })
       .expect(200);
     managerNoCost = await relogin(managerNoCost);
-  });
+  }, 60_000); // three companies, dépôts and a month of sales: well over the 5 s default on CI
 
   afterAll(async () => {
     await t.close();
