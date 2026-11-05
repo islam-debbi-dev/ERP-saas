@@ -3584,11 +3584,11 @@
     "truncated": "La réponse a été coupée. Demandez la suite.",
     "useful": "Réponse utile",
     "notUseful": "Réponse pas utile",
-    "notice": "Les réponses sont générées par une IA ({provider}). Vérifiez les chiffres importants.",
+    "notice": "Les réponses sont générées par une IA : {provider}. Vérifiez les chiffres importants.",
     "quotaReset": "Elles reviennent le {date}.",
     "provider": {
-      "ANTHROPIC": "Anthropic (Claude)",
-      "GEMINI": "Google (Gemini)",
+      "ANTHROPIC": "Anthropic Claude",
+      "GEMINI": "Google Gemini",
       "OPENAI_COMPATIBLE": "Compatible OpenAI"
     },
     "tool": {

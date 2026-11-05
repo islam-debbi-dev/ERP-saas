@@ -1264,6 +1264,9 @@ for (const locale of LOCALES) {
       await dialog.getByRole('button', { name: t['useful'] }).waitFor();
       await check(page, '/assistant/reponse', locale, results, { fullPage: false });
 
+      // An amount inside Arabic stays in reading order (docs/ui.md rule 6).
+      await expect(dialog.locator('bdi[dir="ltr"]').first()).toHaveText('1 234 567,89 DA');
+
       // What came from the model never reaches outside the app.
       expect(await dialog.locator('img').count()).toBe(0);
       expect(await dialog.locator('a[href^="http"]').count()).toBe(0);
@@ -1273,6 +1276,13 @@ for (const locale of LOCALES) {
       const size = page.viewportSize();
       if (!size) throw new Error('no viewport');
       await page.setViewportSize({ width: size.width, height: 340 });
+      // The panel follows the visualViewport resize event, a frame later.
+      await expect
+        .poll(async () => {
+          const box = await page.locator('[role="dialog"] textarea').boundingBox();
+          return box ? box.y + box.height : Infinity;
+        })
+        .toBeLessThanOrEqual(340);
       await expectOnScreen(page, '[role="dialog"] textarea');
       await check(page, '/assistant/clavier', locale, results, { fullPage: false });
       await page.setViewportSize(size);

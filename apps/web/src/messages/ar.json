@@ -3584,11 +3584,11 @@
     "truncated": "الجواب تقطع. اطلب الباقي.",
     "useful": "جواب مفيد",
     "notUseful": "جواب غير مفيد",
-    "notice": "الأجوبة من إنتاج الذكاء الاصطناعي ({provider}). راجع الأرقام المهمة.",
+    "notice": "الأجوبة من إنتاج الذكاء الاصطناعي: {provider}. راجع الأرقام المهمة.",
     "quotaReset": "ترجع يوم {date}.",
     "provider": {
-      "ANTHROPIC": "Anthropic (Claude)",
-      "GEMINI": "Google (Gemini)",
+      "ANTHROPIC": "Anthropic Claude",
+      "GEMINI": "Google Gemini",
       "OPENAI_COMPATIBLE": "متوافق مع OpenAI"
     },
     "tool": {
