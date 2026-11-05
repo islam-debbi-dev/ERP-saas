@@ -1206,6 +1206,82 @@ for (const locale of LOCALES) {
     }
   });
 
+  // The API is mocked: no provider is configured here, and a real one would cost money.
+  test(`the assistant sheet fits the phone (${locale})`, async ({ browser }, info) => {
+    const results: Result[] = [];
+    const t = messages(locale)['assistant'] as Record<string, string>;
+    const context = await browser.newContext({
+      ...info.project.use,
+      storageState: { cookies: [], origins: [] },
+    });
+    try {
+      await context.addCookies([{ name: 'NEXT_LOCALE', value: locale, url: WEB }]);
+      const page = await context.newPage();
+      await page.route('**/assistant/status', (route) =>
+        route.fulfill({ json: { available: true, provider: 'ANTHROPIC' } }),
+      );
+      await page.route('**/assistant/conversations**', (route) =>
+        route.fulfill({ json: { items: [], nextCursor: null } }),
+      );
+      const conversationId = '00000000-0000-4000-8000-0000000000a1';
+      const answer =
+        'قداش عند **كريم**: 1 234 567,89 DA.\n\n1. افتح [الزبائن](/clients)\n2. ' +
+        '![leak](https://evil.example/a.png) [site](https://evil.example/x)';
+      const events = [
+        { type: 'conversation', conversationId },
+        { type: 'tool', name: 'client_balance' },
+        { type: 'text', delta: answer },
+        {
+          type: 'links',
+          links: [{ label: 'مؤسسة كريم للمواد الغذائية بالجملة والتجزئة', href: '/clients' }],
+        },
+        {
+          type: 'done',
+          messageId: '00000000-0000-4000-8000-0000000000a2',
+          conversationId,
+          truncated: false,
+        },
+      ];
+      await page.route('**/assistant/chat', (route) =>
+        route.fulfill({
+          status: 200,
+          contentType: 'text/event-stream',
+          body: events.map((e) => `data: ${JSON.stringify(e)}\n\n`).join(''),
+        }),
+      );
+      await signIn(page, fixture().session.email);
+
+      await page.getByRole('button', { name: t['open'] }).click();
+      const dialog = page.locator('[role="dialog"]');
+      await dialog.waitFor();
+      const input = dialog.getByRole('textbox');
+      await input.waitFor();
+      await check(page, '/assistant/vide', locale, results, { fullPage: false });
+      await expectOnScreen(page, '[role="dialog"] textarea');
+
+      await input.fill('قداش عند كريم كريدي؟');
+      await dialog.getByRole('button', { name: t['send'] }).click();
+      await dialog.getByRole('button', { name: t['useful'] }).waitFor();
+      await check(page, '/assistant/reponse', locale, results, { fullPage: false });
+
+      // What came from the model never reaches outside the app.
+      expect(await dialog.locator('img').count()).toBe(0);
+      expect(await dialog.locator('a[href^="http"]').count()).toBe(0);
+      expect(await dialog.locator('a[href="/clients"]').count()).toBeGreaterThan(0);
+
+      // The keyboard takes half the screen: the input stays above it.
+      const size = page.viewportSize();
+      if (!size) throw new Error('no viewport');
+      await page.setViewportSize({ width: size.width, height: 340 });
+      await expectOnScreen(page, '[role="dialog"] textarea');
+      await check(page, '/assistant/clavier', locale, results, { fullPage: false });
+      await page.setViewportSize(size);
+    } finally {
+      saveResults(info.project.name, `assistant-${locale}`, results);
+      await context.close();
+    }
+  });
+
   test(`every public screen fits the phone (${locale})`, async ({ browser }, info) => {
     const v = ids;
     if (!v) throw new Error('ids not prepared');
