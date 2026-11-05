@@ -183,6 +183,19 @@ export function useUpdateSubscription(id: string) {
   });
 }
 
+/** May this company use its own AI key (phase 30)? */
+export function useAllowTenantAiKey(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (allowed: boolean) =>
+      adminApi.request<void>(`/admin/tenants/${id}/ai-key`, {
+        method: 'PATCH',
+        body: { allowed },
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: adminKeys.tenant(id) }),
+  });
+}
+
 export function useImpersonate(id: string) {
   return useMutation({
     mutationFn: () =>

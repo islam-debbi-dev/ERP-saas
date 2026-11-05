@@ -102,6 +102,75 @@ export class ApiClient {
     return this.request<Blob>(path, { ...options, as: 'blob' });
   }
 
+  /**
+   * POST that answers with Server-Sent Events: `onData` gets each `data:` payload as it
+   * arrives. Same token and refresh handling as `request`, up to the first byte; after
+   * that the response is a stream and failures come as events.
+   */
+  async stream(
+    path: string,
+    options: { body: unknown; signal?: AbortSignal },
+    onData: (data: string) => void,
+  ): Promise<void> {
+    if (!this.accessToken) await this.refresh();
+    const tokenUsed = this.accessToken;
+    let res = await this.openStream(path, options);
+    if (res.status === 401 && !this.fixedToken) {
+      const failure = await this.errorOf(res);
+      if (!REFRESHABLE.has(failure.code)) throw failure;
+      if (this.accessToken === tokenUsed) await this.refresh();
+      res = await this.openStream(path, options);
+    }
+    if (!res.ok) throw await this.errorOf(res);
+    if (!res.body) throw new ApiError(0, 'NETWORK', 'Empty stream');
+
+    const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+    let buffer = '';
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) return;
+      buffer += value;
+      const blocks = buffer.split('\n\n');
+      buffer = blocks.pop() ?? '';
+      for (const block of blocks) {
+        if (block.startsWith('data: ')) onData(block.slice(6));
+      }
+    }
+  }
+
+  private async openStream(
+    path: string,
+    options: { body: unknown; signal?: AbortSignal },
+  ): Promise<Response> {
+    try {
+      return await this.fetchFn(`${this.options.baseUrl}${path}`, {
+        method: 'POST',
+        headers: {
+          Accept: 'text/event-stream',
+          'Content-Type': 'application/json',
+          ...(this.accessToken ? { Authorization: `Bearer ${this.accessToken}` } : {}),
+        },
+        body: JSON.stringify(options.body),
+        credentials: 'include',
+        signal: options.signal,
+      });
+    } catch (err) {
+      if (options.signal?.aborted) throw err;
+      throw new ApiError(0, 'NETWORK', 'Network error');
+    }
+  }
+
+  private async errorOf(res: Response): Promise<ApiError> {
+    const data: unknown = await res.json().catch(() => null);
+    const body = (data ?? {}) as Partial<ApiErrorBody>;
+    return new ApiError(
+      res.status,
+      body.code ?? 'INTERNAL_ERROR',
+      body.message ?? res.statusText,
+      body.details,
+    );
+  }
+
   /** Single in-flight refresh shared by every caller. */
   refresh(): Promise<AuthResponse> {
     if (this.fixedToken) {

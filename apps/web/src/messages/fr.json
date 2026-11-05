@@ -291,7 +291,9 @@
     "geoRadiusM": "Rayon accepté (m)",
     "geoRadiusMHint": "Distance du point du client encore comptée « chez le client ». Par défaut 150 m.",
     "geoMaxAccuracyM": "Précision minimale (m)",
-    "geoMaxAccuracyMHint": "Une position moins précise est signalée « GPS imprécis ». Par défaut 200 m."
+    "geoMaxAccuracyMHint": "Une position moins précise est signalée « GPS imprécis ». Par défaut 200 m.",
+    "assistantLink": "Assistant IA",
+    "assistantLinkHelp": "Fournisseur et clé API de l'assistant."
   },
   "validation": {
     "required": "Ce champ est obligatoire.",
@@ -1881,7 +1883,10 @@
     "rateNewHelp": "Le barème IRG et les autres valeurs sont repris de ce jeu. Les paies approuvées ne changent pas.",
     "rateFrom": "En vigueur à partir du",
     "rateNote": "Note",
-    "rateSave": "Ajouter le jeu de taux"
+    "rateSave": "Ajouter le jeu de taux",
+    "assistantLink": "Assistant IA",
+    "allowAiKey": "Autoriser sa propre clé IA",
+    "allowAiKeyHelp": "La société peut utiliser son propre fournisseur. Le quota du plan ne s'y applique pas."
   },
   "support": {
     "title": "Vue support",
@@ -1922,7 +1927,8 @@
     "lockedBack": "Retour au tableau de bord",
     "featureEXPENSES": "Dépenses et loyers",
     "featureHR": "DRH",
-    "featurePAYROLL": "Paie et bulletins"
+    "featurePAYROLL": "Paie et bulletins",
+    "featureAI_ASSISTANT": "Assistant IA"
   },
   "share": {
     "button": "Partager le lien",
@@ -3550,5 +3556,87 @@
     "rate_lissageOffsetNum": "Lissage : déduction",
     "rate_lissageOffsetDen": "Lissage : diviseur de la déduction",
     "rate_snmg": "SNMG"
+  },
+  "assistant": {
+    "button": "Assistant",
+    "open": "Ouvrir l'assistant",
+    "title": "Assistant",
+    "description": "Posez vos questions sur la plateforme et sur vos données.",
+    "newConversation": "Nouvelle conversation",
+    "history": "Historique",
+    "backToChat": "Retour à la conversation",
+    "historyEmpty": "Aucune conversation pour le moment.",
+    "deleteConversation": "Supprimer la conversation {title}",
+    "loadMore": "Afficher plus",
+    "emptyTitle": "Comment puis-je vous aider ?",
+    "emptyHelp": "Posez une question en arabe, en darja ou en français.",
+    "suggestToRemind": "Clients à relancer",
+    "suggestSales": "Combien j'ai vendu cette semaine ?",
+    "suggestTournee": "Comment fonctionne une tournée ?",
+    "suggestProduct": "Comment ajouter un produit ?",
+    "suggestAvoir": "Comment faire un avoir ?",
+    "suggestCump": "Que veut dire CUMP ?",
+    "inputLabel": "Votre question",
+    "inputPlaceholder": "Écrivez votre question",
+    "send": "Envoyer",
+    "stop": "Arrêter",
+    "thinking": "Je réfléchis…",
+    "truncated": "La réponse a été coupée. Demandez la suite.",
+    "useful": "Réponse utile",
+    "notUseful": "Réponse pas utile",
+    "notice": "Les réponses sont générées par une IA ({provider}). Vérifiez les chiffres importants.",
+    "quotaReset": "Elles reviennent le {date}.",
+    "provider": {
+      "ANTHROPIC": "Anthropic (Claude)",
+      "GEMINI": "Google (Gemini)",
+      "OPENAI_COMPATIBLE": "Compatible OpenAI"
+    },
+    "tool": {
+      "search_clients": "Je cherche le client…",
+      "client_balance": "Je lis le compte du client…",
+      "search_products": "Je cherche le produit…",
+      "product_stock": "Je regarde le stock…",
+      "sales_summary": "Je calcule les ventes…",
+      "clients_to_remind": "Je cherche les clients à relancer…",
+      "find_document": "Je cherche le document…"
+    }
+  },
+  "assistantSettings": {
+    "title": "Assistant IA",
+    "subtitle": "Choisissez le fournisseur et entrez votre propre clé API.",
+    "platformSubtitle": "Le fournisseur et le modèle utilisés par toutes les sociétés.",
+    "notAllowed": "Votre société utilise l'assistant de la plateforme. Votre propre clé n'est pas activée.",
+    "provider": "Fournisseur",
+    "model": "Modèle",
+    "baseUrl": "URL de base",
+    "apiKey": "Clé API",
+    "replaceKey": "Remplacer la clé",
+    "keyHelp": "Enregistrée chiffrée, jamais affichée. À ressaisir si le fournisseur ou l'URL change.",
+    "prices": "Prix en dollars par million de tokens",
+    "priceInput": "Entrée",
+    "priceCached": "Entrée en cache",
+    "priceOutput": "Sortie",
+    "pricesHelp": "Prix publiés par le fournisseur. Ils servent à estimer le coût.",
+    "enabled": "Assistant activé",
+    "dataNotice": "Les questions et les données lues pour y répondre sont envoyées à {provider}.",
+    "save": "Enregistrer",
+    "saved": "Réglages enregistrés",
+    "test": "Tester la connexion",
+    "testOk": "Connexion réussie.",
+    "invalid": "Vérifiez le modèle, l'URL, la clé et les prix.",
+    "usage": "Utilisation",
+    "month": "Mois",
+    "noUsage": "Aucune question ce mois-ci.",
+    "platformKey": "Sur la clé de la plateforme",
+    "ownKeys": "Sur leur propre clé (coût à leur charge)",
+    "badAnswers": "Réponses jugées pas utiles",
+    "colCompany": "Société",
+    "colModel": "Modèle",
+    "colQuestions": "Questions",
+    "colTokens": "Tokens",
+    "colCost": "Coût estimé",
+    "colFeedback": "Avis",
+    "cachedTokens": "dont {count} en cache",
+    "feedbackCount": "👍 {up} · 👎 {down}"
   }
 }

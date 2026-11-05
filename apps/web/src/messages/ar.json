@@ -291,7 +291,9 @@
     "geoRadiusM": "نصف القطر المقبول (م)",
     "geoRadiusMHint": "المسافة من نقطة الزبون التي تُعتبر «عند الزبون». القيمة الافتراضية 150 م.",
     "geoMaxAccuracyM": "الدقة الدنيا (م)",
-    "geoMaxAccuracyMHint": "الموقع الأقل دقة يُبلَّغ عنه «GPS غير دقيق». القيمة الافتراضية 200 م."
+    "geoMaxAccuracyMHint": "الموقع الأقل دقة يُبلَّغ عنه «GPS غير دقيق». القيمة الافتراضية 200 م.",
+    "assistantLink": "المساعد الذكي",
+    "assistantLinkHelp": "مزوّد المساعد ومفتاح API."
   },
   "validation": {
     "required": "هذا الحقل إلزامي.",
@@ -1881,7 +1883,10 @@
     "rateNewHelp": "يُنسخ جدول IRG وباقي القيم من هذه المجموعة. لا تتغير الكشوف المعتمدة.",
     "rateFrom": "سارية ابتداءً من",
     "rateNote": "ملاحظة",
-    "rateSave": "إضافة مجموعة النسب"
+    "rateSave": "إضافة مجموعة النسب",
+    "assistantLink": "المساعد الذكي",
+    "allowAiKey": "السماح بمفتاحها الخاص",
+    "allowAiKeyHelp": "يمكن للشركة استعمال مزوّدها الخاص. حصة الباقة لا تنطبق عليها."
   },
   "support": {
     "title": "عرض الدعم",
@@ -1922,7 +1927,8 @@
     "lockedBack": "العودة إلى لوحة القيادة",
     "featureEXPENSES": "المصاريف والكراء",
     "featureHR": "الموارد البشرية",
-    "featurePAYROLL": "الرواتب وكشوف الراتب"
+    "featurePAYROLL": "الرواتب وكشوف الراتب",
+    "featureAI_ASSISTANT": "المساعد الذكي"
   },
   "share": {
     "button": "مشاركة الرابط",
@@ -3550,5 +3556,87 @@
     "rate_lissageOffsetNum": "التلطيف: الخصم",
     "rate_lissageOffsetDen": "التلطيف: قاسم الخصم",
     "rate_snmg": "SNMG"
+  },
+  "assistant": {
+    "button": "المساعد",
+    "open": "فتح المساعد",
+    "title": "المساعد",
+    "description": "اسأل عن المنصة وعن بياناتك.",
+    "newConversation": "محادثة جديدة",
+    "history": "السجل",
+    "backToChat": "العودة إلى المحادثة",
+    "historyEmpty": "لا توجد محادثات بعد.",
+    "deleteConversation": "حذف المحادثة {title}",
+    "loadMore": "عرض المزيد",
+    "emptyTitle": "كيف يمكنني مساعدتك؟",
+    "emptyHelp": "اسأل بالعربية أو الدارجة أو الفرنسية.",
+    "suggestToRemind": "الزبائن اللي لازم نفكرهم",
+    "suggestSales": "قداش بعت هاد السمانة؟",
+    "suggestTournee": "كيفاش تخدم الجولة؟",
+    "suggestProduct": "كيفاش نزيد منتوج؟",
+    "suggestAvoir": "كيفاش ندير avoir؟",
+    "suggestCump": "واش معناها CUMP؟",
+    "inputLabel": "سؤالك",
+    "inputPlaceholder": "اكتب سؤالك",
+    "send": "إرسال",
+    "stop": "إيقاف",
+    "thinking": "أفكر…",
+    "truncated": "الجواب تقطع. اطلب الباقي.",
+    "useful": "جواب مفيد",
+    "notUseful": "جواب غير مفيد",
+    "notice": "الأجوبة من إنتاج الذكاء الاصطناعي ({provider}). راجع الأرقام المهمة.",
+    "quotaReset": "ترجع يوم {date}.",
+    "provider": {
+      "ANTHROPIC": "Anthropic (Claude)",
+      "GEMINI": "Google (Gemini)",
+      "OPENAI_COMPATIBLE": "متوافق مع OpenAI"
+    },
+    "tool": {
+      "search_clients": "نحوس على الزبون…",
+      "client_balance": "نقرا حساب الزبون…",
+      "search_products": "نحوس على المنتوج…",
+      "product_stock": "نشوف الستوك…",
+      "sales_summary": "نحسب المبيعات…",
+      "clients_to_remind": "نحوس على الزبائن…",
+      "find_document": "نحوس على الوثيقة…"
+    }
+  },
+  "assistantSettings": {
+    "title": "المساعد الذكي",
+    "subtitle": "اختر المزوّد وأدخل مفتاح API الخاص بك.",
+    "platformSubtitle": "المزوّد والنموذج المستعملان لكل الشركات.",
+    "notAllowed": "شركتك تستعمل مساعد المنصة. مفتاحك الخاص غير مفعّل.",
+    "provider": "المزوّد",
+    "model": "النموذج",
+    "baseUrl": "الرابط الأساسي",
+    "apiKey": "مفتاح API",
+    "replaceKey": "تغيير المفتاح",
+    "keyHelp": "يُحفظ مشفّرا ولا يظهر أبدا. أعد إدخاله إذا تغيّر المزوّد أو الرابط.",
+    "prices": "الأسعار بالدولار لكل مليون رمز",
+    "priceInput": "الإدخال",
+    "priceCached": "الإدخال المخزّن",
+    "priceOutput": "الإخراج",
+    "pricesHelp": "كما ينشرها المزوّد. تُستعمل لتقدير التكلفة.",
+    "enabled": "تفعيل المساعد",
+    "dataNotice": "الأسئلة والبيانات المقروءة للإجابة عنها تُرسل إلى {provider}.",
+    "save": "حفظ",
+    "saved": "تم حفظ الإعدادات",
+    "test": "اختبار الاتصال",
+    "testOk": "الاتصال يعمل.",
+    "invalid": "راجع النموذج والرابط والمفتاح والأسعار.",
+    "usage": "الاستعمال",
+    "month": "الشهر",
+    "noUsage": "لا توجد أسئلة هذا الشهر.",
+    "platformKey": "على مفتاح المنصة",
+    "ownKeys": "على مفتاحهم الخاص (التكلفة عليهم)",
+    "badAnswers": "الأجوبة غير المفيدة",
+    "colCompany": "الشركة",
+    "colModel": "النموذج",
+    "colQuestions": "الأسئلة",
+    "colTokens": "الرموز",
+    "colCost": "التكلفة التقديرية",
+    "colFeedback": "التقييم",
+    "cachedTokens": "منها {count} مخزّنة",
+    "feedbackCount": "👍 {up} · 👎 {down}"
   }
 }

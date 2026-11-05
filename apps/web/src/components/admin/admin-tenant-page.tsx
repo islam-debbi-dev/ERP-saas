@@ -41,6 +41,7 @@ import {
   useAdminTenant,
   useImpersonate,
   useRecordPayment,
+  useAllowTenantAiKey,
   useUpdateSubscription,
 } from '@/lib/admin';
 import { useErrorMessage } from '@/lib/use-error-message';
@@ -230,6 +231,7 @@ function ManageCard({ d }: { d: AdminTenantDetail }) {
   const tf = useTranslations('features');
   const errorMessage = useErrorMessage();
   const update = useUpdateSubscription(d.id);
+  const aiKey = useAllowTenantAiKey(d.id);
   const [planId, setPlanId] = useState(d.plan.id);
   const [edition, setEdition] = useState<Edition>(d.edition.edition);
   const [days, setDays] = useState('7');
@@ -319,6 +321,19 @@ function ManageCard({ d }: { d: AdminTenantDetail }) {
             />
           </div>
           <p className="text-xs text-muted-foreground">{t('setFreeHelp')}</p>
+        </div>
+
+        <div className="grid content-start gap-2">
+          <div className="flex min-h-11 items-center justify-between gap-3">
+            <Label htmlFor="admin-ai-key">{t('allowAiKey')}</Label>
+            <Switch
+              id="admin-ai-key"
+              checked={d.allowTenantAiKey}
+              disabled={aiKey.isPending}
+              onCheckedChange={(allowed) => aiKey.mutate(allowed)}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">{t('allowAiKeyHelp')}</p>
         </div>
 
         {d.storedStatus === 'TRIAL' ? (

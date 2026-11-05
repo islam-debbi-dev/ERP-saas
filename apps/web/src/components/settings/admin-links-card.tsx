@@ -1,6 +1,6 @@
 'use client';
 
-import { History, Laptop, Users } from 'lucide-react';
+import { Bot, History, Laptop, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Role } from '@erp/shared';
@@ -17,6 +17,9 @@ export function AdminLinksCard() {
     ...(manager ? [{ href: '/parametres/utilisateurs', icon: Users, key: 'users' as const }] : []),
     { href: '/parametres/sessions', icon: Laptop, key: 'sessions' as const },
     ...(manager ? [{ href: '/parametres/journal', icon: History, key: 'audit' as const }] : []),
+    ...(role === Role.OWNER
+      ? [{ href: '/parametres/assistant', icon: Bot, key: 'assistant' as const }]
+      : []),
     // { href: '/parametres/abonnement', icon: CreditCard, key: 'subscription' as const },
   ];
   return (
