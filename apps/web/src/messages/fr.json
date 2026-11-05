@@ -459,7 +459,18 @@
     "PAYROLL_OVERPAYMENT": "Le montant dépasse ce qui reste à payer.",
     "PAYROLL_NO_RATE_SET": "Aucun barème ne couvre ce mois.",
     "PAYROLL_RATES_NOT_CONFIRMED": "Aucun taux confirmé pour cette paie : acceptez ceux de la plateforme ou créez les vôtres.",
-    "LEAVE_OPENING_EXISTS": "Cet employé a déjà un solde initial : utilisez un ajustement."
+    "LEAVE_OPENING_EXISTS": "Cet employé a déjà un solde initial : utilisez un ajustement.",
+    "AI_NOT_CONFIGURED": "L'assistant n'est pas disponible pour cette société.",
+    "AI_UNAVAILABLE": "L'assistant ne répond pas pour le moment. Réessayez dans un instant.",
+    "AI_INVALID_KEY": "La clé API est refusée par le fournisseur.",
+    "AI_MODEL_NOT_FOUND": "Ce modèle n'existe pas chez le fournisseur.",
+    "AI_RATE_LIMITED": "Le fournisseur reçoit trop de demandes. Réessayez dans un instant.",
+    "AI_QUOTA_EXCEEDED": "Les questions du mois sont épuisées pour votre société.",
+    "AI_DAILY_LIMIT": "Vous avez atteint la limite de questions pour aujourd'hui.",
+    "AI_TENANT_KEY_NOT_ALLOWED": "Votre société ne peut pas utiliser sa propre clé.",
+    "AI_KEY_REQUIRED": "Entrez la clé API.",
+    "AI_BASE_URL_NOT_ALLOWED": "Cette adresse n'est pas autorisée : utilisez une URL https publique.",
+    "SECRETS_KEY_UNAVAILABLE": "Le chiffrement des clés n'est pas configuré sur le serveur."
   },
   "units": {
     "PIECE": "Pièce",
@@ -1676,6 +1687,10 @@
     "PAYROLL_RATES_MANAGE": {
       "label": "Gérer les taux de paie",
       "help": "Créer les taux de la société ou accepter les taux indicatifs de la plateforme (réservé au propriétaire par défaut)."
+    },
+    "USE_ASSISTANT": {
+      "label": "Utiliser l'assistant",
+      "help": "Poser des questions à l'assistant IA."
     }
   },
   "sessions": {

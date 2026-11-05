@@ -23,11 +23,15 @@ describe('effectiveFeatures', () => {
   });
 
   it('uses the edition defaults', () => {
-    expect(effectiveFeatures(Edition.ESSENTIEL)).toEqual([Feature.EXPENSES]);
+    expect(effectiveFeatures(Edition.ESSENTIEL)).toEqual([
+      Feature.EXPENSES,
+      Feature.AI_ASSISTANT,
+    ]);
     expect(effectiveFeatures(Edition.IMPORT)).toEqual([
       Feature.WAREHOUSES,
       Feature.IMPORT_COSTS,
       Feature.EXPENSES,
+      Feature.AI_ASSISTANT,
     ]);
     expect(effectiveFeatures(Edition.DISTRIBUTION)).not.toContain(Feature.IMPORT_COSTS);
     expect(effectiveFeatures(Edition.DISTRIBUTION)).toContain(Feature.MOBILE_APP);
@@ -43,32 +47,48 @@ describe('effectiveFeatures', () => {
     expect(effectiveFeatures(Edition.ESSENTIEL, [Feature.GEO_CHECK])).toEqual([
       Feature.GEO_CHECK,
       Feature.EXPENSES,
+      Feature.AI_ASSISTANT,
     ]);
     expect(effectiveFeatures(Edition.IMPORT, [], [Feature.WAREHOUSES])).toEqual([
       Feature.IMPORT_COSTS,
       Feature.EXPENSES,
+      Feature.AI_ASSISTANT,
     ]);
     // A revoke wins over a grant of the same feature.
     expect(effectiveFeatures(Edition.ESSENTIEL, [Feature.GEO_CHECK], [Feature.GEO_CHECK])).toEqual([
       Feature.EXPENSES,
+      Feature.AI_ASSISTANT,
     ]);
     // Every edition has the dépenses (phase 25); the super-admin can still take them away.
     for (const e of Object.values(Edition)) {
       expect(effectiveFeatures(e)).toContain(Feature.EXPENSES);
     }
-    expect(effectiveFeatures(Edition.ESSENTIEL, [], [Feature.EXPENSES])).toEqual([]);
+    expect(effectiveFeatures(Edition.ESSENTIEL, [], [Feature.EXPENSES])).toEqual([
+      Feature.AI_ASSISTANT,
+    ]);
+    // The assistant too (phase 30): in every edition, switchable off per company.
+    for (const e of Object.values(Edition)) {
+      expect(effectiveFeatures(e)).toContain(Feature.AI_ASSISTANT);
+      expect(effectiveFeatures(e, [], [Feature.AI_ASSISTANT])).not.toContain(Feature.AI_ASSISTANT);
+    }
   });
 
   it('ignores unknown strings', () => {
     expect(effectiveFeatures(Edition.ESSENTIEL, ['TELEPORT', ''], ['NOPE'])).toEqual([
       Feature.EXPENSES,
+      Feature.AI_ASSISTANT,
     ]);
   });
 
   it('keeps the FEATURES order whatever the grant order', () => {
     expect(
       effectiveFeatures(Edition.ESSENTIEL, [Feature.IMPORT_COSTS, Feature.SALES_FORCE]),
-    ).toEqual([Feature.SALES_FORCE, Feature.IMPORT_COSTS, Feature.EXPENSES]);
+    ).toEqual([
+      Feature.SALES_FORCE,
+      Feature.IMPORT_COSTS,
+      Feature.EXPENSES,
+      Feature.AI_ASSISTANT,
+    ]);
   });
 });
 

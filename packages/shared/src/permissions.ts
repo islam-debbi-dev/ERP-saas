@@ -77,6 +77,8 @@ export const Permission = {
   USERS_MANAGE: 'USERS_MANAGE',
   /** Company settings and dépôts. */
   SETTINGS_EDIT: 'SETTINGS_EDIT',
+  /** Ask the in-app assistant (phase 30). Its data tools need their own permissions too. */
+  USE_ASSISTANT: 'USE_ASSISTANT',
   /** Sell a product outside the brands and categories of the dépôt. */
   SELL_ANY_PRODUCT: 'SELL_ANY_PRODUCT',
   /** Give or take a user's access to dépôts (never above his own). */
@@ -199,7 +201,7 @@ export const PERMISSION_GROUPS = {
     Permission.PAYROLL_PAY,
     Permission.PAYROLL_RATES_MANAGE,
   ],
-  settings: [Permission.SETTINGS_EDIT],
+  settings: [Permission.SETTINGS_EDIT, Permission.USE_ASSISTANT],
 } as const satisfies Record<string, readonly Permission[]>;
 export type PermissionGroup = keyof typeof PERMISSION_GROUPS;
 
@@ -229,6 +231,8 @@ const VIEW_ALL: readonly Permission[] = [
   Permission.SALES_VIEW,
   Permission.PAYMENTS_VIEW,
   Permission.REPORTS_VIEW,
+  // Help is for everyone; the assistant's data tools still need their own permissions.
+  Permission.USE_ASSISTANT,
 ];
 /** What the road roles (seller, supervisor) did besides reading. */
 const FIELD: readonly Permission[] = [
