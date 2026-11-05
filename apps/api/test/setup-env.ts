@@ -11,3 +11,4 @@ process.env['SENTRY_DSN'] = '';
 // Suites send hundreds of requests from one IP; security.int-spec.ts tests the limits.
 process.env['RATE_LIMIT_PER_MINUTE'] ??= '1000000';
 process.env['RATE_LIMIT_AUTH_PER_MINUTE'] ??= '1000000';
+process.env['RATE_LIMIT_ASSISTANT_PER_MINUTE'] ??= '1000000';

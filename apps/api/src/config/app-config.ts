@@ -1,4 +1,4 @@
-import { AI_PROVIDERS } from '@erp/shared';
+import { AI_PROVIDERS, AI_QUESTIONS_PER_MINUTE } from '@erp/shared';
 import { z } from 'zod';
 
 /** `.env.example` lists optional variables empty: empty means unset. */
@@ -26,6 +26,12 @@ const envSchema = z.object({
   /** Requests per minute per IP, all routes; and for the auth routes (register, refresh…). */
   RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(300),
   RATE_LIMIT_AUTH_PER_MINUTE: z.coerce.number().int().positive().default(30),
+  /** Questions per minute per user. */
+  RATE_LIMIT_ASSISTANT_PER_MINUTE: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(AI_QUESTIONS_PER_MINUTE),
   /**
    * Path the API is served under by the reverse proxy (`/api` in production, where Caddy
    * strips it). The refresh cookie's path must include it for the browser to send it.

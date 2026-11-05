@@ -1,0 +1,8 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`system prompt changes only when bumped on purpose 1`] = `
+{
+  "hash": "7eda4e51fdafac6cd42c74f8f3f2730f5977d22acb0198d900620c6222a052af",
+  "version": 1,
+}
+`;

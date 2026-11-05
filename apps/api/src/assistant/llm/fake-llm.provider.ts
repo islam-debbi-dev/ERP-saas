@@ -11,6 +11,7 @@ export class FakeLlmProvider implements LlmProvider {
     this.requests.push({ ...request, messages: [...request.messages] });
     const round = this.rounds[this.requests.length - 1];
     if (!round) throw new Error(`FakeLlmProvider: no script for round ${this.requests.length}`);
+    await Promise.resolve();
     yield* round;
   }
 }

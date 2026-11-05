@@ -30,7 +30,7 @@ import { DocumentNumberingService } from '../documents/document-numbering.servic
 import { GeoCheckService } from '../geo/geo-check.service';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
-import { ScopeService } from '../sales-force/scope.service';
+import { type DataScope, ScopeService } from '../sales-force/scope.service';
 import { WarehousesService } from '../stock/warehouses.service';
 
 const paymentInclude = {
@@ -509,6 +509,45 @@ export class PaymentsService {
    * `statsWarehouseIds` (phase 24, dashboard): the dépôts whose cash the user sees as
    * figures, in place of those he works in.
    */
+  /** The versements counted as cash between two Algiers days, both included. */
+  private collectedSql(tenantId: string, scope: DataScope, from: string, to: string): Prisma.Sql {
+    return Prisma.sql`"tenantId" = ${tenantId}::uuid AND status = 'VALID'
+        AND ${this.scope.paymentSql(scope, 'payments')}
+        AND "receivedAt" >= ${algiersMidnight(from)} AND "receivedAt" < ${algiersMidnight(nextDay(to))}`;
+  }
+
+  /** Encaissements of a period: the cash summary's figures, over several days (phase 30). */
+  async collected(
+    from: string,
+    to: string,
+    user: CurrentUserInfo,
+    statsWarehouseIds?: string[] | null,
+  ): Promise<{ total: string; count: number }> {
+    const tenantId = tenantContext.requireTenantId();
+    const base = await this.scope.of(user);
+    const scope =
+      statsWarehouseIds === undefined ? base : { ...base, warehouseIds: statsWarehouseIds };
+    const [row] = await this.prisma.db.$queryRaw<{ count: bigint; total: Prisma.Decimal | null }[]>`
+      SELECT COUNT(*) AS count, SUM(amount) AS total
+      FROM payments
+      WHERE ${this.collectedSql(tenantId, scope, from, to)}`;
+    return {
+      total: toMoneyString(money(row?.total?.toString() ?? 0)),
+      count: Number(row?.count ?? 0),
+    };
+  }
+
+  /** A versement by its number, in the user's scope. */
+  async findByNumber(number: string, user: CurrentUserInfo): Promise<PaymentDto> {
+    const scope = await this.scope.of(user);
+    const p = await this.prisma.db.payment.findFirst({
+      where: { number, ...this.scope.paymentWhere(scope) },
+      select: { id: true },
+    });
+    if (!p) throw new AppException(ErrorCode.NOT_FOUND, 'Payment not found');
+    return this.get(p.id, user);
+  }
+
   async summary(
     date: string,
     user: CurrentUserInfo,
@@ -523,9 +562,7 @@ export class PaymentsService {
     >`
       SELECT mode, "receivedBy", COUNT(*) AS count, SUM(amount) AS total
       FROM payments
-      WHERE "tenantId" = ${tenantId}::uuid AND status = 'VALID'
-        AND ${this.scope.paymentSql(scope, 'payments')}
-        AND "receivedAt" >= ${algiersMidnight(date)} AND "receivedAt" < ${algiersMidnight(nextDay(date))}
+      WHERE ${this.collectedSql(tenantId, scope, date, date)}
       GROUP BY mode, "receivedBy"
       ORDER BY mode, "receivedBy"`;
     const users = await this.users(rows.map((r) => r.receivedBy));

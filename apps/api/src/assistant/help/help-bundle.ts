@@ -50,7 +50,7 @@ export const HELP_ARTICLES: readonly HelpArticle[] = [
     "language": "fr",
     "title": "Enregistrer un achat (bon de réception)",
     "feature": null,
-    "body": "Menu Stock et achats > Achats > Nouveau bon de réception ([ouvrir](/achats/nouveau)).\n1. Choisissez le fournisseur.\n2. Ajoutez les produits, quantités et prix d'achat.\n3. « Valider la réception » : le stock entre, le CUMP et la dette fournisseur sont mis à jour."
+    "body": "Menu Stock et achats > Achats > Nouveau bon de réception ([ouvrir](/achats/nouveau)).\n\n1. Choisissez le fournisseur.\n2. Ajoutez les produits, quantités et prix d'achat.\n3. « Valider la réception » : le stock entre, le CUMP et la dette fournisseur sont mis à jour."
   },
   {
     "slug": "categories-marques",
@@ -78,14 +78,14 @@ export const HELP_ARTICLES: readonly HelpArticle[] = [
     "language": "fr",
     "title": "Créer un client",
     "feature": null,
-    "body": "Menu Activité > Clients > Nouveau client ([ouvrir](/clients/nouveau)).\n1. Entrez le nom et le téléphone.\n2. Choisissez son niveau de prix.\n3. Fixez son plafond de crédit si besoin.\nPour une facture à une entreprise, ajoutez RC, NIF, NIS et AI."
+    "body": "Menu Activité > Clients > Nouveau client ([ouvrir](/clients/nouveau)).\n\n1. Entrez le nom et le téléphone.\n2. Choisissez son niveau de prix.\n3. Fixez son plafond de crédit si besoin.\n   Pour une facture à une entreprise, ajoutez RC, NIF, NIS et AI."
   },
   {
     "slug": "creer-produit",
     "language": "fr",
     "title": "Créer un produit",
     "feature": null,
-    "body": "Menu Stock et achats > Produits > Nouveau produit ([ouvrir](/produits/nouveau)).\n1. Entrez la référence et la désignation.\n2. Choisissez l'unité de base (pièce, kg, litre).\n3. Ajoutez les conditionnements (carton de 24…) avec « Ajouter une unité ».\n4. Saisissez les prix par niveau, puis « Créer le produit ».\nBeaucoup de produits ? Passez par l'[import Excel](/parametres/import)."
+    "body": "Menu Stock et achats > Produits > Nouveau produit ([ouvrir](/produits/nouveau)).\n\n1. Entrez la référence et la désignation.\n2. Choisissez l'unité de base (pièce, kg, litre).\n3. Ajoutez les conditionnements (carton de 24…) avec « Ajouter une unité ».\n4. Saisissez les prix par niveau, puis « Créer le produit ».\n   Beaucoup de produits ? Passez par l'[import Excel](/parametres/import)."
   },
   {
     "slug": "depenses",
@@ -113,14 +113,14 @@ export const HELP_ARTICLES: readonly HelpArticle[] = [
     "language": "fr",
     "title": "Faire une vente",
     "feature": null,
-    "body": "Menu Activité > Ventes > Nouvelle vente ([ouvrir](/ventes/nouvelle)).\n1. Choisissez le client (ou le client comptoir).\n2. Ajoutez les produits, à la recherche ou au code-barres.\n3. Entrez ce qui est payé maintenant ; le reste passe en crédit.\n4. « Valider », puis imprimez ou partagez.\nUn brouillon ne touche ni le stock ni le compte client."
+    "body": "Menu Activité > Ventes > Nouvelle vente ([ouvrir](/ventes/nouvelle)).\n\n1. Choisissez le client (ou le client comptoir).\n2. Ajoutez les produits, à la recherche ou au code-barres.\n3. Entrez ce qui est payé maintenant ; le reste passe en crédit.\n4. « Valider », puis imprimez ou partagez.\n   Un brouillon ne touche ni le stock ni le compte client."
   },
   {
     "slug": "import-excel",
     "language": "fr",
     "title": "Importer depuis Excel",
     "feature": null,
-    "body": "[Paramètres > Import](/parametres/import).\n1. Choisissez le type : produits, stock initial, clients et soldes, fournisseurs et soldes.\n2. Téléchargez le modèle et remplissez-le (.xlsx ou .csv, 10 Mo, 10 000 lignes).\n3. Envoyez-le : l'aperçu ne change rien.\n4. S'il y a des erreurs, corrigez le fichier et renvoyez-le.\n5. Confirmez : tout passe ou rien.\nLes produits sont reconnus par référence, les clients par code."
+    "body": "[Paramètres > Import](/parametres/import).\n\n1. Choisissez le type : produits, stock initial, clients et soldes, fournisseurs et soldes.\n2. Téléchargez le modèle et remplissez-le (.xlsx ou .csv, 10 Mo, 10 000 lignes).\n3. Envoyez-le : l'aperçu ne change rien.\n4. S'il y a des erreurs, corrigez le fichier et renvoyez-le.\n5. Confirmez : tout passe ou rien.\n   Les produits sont reconnus par référence, les clients par code."
   },
   {
     "slug": "impression",
@@ -281,7 +281,7 @@ export const HELP_ARTICLES: readonly HelpArticle[] = [
     "language": "fr",
     "title": "Enregistrer un versement",
     "feature": null,
-    "body": "Menu Activité > [Versements](/versements) > Nouveau versement, ou depuis la [fiche client](/clients).\n1. Choisissez le client.\n2. Entrez le montant et le mode (espèces, chèque, virement).\n3. Pour un chèque, ajoutez le numéro et l'échéance.\n4. Enregistrez : la dette baisse aussitôt."
+    "body": "Menu Activité > [Versements](/versements) > Nouveau versement, ou depuis la [fiche client](/clients).\n\n1. Choisissez le client.\n2. Entrez le montant et le mode (espèces, chèque, virement).\n3. Pour un chèque, ajoutez le numéro et l'échéance.\n4. Enregistrez : la dette baisse aussitôt."
   },
   {
     "slug": "abonnement-limites",
@@ -330,7 +330,7 @@ export const HELP_ARTICLES: readonly HelpArticle[] = [
     "language": "ar",
     "title": "تسجيل شراء (BR)",
     "feature": null,
-    "body": "من القائمة: المخزون والمشتريات > المشتريات > وصل استلام جديد ([افتح](/achats/nouveau)).\n1. اختار المورد.\n2. زيد المنتوجات والكميات وسعر الشراء.\n3. « المصادقة على الاستلام »: الستوك يدخل والـ CUMP ودين المورد يتحدثو."
+    "body": "من القائمة: المخزون والمشتريات > المشتريات > وصل استلام جديد ([افتح](/achats/nouveau)).\n\n1. اختار المورد.\n2. زيد المنتوجات والكميات وسعر الشراء.\n3. « المصادقة على الاستلام »: الستوك يدخل والـ CUMP ودين المورد يتحدثو."
   },
   {
     "slug": "categories-marques",
@@ -358,14 +358,14 @@ export const HELP_ARTICLES: readonly HelpArticle[] = [
     "language": "ar",
     "title": "زيادة زبون",
     "feature": null,
-    "body": "من القائمة: النشاط > الزبائن > زبون جديد ([افتح](/clients/nouveau)).\n1. اكتب الاسم والهاتف.\n2. اختار مستوى السعر تاعو.\n3. حط سقف الكريدي إذا لازم.\nللفاتورة لشركة زيد RC و NIF و NIS و AI."
+    "body": "من القائمة: النشاط > الزبائن > زبون جديد ([افتح](/clients/nouveau)).\n\n1. اكتب الاسم والهاتف.\n2. اختار مستوى السعر تاعو.\n3. حط سقف الكريدي إذا لازم.\n   للفاتورة لشركة زيد RC و NIF و NIS و AI."
   },
   {
     "slug": "creer-produit",
     "language": "ar",
     "title": "زيادة منتوج",
     "feature": null,
-    "body": "من القائمة: المخزون والمشتريات > المنتجات > منتج جديد ([افتح](/produits/nouveau)).\n1. اكتب المرجع والتسمية.\n2. اختار الوحدة الأساسية (حبة، كغ، لتر).\n3. زيد التغليف كيما كرطون 24 حبة بـ « إضافة وحدة ».\n4. عمّر الأسعار ثم « إنشاء المنتج ».\nعندك منتوجات بزاف؟ استعمل [استيراد Excel](/parametres/import)."
+    "body": "من القائمة: المخزون والمشتريات > المنتجات > منتج جديد ([افتح](/produits/nouveau)).\n\n1. اكتب المرجع والتسمية.\n2. اختار الوحدة الأساسية (حبة، كغ، لتر).\n3. زيد التغليف كيما كرطون 24 حبة بـ « إضافة وحدة ».\n4. عمّر الأسعار ثم « إنشاء المنتج ».\n   عندك منتوجات بزاف؟ استعمل [استيراد Excel](/parametres/import)."
   },
   {
     "slug": "depenses",
@@ -393,14 +393,14 @@ export const HELP_ARTICLES: readonly HelpArticle[] = [
     "language": "ar",
     "title": "دير بيعة",
     "feature": null,
-    "body": "من القائمة: النشاط > المبيعات > بيع جديد ([افتح](/ventes/nouvelle)).\n1. اختار الزبون (ولا زبون الكونتوار).\n2. زيد المنتوجات بالبحث ولا بالباركود.\n3. اكتب واش خلص دروك، والباقي يروح كريدي.\n4. « مصادقة » ثم اطبع ولا ابعث.\nالمسودة ما تمسش الستوك ولا حساب الزبون."
+    "body": "من القائمة: النشاط > المبيعات > بيع جديد ([افتح](/ventes/nouvelle)).\n\n1. اختار الزبون (ولا زبون الكونتوار).\n2. زيد المنتوجات بالبحث ولا بالباركود.\n3. اكتب واش خلص دروك، والباقي يروح كريدي.\n4. « مصادقة » ثم اطبع ولا ابعث.\n   المسودة ما تمسش الستوك ولا حساب الزبون."
   },
   {
     "slug": "import-excel",
     "language": "ar",
     "title": "الاستيراد من Excel",
     "feature": null,
-    "body": "[الإعدادات > الاستيراد](/parametres/import).\n1. اختار النوع: منتوجات، ستوك البداية، زبائن وأرصدة، موردين وأرصدة.\n2. حمّل النموذج وعمّرو (xlsx ولا csv، 10 ميغا، 10 000 سطر).\n3. ابعثو: المعاينة ما تبدل والو.\n4. إذا كاين أخطاء صلح الملف وعاود ابعثو.\n5. أكّد: يدخل الكل ولا والو.\nالمنتوجات تتعرف بالمرجع والزبائن بالكود."
+    "body": "[الإعدادات > الاستيراد](/parametres/import).\n\n1. اختار النوع: منتوجات، ستوك البداية، زبائن وأرصدة، موردين وأرصدة.\n2. حمّل النموذج وعمّرو (xlsx ولا csv، 10 ميغا، 10 000 سطر).\n3. ابعثو: المعاينة ما تبدل والو.\n4. إذا كاين أخطاء صلح الملف وعاود ابعثو.\n5. أكّد: يدخل الكل ولا والو.\n   المنتوجات تتعرف بالمرجع والزبائن بالكود."
   },
   {
     "slug": "impression",
@@ -561,7 +561,7 @@ export const HELP_ARTICLES: readonly HelpArticle[] = [
     "language": "ar",
     "title": "تسجيل versement",
     "feature": null,
-    "body": "من القائمة: النشاط > [الدفعات](/versements) > دفعة جديدة، ولا من [بطاقة الزبون](/clients).\n1. اختار الزبون.\n2. اكتب المبلغ والطريقة (كاش، شيك، تحويل).\n3. للشيك زيد الرقم والتاريخ.\n4. سجّل والكريدي ينقص ديراكت."
+    "body": "من القائمة: النشاط > [الدفعات](/versements) > دفعة جديدة، ولا من [بطاقة الزبون](/clients).\n\n1. اختار الزبون.\n2. اكتب المبلغ والطريقة (كاش، شيك، تحويل).\n3. للشيك زيد الرقم والتاريخ.\n4. سجّل والكريدي ينقص ديراكت."
   }
 ];
 

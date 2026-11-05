@@ -261,6 +261,15 @@ export class BillingService {
   }
 
   /** Status, plan, usage and payments. Used by the tenant and by the super-admin. */
+  /** Assistant questions per month of the company's plan (phase 30). null = unlimited. */
+  async aiQuestionsPerMonth(tenantId: string): Promise<number | null> {
+    const sub = await this.prisma.db.subscription.findUnique({
+      where: { tenantId },
+      select: { plan: { select: { aiQuestionsPerMonth: true } } },
+    });
+    return sub?.plan.aiQuestionsPerMonth ?? null;
+  }
+
   async summary(tenantId: string): Promise<SubscriptionSummary> {
     const now = this.now();
     const sub = await this.load(this.prisma.db, tenantId);

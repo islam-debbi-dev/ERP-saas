@@ -52,10 +52,7 @@ export function readWebRoutes(dir = WEB_APP_DIR, prefix = ''): string[] {
       if (entry.isFile()) return entry.name === 'page.tsx' ? [prefix || '/'] : [];
       if (!entry.isDirectory()) return [];
       const group = /^\(.*\)$/.test(entry.name);
-      return readWebRoutes(
-        path.join(dir, entry.name),
-        group ? prefix : `${prefix}/${entry.name}`,
-      );
+      return readWebRoutes(path.join(dir, entry.name), group ? prefix : `${prefix}/${entry.name}`);
     })
     .sort();
 }

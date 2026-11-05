@@ -48,7 +48,8 @@ export const ASSISTANT_TOOLS = {
     input: z.strictObject({ query: searchQuery }),
   },
   product_stock: {
-    description: 'Stock of one product per dépôt, in base unit and main unit, with its alert level.',
+    description:
+      'Stock of one product per dépôt, in base unit and main unit, with its alert level.',
     input: z.strictObject({ productId: z.uuid() }),
   },
   sales_summary: {
@@ -99,6 +100,8 @@ export interface AssistantLink {
 export type AssistantStreamEvent =
   | { type: 'conversation'; conversationId: string }
   | { type: 'text'; delta: string }
+  /** What was streamed so far must not stand: show this text instead (a refusal). */
+  | { type: 'replace'; text: string }
   | { type: 'tool'; name: AssistantToolName }
   | { type: 'links'; links: AssistantLink[] }
   | { type: 'done'; messageId: string; conversationId: string; truncated: boolean }
@@ -196,6 +199,9 @@ export interface AiConfigTestResult {
   ok: boolean;
   code: ErrorCode | null;
 }
+
+export const allowTenantAiKeySchema = z.object({ allowed: z.boolean() });
+export type AllowTenantAiKeyInput = z.infer<typeof allowTenantAiKeySchema>;
 
 // --- Usage (super-admin) ---------------------------------------------------------------
 

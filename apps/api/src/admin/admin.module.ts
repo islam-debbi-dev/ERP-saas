@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
+import { AssistantModule } from '../assistant/assistant.module';
 import { AuthModule } from '../auth/auth.module';
 import { BillingModule } from '../billing/billing.module';
 import { APP_CONFIG, type AppConfig } from '../config/app-config';
@@ -8,6 +9,7 @@ import { AdminAuthService } from './admin-auth.service';
 import { AdminPayrollRatesService } from './admin-payroll-rates.service';
 import { AdminTenantsService } from './admin-tenants.service';
 import {
+  AdminAssistantController,
   AdminAuthController,
   AdminPayrollRatesController,
   AdminTenantsController,
@@ -17,6 +19,7 @@ import { PlatformAuditService } from './platform-audit.service';
 /** Super-admin area (phase 13): separate identity with TOTP, outside every tenant. */
 @Module({
   imports: [
+    AssistantModule,
     AuthModule,
     BillingModule,
     JwtModule.registerAsync({
@@ -28,7 +31,12 @@ import { PlatformAuditService } from './platform-audit.service';
       }),
     }),
   ],
-  controllers: [AdminAuthController, AdminTenantsController, AdminPayrollRatesController],
+  controllers: [
+    AdminAssistantController,
+    AdminAuthController,
+    AdminTenantsController,
+    AdminPayrollRatesController,
+  ],
   providers: [
     AdminAuthGuard,
     AdminAuthService,

@@ -1,7 +1,12 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { Feature, FEATURES } from '@erp/shared';
-import { BUNDLE_FILE, readArticles, readWebRoutes, renderBundle } from '../../../scripts/assistant-help';
+import {
+  BUNDLE_FILE,
+  readArticles,
+  readWebRoutes,
+  renderBundle,
+} from '../../../scripts/assistant-help';
 import { helpFor, isAppRoute, renderHelp } from './help-articles';
 
 const articles = readArticles();

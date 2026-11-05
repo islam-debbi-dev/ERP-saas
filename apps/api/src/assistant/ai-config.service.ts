@@ -209,7 +209,10 @@ export class AiConfigService {
   async savePlatform(
     input: AiProviderConfigInput,
     adminId: string,
-    log: (tx: Tx, change: { before: unknown; after: unknown; keyChanged: boolean }) => Promise<void>,
+    log: (
+      tx: Tx,
+      change: { before: unknown; after: unknown; keyChanged: boolean },
+    ) => Promise<void>,
   ): Promise<AiProviderConfigDto> {
     return tenantContext.runAsSystem(async () => {
       const row = await this.platformRow();

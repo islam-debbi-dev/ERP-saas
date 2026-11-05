@@ -83,14 +83,13 @@ describe.each(Object.keys(runs))('%s adapter', (name) => {
 describe('replay between tool rounds', () => {
   it('keeps Anthropic thinking blocks', async () => {
     const done = (await collect(runs['anthropic']?.('tool') ?? from([]))).at(-1);
-    expect(done).toMatchObject({ replay: expect.arrayContaining([anthropic.tool.final.content[0]]) });
+    expect((done as { replay: unknown[] }).replay).toContainEqual(anthropic.tool.final.content[0]);
   });
 
   it('keeps Gemini thought signatures', async () => {
     const done = (await collect(runs['gemini']?.('tool') ?? from([]))).at(-1);
-    expect(done).toMatchObject({
-      replay: expect.arrayContaining([expect.objectContaining({ thoughtSignature: 'sig-1' })]),
-    });
+    const replay = (done as { replay: { thoughtSignature?: string }[] }).replay;
+    expect(replay.map((part) => part.thoughtSignature)).toContain('sig-1');
   });
 
   it('hands the Anthropic replay back as the assistant turn', () => {

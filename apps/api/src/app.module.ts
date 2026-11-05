@@ -4,6 +4,11 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { AdminModule } from './admin/admin.module';
+import {
+  ASSISTANT_THROTTLE_FLAG,
+  ASSISTANT_THROTTLER,
+} from './assistant/assistant-throttler.guard';
+import { AssistantModule } from './assistant/assistant.module';
 import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { BillingModule } from './billing/billing.module';
@@ -76,6 +81,15 @@ import { UsersModule } from './users/users.module';
             skipIf: (ctx) =>
               !/^\/(admin\/)?auth\//.test(ctx.switchToHttp().getRequest<{ path: string }>().path),
           },
+          {
+            // Per user, so counted by AssistantThrottlerGuard after authentication.
+            name: ASSISTANT_THROTTLER,
+            ttl: 60_000,
+            limit: config.RATE_LIMIT_ASSISTANT_PER_MINUTE,
+            skipIf: (ctx) =>
+              !ctx.switchToHttp().getRequest<Record<string, unknown>>()[ASSISTANT_THROTTLE_FLAG],
+            getTracker: (req) => (req['user'] as { id: string }).id,
+          },
         ],
       }),
     }),
@@ -108,6 +122,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     ReconcileModule,
     TourneesModule,
+    AssistantModule,
     AdminModule,
   ],
   controllers: [HealthController],

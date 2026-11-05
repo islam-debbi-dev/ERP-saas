@@ -164,6 +164,13 @@ export class PurchasesService {
   }
 
   /** 404 unless the BR is in a dépôt the user works in (phase 24). Every write calls it. */
+  /** A bon de réception by its number, in the user's scope (phase 30). */
+  async findByNumber(number: string, user: CurrentUserInfo): Promise<PurchaseDto> {
+    const p = await this.prisma.db.purchase.findFirst({ where: { number }, select: { id: true } });
+    if (!p) throw new AppException(ErrorCode.NOT_FOUND, 'Purchase not found');
+    return this.get(p.id, user);
+  }
+
   async assertInScope(tx: Tx, user: CurrentUserInfo, id: string): Promise<void> {
     const where = await this.scopeWhere(user, tx);
     if (!where.AND) return;

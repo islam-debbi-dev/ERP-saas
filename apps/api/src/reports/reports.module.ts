@@ -30,5 +30,6 @@ import { SellOutService } from './sell-out.service';
   ],
   controllers: [DashboardController, ReportsController],
   providers: [DashboardService, ReportsService, OnboardingService, OverviewService, SellOutService],
+  exports: [DashboardService],
 })
 export class ReportsModule {}

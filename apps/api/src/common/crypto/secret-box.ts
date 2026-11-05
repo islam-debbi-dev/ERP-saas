@@ -41,10 +41,9 @@ export function openSecret(key: Buffer, box: string, context: string): string {
     const decipher = createDecipheriv(ALGORITHM, key, Buffer.from(iv, 'base64'));
     decipher.setAAD(Buffer.from(context, 'utf8'));
     decipher.setAuthTag(Buffer.from(tag, 'base64'));
-    return Buffer.concat([
-      decipher.update(Buffer.from(data, 'base64')),
-      decipher.final(),
-    ]).toString('utf8');
+    return Buffer.concat([decipher.update(Buffer.from(data, 'base64')), decipher.final()]).toString(
+      'utf8',
+    );
   } catch {
     throw new AppException(ErrorCode.SECRETS_KEY_UNAVAILABLE, 'Unreadable secret');
   }
