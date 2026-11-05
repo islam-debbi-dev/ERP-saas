@@ -1,6 +1,6 @@
 'use client';
 
-import { Banknote, ChevronLeft, Plus, Settings2 } from 'lucide-react';
+import { Banknote, ChevronLeft, Percent, Plus, Settings2, TriangleAlert } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -12,6 +12,7 @@ import { Amount } from '@/components/shared/amount';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FeatureGate } from '@/components/shared/feature-gate';
 import { PageHeader } from '@/components/shared/page-header';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -28,7 +29,7 @@ import {
 } from '@/components/ui/responsive-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFeature, usePermission } from '@/lib/auth';
-import { monthName, useCreatePayrollRun, usePayrollRuns } from '@/lib/payroll';
+import { monthName, useCreatePayrollRun, usePayrollRates, usePayrollRuns } from '@/lib/payroll';
 import { useWarehouses } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
 
@@ -45,7 +46,9 @@ function List() {
   const locale = useLocale();
   const canManage = usePermission(Permission.PAYROLL_MANAGE);
   const canSee = usePermission(Permission.SALARY_VIEW);
+  const canRates = usePermission(Permission.PAYROLL_RATES_MANAGE);
   const runs = usePayrollRuns();
+  const newOfficial = usePayrollRates(canSee && canRates).data?.newOfficial;
   const [creating, setCreating] = useState(false);
   const items = useMemo(() => runs.data?.pages.flatMap((p) => p.items) ?? [], [runs.data]);
 
@@ -62,9 +65,25 @@ function List() {
             </Button>
           ) : undefined
         }
-        more={[canSee && { label: t('settingsTitle'), icon: Settings2, href: '/rh/paie/reglages' }]}
+        more={[
+          canSee && { label: t('settingsTitle'), icon: Settings2, href: '/rh/paie/reglages' },
+          canSee && { label: t('ratesLink'), icon: Percent, href: '/rh/paie/taux' },
+        ]}
       />
       <HrTabs />
+      <p className="text-sm text-muted-foreground">{t('ratesResponsibility')}</p>
+      {newOfficial ? (
+        <Alert>
+          <TriangleAlert aria-hidden />
+          <AlertTitle>{t('ratesNewOfficial')}</AlertTitle>
+          <AlertDescription>
+            {t('ratesNewOfficialHelp', { date: newOfficial.effectiveFrom })}{' '}
+            <Link href="/rh/paie/taux" className="inline-flex min-h-11 items-center underline">
+              {t('ratesSee')}
+            </Link>
+          </AlertDescription>
+        </Alert>
+      ) : null}
       {runs.isPending ? <Skeleton className="h-40 w-full" /> : null}
       {!runs.isPending && items.length === 0 ? (
         <EmptyState icon={Banknote} title={t('noRuns')} description={t('noRunsHelp')} />

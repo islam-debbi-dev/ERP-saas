@@ -80,14 +80,16 @@ export class PayrollComputeService {
     private readonly incentives: RunsService,
   ) {}
 
-  /** The set valid on the month's last day: latest date, then the latest correction. */
+  /**
+   * The set valid on the month's last day: latest date, then the latest correction. The
+   * company's own wins from its first date; before it, the platform's applies.
+   */
   async rateSet(tx: Tx, month: string) {
     const rows = await tx.payrollRateSet.findMany({
       where: { effectiveFrom: { lte: fromDay(monthBounds(month).to) } },
       orderBy: [{ effectiveFrom: 'desc' }, { seq: 'desc' }],
-      take: 1,
     });
-    const row = rows[0];
+    const row = rows.find((r) => r.tenantId !== null) ?? rows[0];
     if (!row) {
       throw new AppException(ErrorCode.PAYROLL_NO_RATE_SET, 'No rate set covers this month', {
         month,
@@ -352,7 +354,7 @@ export class PayrollComputeService {
 
     return {
       rateSetId: rateSet.id,
-      rateSetToVerify: rateSet.toVerify,
+      rateSetToVerify: rateSet.tenantId === null && rateSet.toVerify,
       slips,
       fingerprint: createHash('sha256')
         .update(

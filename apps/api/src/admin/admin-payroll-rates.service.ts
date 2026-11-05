@@ -1,40 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import type { IrgBracket, PayrollRateSetDto, PayrollRateSetInput } from '@erp/shared';
+import type { PayrollRateSetDto, PayrollRateSetInput } from '@erp/shared';
 import { tenantContext } from '../common/tenant-context';
 import { type Prisma } from '../generated/prisma/client';
+import { rateSetDto } from '../payroll/rate-set.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import type { CurrentAdminInfo } from './admin.types';
 import { PlatformAuditService } from './platform-audit.service';
 
-type Row = Prisma.PayrollRateSetGetPayload<object>;
-
-function toDto(r: Row): PayrollRateSetDto {
-  const s = (v: { toString(): string }) => v.toString();
-  return {
-    id: r.id,
-    effectiveFrom: r.effectiveFrom.toISOString().slice(0, 10),
-    cnasEmployeeRate: s(r.cnasEmployeeRate),
-    cnasEmployerRate: s(r.cnasEmployerRate),
-    irgBrackets: r.irgBrackets as unknown as IrgBracket[],
-    abattementRate: s(r.abattementRate),
-    abattementMin: s(r.abattementMin),
-    abattementMax: s(r.abattementMax),
-    exemptionThreshold: s(r.exemptionThreshold),
-    lissageCeiling: s(r.lissageCeiling),
-    lissageNum: s(r.lissageNum),
-    lissageDen: s(r.lissageDen),
-    lissageOffsetNum: s(r.lissageOffsetNum),
-    lissageOffsetDen: s(r.lissageOffsetDen),
-    snmg: s(r.snmg),
-    toVerify: r.toVerify,
-    note: r.note,
-    createdAt: r.createdAt.toISOString(),
-  };
-}
-
 /**
- * The CNAS and IRG rates, owned by the super-admin. A correction is a new row: approved
- * runs keep the set they were computed with, and the trigger refuses any edit.
+ * The platform's CNAS and IRG rates: indicative, each company answers for what it uses. A
+ * correction is a new row: approved runs keep their set, and the trigger refuses any edit.
+ * A company's own sets are not the super-admin's to read.
  */
 @Injectable()
 export class AdminPayrollRatesService {
@@ -46,9 +22,10 @@ export class AdminPayrollRatesService {
   list(): Promise<PayrollRateSetDto[]> {
     return tenantContext.runAsSystem(async () => {
       const rows = await this.prisma.db.payrollRateSet.findMany({
+        where: { tenantId: null },
         orderBy: [{ effectiveFrom: 'desc' }, { seq: 'desc' }],
       });
-      return rows.map(toDto);
+      return rows.map(rateSetDto);
     });
   }
 
@@ -67,7 +44,7 @@ export class AdminPayrollRatesService {
           action: 'PAYROLL_RATE_SET_ADDED',
           detail: { id: row.id, effectiveFrom: input.effectiveFrom, toVerify: input.toVerify },
         });
-        return toDto(row);
+        return rateSetDto(row);
       }),
     );
   }

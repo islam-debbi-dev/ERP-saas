@@ -8,6 +8,7 @@ import {
   type ChargesReportDto,
   type EmployeeDto,
   type EmployeeLedgerPage,
+  ErrorCode,
   type ExpensePage,
   FIXED_PUBLIC_HOLIDAYS,
   type InviteResultDto,
@@ -16,15 +17,20 @@ import {
   money,
   monthBounds,
   type PayItemTypeDto,
+  type PayrollRatesDto,
   type PayrollRunDetailDto,
   type PayrollRunPage,
   type PayslipDto,
+  Permission,
   PERMISSIONS,
   previousMonth,
+  RATE_CONFIRMATION_TEXTS,
+  ROLE_PERMISSIONS,
   type WarehouseDto,
   weekdayOf,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../src/auth/auth.types';
+import { AdminPayrollRatesService } from '../src/admin/admin-payroll-rates.service';
 import { tenantContext } from '../src/common/tenant-context';
 import { PayrollComputeService } from '../src/payroll/payroll-compute.service';
 import {
@@ -189,6 +195,56 @@ describe('payroll (phase 31b)', () => {
     }
   };
 
+  const ratesOf = async (who: Who) =>
+    (await as(who).get('/payroll-rates').expect(200)).body as PayrollRatesDto;
+
+  /** The owner answers for the platform's rates: without it nothing can be approved. */
+  const acceptPlatform = async (who: Who) => {
+    for (const set of (await ratesOf(who)).platform) {
+      await as(who).post(`/payroll-rates/${set.id}/accept`, { locale: 'fr' }, null).expect(200);
+    }
+  };
+
+  const ownRates = async (who: Who, over: object = {}) => {
+    // The oldest: other suites publish future sets, which must not leak into these figures.
+    const { id, source, confirmed, createdAt, toVerify, ...values } = (
+      await ratesOf(who)
+    ).platform.at(-1)!;
+    void [id, source, confirmed, createdAt, toVerify];
+    return (
+      await as(who)
+        .post('/payroll-rates', {
+          ...values,
+          effectiveFrom: FROM,
+          note: null,
+          locale: 'fr',
+          confirmed: true,
+          ...over,
+        })
+        .expect(201)
+    ).body as PayrollRatesDto;
+  };
+
+  /**
+   * A new platform set, as the super-admin publishes it. Never commit one dated before the
+   * year 2099 here: the table is append-only and every suite would compute with it.
+   */
+  const publishFutureRates = (effectiveFrom: string) =>
+    tenantContext.runAsSystem(
+      () =>
+        t.prisma.db.$executeRaw`
+        INSERT INTO payroll_rate_sets (
+          "id", "effectiveFrom", "cnasEmployeeRate", "cnasEmployerRate", "irgBrackets",
+          "abattementRate", "abattementMin", "abattementMax", "exemptionThreshold",
+          "lissageCeiling", "lissageNum", "lissageDen", "lissageOffsetNum",
+          "lissageOffsetDen", "snmg", "toVerify")
+        SELECT gen_random_uuid(), ${effectiveFrom}::date, 0.11, 0.31, "irgBrackets",
+          "abattementRate", "abattementMin", "abattementMax", "exemptionThreshold",
+          "lissageCeiling", "lissageNum", "lissageDen", "lissageOffsetNum",
+          "lissageOffsetDen", "snmg", false
+        FROM payroll_rate_sets WHERE "tenantId" IS NULL ORDER BY seq ASC LIMIT 1`,
+    );
+
   const draft = async (warehouseId: string | null, who: Who = d, month = MONTH) =>
     (await as(who).post('/payroll-runs', { month, warehouseId }, null).expect(201))
       .body as PayrollRunDetailDto;
@@ -226,6 +282,8 @@ describe('payroll (phase 31b)', () => {
     d = await registerTenant(t, 'Distrib Paie', { activity: Activity.DISTRIBUTEUR });
     other = await registerTenant(t, 'Autre Paie', { activity: Activity.DISTRIBUTEUR });
     await withoutGeoCheck(t, other);
+    await acceptPlatform(d);
+    await acceptPlatform(other);
   });
 
   afterAll(async () => {
@@ -800,6 +858,8 @@ describe('payroll (phase 31b)', () => {
       await expect(
         tenantContext.run({ tenantId: d.tenantId }, () =>
           t.prisma.db.$transaction(async (tx) => {
+            // Only the platform writes these rows: RLS refuses them to a company.
+            await tx.$executeRaw`SELECT set_config('app.rls_bypass', 'on', true)`;
             await tx.$executeRaw`
               INSERT INTO payroll_rate_sets (
                 "id", "effectiveFrom", "cnasEmployeeRate", "cnasEmployerRate", "irgBrackets",
@@ -810,7 +870,8 @@ describe('payroll (phase 31b)', () => {
                 "abattementRate", "abattementMin", "abattementMax", "exemptionThreshold",
                 "lissageCeiling", "lissageNum", "lissageDen", "lissageOffsetNum",
                 "lissageOffsetDen", "snmg", false
-              FROM payroll_rate_sets ORDER BY seq ASC LIMIT 1`;
+              FROM payroll_rate_sets WHERE "tenantId" IS NULL ORDER BY seq ASC LIMIT 1`;
+            await tx.$executeRaw`SELECT set_config('app.rls_bypass', 'off', true)`;
             const fresh = await t.app
               .get(PayrollComputeService)
               .compute(tx, MONTH, later.w.id, null, owner);
@@ -833,6 +894,171 @@ describe('payroll (phase 31b)', () => {
 
     it('refuses to edit a rate set', async () => {
       await expect(tamper(t)`UPDATE payroll_rate_sets SET snmg = 1`).rejects.toThrow(/append-only/);
+    });
+  });
+
+  describe('company rates', () => {
+    /** Its own company: sets and confirmations are append-only, so nothing is undone. */
+    const company = async (name: string, marked = false) => {
+      const who = await registerTenant(t, name, { activity: Activity.DISTRIBUTEUR });
+      await withoutGeoCheck(t, who);
+      const main = ((await as(who).get('/warehouses').expect(200)).body as WarehouseDto[])[0]!;
+      const e = await employee(main.id, '60000', {}, who);
+      if (marked) await markMonth([e.id], [], who);
+      return { who, main, e };
+    };
+
+    it('refuses to approve until the owner answers for the rates', async () => {
+      const { who, main, e } = await company('Sans confirmation', true);
+      const run = await draft(main.id, who);
+      expect(run).toMatchObject({
+        ratesConfirmed: false,
+        rateSetSource: 'PLATFORM',
+        rateSetToVerify: true,
+      });
+      const refused = await as(who)
+        .post(`/payroll-runs/${run.id}/approve`, { version: run.version }, null)
+        .expect(422);
+      expect((refused.body as { code: string }).code).toBe(ErrorCode.PAYROLL_RATES_NOT_CONFIRMED);
+
+      await as(who)
+        .post(`/payroll-rates/${run.rateSetId}/accept`, { locale: 'fr' }, null)
+        .expect(200);
+      const [row] = await read<{ text: string; decision: string; createdBy: string }[]>`
+        SELECT text, decision, "createdBy" FROM payroll_rate_confirmations
+        WHERE "tenantId" = ${who.tenantId}::uuid AND "rateSetId" = ${run.rateSetId}::uuid`;
+      expect(row).toEqual({
+        text: RATE_CONFIRMATION_TEXTS.ACCEPT.fr,
+        decision: 'CONFIRMED',
+        createdBy: who.auth.user.id,
+      });
+      const approved = await approve(run, who);
+      expect(approved).toMatchObject({ status: 'APPROVED', ratesConfirmed: true });
+      expect(slipOf(approved, e.id).cnasEmployee).toBe('5400.00');
+    });
+
+    it('a company set wins from its date, and needs no other confirmation', async () => {
+      const { who, main, e } = await company('Mes taux', true);
+      const stale = await draft(main.id, who);
+      const before = await ownRates(who, {
+        cnasEmployeeRate: '0.1',
+        effectiveFrom: addDays(TO, 1),
+      });
+      expect(before.own).toHaveLength(1);
+      // Not in force for this month yet: the draft stays on the platform's.
+      expect(
+        (await as(who).post(`/payroll-runs/${stale.id}/recompute`, {}, null).expect(200)).body,
+      ).toMatchObject({ rateSetSource: 'PLATFORM', ratesConfirmed: false });
+
+      await ownRates(who, { cnasEmployeeRate: '0.1' });
+      // The set changed under the draft: the owner must read the new figures.
+      await as(who)
+        .post(`/payroll-runs/${stale.id}/approve`, { version: stale.version }, null)
+        .expect(409);
+      const fresh = (
+        await as(who).post(`/payroll-runs/${stale.id}/recompute`, {}, null).expect(200)
+      ).body as PayrollRunDetailDto;
+      expect(fresh).toMatchObject({
+        rateSetSource: 'COMPANY',
+        rateSetToVerify: false,
+        ratesConfirmed: true,
+      });
+      expect(slipOf(fresh, e.id).cnasEmployee).toBe('6000.00');
+      expect((await approve(fresh, who)).status).toBe('APPROVED');
+      const [audit] = await read<{ before: unknown; after: { cnasEmployeeRate: string } }[]>`
+        SELECT before, after FROM audit_logs
+        WHERE "tenantId" = ${who.tenantId}::uuid AND action = 'PAYROLL_RATE_SET_CREATED'
+        ORDER BY "createdAt" DESC LIMIT 1`;
+      expect(audit?.before).not.toBeNull();
+      expect(audit?.after.cnasEmployeeRate).toBe('0.1');
+    });
+
+    it('never shows a company’s rates to a neighbour or the super-admin', async () => {
+      const a = await company('Voisin A');
+      const b = await company('Voisin B');
+      const mine = (await ownRates(a.who)).own[0]!;
+      expect((await ratesOf(b.who)).own).toEqual([]);
+      await as(b.who).post(`/payroll-rates/${mine.id}/accept`, { locale: 'fr' }, null).expect(404);
+      const run = await draft(b.main.id, b.who);
+      expect(run.rateSetSource).toBe('PLATFORM');
+      const rows = await read<{ id: string }[]>`
+        SELECT id FROM payroll_rate_sets WHERE "tenantId" = ${a.who.tenantId}::uuid`;
+      expect(rows).toEqual([{ id: mine.id }]);
+      const platform = await t.app.get(AdminPayrollRatesService).list();
+      expect(platform.map((s) => s.id)).not.toContain(mine.id);
+    });
+
+    it('only PAYROLL_RATES_MANAGE sets or accepts rates', async () => {
+      const manager = await invite();
+      const set = (await ratesOf(d)).platform[0]!;
+      await as(manager).post(`/payroll-rates/${set.id}/accept`, { locale: 'fr' }, null).expect(403);
+      await as(manager).post('/payroll-rates', { locale: 'fr', confirmed: true }).expect(403);
+      await as(manager)
+        .post(`/payroll-rates/${set.id}/keep-own`, { locale: 'fr' }, null)
+        .expect(403);
+      expect(ROLE_PERMISSIONS.MANAGER).not.toContain(Permission.PAYROLL_RATES_MANAGE);
+      expect(ROLE_PERMISSIONS.OWNER).toContain(Permission.PAYROLL_RATES_MANAGE);
+    });
+
+    it('refuses a set without the confirmation', async () => {
+      const { who } = await company('Sans case');
+      const { id, source, confirmed, createdAt, toVerify, ...values } = (
+        await ratesOf(who)
+      ).platform.at(-1)!;
+      void [id, source, confirmed, createdAt, toVerify];
+      await as(who)
+        .post('/payroll-rates', { ...values, note: null, locale: 'fr', confirmed: false })
+        .expect(400);
+    });
+
+    it('a newer platform set changes nothing until the owner chooses', async () => {
+      const kept = await company('Garde ses taux');
+      const moved = await company('Change de taux');
+      await ownRates(kept.who);
+      await ownRates(moved.who);
+      await publishFutureRates('2099-06-01');
+      const official = (await ratesOf(kept.who)).newOfficial!;
+      expect(official.cnasEmployeeRate).toBe('0.11');
+
+      const unchanged = await draft(kept.main.id, kept.who);
+      expect(unchanged).toMatchObject({ rateSetSource: 'COMPANY', ratesConfirmed: true });
+      expect(slipOf(unchanged, kept.e.id).cnasEmployee).toBe('5400.00');
+
+      await as(kept.who)
+        .post(`/payroll-rates/${official.id}/keep-own`, { locale: 'fr' }, null)
+        .expect(200);
+      const afterKeep = await ratesOf(kept.who);
+      expect(afterKeep.newOfficial).toBeNull();
+      expect(afterKeep.platform.find((s) => s.id === official.id)?.confirmed).toBe(false);
+
+      const switched = (
+        await as(moved.who)
+          .post(`/payroll-rates/${official.id}/accept`, { locale: 'fr' }, null)
+          .expect(200)
+      ).body as PayrollRatesDto;
+      expect(switched.newOfficial).toBeNull();
+      expect(switched.own).toHaveLength(2);
+      expect(switched.own[0]).toMatchObject({
+        effectiveFrom: '2099-06-01',
+        cnasEmployeeRate: '0.11',
+        toVerify: false,
+      });
+      // Its own month keeps its own set: the copy only applies from the official date.
+      expect((await draft(moved.main.id, moved.who)).rateSetId).toBe(switched.own[1]!.id);
+    });
+
+    it('accepting twice keeps the first answer', async () => {
+      const { who } = await company('Deux fois');
+      const set = (await ratesOf(who)).platform[0]!;
+      await as(who).post(`/payroll-rates/${set.id}/accept`, { locale: 'ar' }, null).expect(200);
+      await as(who).post(`/payroll-rates/${set.id}/accept`, { locale: 'fr' }, null).expect(200);
+      const rows = await read<{ locale: string }[]>`
+        SELECT locale FROM payroll_rate_confirmations
+        WHERE "tenantId" = ${who.tenantId}::uuid AND "rateSetId" = ${set.id}::uuid`;
+      expect(rows).toEqual([{ locale: 'ar' }]);
+      await expect(tamper(t)`UPDATE payroll_rate_confirmations SET text = 'x'`).rejects.toThrow(
+        /append-only/,
+      );
     });
   });
 

@@ -65,7 +65,7 @@ function daysLine(slip: PayslipDto): string {
     .join(' · ');
 }
 
-function bulletinBody(slip: PayslipDto, toVerify: boolean): SafeHtml {
+function bulletinBody(slip: PayslipDto, toVerify: boolean, platformRates: boolean): SafeHtml {
   return html`${linesTable(slip)}
     <div class="after">
       <table class="totals">
@@ -109,6 +109,10 @@ function bulletinBody(slip: PayslipDto, toVerify: boolean): SafeHtml {
           </p>`
         : ''
     }
+    <p class="note">
+      Les taux de cotisation et d'IRG appliqués relèvent de la responsabilité de
+      l'employeur.${platformRates ? " Taux indicatifs de la plateforme, acceptés par l'employeur." : ''}
+    </p>
     <div class="signatures">
       <div>L'employeur</div>
       <div>L'employé</div>
@@ -136,7 +140,12 @@ function recuBody(slip: PayslipDto): SafeHtml {
 /** A declared worker gets a bulletin; an undeclared one a reçu, never called a bulletin. */
 export function payslipPage(
   slip: PayslipDto,
-  run: { number: string | null; approvedAt: string | null; toVerify: boolean },
+  run: {
+    number: string | null;
+    approvedAt: string | null;
+    toVerify: boolean;
+    platformRates: boolean;
+  },
   seller: TenantSettingsResponse,
 ): DocumentPage {
   const declared = slip.declared;
@@ -162,7 +171,7 @@ export function payslipPage(
       ['Période', monthLabel(slip.month)],
       ['Paiement', slip.payType === PayType.DAILY ? 'À la journée' : 'Au mois'],
     ],
-    body: declared ? bulletinBody(slip, run.toVerify) : recuBody(slip),
+    body: declared ? bulletinBody(slip, run.toVerify, run.platformRates) : recuBody(slip),
     cancelled: false,
     duplicate: false,
   };

@@ -3,6 +3,7 @@ import {
   ErrorCode,
   money,
   type MyPayslipDto,
+  PayrollRateSource,
   PayrollRunStatus,
   type PayslipDto,
   Permission,
@@ -35,7 +36,15 @@ export type PayrollExport = 'livre-de-paie' | 'etat-cnas' | 'recap-irg';
 
 const slipInclude = {
   lines: { orderBy: { position: 'asc' } },
-  run: { select: { number: true, approvedAt: true, status: true, warehouseId: true } },
+  run: {
+    select: {
+      number: true,
+      approvedAt: true,
+      status: true,
+      warehouseId: true,
+      rateSet: { select: { tenantId: true } },
+    },
+  },
 } as const;
 
 /** Bulletins, reçus and the month's exports (phase 31b). Only approved runs are printed. */
@@ -67,6 +76,7 @@ export class PayrollDocumentsService {
         number: row.run.number,
         approvedAt: row.run.approvedAt?.toISOString() ?? null,
         toVerify: row.rateSetToVerify,
+        platformRates: row.run.rateSet.tenantId === null,
       },
       seller,
     );
@@ -95,7 +105,12 @@ export class PayrollDocumentsService {
     const pages = run.payslips.map((s) =>
       payslipPage(
         s,
-        { number: run.number, approvedAt: run.approvedAt, toVerify: run.rateSetToVerify },
+        {
+          number: run.number,
+          approvedAt: run.approvedAt,
+          toVerify: run.rateSetToVerify,
+          platformRates: run.rateSetSource === PayrollRateSource.PLATFORM,
+        },
         seller,
       ),
     );

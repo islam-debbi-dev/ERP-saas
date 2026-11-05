@@ -203,7 +203,7 @@ WHERE table_schema = 'public'
   AND table_name IN ('stock_movements', 'client_ledger_entries', 'payment_allocations',
                      'audit_logs', 'document_prints', 'attendance_events',
                      'employee_salaries', 'employee_ledger_entries', 'leave_entries',
-                     'payroll_rate_sets', 'employee_pay_items')
+                     'payroll_rate_sets', 'payroll_rate_confirmations', 'employee_pay_items')
   AND column_name IN ('updated_at', 'updatedat');
 
 -- name: money_columns_are_numeric
@@ -262,8 +262,7 @@ FROM information_schema.tables t
 WHERE t.table_schema = 'public'
   AND t.table_type = 'BASE TABLE'
   AND t.table_name <> '_prisma_migrations'
-  -- payroll_rate_sets: country-wide CNAS and IRG rates, owned by the super-admin.
-  AND t.table_name NOT IN ('tenants', 'payroll_rate_sets')
+  AND t.table_name <> 'tenants'
   AND NOT EXISTS (
     SELECT 1 FROM information_schema.columns c
     WHERE c.table_schema = 'public' AND c.table_name = t.table_name AND c.column_name = 'tenantId');

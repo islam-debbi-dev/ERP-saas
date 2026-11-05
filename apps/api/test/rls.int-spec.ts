@@ -97,6 +97,38 @@ describe('row-level security', () => {
     }
   });
 
+  it('shows the platform rates to all, and a company only its own', async () => {
+    const insert = `
+      INSERT INTO payroll_rate_sets (
+        "id", "tenantId", "effectiveFrom", "cnasEmployeeRate", "cnasEmployerRate", "irgBrackets",
+        "abattementRate", "abattementMin", "abattementMax", "exemptionThreshold",
+        "lissageCeiling", "lissageNum", "lissageDen", "lissageOffsetNum", "lissageOffsetDen",
+        "snmg", "toVerify")
+      SELECT gen_random_uuid(), $1::uuid, '2026-01-01', 0.09, 0.26, "irgBrackets",
+        "abattementRate", "abattementMin", "abattementMax", "exemptionThreshold",
+        "lissageCeiling", "lissageNum", "lissageDen", "lissageOffsetNum", "lissageOffsetDen",
+        "snmg", false
+      FROM payroll_rate_sets WHERE "tenantId" IS NULL LIMIT 1`;
+    const companies = `SELECT count(*)::int AS n FROM payroll_rate_sets WHERE "tenantId" IS NOT NULL`;
+    const platform = `SELECT count(*)::int AS n FROM payroll_rate_sets WHERE "tenantId" IS NULL`;
+    const n = async (sql: string) => (await app.query<{ n: number }>(sql)).rows[0]!.n;
+
+    expect(await n(platform)).toBeGreaterThan(0);
+    await app.query("SELECT set_config('app.tenant_id', $1, false)", [a.tenantId]);
+    try {
+      await app.query(insert, [a.tenantId]);
+      // A company can never publish a platform set, nor write for another one.
+      await expect(app.query(insert, [null])).rejects.toThrow(/row-level security/);
+      await expect(app.query(insert, [b.tenantId])).rejects.toThrow(/row-level security/);
+      expect(await n(companies)).toBe(1);
+      await app.query("SELECT set_config('app.tenant_id', $1, false)", [b.tenantId]);
+      expect(await n(companies)).toBe(0);
+      expect(await n(platform)).toBeGreaterThan(0);
+    } finally {
+      await app.query("SELECT set_config('app.tenant_id', '', false)");
+    }
+  });
+
   it('refuses a write without a tenant setting, even with a valid tenantId', async () => {
     await expect(
       app.query(

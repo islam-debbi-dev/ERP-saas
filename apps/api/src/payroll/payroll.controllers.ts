@@ -38,7 +38,12 @@ import {
   type PayrollRunListQuery,
   payrollRunListQuerySchema,
   type PayrollRunPage,
+  type CompanyRateSetInput,
+  companyRateSetSchema,
+  type PayrollRatesDto,
   type PayrollSettingsDto,
+  type RateDecisionInput,
+  rateDecisionSchema,
   type PayrollSettingsInput,
   payrollSettingsSchema,
   Permission,
@@ -52,6 +57,7 @@ import {
   PayrollDocumentsService,
   type PayrollFile,
 } from './payroll-documents.service';
+import { PayrollRatesService } from './payroll-rates.service';
 import { PayrollRunsService } from './payroll-runs.service';
 import { PayrollSettingsService } from './payroll-settings.service';
 
@@ -91,6 +97,51 @@ export class PayrollSettingsController {
     @Body(new ZodValidationPipe(payrollSettingsSchema)) body: PayrollSettingsInput,
   ): Promise<PayrollSettingsDto> {
     return this.settings.update(body);
+  }
+}
+
+/** The rates a company answers for: its own sets, or the platform's it accepted. */
+@Controller('payroll-rates')
+@RequireFeature(Feature.PAYROLL)
+@RequirePermission(Permission.SALARY_VIEW)
+export class PayrollRatesController {
+  constructor(private readonly rates: PayrollRatesService) {}
+
+  @Get()
+  list(): Promise<PayrollRatesDto> {
+    return this.rates.list();
+  }
+
+  @Post()
+  @Idempotent()
+  @RequirePermission(Permission.PAYROLL_RATES_MANAGE)
+  create(
+    @Body(new ZodValidationPipe(companyRateSetSchema)) body: CompanyRateSetInput,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<PayrollRatesDto> {
+    return this.rates.create(body, user);
+  }
+
+  @Post(':id/accept')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission(Permission.PAYROLL_RATES_MANAGE)
+  accept(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(rateDecisionSchema)) body: RateDecisionInput,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<PayrollRatesDto> {
+    return this.rates.accept(id, body, user);
+  }
+
+  @Post(':id/keep-own')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission(Permission.PAYROLL_RATES_MANAGE)
+  keepOwn(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(rateDecisionSchema)) body: RateDecisionInput,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<PayrollRatesDto> {
+    return this.rates.keepOwn(id, body, user);
   }
 }
 

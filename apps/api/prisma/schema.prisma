@@ -227,6 +227,8 @@ model Tenant {
   payItemTypes          PayItemType[]
   employeePayItems      EmployeePayItem[]
   payrollRuns           PayrollRun[]
+  payrollRateSets       PayrollRateSet[]
+  payrollRateConfirmations PayrollRateConfirmation[]
   payslips              Payslip[]
   payslipLines          PayslipLine[]
   payrollManualLines    PayrollManualLine[]
@@ -3060,6 +3062,8 @@ enum PayrollManualKind {
 model PayrollRateSet {
   id                 String   @id @default(uuid()) @db.Uuid
   seq                BigInt   @unique @default(autoincrement())
+  /// Null: a platform set, indicative, published by the super-admin. Else the company's own.
+  tenantId           String?  @db.Uuid
   effectiveFrom      DateTime @db.Date
   cnasEmployeeRate   Decimal  @db.Decimal(6, 4)
   cnasEmployerRate   Decimal  @db.Decimal(6, 4)
@@ -3080,10 +3084,32 @@ model PayrollRateSet {
   note               String?  @db.VarChar(255)
   createdAt          DateTime @default(now()) @db.Timestamptz(3)
 
-  runs PayrollRun[]
+  tenant        Tenant?                   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  runs          PayrollRun[]
+  confirmations PayrollRateConfirmation[]
 
-  @@index([effectiveFrom, seq])
+  @@index([tenantId, effectiveFrom, seq])
   @@map("payroll_rate_sets")
+}
+
+/// The owner's word on a rate set, append-only: who, when, which set, the text he read.
+/// CONFIRMED lets runs on that set be approved; KEPT_OWN only answers the new-rates banner.
+model PayrollRateConfirmation {
+  id         String   @id @default(uuid()) @db.Uuid
+  seq        BigInt   @unique @default(autoincrement())
+  tenantId   String   @db.Uuid
+  rateSetId  String   @db.Uuid
+  decision   String   @db.VarChar(16)
+  text       String   @db.VarChar(255)
+  locale     String   @db.VarChar(2)
+  createdBy  String   @db.Uuid
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant  Tenant         @relation(fields: [tenantId], references: [id])
+  rateSet PayrollRateSet @relation(fields: [rateSetId], references: [id])
+
+  @@unique([tenantId, rateSetId, decision])
+  @@map("payroll_rate_confirmations")
 }
 
 /// A prime or indemnité of the tenant (master data, soft delete).

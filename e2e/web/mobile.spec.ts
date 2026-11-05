@@ -535,6 +535,15 @@ async function prepareIds(f: Fixture): Promise<Ids> {
       body: { month: payrollMonth, warehouseId: marked.unit.id },
     })
   ).body;
+  // The owner answers for the rates: without it a run cannot be approved.
+  const rates = (await call<{ platform: { id: string }[] }>('/payroll-rates', { token })).body;
+  for (const set of rates.platform) {
+    await call(`/payroll-rates/${set.id}/accept`, {
+      method: 'POST',
+      token,
+      body: { locale: 'fr' },
+    });
+  }
   await call(`/payroll-runs/${toApprove.id}/approve`, {
     method: 'POST',
     token,
@@ -780,6 +789,16 @@ for (const locale of LOCALES) {
           await page.waitForURL((url) => url.pathname === to);
           await settle(page);
         };
+        await go('/rh/paie/taux');
+        await page.getByRole('button', { name: pay['ratesCreateFrom'] }).first().waitFor();
+        await check(page, '/rh/paie/taux', locale, results);
+        await page.getByRole('button', { name: pay['ratesCreateFrom'] }).first().click();
+        await page.locator('[role="dialog"]').waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        await check(page, '/rh/paie/taux/nouveau', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+        await page.locator('[role="dialog"]').waitFor({ state: 'hidden' });
+
         await go(`/rh/paie/${v.payrollDraftId}`);
         const approve = page.getByRole('button', { name: pay['approve'] });
         await approve.waitFor();

@@ -1,7 +1,9 @@
 'use client';
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import {
+  type CompanyRateSetInput,
   type CreatePayrollRunInput,
   type EmployeePayItemDto,
   type EmployeePayItemInput,
@@ -11,11 +13,13 @@ import {
   type PayItemTypeDto,
   type PayItemTypeInput,
   type PaymentMode,
+  type PayrollRatesDto,
   type PayrollRunDetailDto,
   type PayrollRunPage,
   type PayrollSettingsDto,
   type PayrollSettingsInput,
   Permission,
+  type RateTextLocale,
 } from '@erp/shared';
 import { api } from './api-client';
 import { useFeature, usePermission } from './auth';
@@ -28,6 +32,7 @@ export const payrollKeys = {
   runs: ['payroll', 'runs'] as const,
   run: (id: string) => ['payroll', 'run', id] as const,
   settings: ['payroll', 'settings'] as const,
+  rates: ['payroll', 'rates'] as const,
   types: ['payroll', 'types'] as const,
   employeeItems: (id: string) => ['payroll', 'items', id] as const,
   employeeSlips: (id: string) => ['payroll', 'slips', id] as const,
@@ -191,6 +196,48 @@ export function useAddEmployeePayItem(id: string) {
         method: 'POST',
         idempotencyKey: key,
         body,
+      }),
+    onSuccess: refresh,
+  });
+}
+
+export function usePayrollRates(enabled = true) {
+  return useQuery({
+    queryKey: payrollKeys.rates,
+    enabled,
+    queryFn: ({ signal }) => api.request<PayrollRatesDto>('/payroll-rates', { signal }),
+  });
+}
+
+export function useCreateRateSet() {
+  const refresh = useRefreshPayroll();
+  const [key] = useState(() => crypto.randomUUID());
+  return useMutation({
+    mutationFn: (body: CompanyRateSetInput) =>
+      api.request<PayrollRatesDto>('/payroll-rates', {
+        method: 'POST',
+        body,
+        idempotencyKey: key,
+      }),
+    onSuccess: refresh,
+  });
+}
+
+export function useAnswerRates() {
+  const refresh = useRefreshPayroll();
+  return useMutation({
+    mutationFn: ({
+      id,
+      answer,
+      locale,
+    }: {
+      id: string;
+      answer: 'accept' | 'keep-own';
+      locale: RateTextLocale;
+    }) =>
+      api.request<PayrollRatesDto>(`/payroll-rates/${id}/${answer}`, {
+        method: 'POST',
+        body: { locale },
       }),
     onSuccess: refresh,
   });

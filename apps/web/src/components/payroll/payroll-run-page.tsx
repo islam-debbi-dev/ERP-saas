@@ -9,6 +9,7 @@ import {
   TriangleAlert,
   XCircle,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -179,7 +180,12 @@ function Run({ id }: { id: string }) {
         <StickyActions>
           <Button
             className="min-h-11 w-full md:w-auto"
-            disabled={blocked || actions.approve.isPending || run.payslips.length === 0}
+            disabled={
+              blocked ||
+              !run.ratesConfirmed ||
+              actions.approve.isPending ||
+              run.payslips.length === 0
+            }
             onClick={() =>
               actions.approve.mutate(run.version, {
                 onSuccess: () => toast.success(t('approved')),
@@ -229,6 +235,7 @@ function Notices({ run }: { run: PayrollRunDetailDto }) {
   ];
   return (
     <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">{t('ratesResponsibility')}</p>
       {blocking
         .filter(([, who]) => who.length > 0)
         .map(([title, who]) => (
@@ -238,6 +245,18 @@ function Notices({ run }: { run: PayrollRunDetailDto }) {
             <AlertDescription className="break-words">{who.join(', ')}</AlertDescription>
           </Alert>
         ))}
+      {!run.ratesConfirmed && run.status === 'DRAFT' ? (
+        <Alert variant="destructive">
+          <TriangleAlert aria-hidden />
+          <AlertTitle>{t('ratesNotConfirmed')}</AlertTitle>
+          <AlertDescription>
+            {t('ratesNotConfirmedHelp')}{' '}
+            <Link href="/rh/paie/taux" className="inline-flex min-h-11 items-center underline">
+              {t('ratesConfirm')}
+            </Link>
+          </AlertDescription>
+        </Alert>
+      ) : null}
       {run.rateSetToVerify ? (
         <Alert>
           <TriangleAlert aria-hidden />

@@ -10,6 +10,7 @@ import { SalesForceModule } from '../sales-force/sales-force.module';
 import { TenantsModule } from '../tenants/tenants.module';
 import { PayrollComputeService } from './payroll-compute.service';
 import { PayrollDocumentsService } from './payroll-documents.service';
+import { PayrollRatesService } from './payroll-rates.service';
 import { PayrollRunsService } from './payroll-runs.service';
 import { PayrollSettingsService } from './payroll-settings.service';
 import {
@@ -17,6 +18,7 @@ import {
   EmployeePayslipsController,
   MyPayslipsController,
   PayItemTypesController,
+  PayrollRatesController,
   PayrollRunsController,
   PayrollSettingsController,
 } from './payroll.controllers';
@@ -36,6 +38,7 @@ import {
   ],
   controllers: [
     PayrollSettingsController,
+    PayrollRatesController,
     PayItemTypesController,
     EmployeePayItemsController,
     EmployeePayslipsController,
@@ -45,6 +48,7 @@ import {
   providers: [
     PayrollComputeService,
     PayrollDocumentsService,
+    PayrollRatesService,
     PayrollRunsService,
     PayrollSettingsService,
   ],

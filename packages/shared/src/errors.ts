@@ -197,6 +197,8 @@ export const ErrorCode = {
   PAYROLL_OVERPAYMENT: 'PAYROLL_OVERPAYMENT',
   /** No rate set covers this month. */
   PAYROLL_NO_RATE_SET: 'PAYROLL_NO_RATE_SET',
+  /** The owner has neither his own rates nor accepted the platform's for this run. */
+  PAYROLL_RATES_NOT_CONFIRMED: 'PAYROLL_RATES_NOT_CONFIRMED',
   /** Self check-in is off for this company. */
   SELF_CHECK_IN_DISABLED: 'SELF_CHECK_IN_DISABLED',
   /** Check-out without a check-in, or a second check-in. */

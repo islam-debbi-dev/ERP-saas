@@ -113,6 +113,8 @@ export const Permission = {
   PAYROLL_APPROVE: 'PAYROLL_APPROVE',
   /** Pay the salaries of an approved run. */
   PAYROLL_PAY: 'PAYROLL_PAY',
+  /** Set the company's own rates, or accept the indicative platform ones. */
+  PAYROLL_RATES_MANAGE: 'PAYROLL_RATES_MANAGE',
 } as const;
 export type Permission = (typeof Permission)[keyof typeof Permission];
 export const PERMISSIONS = Object.values(Permission);
@@ -195,6 +197,7 @@ export const PERMISSION_GROUPS = {
     Permission.PAYROLL_MANAGE,
     Permission.PAYROLL_APPROVE,
     Permission.PAYROLL_PAY,
+    Permission.PAYROLL_RATES_MANAGE,
   ],
   settings: [Permission.SETTINGS_EDIT],
 } as const satisfies Record<string, readonly Permission[]>;
@@ -253,6 +256,7 @@ const OWNER_ONLY: readonly Permission[] = [
   Permission.PAYROLL_MANAGE,
   Permission.PAYROLL_APPROVE,
   Permission.PAYROLL_PAY,
+  Permission.PAYROLL_RATES_MANAGE,
 ];
 
 /** What each role can do by default. The OWNER always has everything. */

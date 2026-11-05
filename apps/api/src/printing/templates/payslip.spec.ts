@@ -63,7 +63,12 @@ const slip = (over: Partial<PayslipDto> = {}): PayslipDto =>
     ...over,
   }) as PayslipDto;
 
-const run = { number: 'PAIE-2026-000001', approvedAt: '2026-11-02T10:00:00.000Z', toVerify: false };
+const run = {
+  number: 'PAIE-2026-000001',
+  approvedAt: '2026-11-02T10:00:00.000Z',
+  toVerify: false,
+  platformRates: false,
+};
 
 describe('payslip document', () => {
   it('prints a bulletin for a declared worker, with the company ids, NSS and cumuls', () => {
@@ -91,6 +96,15 @@ describe('payslip document', () => {
       'Taux à vérifier',
     );
     expect(layout(payslipPage(slip(), run, seller))).not.toContain('Taux à vérifier');
+  });
+
+  it("says the rates are the employer's, and when they are the platform's", () => {
+    const own = layout(payslipPage(slip(), run, seller));
+    expect(own).toContain('responsabilité de');
+    expect(own).not.toContain('Taux indicatifs');
+    expect(layout(payslipPage(slip(), { ...run, platformRates: true }, seller))).toContain(
+      'Taux indicatifs de la plateforme',
+    );
   });
 
   it('escapes names', () => {

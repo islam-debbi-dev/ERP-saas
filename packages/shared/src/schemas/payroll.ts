@@ -171,8 +171,64 @@ export type PayrollRateSetInput = z.infer<typeof payrollRateSetSchema>;
 
 export interface PayrollRateSetDto extends Omit<PayrollRateSetInput, 'irgBrackets'> {
   id: string;
+  /** PLATFORM values are indicative: the company answers for the rates it uses. */
+  source: PayrollRateSource;
   irgBrackets: IrgBracket[];
   createdAt: string;
+}
+
+export const PayrollRateSource = { PLATFORM: 'PLATFORM', COMPANY: 'COMPANY' } as const;
+export type PayrollRateSource = (typeof PayrollRateSource)[keyof typeof PayrollRateSource];
+
+export const PayrollRateDecision = { CONFIRMED: 'CONFIRMED', KEPT_OWN: 'KEPT_OWN' } as const;
+export type PayrollRateDecision = (typeof PayrollRateDecision)[keyof typeof PayrollRateDecision];
+
+export const RATE_TEXT_LOCALES = ['ar', 'fr', 'en'] as const;
+export type RateTextLocale = (typeof RATE_TEXT_LOCALES)[number];
+
+/**
+ * What the owner reads and agrees to, in his screen's language. The server stores the
+ * text from here, so the record is what was shown and never what a client sent.
+ */
+export const RATE_CONFIRMATION_TEXTS = {
+  OWN: {
+    fr: 'Je confirme que ces taux sont validés par mon comptable.',
+    ar: 'أؤكد أن هذه النسب صادق عليها محاسبي.',
+    en: 'I confirm these rates are validated by my accountant.',
+  },
+  ACCEPT: {
+    fr: "J'accepte ces taux indicatifs pour ma société et j'en assume la responsabilité.",
+    ar: 'أقبل هذه النسب الاسترشادية لشركتي وأتحمل مسؤوليتها.',
+    en: 'I accept these indicative rates for my company and take responsibility for them.',
+  },
+  KEEP: {
+    fr: 'Je conserve les taux de ma société et j’en assume la responsabilité.',
+    ar: 'أحتفظ بنسب شركتي وأتحمل مسؤوليتها.',
+    en: 'I keep my company’s rates and take responsibility for them.',
+  },
+} as const satisfies Record<string, Record<RateTextLocale, string>>;
+
+export const rateDecisionSchema = z.object({ locale: z.enum(RATE_TEXT_LOCALES) });
+export type RateDecisionInput = z.infer<typeof rateDecisionSchema>;
+
+export const companyRateSetSchema = payrollRateSetSchema.omit({ toVerify: true }).extend({
+  locale: z.enum(RATE_TEXT_LOCALES),
+  /** The box "validés par mon comptable": no set without it. */
+  confirmed: z.literal(true),
+});
+export type CompanyRateSetInput = z.infer<typeof companyRateSetSchema>;
+
+export interface PlatformRateSetDto extends PayrollRateSetDto {
+  /** This company accepted this set: its runs may be approved. */
+  confirmed: boolean;
+}
+
+export interface PayrollRatesDto {
+  /** Newest first. */
+  platform: PlatformRateSetDto[];
+  own: PayrollRateSetDto[];
+  /** A platform set published after the company's own, not answered yet: the banner. */
+  newOfficial: PayrollRateSetDto | null;
 }
 
 export interface PayrollSettingsDto extends PayrollSettingsInput {
@@ -288,7 +344,12 @@ export interface PayrollRunDto {
   warehouse: { id: string; name: string } | null;
   status: PayrollRunStatus;
   version: number;
+  rateSetId: string;
+  rateSetSource: PayrollRateSource;
+  /** Only a platform set not checked yet. */
   rateSetToVerify: boolean;
+  /** The owner answered for this set: without it the run cannot be approved. */
+  ratesConfirmed: boolean;
   employeeCount: number;
   totals: PayrollTotals;
   computedAt: string;

@@ -22,6 +22,7 @@ import {
   type PayrollRunDto,
   type PayrollRunListQuery,
   type PayrollRunPage,
+  PayrollRateSource,
   PayrollRunStatus,
   type PayslipDto,
   type PayslipIssue,
@@ -45,6 +46,7 @@ import { type Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
 import { type ComputedRun, PayrollComputeService } from './payroll-compute.service';
+import { PayrollRatesService } from './payroll-rates.service';
 import { PayrollSettingsService } from './payroll-settings.service';
 
 /** Arbitrary constant: one run created at a time per company and month. */
@@ -81,6 +83,7 @@ export class PayrollRunsService {
     private readonly expenses: ExpensesService,
     private readonly compute: PayrollComputeService,
     private readonly settings: PayrollSettingsService,
+    private readonly rates: PayrollRatesService,
   ) {}
 
   async list(query: PayrollRunListQuery, user: CurrentUserInfo): Promise<PayrollRunPage> {
@@ -274,6 +277,7 @@ export class PayrollRunsService {
         });
       }
       this.assertApprovable(computed);
+      await this.rates.assertConfirmed(tx, computed.rateSetId);
 
       const tenantId = tenantContext.requireTenantId();
       const number = await this.numbering.next(tx, tenantId, DocType.PAIE);
@@ -637,11 +641,11 @@ export class PayrollRunsService {
     tx: Tx,
     runs: (Prisma.PayrollRunGetPayload<object> & {
       warehouse: { id: string; name: string } | null;
-      rateSet: { toVerify: boolean };
+      rateSet: { id: string; tenantId: string | null; toVerify: boolean };
     })[],
   ): Promise<PayrollRunDto[]> {
     const ids = runs.map((r) => r.id);
-    const [totals, paid] = await Promise.all([
+    const [totals, paid, confirmed] = await Promise.all([
       tx.payslip.groupBy({
         by: ['runId'],
         where: { runId: { in: ids } },
@@ -657,6 +661,10 @@ export class PayrollRunsService {
         },
       }),
       this.expenses.paidOnRuns(tx, ids),
+      this.rates.confirmedIds(
+        tx,
+        runs.map((r) => r.rateSet.id),
+      ),
     ]);
     const byRun = new Map(totals.map((t) => [t.runId, t]));
     return runs.map((r) => {
@@ -675,7 +683,11 @@ export class PayrollRunsService {
         warehouse: r.warehouse,
         status: r.status,
         version: r.version,
-        rateSetToVerify: r.rateSet.toVerify,
+        rateSetId: r.rateSet.id,
+        rateSetSource:
+          r.rateSet.tenantId === null ? PayrollRateSource.PLATFORM : PayrollRateSource.COMPANY,
+        rateSetToVerify: r.rateSet.tenantId === null && r.rateSet.toVerify,
+        ratesConfirmed: confirmed.has(r.rateSet.id),
         employeeCount: t?._count._all ?? 0,
         totals: {
           gross: figure(t?._sum.gross),
