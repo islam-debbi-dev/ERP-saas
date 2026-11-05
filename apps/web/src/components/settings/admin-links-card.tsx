@@ -16,8 +16,8 @@ export function AdminLinksCard() {
   const links = [
     ...(manager ? [{ href: '/parametres/utilisateurs', icon: Users, key: 'users' as const }] : []),
     { href: '/parametres/sessions', icon: Laptop, key: 'sessions' as const },
-    ...(manager ? [{ href: '/parametres/journal', icon: History, key: 'audit' as const }] : []),
-    { href: '/parametres/abonnement', icon: CreditCard, key: 'subscription' as const },
+    // ...(manager ? [{ href: '/parametres/journal', icon: History, key: 'audit' as const }] : []),
+    // { href: '/parametres/abonnement', icon: CreditCard, key: 'subscription' as const },
   ];
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
