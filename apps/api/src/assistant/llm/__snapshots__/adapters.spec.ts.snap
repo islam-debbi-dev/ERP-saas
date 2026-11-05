@@ -1,0 +1,394 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`tool schema conversion matches the snapshot per provider: anthropic 1`] = `
+[
+  {
+    "description": "Balance of one client: what he owes, his oldest unpaid date, last versement, split per dépôt.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "clientId": {
+          "format": "uuid",
+          "type": "string",
+        },
+      },
+      "required": [
+        "clientId",
+      ],
+      "type": "object",
+    },
+    "name": "client_balance",
+    "strict": true,
+  },
+  {
+    "description": "The clients à relancer: they owe and their oldest unpaid amount is too old.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object",
+    },
+    "name": "clients_to_remind",
+    "strict": true,
+  },
+  {
+    "description": "Find one document by its number (sale, facture, avoir, versement, purchase): status, client, total, date.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "number": {
+          "type": "string",
+        },
+      },
+      "required": [
+        "number",
+      ],
+      "type": "object",
+    },
+    "name": "find_document",
+    "strict": true,
+  },
+  {
+    "description": "Stock of one product per dépôt, in base unit and main unit, with its alert level.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "productId": {
+          "format": "uuid",
+          "type": "string",
+        },
+      },
+      "required": [
+        "productId",
+      ],
+      "type": "object",
+    },
+    "name": "product_stock",
+    "strict": true,
+  },
+  {
+    "description": "Sales total (TTC, net of returns), number of sales and encaissements between two dates included, in the user's scope. Dates are YYYY-MM-DD, Algiers time.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "type": "string",
+        },
+        "to": {
+          "type": "string",
+        },
+      },
+      "required": [
+        "from",
+        "to",
+      ],
+      "type": "object",
+    },
+    "name": "sales_summary",
+    "strict": true,
+  },
+  {
+    "description": "Find clients of this company by name, code or phone. Use it first to get a clientId.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "query": {
+          "type": "string",
+        },
+      },
+      "required": [
+        "query",
+      ],
+      "type": "object",
+    },
+    "name": "search_clients",
+    "strict": true,
+  },
+  {
+    "description": "Find products by designation, reference or barcode. Gives a productId.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "query": {
+          "type": "string",
+        },
+      },
+      "required": [
+        "query",
+      ],
+      "type": "object",
+    },
+    "name": "search_products",
+    "strict": true,
+  },
+]
+`;
+
+exports[`tool schema conversion matches the snapshot per provider: gemini 1`] = `
+[
+  {
+    "description": "Balance of one client: what he owes, his oldest unpaid date, last versement, split per dépôt.",
+    "name": "client_balance",
+    "parametersJsonSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "clientId": {
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "type": "string",
+        },
+      },
+      "required": [
+        "clientId",
+      ],
+      "type": "object",
+    },
+  },
+  {
+    "description": "The clients à relancer: they owe and their oldest unpaid amount is too old.",
+    "name": "clients_to_remind",
+    "parametersJsonSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object",
+    },
+  },
+  {
+    "description": "Find one document by its number (sale, facture, avoir, versement, purchase): status, client, total, date.",
+    "name": "find_document",
+    "parametersJsonSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "number": {
+          "maxLength": 40,
+          "minLength": 3,
+          "type": "string",
+        },
+      },
+      "required": [
+        "number",
+      ],
+      "type": "object",
+    },
+  },
+  {
+    "description": "Stock of one product per dépôt, in base unit and main unit, with its alert level.",
+    "name": "product_stock",
+    "parametersJsonSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "productId": {
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+          "type": "string",
+        },
+      },
+      "required": [
+        "productId",
+      ],
+      "type": "object",
+    },
+  },
+  {
+    "description": "Sales total (TTC, net of returns), number of sales and encaissements between two dates included, in the user's scope. Dates are YYYY-MM-DD, Algiers time.",
+    "name": "sales_summary",
+    "parametersJsonSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "type": "string",
+        },
+        "to": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "type": "string",
+        },
+      },
+      "required": [
+        "from",
+        "to",
+      ],
+      "type": "object",
+    },
+  },
+  {
+    "description": "Find clients of this company by name, code or phone. Use it first to get a clientId.",
+    "name": "search_clients",
+    "parametersJsonSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "query": {
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string",
+        },
+      },
+      "required": [
+        "query",
+      ],
+      "type": "object",
+    },
+  },
+  {
+    "description": "Find products by designation, reference or barcode. Gives a productId.",
+    "name": "search_products",
+    "parametersJsonSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "query": {
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string",
+        },
+      },
+      "required": [
+        "query",
+      ],
+      "type": "object",
+    },
+  },
+]
+`;
+
+exports[`tool schema conversion matches the snapshot per provider: openai strict 1`] = `
+[
+  {
+    "function": {
+      "description": "Balance of one client: what he owes, his oldest unpaid date, last versement, split per dépôt.",
+      "name": "client_balance",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "clientId": {
+            "format": "uuid",
+            "type": "string",
+          },
+        },
+        "required": [
+          "clientId",
+        ],
+        "type": "object",
+      },
+      "strict": true,
+    },
+    "type": "function",
+  },
+  {
+    "function": {
+      "description": "The clients à relancer: they owe and their oldest unpaid amount is too old.",
+      "name": "clients_to_remind",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object",
+      },
+      "strict": true,
+    },
+    "type": "function",
+  },
+  {
+    "function": {
+      "description": "Find one document by its number (sale, facture, avoir, versement, purchase): status, client, total, date.",
+      "name": "find_document",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "number": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "number",
+        ],
+        "type": "object",
+      },
+      "strict": true,
+    },
+    "type": "function",
+  },
+  {
+    "function": {
+      "description": "Stock of one product per dépôt, in base unit and main unit, with its alert level.",
+      "name": "product_stock",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "productId": {
+            "format": "uuid",
+            "type": "string",
+          },
+        },
+        "required": [
+          "productId",
+        ],
+        "type": "object",
+      },
+      "strict": true,
+    },
+    "type": "function",
+  },
+  {
+    "function": {
+      "description": "Sales total (TTC, net of returns), number of sales and encaissements between two dates included, in the user's scope. Dates are YYYY-MM-DD, Algiers time.",
+      "name": "sales_summary",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string",
+          },
+          "to": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "from",
+          "to",
+        ],
+        "type": "object",
+      },
+      "strict": true,
+    },
+    "type": "function",
+  },
+  {
+    "function": {
+      "description": "Find clients of this company by name, code or phone. Use it first to get a clientId.",
+      "name": "search_clients",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "query",
+        ],
+        "type": "object",
+      },
+      "strict": true,
+    },
+    "type": "function",
+  },
+  {
+    "function": {
+      "description": "Find products by designation, reference or barcode. Gives a productId.",
+      "name": "search_products",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "query",
+        ],
+        "type": "object",
+      },
+      "strict": true,
+    },
+    "type": "function",
+  },
+]
+`;

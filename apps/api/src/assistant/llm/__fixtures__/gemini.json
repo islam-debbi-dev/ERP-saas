@@ -1,0 +1,142 @@
+{
+  "text": {
+    "chunks": [
+      {
+        "candidates": [
+          {
+            "content": {
+              "role": "model",
+              "parts": [
+                {
+                  "text": "pensée",
+                  "thought": true
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "candidates": [
+          {
+            "content": {
+              "role": "model",
+              "parts": [
+                {
+                  "text": "Bonjour "
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "candidates": [
+          {
+            "content": {
+              "role": "model",
+              "parts": [
+                {
+                  "text": "Karim"
+                }
+              ]
+            },
+            "finishReason": "STOP"
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1000,
+          "cachedContentTokenCount": 850,
+          "candidatesTokenCount": 25,
+          "thoughtsTokenCount": 15
+        }
+      }
+    ]
+  },
+  "tool": {
+    "chunks": [
+      {
+        "candidates": [
+          {
+            "content": {
+              "role": "model",
+              "parts": [
+                {
+                  "text": "Je cherche."
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "candidates": [
+          {
+            "content": {
+              "role": "model",
+              "parts": [
+                {
+                  "functionCall": {
+                    "id": "call-1",
+                    "name": "search_clients",
+                    "args": {
+                      "query": "karim"
+                    }
+                  },
+                  "thoughtSignature": "sig-1"
+                }
+              ]
+            },
+            "finishReason": "STOP"
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1000,
+          "cachedContentTokenCount": 850,
+          "candidatesTokenCount": 25,
+          "thoughtsTokenCount": 15
+        }
+      }
+    ]
+  },
+  "maxTokens": {
+    "chunks": [
+      {
+        "candidates": [
+          {
+            "content": {
+              "role": "model",
+              "parts": [
+                {
+                  "text": "Bonjour"
+                }
+              ]
+            },
+            "finishReason": "MAX_TOKENS"
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1000,
+          "cachedContentTokenCount": 850,
+          "candidatesTokenCount": 25,
+          "thoughtsTokenCount": 15
+        }
+      }
+    ]
+  },
+  "refusal": {
+    "chunks": [
+      {
+        "promptFeedback": {
+          "blockReason": "SAFETY"
+        },
+        "usageMetadata": {
+          "promptTokenCount": 1000,
+          "cachedContentTokenCount": 850,
+          "candidatesTokenCount": 25,
+          "thoughtsTokenCount": 15
+        }
+      }
+    ]
+  }
+}

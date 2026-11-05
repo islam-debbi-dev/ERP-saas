@@ -1,0 +1,222 @@
+{
+  "text": {
+    "chunks": [
+      {
+        "choices": [
+          {
+            "index": 0,
+            "delta": {
+              "role": "assistant",
+              "content": "Bonjour "
+            },
+            "finish_reason": null
+          }
+        ]
+      },
+      {
+        "choices": [
+          {
+            "index": 0,
+            "delta": {
+              "content": "Karim"
+            },
+            "finish_reason": null
+          }
+        ]
+      },
+      {
+        "choices": [
+          {
+            "index": 0,
+            "delta": {},
+            "finish_reason": "stop"
+          }
+        ]
+      },
+      {
+        "choices": [],
+        "usage": {
+          "prompt_tokens": 1000,
+          "completion_tokens": 40,
+          "prompt_tokens_details": {
+            "cached_tokens": 850
+          }
+        }
+      }
+    ]
+  },
+  "tool": {
+    "chunks": [
+      {
+        "choices": [
+          {
+            "index": 0,
+            "delta": {
+              "content": "Je cherche."
+            },
+            "finish_reason": null
+          }
+        ]
+      },
+      {
+        "choices": [
+          {
+            "index": 0,
+            "delta": {
+              "tool_calls": [
+                {
+                  "index": 0,
+                  "id": "call-1",
+                  "type": "function",
+                  "function": {
+                    "name": "search_clients",
+                    "arguments": "{\"que"
+                  }
+                }
+              ]
+            },
+            "finish_reason": null
+          }
+        ]
+      },
+      {
+        "choices": [
+          {
+            "index": 0,
+            "delta": {
+              "tool_calls": [
+                {
+                  "index": 0,
+                  "function": {
+                    "arguments": "ry\":\"karim\"}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": null
+          }
+        ]
+      },
+      {
+        "choices": [
+          {
+            "index": 0,
+            "delta": {},
+            "finish_reason": "tool_calls"
+          }
+        ]
+      },
+      {
+        "choices": [],
+        "usage": {
+          "prompt_tokens": 1000,
+          "completion_tokens": 40,
+          "prompt_tokens_details": {
+            "cached_tokens": 850
+          }
+        }
+      }
+    ]
+  },
+  "maxTokens": {
+    "chunks": [
+      {
+        "choices": [
+          {
+            "index": 0,
+            "delta": {
+              "content": "Bonjour"
+            },
+            "finish_reason": null
+          }
+        ]
+      },
+      {
+        "choices": [
+          {
+            "index": 0,
+            "delta": {},
+            "finish_reason": "length"
+          }
+        ]
+      },
+      {
+        "choices": [],
+        "usage": {
+          "prompt_tokens": 1000,
+          "completion_tokens": 40,
+          "prompt_tokens_details": {
+            "cached_tokens": 850
+          }
+        }
+      }
+    ]
+  },
+  "refusal": {
+    "chunks": [
+      {
+        "choices": [
+          {
+            "index": 0,
+            "delta": {},
+            "finish_reason": "content_filter"
+          }
+        ]
+      },
+      {
+        "choices": [],
+        "usage": {
+          "prompt_tokens": 1000,
+          "completion_tokens": 40,
+          "prompt_tokens_details": {
+            "cached_tokens": 850
+          }
+        }
+      }
+    ]
+  },
+  "badJson": {
+    "chunks": [
+      {
+        "choices": [
+          {
+            "index": 0,
+            "delta": {
+              "tool_calls": [
+                {
+                  "index": 0,
+                  "id": "call-1",
+                  "type": "function",
+                  "function": {
+                    "name": "search_clients",
+                    "arguments": "{broken"
+                  }
+                }
+              ]
+            },
+            "finish_reason": null
+          }
+        ]
+      },
+      {
+        "choices": [
+          {
+            "index": 0,
+            "delta": {},
+            "finish_reason": "tool_calls"
+          }
+        ]
+      },
+      {
+        "choices": [],
+        "usage": {
+          "prompt_tokens": 1000,
+          "completion_tokens": 40,
+          "prompt_tokens_details": {
+            "cached_tokens": 850
+          }
+        }
+      }
+    ]
+  }
+}
