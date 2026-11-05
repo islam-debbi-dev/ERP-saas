@@ -212,6 +212,26 @@ export const ErrorCode = {
   /** The range has no working day: nothing to take. */
   LEAVE_NO_WORKING_DAY: 'LEAVE_NO_WORKING_DAY',
   PUBLIC_HOLIDAY_TAKEN: 'PUBLIC_HOLIDAY_TAKEN',
+  // Assistant (phase 30)
+  /** No provider applies to this company, or the assistant is switched off. */
+  AI_NOT_CONFIGURED: 'AI_NOT_CONFIGURED',
+  /** The provider failed. Its own message never reaches the user. */
+  AI_UNAVAILABLE: 'AI_UNAVAILABLE',
+  AI_INVALID_KEY: 'AI_INVALID_KEY',
+  AI_MODEL_NOT_FOUND: 'AI_MODEL_NOT_FOUND',
+  AI_RATE_LIMITED: 'AI_RATE_LIMITED',
+  /** The company used its questions of the month; details carry the reset date. */
+  AI_QUOTA_EXCEEDED: 'AI_QUOTA_EXCEEDED',
+  /** This user asked his 100 questions of the day. */
+  AI_DAILY_LIMIT: 'AI_DAILY_LIMIT',
+  /** SaaS mode: the super-admin has not allowed this company to use its own key. */
+  AI_TENANT_KEY_NOT_ALLOWED: 'AI_TENANT_KEY_NOT_ALLOWED',
+  /** A new provider or base URL needs the key entered again; a first save needs one too. */
+  AI_KEY_REQUIRED: 'AI_KEY_REQUIRED',
+  /** SaaS mode: a company's base URL must be https and must not reach a private address. */
+  AI_BASE_URL_NOT_ALLOWED: 'AI_BASE_URL_NOT_ALLOWED',
+  /** SECRETS_ENCRYPTION_KEY is missing or wrong on the server. */
+  SECRETS_KEY_UNAVAILABLE: 'SECRETS_KEY_UNAVAILABLE',
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 

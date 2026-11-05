@@ -33,6 +33,6 @@ import { UnitsService } from './units.service';
     ProductsService,
     UnitsService,
   ],
-  exports: [CatalogService],
+  exports: [CatalogService, ProductsService],
 })
 export class CatalogModule {}

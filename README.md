@@ -102,6 +102,21 @@ Sidebar help links come from the web env (`NEXT_PUBLIC_SUPPORT_WHATSAPP`, `NEXT_
 - With `MULTI_UNIT`, a manager who sees more than one dépôt lands on **Vue d'ensemble** (`/vue-ensemble`, first item of the menu): one card per dépôt (CA, cash in / out, marge, charges, résultat net, créances, stock, top seller, daily CA) for Aujourd'hui / Cette semaine / Ce mois / Mois dernier / a custom period. Tapping a card opens the dashboard on that dépôt; "Comparer" shows the dépôts side by side, with an Excel export. Rules: `docs/domain.md`, "Vue d'ensemble".
 - The dashboard gains a "Résultat net du mois" card (every edition). A règlement fournisseur now records its dépôt (the header's, else the user's only one). One expand-only migration; nothing to run after deploying.
 
+## Assistant IA (phase 30)
+
+An in-app help assistant: how-to answers from `apps/api/src/assistant/help/` and read-only questions on the user's own data. It never writes.
+
+**Turn it on.** Set `SECRETS_ENCRYPTION_KEY` (`openssl rand -base64 32`), then the super-admin opens `/admin/assistant`, picks a provider, model and key, enters the prices, and clicks "Tester la connexion". Until a provider applies, the button is hidden. Changing `SECRETS_ENCRYPTION_KEY` makes saved keys unreadable: enter them again.
+
+- **Providers**: Anthropic, Gemini, or anything OpenAI-compatible through a base URL. Switching is a settings change, not a deploy.
+- **Which config answers**: the company's own if it is enabled and allowed, else the platform's, else the dev env vars `AI_PROVIDER`, `AI_MODEL`, `AI_API_KEY`. A platform row switched off means off.
+- **Own key**: the super-admin allows it on the company's page; the OWNER then uses `/parametres/assistant`. In `DEPLOYMENT_MODE=single` it needs no permission and the plan quota does not apply.
+- **Limits**: 10 questions a minute and 100 a day per user; `Plan.aiQuestionsPerMonth` per company on the platform key.
+- **Retention**: conversations are deleted after 90 days, by a nightly job on the VPS and on each question (Vercel has no reliable timer).
+- **Data**: questions and tool results go to the chosen provider.
+- **Help articles**: after changing a `.md` file or adding a screen, run `pnpm --filter @erp/api assistant:help`. A test fails if the bundle is stale. Changing the text also moves a hash test: bump `ASSISTANT_PROMPT_VERSION`.
+- **Choosing a model**: `docs/assistant-eval.md`.
+
 ## Everyday commands
 
 ```bash

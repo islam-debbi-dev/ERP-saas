@@ -31,6 +31,10 @@ const TOP_DEBTORS = 10;
 
 const MANAGERS: readonly Role[] = [Role.OWNER, Role.MANAGER];
 
+function seesSalesFigures(user: CurrentUserInfo): boolean {
+  return MANAGERS.includes(user.role) || user.role === Role.SELLER || user.role === Role.SUPERVISOR;
+}
+
 interface DayTotals {
   ttc: Money;
   count: number;
@@ -66,22 +70,9 @@ export class DashboardService {
   ): Promise<DashboardDto> {
     const date = filters.date ?? algiersDay();
     const manager = MANAGERS.includes(user.role);
-    const seesSales = manager || user.role === Role.SELLER || user.role === Role.SUPERVISOR;
+    const seesSales = seesSalesFigures(user);
     const seesStock = manager || user.role === Role.STOREKEEPER;
-    // Phase 24: the dépôts whose figures he sees (works in or VIEW_STATS), narrowed by
-    // the dépôt switcher. null = all.
-    const units = await this.scopes.warehouses(user);
-    const warehouseIds = await this.scopes.figureWarehouses(
-      units.statsWarehouseIds,
-      filters.warehouseId,
-    );
-    const scope: Scope = {
-      tenantId: tenantContext.requireTenantId(),
-      sellerIds: await this.scopes.figuresSellerIds(user, filters),
-      brandId: filters.brandId ?? null,
-      warehouseIds,
-      defaultWarehouseId: units.defaultWarehouseId,
-    };
+    const { scope, units, warehouseIds } = await this.figureScope(user, filters);
     const seesCost = can(user, Permission.VIEW_COST_AND_MARGIN);
     const byUnit = warehouseIds
       ? this.clients.creditInWarehouses(warehouseIds, units.defaultWarehouseId, TOP_DEBTORS)
@@ -128,6 +119,56 @@ export class DashboardService {
         charges && margin !== null && result !== null
           ? { margin, charges: charges.total, result }
           : null,
+    };
+  }
+
+  /** What a user's figures cover, the same for the dashboard and the assistant. */
+  private async figureScope(
+    user: CurrentUserInfo,
+    filters: { sellerId?: string; teamOf?: string; brandId?: string; warehouseId?: string },
+  ) {
+    // Phase 24: the dépôts whose figures he sees (works in or VIEW_STATS), narrowed by
+    // the dépôt switcher. null = all.
+    const units = await this.scopes.warehouses(user);
+    const warehouseIds = await this.scopes.figureWarehouses(
+      units.statsWarehouseIds,
+      filters.warehouseId,
+    );
+    const scope: Scope = {
+      tenantId: tenantContext.requireTenantId(),
+      sellerIds: await this.scopes.figuresSellerIds(user, filters),
+      brandId: filters.brandId ?? null,
+      warehouseIds,
+      defaultWarehouseId: units.defaultWarehouseId,
+    };
+    return { scope, units, warehouseIds };
+  }
+
+  /**
+   * Ventes and encaissements between two Algiers days, by the dashboard's rules (phase 30):
+   * sales for who sees them, cash for managers. null = this role does not see it.
+   */
+  async periodSummary(
+    user: CurrentUserInfo,
+    from: string,
+    to: string,
+  ): Promise<{ sales: SalesFigure | null; collected: { total: string; count: number } | null }> {
+    if (!seesSalesFigures(user)) return { sales: null, collected: null };
+    const { scope, warehouseIds } = await this.figureScope(user, {});
+    const { start, end } = algiersRange(from, to);
+    const [row] = await this.prisma.db.$queryRaw<
+      { ttc: Prisma.Decimal | null; count: bigint | Prisma.Decimal | null }[]
+    >`
+      SELECT SUM(f.ttc - f."retTtc") AS ttc, SUM(f.docs) AS count
+      FROM (${saleDocumentFacts(scope, start, end)}) f`;
+    return {
+      sales: {
+        ttc: toMoneyString(money(row?.ttc?.toString() ?? 0)),
+        count: Number(row?.count ?? 0),
+      },
+      collected: MANAGERS.includes(user.role)
+        ? await this.payments.collected(from, to, user, warehouseIds)
+        : null,
     };
   }
 

@@ -11,6 +11,7 @@ export const PLAN_DEFAULTS = [
     maxProducts: 500,
     maxDocumentsPerMonth: 300,
     maxMobileSellers: 2,
+    aiQuestionsPerMonth: 300,
     sortOrder: 1,
   },
   {
@@ -21,6 +22,7 @@ export const PLAN_DEFAULTS = [
     maxProducts: 3000,
     maxDocumentsPerMonth: 1500,
     maxMobileSellers: 5,
+    aiQuestionsPerMonth: 1500,
     sortOrder: 2,
   },
   {
@@ -31,6 +33,7 @@ export const PLAN_DEFAULTS = [
     maxProducts: null,
     maxDocumentsPerMonth: null,
     maxMobileSellers: null,
+    aiQuestionsPerMonth: 5000,
     sortOrder: 3,
   },
 ] as const;

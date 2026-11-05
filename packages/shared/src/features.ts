@@ -33,6 +33,8 @@ export const Feature = {
   HR: 'HR',
   /** DRH part 2: paie, bulletins, salary payments (phase 31b). Needs HR. */
   PAYROLL: 'PAYROLL',
+  /** The in-app help assistant (phase 30). In every edition: help is useful to everyone. */
+  AI_ASSISTANT: 'AI_ASSISTANT',
 } as const;
 export type Feature = (typeof Feature)[keyof typeof Feature];
 export const FEATURES = Object.values(Feature);
@@ -50,8 +52,13 @@ export type Edition = (typeof Edition)[keyof typeof Edition];
 export const EDITIONS = Object.values(Edition);
 
 export const EDITION_FEATURES: Record<Edition, readonly Feature[]> = {
-  [Edition.ESSENTIEL]: [Feature.EXPENSES],
-  [Edition.IMPORT]: [Feature.IMPORT_COSTS, Feature.WAREHOUSES, Feature.EXPENSES],
+  [Edition.ESSENTIEL]: [Feature.EXPENSES, Feature.AI_ASSISTANT],
+  [Edition.IMPORT]: [
+    Feature.IMPORT_COSTS,
+    Feature.WAREHOUSES,
+    Feature.EXPENSES,
+    Feature.AI_ASSISTANT,
+  ],
   [Edition.DISTRIBUTION]: [
     Feature.SALES_FORCE,
     Feature.WAREHOUSES,
@@ -65,6 +72,7 @@ export const EDITION_FEATURES: Record<Edition, readonly Feature[]> = {
     Feature.EXPENSES,
     Feature.HR,
     Feature.PAYROLL,
+    Feature.AI_ASSISTANT,
   ],
   [Edition.ENTREPRISE]: FEATURES,
 };

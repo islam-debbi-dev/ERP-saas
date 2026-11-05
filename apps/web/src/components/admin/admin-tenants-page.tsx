@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, Percent, Search } from 'lucide-react';
+import { Bot, Building2, Percent, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useDeferredValue, useState } from 'react';
@@ -46,7 +46,10 @@ export function AdminTenantsPage() {
     <>
       <PageHeader
         title={t('tenants')}
-        more={[{ label: t('rateSets'), icon: Percent, href: '/admin/taux-paie' }]}
+        more={[
+          { label: t('rateSets'), icon: Percent, href: '/admin/taux-paie' },
+          { label: t('assistantLink'), icon: Bot, href: '/admin/assistant' },
+        ]}
         description={tenants.data ? t('tenantsCount', { count: tenants.data.length }) : undefined}
       />
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_14rem]">

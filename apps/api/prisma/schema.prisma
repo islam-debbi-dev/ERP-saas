@@ -113,6 +113,9 @@ model Tenant {
   /// "Clients à relancer": oldest unpaid document older than this many days (phase 21).
   reminderDays Int @default(30) @db.SmallInt
 
+  /// May this company use its own AI provider key in SaaS mode? Set by the super-admin (phase 30).
+  allowTenantAiKey Boolean @default(false)
+
   sellerScope SellerScope @default(ALL_CLIENTS)
 
   /// Géolocalisation (phase 17, GEO_CHECK): far operations are flagged (default) or blocked.
@@ -142,98 +145,101 @@ model Tenant {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
-  users                 User[]
-  sessions              Session[]
-  auditLogs             AuditLog[]
-  userInvitations       UserInvitation[]
-  documentSequences     DocumentSequence[]
-  idempotencyKeys       IdempotencyKey[]
-  categories            Category[]
-  units                 Unit[]
-  priceLevels           PriceLevel[]
-  products              Product[]
-  productUnits          ProductUnit[]
-  productPrices         ProductPrice[]
-  productStocks         ProductStock[]
-  stockMovements        StockMovement[]
-  inventories           Inventory[]
-  inventoryLines        InventoryLine[]
-  suppliers             Supplier[]
-  purchases             Purchase[]
-  purchaseLines         PurchaseLine[]
-  purchaseReturns       PurchaseReturn[]
-  purchaseReturnLines   PurchaseReturnLine[]
-  clients               Client[]
-  clientLedger          ClientLedgerEntry[]
-  clientBalances        ClientBalance[]
-  sales                 Sale[]
-  saleLines             SaleLine[]
-  saleReturns           SaleReturn[]
-  saleReturnLines       SaleReturnLine[]
-  payments              Payment[]
-  paymentAllocations    PaymentAllocation[]
-  documentPrints        DocumentPrint[]
-  importJobs            ImportJob[]
-  subscription          Subscription?
-  subscriptionPayments  SubscriptionPayment[]
-  supplierLedger        SupplierLedgerEntry[]
-  supplierBalances      SupplierBalance[]
-  supplierPayments      SupplierPayment[]
-  shareLinks            ShareLink[]
-  brands                Brand[]
-  sectors               Sector[]
-  warehouses            Warehouse[]
-  warehouseStocks       WarehouseStock[]
-  stockTransfers        StockTransfer[]
-  stockTransferLines    StockTransferLine[]
-  routes                Route[]
-  routeStops            RouteStop[]
-  visits                Visit[]
-  orders                Order[]
-  orderLines            OrderLine[]
-  sellerSessions        SellerSession[]
-  geoChecks             GeoCheck[]
-  geoCheckReviews       GeoCheckReview[]
-  clientGeoRequests     ClientGeoChangeRequest[]
-  salesTargets          SalesTarget[]
-  incentivePlans        IncentivePlan[]
-  incentiveRules        IncentiveRule[]
-  incentiveRuns         IncentiveRun[]
-  incentiveLines        IncentiveLine[]
-  importFiles           ImportFile[]
-  importCosts           ImportCost[]
-  importAllocations     ImportCostAllocation[]
-  promotions            Promotion[]
-  promotionProducts     PromotionProduct[]
-  promotionClients      PromotionClient[]
-  packagingTypes        PackagingType[]
-  productPackagings     ProductPackaging[]
-  clientPackaging       ClientPackagingEntry[]
-  clientPackagingBals   ClientPackagingBalance[]
-  userWarehouseAccesses UserWarehouseAccess[]
-  warehouseBrands       WarehouseBrand[]
-  warehouseCategories   WarehouseCategory[]
-  expenseCategories     ExpenseCategory[]
-  expenses              Expense[]
-  rentContracts         RentContract[]
-  employees             Employee[]
-  employeeSalaries      EmployeeSalary[]
-  employeeBalances      EmployeeBalance[]
-  employeeLedgerEntries EmployeeLedgerEntry[]
-  attendanceEvents      AttendanceEvent[]
-  attendanceDays        AttendanceDay[]
-  attendanceMonthLocks  AttendanceMonthLock[]
-  publicHolidays        PublicHoliday[]
-  payItemTypes          PayItemType[]
-  employeePayItems      EmployeePayItem[]
-  payrollRuns           PayrollRun[]
-  payrollRateSets       PayrollRateSet[]
+  users                    User[]
+  sessions                 Session[]
+  auditLogs                AuditLog[]
+  userInvitations          UserInvitation[]
+  documentSequences        DocumentSequence[]
+  idempotencyKeys          IdempotencyKey[]
+  categories               Category[]
+  units                    Unit[]
+  priceLevels              PriceLevel[]
+  products                 Product[]
+  productUnits             ProductUnit[]
+  productPrices            ProductPrice[]
+  productStocks            ProductStock[]
+  stockMovements           StockMovement[]
+  inventories              Inventory[]
+  inventoryLines           InventoryLine[]
+  suppliers                Supplier[]
+  purchases                Purchase[]
+  purchaseLines            PurchaseLine[]
+  purchaseReturns          PurchaseReturn[]
+  purchaseReturnLines      PurchaseReturnLine[]
+  clients                  Client[]
+  clientLedger             ClientLedgerEntry[]
+  clientBalances           ClientBalance[]
+  sales                    Sale[]
+  saleLines                SaleLine[]
+  saleReturns              SaleReturn[]
+  saleReturnLines          SaleReturnLine[]
+  payments                 Payment[]
+  paymentAllocations       PaymentAllocation[]
+  documentPrints           DocumentPrint[]
+  importJobs               ImportJob[]
+  subscription             Subscription?
+  subscriptionPayments     SubscriptionPayment[]
+  supplierLedger           SupplierLedgerEntry[]
+  supplierBalances         SupplierBalance[]
+  supplierPayments         SupplierPayment[]
+  shareLinks               ShareLink[]
+  brands                   Brand[]
+  sectors                  Sector[]
+  warehouses               Warehouse[]
+  warehouseStocks          WarehouseStock[]
+  stockTransfers           StockTransfer[]
+  stockTransferLines       StockTransferLine[]
+  routes                   Route[]
+  routeStops               RouteStop[]
+  visits                   Visit[]
+  orders                   Order[]
+  orderLines               OrderLine[]
+  sellerSessions           SellerSession[]
+  geoChecks                GeoCheck[]
+  geoCheckReviews          GeoCheckReview[]
+  clientGeoRequests        ClientGeoChangeRequest[]
+  salesTargets             SalesTarget[]
+  incentivePlans           IncentivePlan[]
+  incentiveRules           IncentiveRule[]
+  incentiveRuns            IncentiveRun[]
+  incentiveLines           IncentiveLine[]
+  importFiles              ImportFile[]
+  importCosts              ImportCost[]
+  importAllocations        ImportCostAllocation[]
+  promotions               Promotion[]
+  promotionProducts        PromotionProduct[]
+  promotionClients         PromotionClient[]
+  packagingTypes           PackagingType[]
+  productPackagings        ProductPackaging[]
+  clientPackaging          ClientPackagingEntry[]
+  clientPackagingBals      ClientPackagingBalance[]
+  userWarehouseAccesses    UserWarehouseAccess[]
+  warehouseBrands          WarehouseBrand[]
+  warehouseCategories      WarehouseCategory[]
+  expenseCategories        ExpenseCategory[]
+  expenses                 Expense[]
+  rentContracts            RentContract[]
+  employees                Employee[]
+  employeeSalaries         EmployeeSalary[]
+  employeeBalances         EmployeeBalance[]
+  employeeLedgerEntries    EmployeeLedgerEntry[]
+  attendanceEvents         AttendanceEvent[]
+  attendanceDays           AttendanceDay[]
+  attendanceMonthLocks     AttendanceMonthLock[]
+  publicHolidays           PublicHoliday[]
+  payItemTypes             PayItemType[]
+  employeePayItems         EmployeePayItem[]
+  payrollRuns              PayrollRun[]
+  aiProviderConfigs        AiProviderConfig[]
+  assistantConversations   AssistantConversation[]
+  assistantMessages        AssistantMessage[]
+  payrollRateSets          PayrollRateSet[]
   payrollRateConfirmations PayrollRateConfirmation[]
-  payslips              Payslip[]
-  payslipLines          PayslipLine[]
-  payrollManualLines    PayrollManualLine[]
-  leaveRequests         LeaveRequest[]
-  leaveEntries          LeaveEntry[]
+  payslips                 Payslip[]
+  payslipLines             PayslipLine[]
+  payrollManualLines       PayrollManualLine[]
+  leaveRequests            LeaveRequest[]
+  leaveEntries             LeaveEntry[]
 
   @@map("tenants")
 }
@@ -266,23 +272,24 @@ model User {
   createdAt          DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt          DateTime  @updatedAt @db.Timestamptz(3)
 
-  tenant            Tenant                @relation(fields: [tenantId], references: [id])
-  sessions          Session[]
-  invitations       UserInvitation[]
-  manager           User?                 @relation("UserManager", fields: [managerId], references: [id], onDelete: Restrict)
-  members           User[]                @relation("UserManager")
-  clients           Client[]              @relation("ClientSeller")
-  sales             Sale[]                @relation("SaleSeller")
-  collected         Payment[]             @relation("PaymentCollector")
-  vehicles          Warehouse[]           @relation("WarehouseDriver")
-  routes            Route[]               @relation("RouteSeller")
-  visits            Visit[]               @relation("VisitSeller")
-  orders            Order[]               @relation("OrderSeller")
-  deliveries        Order[]               @relation("OrderLivreur")
-  sellerDays        SellerSession[]       @relation("SessionSeller")
-  managedWarehouses Warehouse[]           @relation("WarehouseManager")
-  warehouseAccess   UserWarehouseAccess[] @relation("AccessUser")
-  employee          Employee?
+  tenant                 Tenant                  @relation(fields: [tenantId], references: [id])
+  sessions               Session[]
+  invitations            UserInvitation[]
+  manager                User?                   @relation("UserManager", fields: [managerId], references: [id], onDelete: Restrict)
+  members                User[]                  @relation("UserManager")
+  clients                Client[]                @relation("ClientSeller")
+  sales                  Sale[]                  @relation("SaleSeller")
+  collected              Payment[]               @relation("PaymentCollector")
+  vehicles               Warehouse[]             @relation("WarehouseDriver")
+  routes                 Route[]                 @relation("RouteSeller")
+  visits                 Visit[]                 @relation("VisitSeller")
+  orders                 Order[]                 @relation("OrderSeller")
+  deliveries             Order[]                 @relation("OrderLivreur")
+  sellerDays             SellerSession[]         @relation("SessionSeller")
+  managedWarehouses      Warehouse[]             @relation("WarehouseManager")
+  warehouseAccess        UserWarehouseAccess[]   @relation("AccessUser")
+  assistantConversations AssistantConversation[]
+  employee               Employee?
 
   @@index([tenantId, role])
   @@index([tenantId, managerId])
@@ -1445,6 +1452,8 @@ model Plan {
   maxDocumentsPerMonth Int?
   /// Sellers on the mobile app (phase 19).
   maxMobileSellers     Int?
+  /// Assistant questions per month on the platform key (phase 30). Null: unlimited.
+  aiQuestionsPerMonth  Int?
   active               Boolean  @default(true)
   sortOrder            Int      @default(0) @db.SmallInt
   createdAt            DateTime @default(now()) @db.Timestamptz(3)
@@ -3095,15 +3104,15 @@ model PayrollRateSet {
 /// The owner's word on a rate set, append-only: who, when, which set, the text he read.
 /// CONFIRMED lets runs on that set be approved; KEPT_OWN only answers the new-rates banner.
 model PayrollRateConfirmation {
-  id         String   @id @default(uuid()) @db.Uuid
-  seq        BigInt   @unique @default(autoincrement())
-  tenantId   String   @db.Uuid
-  rateSetId  String   @db.Uuid
-  decision   String   @db.VarChar(16)
-  text       String   @db.VarChar(255)
-  locale     String   @db.VarChar(2)
-  createdBy  String   @db.Uuid
-  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  id        String   @id @default(uuid()) @db.Uuid
+  seq       BigInt   @unique @default(autoincrement())
+  tenantId  String   @db.Uuid
+  rateSetId String   @db.Uuid
+  decision  String   @db.VarChar(16)
+  text      String   @db.VarChar(255)
+  locale    String   @db.VarChar(2)
+  createdBy String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
 
   tenant  Tenant         @relation(fields: [tenantId], references: [id])
   rateSet PayrollRateSet @relation(fields: [rateSetId], references: [id])
@@ -3367,4 +3376,102 @@ model LeaveEntry {
 
   @@index([tenantId, employeeId, seq])
   @@map("leave_entries")
+}
+
+// --- Assistant IA (phase 30) ------------------------------------------------------------
+
+enum AiProvider {
+  ANTHROPIC
+  GEMINI
+  OPENAI_COMPATIBLE
+}
+
+enum AiConfigScope {
+  PLATFORM
+  TENANT
+}
+
+enum AssistantRole {
+  USER
+  ASSISTANT
+}
+
+/// Which model answers. One PLATFORM row (tenantId null, super-admin), at most one TENANT row
+/// per company. Partial unique indexes and a CHECK in the migration. A company never reads
+/// the PLATFORM row: only AiConfigService does, in the system context.
+model AiProviderConfig {
+  id                         String        @id @default(uuid()) @db.Uuid
+  scope                      AiConfigScope
+  tenantId                   String?       @db.Uuid
+  provider                   AiProvider
+  model                      String        @db.VarChar(120)
+  baseUrl                    String?       @db.VarChar(255)
+  /// secret-box output. Never returned, never logged.
+  apiKeyEncrypted            String
+  /// Last 4 characters of the key, for the form.
+  keyHint                    String        @db.VarChar(8)
+  inputPricePerMTokUsd       Decimal       @db.Decimal(12, 4)
+  cachedInputPricePerMTokUsd Decimal       @db.Decimal(12, 4)
+  outputPricePerMTokUsd      Decimal       @db.Decimal(12, 4)
+  enabled                    Boolean       @default(true)
+  /// A user id, or a platform admin id on a PLATFORM row.
+  updatedBy                  String        @db.Uuid
+  createdAt                  DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt                  DateTime      @updatedAt @db.Timestamptz(3)
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@map("ai_provider_configs")
+}
+
+/// Chat history, not business data: the user can really delete it, and it goes after 90 days.
+model AssistantConversation {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @db.Uuid
+  userId    String   @db.Uuid
+  title     String   @db.VarChar(120)
+  language  String?  @db.VarChar(8)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant   Tenant             @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user     User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+  messages AssistantMessage[]
+
+  @@index([tenantId, userId, createdAt(sort: Desc), id])
+  @@index([createdAt])
+  @@map("assistant_conversations")
+}
+
+model AssistantMessage {
+  id              String         @id @default(uuid()) @db.Uuid
+  seq             BigInt         @unique @default(autoincrement())
+  tenantId        String         @db.Uuid
+  conversationId  String         @db.Uuid
+  userId          String         @db.Uuid
+  role            AssistantRole
+  content         String
+  /// [{ name, input, status }]: what was asked, never what came back.
+  toolCalls       Json?
+  /// Screen links offered with an answer.
+  links           Json?
+  inputTokens     Int            @default(0)
+  cachedTokens    Int            @default(0)
+  outputTokens    Int            @default(0)
+  provider        AiProvider?
+  model           String?        @db.VarChar(120)
+  /// On USER rows too: only PLATFORM questions count against the plan.
+  configScope     AiConfigScope?
+  /// From the config's prices at the time.
+  costMicroUsd    BigInt         @default(0)
+  useful          Boolean?
+  feedbackComment String?        @db.VarChar(500)
+  createdAt       DateTime       @default(now()) @db.Timestamptz(3)
+
+  tenant       Tenant                @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  conversation AssistantConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, role, configScope, createdAt])
+  @@index([tenantId, userId, role, createdAt])
+  @@index([conversationId, seq])
+  @@map("assistant_messages")
 }

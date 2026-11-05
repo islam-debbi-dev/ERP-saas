@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Put,
   Query,
   Req,
   Res,
@@ -34,7 +35,18 @@ import {
   type PayrollRateSetDto,
   type PayrollRateSetInput,
   payrollRateSetSchema,
+  type AiConfigTestResult,
+  type AiProviderConfigDto,
+  type AiProviderConfigInput,
+  aiProviderConfigSchema,
+  type AiUsageDto,
+  type AiUsageQuery,
+  aiUsageQuerySchema,
+  type AllowTenantAiKeyInput,
+  allowTenantAiKeySchema,
 } from '@erp/shared';
+import { AiConfigService } from '../assistant/ai-config.service';
+import { AiUsageService } from '../assistant/ai-usage.service';
 import type { ClientMeta } from '../auth/auth.types';
 import { AppException } from '../common/app-exception';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
@@ -124,6 +136,44 @@ export class AdminAuthController {
   }
 }
 
+/** The platform's AI provider and the usage page (phase 30). Responses never hold a key. */
+@AdminController('assistant')
+export class AdminAssistantController {
+  constructor(
+    private readonly configs: AiConfigService,
+    private readonly usageReport: AiUsageService,
+    private readonly tenants: AdminTenantsService,
+  ) {}
+
+  @Get('config')
+  async config(): Promise<{ config: AiProviderConfigDto | null }> {
+    return { config: await this.configs.platformConfig() };
+  }
+
+  @Put('config')
+  save(
+    @CurrentAdmin() admin: CurrentAdminInfo,
+    @Body(new ZodValidationPipe(aiProviderConfigSchema)) body: AiProviderConfigInput,
+  ): Promise<AiProviderConfigDto> {
+    return this.tenants.saveAiConfig(admin, body);
+  }
+
+  @Post('config/test')
+  @HttpCode(HttpStatus.OK)
+  test(
+    @Body(new ZodValidationPipe(aiProviderConfigSchema)) body: AiProviderConfigInput,
+  ): Promise<AiConfigTestResult> {
+    return this.configs.testPlatform(body);
+  }
+
+  @Get('usage')
+  usage(
+    @Query(new ZodValidationPipe(aiUsageQuerySchema)) query: AiUsageQuery,
+  ): Promise<AiUsageDto> {
+    return this.usageReport.usage(query.month);
+  }
+}
+
 /** Country-wide paie rates (phase 31b): read and appended, never edited. */
 @AdminController('payroll-rate-sets')
 export class AdminPayrollRatesController {
@@ -183,6 +233,17 @@ export class AdminTenantsController {
     @Body(new ZodValidationPipe(updateSubscriptionSchema)) body: UpdateSubscriptionInput,
   ): Promise<SubscriptionSummary> {
     return this.tenants.updateSubscription(admin, id, body);
+  }
+
+  /** May this company use its own AI key (phase 30)? */
+  @Patch(':id/ai-key')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  setAiKey(
+    @CurrentAdmin() admin: CurrentAdminInfo,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(allowTenantAiKeySchema)) body: AllowTenantAiKeyInput,
+  ): Promise<void> {
+    return this.tenants.setAllowTenantAiKey(admin, id, body.allowed);
   }
 
   @Post(':id/impersonate')

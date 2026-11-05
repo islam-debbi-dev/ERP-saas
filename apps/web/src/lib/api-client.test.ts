@@ -173,3 +173,87 @@ describe('ApiClient token refresh', () => {
     expect(onSessionEnd).not.toHaveBeenCalled();
   });
 });
+
+describe('ApiClient stream', () => {
+  const sse = (...chunks: string[]) =>
+    new Response(
+      new ReadableStream<Uint8Array>({
+        start(controller) {
+          const encoder = new TextEncoder();
+          for (const chunk of chunks) controller.enqueue(encoder.encode(chunk));
+          controller.close();
+        },
+      }),
+      { status: 200, headers: { 'Content-Type': 'text/event-stream' } },
+    );
+
+  it('hands over each event, even split across chunks or in the middle of a letter', async () => {
+    const bytes = new TextEncoder().encode('data: {"t":"سلام"}\n\n');
+    const fetchFn = vi.fn(() =>
+      Promise.resolve(
+        new Response(
+          new ReadableStream<Uint8Array>({
+            start(controller) {
+              controller.enqueue(bytes.slice(0, 12));
+              controller.enqueue(bytes.slice(12));
+              controller.enqueue(new TextEncoder().encode('data: {"n":1}\n\ndata: {"n":'));
+              controller.enqueue(new TextEncoder().encode('2}\n\n'));
+              controller.close();
+            },
+          }),
+          { status: 200 },
+        ),
+      ),
+    ) as unknown as typeof fetch;
+    const client = new ApiClient({ baseUrl: 'http://api', fetch: fetchFn });
+    client.setAccessToken('t1');
+    const seen: string[] = [];
+    await client.stream('/chat', { body: {} }, (data) => seen.push(data));
+    expect(seen).toEqual(['{"t":"سلام"}', '{"n":1}', '{"n":2}']);
+  });
+
+  it('refreshes an expired token once, then streams', async () => {
+    let generation = 1;
+    const fetchFn = vi.fn((url: string, init?: RequestInit) => {
+      if (url.endsWith('/auth/refresh')) {
+        generation += 1;
+        return Promise.resolve(
+          json(200, { accessToken: `t${generation}`, expiresIn: 900, user: {} }),
+        );
+      }
+      const auth = (init?.headers as Record<string, string>)['Authorization'];
+      return Promise.resolve(
+        auth === `Bearer t${generation}`
+          ? sse('data: ok\n\n')
+          : json(401, { code: 'TOKEN_EXPIRED', message: 'expired' }),
+      );
+    }) as unknown as typeof fetch;
+    const client = new ApiClient({ baseUrl: 'http://api', fetch: fetchFn });
+    client.setAccessToken('t0');
+    const seen: string[] = [];
+    await client.stream('/chat', { body: {} }, (data) => seen.push(data));
+    expect(seen).toEqual(['ok']);
+  });
+
+  it('throws the API error before the first byte, with its details', async () => {
+    const fetchFn = vi.fn(() =>
+      Promise.resolve(
+        json(429, {
+          code: 'AI_QUOTA_EXCEEDED',
+          message: 'quota',
+          details: { resetDate: '2026-12-01' },
+        }),
+      ),
+    ) as unknown as typeof fetch;
+    const client = new ApiClient({ baseUrl: 'http://api', fetch: fetchFn });
+    client.setAccessToken('t1');
+    const failure: unknown = await client
+      .stream('/chat', { body: {} }, () => undefined)
+      .catch((e: unknown) => e);
+    expect(failure).toBeInstanceOf(ApiError);
+    expect(failure).toMatchObject({
+      code: 'AI_QUOTA_EXCEEDED',
+      details: { resetDate: '2026-12-01' },
+    });
+  });
+});

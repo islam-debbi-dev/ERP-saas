@@ -15,6 +15,8 @@ type TitleKey =
   | 'nav.settings'
   | 'nav.myPayslips'
   | 'admin.rateSets'
+  | 'assistantSettings.title'
+  | 'assistantSettings.usage'
   | 'imports.title'
   | 'users.title'
   | 'sessions.title'

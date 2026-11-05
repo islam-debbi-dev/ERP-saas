@@ -11,7 +11,10 @@ import {
   Role,
   type SubscriptionSummary,
   type UpdateSubscriptionInput,
+  type AiProviderConfigDto,
+  type AiProviderConfigInput,
 } from '@erp/shared';
+import { AiConfigService } from '../assistant/ai-config.service';
 import { AuditService } from '../audit/audit.service';
 import type { AccessTokenPayload } from '../auth/auth.types';
 import { BillingService } from '../billing/billing.service';
@@ -40,6 +43,7 @@ export class AdminTenantsService {
     private readonly audit: AuditService,
     private readonly platformAudit: PlatformAuditService,
     private readonly jwt: JwtService,
+    private readonly aiConfig: AiConfigService,
   ) {}
 
   async list(query: AdminTenantsQuery): Promise<AdminTenantRow[]> {
@@ -88,6 +92,7 @@ export class AdminTenantsService {
       name: tenant.name,
       raisonSociale: tenant.raisonSociale,
       telephone: tenant.telephone,
+      allowTenantAiKey: tenant.allowTenantAiKey,
       owner: owner && { fullName: owner.fullName, email: owner.email, phone: owner.phone },
       createdAt: tenant.createdAt.toISOString(),
       lastActivityAt: activity._max.lastUsedAt?.toISOString() ?? null,
@@ -183,6 +188,38 @@ export class AdminTenantsService {
     // The modules apply on the tenant's next request, without a new login.
     this.features.invalidate(tenantId);
     return this.billing.summary(tenantId);
+  }
+
+  async saveAiConfig(
+    admin: CurrentAdminInfo,
+    input: AiProviderConfigInput,
+  ): Promise<AiProviderConfigDto> {
+    return this.aiConfig.savePlatform(input, admin.id, (tx, change) =>
+      this.platformAudit.log(tx, {
+        adminId: admin.id,
+        sessionId: admin.sessionId,
+        action: 'AI_CONFIG_UPDATED',
+        detail: change,
+      }),
+    );
+  }
+
+  async setAllowTenantAiKey(
+    admin: CurrentAdminInfo,
+    tenantId: string,
+    allowed: boolean,
+  ): Promise<void> {
+    await this.requireTenant(tenantId);
+    await this.prisma.db.$transaction(async (tx) => {
+      await tx.tenant.update({ where: { id: tenantId }, data: { allowTenantAiKey: allowed } });
+      await this.platformAudit.log(tx, {
+        adminId: admin.id,
+        sessionId: admin.sessionId,
+        tenantId,
+        action: 'AI_TENANT_KEY_ALLOWED',
+        detail: { allowed },
+      });
+    });
   }
 
   /**

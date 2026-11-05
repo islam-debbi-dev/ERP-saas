@@ -1,0 +1,147 @@
+{
+  "text": {
+    "events": [
+      {
+        "type": "message_start"
+      },
+      {
+        "type": "content_block_start",
+        "index": 0,
+        "content_block": {
+          "type": "thinking",
+          "thinking": "",
+          "signature": "sig-1"
+        }
+      },
+      {
+        "type": "content_block_stop",
+        "index": 0
+      },
+      {
+        "type": "content_block_delta",
+        "index": 1,
+        "delta": {
+          "type": "text_delta",
+          "text": "Bonjour "
+        }
+      },
+      {
+        "type": "content_block_delta",
+        "index": 1,
+        "delta": {
+          "type": "text_delta",
+          "text": "Karim"
+        }
+      },
+      {
+        "type": "message_stop"
+      }
+    ],
+    "final": {
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "",
+          "signature": "sig-1"
+        },
+        {
+          "type": "text",
+          "text": "Bonjour Karim"
+        }
+      ],
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 120,
+        "cache_creation_input_tokens": 30,
+        "cache_read_input_tokens": 850,
+        "output_tokens": 40
+      }
+    }
+  },
+  "tool": {
+    "events": [
+      {
+        "type": "message_start"
+      },
+      {
+        "type": "content_block_delta",
+        "index": 1,
+        "delta": {
+          "type": "text_delta",
+          "text": "Je cherche."
+        }
+      },
+      {
+        "type": "message_stop"
+      }
+    ],
+    "final": {
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "",
+          "signature": "sig-1"
+        },
+        {
+          "type": "text",
+          "text": "Je cherche."
+        },
+        {
+          "type": "tool_use",
+          "id": "call-1",
+          "name": "search_clients",
+          "input": {
+            "query": "karim"
+          }
+        }
+      ],
+      "stop_reason": "tool_use",
+      "usage": {
+        "input_tokens": 120,
+        "cache_creation_input_tokens": 30,
+        "cache_read_input_tokens": 850,
+        "output_tokens": 40
+      }
+    }
+  },
+  "maxTokens": {
+    "events": [
+      {
+        "type": "content_block_delta",
+        "index": 1,
+        "delta": {
+          "type": "text_delta",
+          "text": "Bonjour"
+        }
+      }
+    ],
+    "final": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Bonjour"
+        }
+      ],
+      "stop_reason": "max_tokens",
+      "usage": {
+        "input_tokens": 120,
+        "cache_creation_input_tokens": 30,
+        "cache_read_input_tokens": 850,
+        "output_tokens": 40
+      }
+    }
+  },
+  "refusal": {
+    "events": [],
+    "final": {
+      "content": [],
+      "stop_reason": "refusal",
+      "usage": {
+        "input_tokens": 120,
+        "cache_creation_input_tokens": 30,
+        "cache_read_input_tokens": 850,
+        "output_tokens": 40
+      }
+    }
+  }
+}

@@ -1,4 +1,8 @@
+import { AI_PROVIDERS, AI_QUESTIONS_PER_MINUTE } from '@erp/shared';
 import { z } from 'zod';
+
+/** `.env.example` lists optional variables empty: empty means unset. */
+const emptyIsUnset = (v: unknown): unknown => (v === '' ? undefined : v);
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -22,6 +26,12 @@ const envSchema = z.object({
   /** Requests per minute per IP, all routes; and for the auth routes (register, refresh…). */
   RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(300),
   RATE_LIMIT_AUTH_PER_MINUTE: z.coerce.number().int().positive().default(30),
+  /** Questions per minute per user. */
+  RATE_LIMIT_ASSISTANT_PER_MINUTE: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(AI_QUESTIONS_PER_MINUTE),
   /**
    * Path the API is served under by the reverse proxy (`/api` in production, where Caddy
    * strips it). The refresh cookie's path must include it for the browser to send it.
@@ -37,6 +47,17 @@ const envSchema = z.object({
    * serverless build of @sparticuz/chromium (unless CHROMIUM_PATH is set).
    */
   VERCEL: z.string().optional(),
+  /** `single`: one company on its own server, its OWNER manages the assistant (phase 29). */
+  DEPLOYMENT_MODE: z.enum(['saas', 'single']).default('saas'),
+  /** 32 bytes in base64, encrypts API keys at rest. Unset: no key can be saved or used. */
+  SECRETS_ENCRYPTION_KEY: z.preprocess(emptyIsUnset, z.string().optional()),
+  /** Longest answer of the assistant, thinking included where the model thinks. */
+  AI_MAX_OUTPUT_TOKENS: z.coerce.number().int().positive().default(1500),
+  /** Local dev and the eval script only: stand in for a missing PLATFORM config row. */
+  AI_PROVIDER: z.preprocess(emptyIsUnset, z.enum(AI_PROVIDERS).optional()),
+  AI_MODEL: z.preprocess(emptyIsUnset, z.string().optional()),
+  AI_API_KEY: z.preprocess(emptyIsUnset, z.string().optional()),
+  AI_BASE_URL: z.preprocess(emptyIsUnset, z.url().optional()),
 });
 
 export type AppConfig = z.infer<typeof envSchema>;
@@ -51,3 +72,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
 }
 
 export const APP_CONFIG = Symbol('APP_CONFIG');
+
+/** The one test for single-company mode (phase 29). */
+export function isSingle(config: Pick<AppConfig, 'DEPLOYMENT_MODE'>): boolean {
+  return config.DEPLOYMENT_MODE === 'single';
+}

@@ -185,6 +185,12 @@ export class AgingService {
     };
   }
 
+  /** The date of a client's oldest unpaid amount, as the balance âgée sees it. */
+  async oldestUnpaid(clientId: string): Promise<string | null> {
+    const [row] = await this.clientAging(algiersDay(), { clientId });
+    return row?.oldestDate ?? null;
+  }
+
   /** Valid cheques with an échéance from today to 6 days later (Algiers). */
   async dueCheques(today = algiersDay()): Promise<DueChequesDto> {
     const to = addDays(today, 6);
@@ -259,10 +265,12 @@ export class AgingService {
 
   private async clientAging(
     asOf: string,
-    options: { activeOnly?: boolean } = {},
+    options: { activeOnly?: boolean; clientId?: string } = {},
   ): Promise<PartyAging[]> {
     const tenantId = tenantContext.requireTenantId();
     const end = algiersMidnight(addDays(asOf, 1));
+    const onlyClient = (column: Prisma.Sql) =>
+      options.clientId ? Prisma.sql`AND ${column} = ${options.clientId}::uuid` : Prisma.empty;
     const balances = await this.prisma.db.$queryRaw<
       { id: string; code: string; name: string; phone: string | null; balance: Prisma.Decimal }[]
     >`
@@ -270,6 +278,7 @@ export class AgingService {
       FROM client_ledger_entries e JOIN clients c ON c.id = e."clientId"
       WHERE e."tenantId" = ${tenantId}::uuid AND e."createdAt" < ${end}
         ${options.activeOnly ? Prisma.sql`AND c."deletedAt" IS NULL AND c.active = true` : Prisma.empty}
+        ${onlyClient(Prisma.sql`c.id`)}
       GROUP BY c.id, c.code, c.name, c.phone
       HAVING SUM(e.amount) <> 0`;
     if (balances.length === 0) return [];
@@ -300,6 +309,7 @@ export class AgingService {
       WHERE s."tenantId" = ${tenantId}::uuid AND s."clientId" IS NOT NULL
         AND s."validatedAt" < ${end}
         AND (s.status = 'VALIDATED' OR (s.status = 'CANCELLED' AND s."cancelledAt" >= ${end}))
+        ${onlyClient(Prisma.sql`s."clientId"`)}
         AND NOT EXISTS (SELECT 1 FROM sales b WHERE b."tenantId" = s."tenantId" AND b."invoiceId" = s.id)`;
     const debits = await this.datedDebits('client_ledger_entries', 'clientId', end, [
       'OPENING',

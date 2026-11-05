@@ -24,3 +24,4 @@ export * from './promotions';
 export * from './expenses';
 export * from './hr';
 export * from './payroll';
+export * from './assistant';

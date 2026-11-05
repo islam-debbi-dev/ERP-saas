@@ -5,6 +5,7 @@ import request from 'supertest';
 import type { App } from 'supertest/types';
 import type { Activity, AuthResponse } from '@erp/shared';
 import { AppModule } from '../src/app.module';
+import { LlmProviderFactory } from '../src/assistant/llm/llm-provider.factory';
 import { ClockService } from '../src/clock/clock.service';
 import { tenantContext } from '../src/common/tenant-context';
 import { APP_CONFIG, type AppConfig } from '../src/config/app-config';
@@ -38,10 +39,11 @@ export class FakeClock extends ClockService {
 /** Boots the real AppModule (plus optional test-only modules) against the test database. */
 export async function createTestApp(
   extraModules: Type[] = [],
-  options: { clock?: ClockService } = {},
+  options: { clock?: ClockService; llm?: LlmProviderFactory } = {},
 ): Promise<TestApp> {
   let builder = Test.createTestingModule({ imports: [AppModule, ...extraModules] });
   if (options.clock) builder = builder.overrideProvider(ClockService).useValue(options.clock);
+  if (options.llm) builder = builder.overrideProvider(LlmProviderFactory).useValue(options.llm);
   const moduleRef = await builder.compile();
   const app = moduleRef.createNestApplication<INestApplication<App>>({ bufferLogs: true });
   setupApp(app, app.get<AppConfig>(APP_CONFIG));

@@ -309,6 +309,35 @@ export class SalesService {
     if (!s) throw new AppException(ErrorCode.NOT_FOUND, 'Sale not found');
   }
 
+  /** A BL or a facture by its number, in the user's scope (phase 30). */
+  async findByNumber(number: string, user: CurrentUserInfo): Promise<SaleDto> {
+    const scope = await this.scope.of(user);
+    const s = await this.prisma.db.sale.findFirst({
+      where: { number, ...this.scope.saleWhere(scope) },
+      select: { id: true },
+    });
+    if (!s) throw new AppException(ErrorCode.NOT_FOUND, 'Sale not found');
+    return this.get(s.id, user);
+  }
+
+  /** An avoir by its number: the user must be able to see the sale it was made on. */
+  async findReturnByNumber(
+    number: string,
+    user: CurrentUserInfo,
+  ): Promise<{ number: string; totalTtc: string; createdAt: string; sale: SaleDto }> {
+    const r = await this.prisma.db.saleReturn.findFirst({
+      where: { number },
+      select: { number: true, totalTtc: true, createdAt: true, saleId: true },
+    });
+    if (!r) throw new AppException(ErrorCode.NOT_FOUND, 'Avoir not found');
+    return {
+      number: r.number,
+      totalTtc: r.totalTtc.toString(),
+      createdAt: r.createdAt.toISOString(),
+      sale: await this.get(r.saleId, user),
+    };
+  }
+
   /** The sale an avoir was made on (printing an avoir starts from its id). */
   async saleIdOfReturn(returnId: string): Promise<string> {
     const r = await this.prisma.db.saleReturn.findUnique({

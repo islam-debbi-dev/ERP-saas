@@ -60,6 +60,8 @@ export interface AdminTenantDetail extends SubscriptionSummary {
   name: string;
   raisonSociale: string;
   telephone: string | null;
+  /** May this company use its own AI key (phase 30)? */
+  allowTenantAiKey: boolean;
   owner: { fullName: string; email: string | null; phone: string | null } | null;
   createdAt: string;
   lastActivityAt: string | null;

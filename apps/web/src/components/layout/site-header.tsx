@@ -4,6 +4,7 @@ import { EllipsisVertical, Loader2 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
+import { AssistantButton } from '@/components/assistant/assistant-button';
 import { LanguageSwitcher, useLocaleSwitch } from '@/components/shared/language-switcher';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
 import { Button } from '@/components/ui/button';
@@ -78,6 +79,7 @@ export function SiteHeader() {
         {current ? t(current.key) : null}
       </p>
       <WarehouseSwitcher />
+      <AssistantButton />
       <div className="hidden items-center gap-1 md:flex">
         <LanguageSwitcher variant="ghost" showLabel />
         <ThemeToggle />
