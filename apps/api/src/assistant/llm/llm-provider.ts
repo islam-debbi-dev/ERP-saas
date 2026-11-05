@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { ErrorCode } from '@erp/shared';
 
 /**
@@ -69,13 +70,45 @@ export type LlmEvent =
   | { type: 'tool_call'; call: LlmToolCall }
   /** `replay`: whatever the provider needs back next round (thinking, signatures). */
   | { type: 'done'; stopReason: LlmStopReason; usage: LlmUsage; replay: unknown }
-  | { type: 'error'; code: LlmErrorCode };
+  /** `detail`: the provider's own status and message, key removed, for the super-admin test only. */
+  | { type: 'error'; code: LlmErrorCode; detail?: string };
 
 export interface LlmProvider {
   chat(request: LlmChatRequest): AsyncIterable<LlmEvent>;
 }
 
-/** Provider errors become one of our codes; their message never travels further. */
+const logger = new Logger('LlmProvider');
+
+/**
+ * The provider's status and message, with the key cut out and the length capped. Logged on
+ * every failure; returned only by the connection test, never to a chat user.
+ */
+export function describeLlmError(err: unknown, apiKey: string): string {
+  const e = (err ?? {}) as { status?: unknown; name?: unknown; message?: unknown; code?: unknown };
+  const parts = [
+    typeof e.status === 'number' ? String(e.status) : null,
+    typeof e.code === 'string' ? e.code : null,
+    typeof e.name === 'string' ? e.name : null,
+    typeof e.message === 'string' ? e.message : String(err),
+  ].filter((p): p is string => !!p);
+  let text = parts.join(' ');
+  if (apiKey) text = text.split(apiKey).join('***');
+  return text.slice(0, 500);
+}
+
+/** The error event of an adapter: our code, plus the logged, key-free detail. */
+export function errorEvent(
+  provider: string,
+  code: LlmErrorCode,
+  err: unknown,
+  apiKey: string,
+): LlmEvent {
+  const detail = describeLlmError(err, apiKey);
+  logger.warn(`${provider} call failed (${code}): ${detail}`);
+  return { type: 'error', code, detail };
+}
+
+/** Provider errors become one of our codes; their message never reaches a chat user. */
 export function errorCodeOf(err: unknown): LlmErrorCode {
   const status = (err as { status?: unknown } | null)?.status;
   if (status === 401 || status === 403) return ErrorCode.AI_INVALID_KEY;

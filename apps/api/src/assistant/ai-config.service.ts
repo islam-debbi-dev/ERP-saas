@@ -298,7 +298,8 @@ export class AiConfigService {
       maxOutputTokens: 64,
     });
     for await (const event of events) {
-      if (event.type === 'error') return { ok: false, code: event.code };
+      if (event.type === 'error')
+        return { ok: false, code: event.code, detail: event.detail ?? null };
       if (event.type === 'done') return { ok: true, code: null };
     }
     return { ok: false, code: ErrorCode.AI_UNAVAILABLE };

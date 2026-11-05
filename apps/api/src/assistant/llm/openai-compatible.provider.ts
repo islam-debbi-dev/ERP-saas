@@ -1,6 +1,7 @@
 import type { OpenAI } from 'openai';
 import {
   errorCodeOf,
+  errorEvent,
   LLM_TIMEOUT_MS,
   type LlmChatRequest,
   type LlmEvent,
@@ -161,7 +162,7 @@ export class OpenAiCompatibleProvider implements LlmProvider {
         }),
       );
     } catch (err) {
-      yield { type: 'error', code: errorCodeOf(err) };
+      yield errorEvent('openai-compatible', errorCodeOf(err), err, this.apiKey);
     }
   }
 }

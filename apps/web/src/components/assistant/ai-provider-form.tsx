@@ -69,7 +69,11 @@ export function AiProviderForm({
   const [hint, setHint] = useState(config?.keyHint ?? null);
   const [replacing, setReplacing] = useState(!config);
   const [busy, setBusy] = useState<'save' | 'test' | null>(null);
-  const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
+  const [result, setResult] = useState<{
+    ok: boolean;
+    text: string;
+    detail?: string | null;
+  } | null>(null);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setResult(null);
@@ -102,7 +106,7 @@ export function AiProviderForm({
         setResult(
           test.ok
             ? { ok: true, text: t('testOk') }
-            : { ok: false, text: errors(test.code ?? 'AI_UNAVAILABLE') },
+            : { ok: false, text: errors(test.code ?? 'AI_UNAVAILABLE'), detail: test.detail },
         );
       } else {
         const saved = await onSave(input.data);
@@ -249,6 +253,14 @@ export function AiProviderForm({
             }
           >
             {result.text}
+            {result.detail ? (
+              <span
+                dir="ltr"
+                className="mt-1 block break-all font-mono text-xs text-muted-foreground"
+              >
+                {result.detail}
+              </span>
+            ) : null}
           </p>
         ) : null}
 
