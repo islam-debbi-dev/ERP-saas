@@ -10,6 +10,7 @@ import {
   ErrorCode,
   type ImpersonationResponse,
   type SubscriptionSummary,
+  type PayrollRateSetDto,
 } from '@erp/shared';
 import { newTotpSecret, totp } from '../src/admin/totp';
 import { tenantContext } from '../src/common/tenant-context';
@@ -85,6 +86,60 @@ describe('super-admin: 2FA login, tenants, payments, read-only impersonation', (
   });
   afterAll(() => t.close());
   afterEach(() => clock.reset());
+
+  describe('payroll rate sets (phase 31b)', () => {
+    const body = {
+      // Far ahead: rate sets are country-wide and append-only, so no month reads this one.
+      effectiveFrom: '2099-01-01',
+      cnasEmployeeRate: '0.09',
+      cnasEmployerRate: '0.26',
+      irgBrackets: [
+        { upTo: '240000', rate: '0' },
+        { upTo: null, rate: '0.23' },
+      ],
+      abattementRate: '0.40',
+      abattementMin: '1000',
+      abattementMax: '1500',
+      exemptionThreshold: '30000',
+      lissageCeiling: '35000',
+      lissageNum: '137',
+      lissageDen: '51',
+      lissageOffsetNum: '27925',
+      lissageOffsetDen: '8',
+      snmg: '24000',
+      toVerify: false,
+      note: 'Vérifié',
+    };
+
+    it('lists the seeded set, to verify', async () => {
+      const res = await as(admin.accessToken).get('/admin/payroll-rate-sets').expect(200);
+      const seeded = (res.body as PayrollRateSetDto[]).find(
+        (r) => r.effectiveFrom === '2026-01-01',
+      );
+      expect(seeded).toMatchObject({ toVerify: true, snmg: '24000' });
+      expect(seeded?.irgBrackets).toHaveLength(6);
+    });
+
+    it('appends a set and logs it; a tenant cannot reach it', async () => {
+      const res = await as(admin.accessToken).post('/admin/payroll-rate-sets', body).expect(201);
+      expect(res.body).toMatchObject({ effectiveFrom: '2099-01-01', toVerify: false });
+      const logged = await system(() =>
+        t.prisma.db.platformAuditLog.count({ where: { action: 'PAYROLL_RATE_SET_ADDED' } }),
+      );
+      expect(logged).toBeGreaterThan(0);
+      const tenant = await registerTenant(t, 'Pas admin');
+      await as(tenant.auth.accessToken).get('/admin/payroll-rate-sets').expect(401);
+    });
+
+    it('needs a last bracket without a ceiling', async () => {
+      await as(admin.accessToken)
+        .post('/admin/payroll-rate-sets', {
+          ...body,
+          irgBrackets: [{ upTo: '240000', rate: '0' }],
+        })
+        .expect(400);
+    });
+  });
 
   describe('login', () => {
     it('needs the password and a valid code', async () => {

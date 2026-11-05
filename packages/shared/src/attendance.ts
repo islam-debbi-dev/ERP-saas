@@ -197,6 +197,38 @@ export function previousMonth(month: string): string {
   return addDays(`${month}-01`, -1).slice(0, 7);
 }
 
+/** The `YYYY-MM` after `month`. */
+export function nextMonth(month: string): string {
+  return addDays(monthBounds(month).to, 1).slice(0, 7);
+}
+
+/**
+ * Closed months still owed a congé accrual, oldest first: every month to the last closed
+ * one, or to the exit, that has none. They start at the latest of the hire, the month the
+ * file was created (a company brings its long-serving staff in with their balance, not their
+ * whole career) and an OPENING balance, which holds what was earned before it.
+ */
+export function missingAccrualMonths(input: {
+  hireDate: string;
+  exitDate?: string | null;
+  createdMonth: string;
+  openingMonth?: string | null;
+  lastClosedMonth: string;
+  posted: Iterable<string>;
+}): string[] {
+  const posted = new Set(input.posted);
+  const start = [input.hireDate.slice(0, 7), input.createdMonth, input.openingMonth ?? '']
+    .sort()
+    .at(-1)!;
+  const left = input.exitDate?.slice(0, 7);
+  const end = left && left < input.lastClosedMonth ? left : input.lastClosedMonth;
+  const months: string[] = [];
+  for (let m = start; m <= end; m = nextMonth(m)) {
+    if (!posted.has(m)) months.push(m);
+  }
+  return months;
+}
+
 /**
  * Congé days earned in a month, one decimal (half-up): the monthly rate, prorated by the
  * calendar days employed when the worker was hired or left during the month.

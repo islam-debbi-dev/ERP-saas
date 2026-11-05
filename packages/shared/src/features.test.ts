@@ -12,6 +12,16 @@ import {
 } from './features';
 
 describe('effectiveFeatures', () => {
+  it('turns the paie off without the DRH, even when granted', () => {
+    expect(effectiveFeatures(Edition.ESSENTIEL, [Feature.PAYROLL])).not.toContain(Feature.PAYROLL);
+    expect(effectiveFeatures(Edition.DISTRIBUTION, [], [Feature.HR])).not.toContain(
+      Feature.PAYROLL,
+    );
+    expect(effectiveFeatures(Edition.ESSENTIEL, [Feature.HR, Feature.PAYROLL])).toContain(
+      Feature.PAYROLL,
+    );
+  });
+
   it('uses the edition defaults', () => {
     expect(effectiveFeatures(Edition.ESSENTIEL)).toEqual([Feature.EXPENSES]);
     expect(effectiveFeatures(Edition.IMPORT)).toEqual([
@@ -26,6 +36,7 @@ describe('effectiveFeatures', () => {
     expect(effectiveFeatures(Edition.ENTREPRISE)).toEqual(FEATURES);
     // The DRH (phase 31): the two big editions, grantable to the others.
     expect(editionsWith(Feature.HR)).toEqual([Edition.DISTRIBUTION, Edition.ENTREPRISE]);
+    expect(editionsWith(Feature.PAYROLL)).toEqual([Edition.DISTRIBUTION, Edition.ENTREPRISE]);
   });
 
   it('adds grants and removes revokes', () => {

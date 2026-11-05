@@ -239,8 +239,13 @@ export interface ChargesReportDto {
   warehouseId: string | null;
   /** Rent charged from the contracts (accrual). */
   rent: string;
-  /** Every other charge (Loyer payments of a contract are cash only, not counted here). */
+  /**
+   * Every other charge (Loyer payments of a contract are cash only, not counted here),
+   * approved payroll included.
+   */
   expenses: string;
+  /** Approved payroll cost of the period, part of `expenses` (phase 31b). */
+  payroll: string;
   total: string;
   /** Rent paid in the period (cash, for information; not part of the total). */
   rentPaid: string;

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   accrualForMonth,
+  missingAccrualMonths,
   type AttendanceDayEvent,
   dayFigures,
   dayIsMarked,
@@ -184,6 +185,70 @@ describe('working days and leave', () => {
     expect(leaveUsesBalance(LeaveType.UNPAID)).toBe(false);
     expect(leaveUsesBalance(LeaveType.SICK)).toBe(false);
     expect(leaveUsesBalance(LeaveType.OTHER)).toBe(false);
+  });
+});
+
+describe('missingAccrualMonths', () => {
+  const base = {
+    hireDate: '2026-08-15',
+    createdMonth: '2026-08',
+    lastClosedMonth: '2026-10',
+    posted: [] as string[],
+  };
+
+  it('owes every closed month since the hire, the hire month included', () => {
+    expect(missingAccrualMonths(base)).toEqual(['2026-08', '2026-09', '2026-10']);
+  });
+
+  it('skips what is posted, even in the middle', () => {
+    expect(missingAccrualMonths({ ...base, posted: ['2026-09'] })).toEqual(['2026-08', '2026-10']);
+  });
+
+  it('crosses a new year', () => {
+    expect(
+      missingAccrualMonths({
+        ...base,
+        hireDate: '2025-12-01',
+        createdMonth: '2025-12',
+        lastClosedMonth: '2026-01',
+      }),
+    ).toEqual(['2025-12', '2026-01']);
+  });
+
+  it('stops at the exit month', () => {
+    expect(missingAccrualMonths({ ...base, exitDate: '2026-09-10' })).toEqual([
+      '2026-08',
+      '2026-09',
+    ]);
+  });
+
+  it('starts at the opening balance, which holds what came before', () => {
+    expect(
+      missingAccrualMonths({
+        ...base,
+        hireDate: '2015-01-01',
+        createdMonth: '2015-01',
+        openingMonth: '2026-10',
+      }),
+    ).toEqual(['2026-10']);
+    expect(missingAccrualMonths({ ...base, openingMonth: '2020-01' })).toHaveLength(3);
+  });
+
+  it('never goes back before the file was created: a 2015 hire entered today', () => {
+    expect(
+      missingAccrualMonths({ ...base, hireDate: '2015-01-01', createdMonth: '2026-10' }),
+    ).toEqual(['2026-10']);
+    expect(
+      missingAccrualMonths({ ...base, hireDate: '2015-01-01', createdMonth: '2026-11' }),
+    ).toEqual([]);
+  });
+
+  it('a file created before the hire starts at the hire', () => {
+    expect(missingAccrualMonths({ ...base, createdMonth: '2026-01' })).toHaveLength(3);
+  });
+
+  it('owes nothing before the first closed month', () => {
+    expect(missingAccrualMonths({ ...base, hireDate: '2026-11-02' })).toEqual([]);
   });
 });
 

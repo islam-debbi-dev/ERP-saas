@@ -58,6 +58,8 @@ enum DocType {
   DEP
   /// Matricule of an employee (phase 31): per tenant, stored under year 0.
   EMP
+  /// Paie: one approved payroll run (phase 31b).
+  PAIE
 }
 
 enum PrintFormat {
@@ -123,6 +125,12 @@ model Tenant {
   hrDailyHours       Int     @default(8) @db.SmallInt
   hrLeaveAccrualDays Decimal @default(2.5) @db.Decimal(3, 1)
   hrSelfCheckIn      Boolean @default(false)
+
+  // Paie (phase 31b).
+  payrollDayDivisor     Int     @default(30) @db.SmallInt
+  payrollHourDivisor    Decimal @default(173.33) @db.Decimal(6, 2)
+  payrollOvertimeRate   Decimal @default(0.50) @db.Decimal(4, 2)
+  payrollDeductLateness Boolean @default(false)
 
   /// The owner hid the dashboard onboarding checklist (phase 13).
   onboardingDismissedAt DateTime? @db.Timestamptz(3)
@@ -216,6 +224,14 @@ model Tenant {
   attendanceDays        AttendanceDay[]
   attendanceMonthLocks  AttendanceMonthLock[]
   publicHolidays        PublicHoliday[]
+  payItemTypes          PayItemType[]
+  employeePayItems      EmployeePayItem[]
+  payrollRuns           PayrollRun[]
+  payrollRateSets       PayrollRateSet[]
+  payrollRateConfirmations PayrollRateConfirmation[]
+  payslips              Payslip[]
+  payslipLines          PayslipLine[]
+  payrollManualLines    PayrollManualLine[]
   leaveRequests         LeaveRequest[]
   leaveEntries          LeaveEntry[]
 
@@ -1694,6 +1710,7 @@ model Warehouse {
   orders           Order[]
   sellerSessions   SellerSession[]
   expenses         Expense[]
+  payrollRuns      PayrollRun[]
   rentContracts    RentContract[]
   supplierPayments SupplierPayment[]
 
@@ -2720,8 +2737,11 @@ model Expense {
   periodEnd      DateTime?     @db.Date
   note           String?       @db.VarChar(255)
   rentContractId String?       @db.Uuid
-  /// An avance sur salaire (phase 31): cash, never a charge; hidden without SALARY_VIEW.
+  /// An avance sur salaire (phase 31) or a salary payment (31b): cash, never a charge;
+  /// hidden without SALARY_VIEW.
   employeeId     String?       @db.Uuid
+  /// A salary payment: the approved run it pays (phase 31b).
+  payrollRunId   String?       @db.Uuid
   status         ExpenseStatus @default(VALID)
   createdBy      String?       @db.Uuid
   cancelReason   String?       @db.VarChar(255)
@@ -2736,9 +2756,11 @@ model Expense {
   category     ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   rentContract RentContract?   @relation(fields: [rentContractId], references: [id], onDelete: Restrict)
   employee     Employee?       @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  payrollRun   PayrollRun?     @relation(fields: [payrollRunId], references: [id], onDelete: Restrict)
 
   @@unique([tenantId, number])
   @@index([tenantId, employeeId])
+  @@index([tenantId, payrollRunId])
   @@index([tenantId, date])
   @@index([tenantId, warehouseId, date])
   @@index([tenantId, rentContractId])
@@ -2821,6 +2843,10 @@ enum EmployeeLedgerType {
   ADVANCE
   REVERSAL
   OPENING
+  SALARY_DUE
+  SALARY_PAID
+  ADVANCE_DEDUCTION
+  SALARY_REVERSAL
 }
 
 /// A worker (master data, soft delete). Most have no app account: `userId` is optional.
@@ -2863,6 +2889,8 @@ model Employee {
   leaveRequests LeaveRequest[]
   leaveEntries  LeaveEntry[]
   expenses      Expense[]
+  payItems      EmployeePayItem[]
+  payslips      Payslip[]
 
   @@unique([tenantId, matricule])
   @@index([tenantId, warehouseId])
@@ -2897,6 +2925,8 @@ model EmployeeBalance {
   employeeId     String   @unique @db.Uuid
   /// What the worker owes the company in avances.
   advanceBalance Decimal  @default(0) @db.Decimal(14, 2)
+  /// What the company still owes the worker in approved salaries (phase 31b).
+  salaryDue      Decimal  @default(0) @db.Decimal(14, 2)
   leaveDays      Decimal  @default(0) @db.Decimal(6, 1)
   updatedAt      DateTime @updatedAt @db.Timestamptz(3)
 
@@ -2916,8 +2946,10 @@ model EmployeeLedgerEntry {
   type         EmployeeLedgerType
   /// Signed: + the worker owes more, − he owes less.
   amount       Decimal            @db.Decimal(14, 2)
+  /// The balance the type moves: avances, or salary owed (`employeeBalanceDelta`).
   balanceAfter Decimal            @db.Decimal(14, 2)
   expenseId    String?            @db.Uuid
+  payrollRunId String?            @db.Uuid
   note         String?            @db.VarChar(255)
   createdBy    String?            @db.Uuid
   createdAt    DateTime           @default(now()) @db.Timestamptz(3)
@@ -2927,6 +2959,7 @@ model EmployeeLedgerEntry {
 
   @@index([tenantId, employeeId, seq])
   @@index([tenantId, expenseId])
+  @@index([tenantId, payrollRunId])
   @@map("employee_ledger_entries")
 }
 
@@ -2982,21 +3015,291 @@ model AttendanceDay {
   @@map("attendance_days")
 }
 
-/// A month whose payroll is approved (phase 31b writes it): no new event, for one dépôt
-/// or (warehouseId null) the whole company. Enforced by trigger.
+/// A month whose payroll is approved (phase 31b writes it): no new event, for one dépôt,
+/// one employee, or (both null) the whole company. Enforced by trigger. The employee rows
+/// cover a worker whose days sit in another dépôt, or in none.
 model AttendanceMonthLock {
-  id          String   @id @default(uuid()) @db.Uuid
-  tenantId    String   @db.Uuid
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @db.Uuid
   /// YYYY-MM
-  month       String   @db.VarChar(7)
-  warehouseId String?  @db.Uuid
-  createdBy   String?  @db.Uuid
-  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  month        String   @db.VarChar(7)
+  warehouseId  String?  @db.Uuid
+  employeeId   String?  @db.Uuid
+  /// The run that wrote it: cancelling the run removes it.
+  payrollRunId String?  @db.Uuid
+  createdBy    String?  @db.Uuid
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId, month])
+  @@index([tenantId, payrollRunId])
   @@map("attendance_month_locks")
+}
+
+// ---------------------------------------------------------------- Paie (phase 31b)
+
+enum PayrollRunStatus {
+  DRAFT
+  APPROVED
+  CANCELLED
+}
+
+enum PayItemMode {
+  FIXED
+  PER_DAY
+}
+
+enum PayrollManualKind {
+  ITEM
+  REGULARISATION
+  RETENUE
+}
+
+/// CNAS and IRG rates, country-wide and owned by the super-admin. Append-only: a run uses
+/// the set valid on the month's last day (latest effectiveFrom, then latest seq), so a
+/// correction is a new row and an approved run never moves.
+model PayrollRateSet {
+  id                 String   @id @default(uuid()) @db.Uuid
+  seq                BigInt   @unique @default(autoincrement())
+  /// Null: a platform set, indicative, published by the super-admin. Else the company's own.
+  tenantId           String?  @db.Uuid
+  effectiveFrom      DateTime @db.Date
+  cnasEmployeeRate   Decimal  @db.Decimal(6, 4)
+  cnasEmployerRate   Decimal  @db.Decimal(6, 4)
+  /// IrgBracket[] (packages/shared/payroll.ts): annual, lowest first.
+  irgBrackets        Json
+  abattementRate     Decimal  @db.Decimal(6, 4)
+  abattementMin      Decimal  @db.Decimal(14, 2)
+  abattementMax      Decimal  @db.Decimal(14, 2)
+  exemptionThreshold Decimal  @db.Decimal(14, 2)
+  lissageCeiling     Decimal  @db.Decimal(14, 2)
+  lissageNum         Decimal  @db.Decimal(14, 4)
+  lissageDen         Decimal  @db.Decimal(14, 4)
+  lissageOffsetNum   Decimal  @db.Decimal(14, 4)
+  lissageOffsetDen   Decimal  @db.Decimal(14, 4)
+  snmg               Decimal  @db.Decimal(14, 2)
+  /// Not checked by a comptable yet: the payslip screen says so.
+  toVerify           Boolean  @default(true)
+  note               String?  @db.VarChar(255)
+  createdAt          DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant        Tenant?                   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  runs          PayrollRun[]
+  confirmations PayrollRateConfirmation[]
+
+  @@index([tenantId, effectiveFrom, seq])
+  @@map("payroll_rate_sets")
+}
+
+/// The owner's word on a rate set, append-only: who, when, which set, the text he read.
+/// CONFIRMED lets runs on that set be approved; KEPT_OWN only answers the new-rates banner.
+model PayrollRateConfirmation {
+  id         String   @id @default(uuid()) @db.Uuid
+  seq        BigInt   @unique @default(autoincrement())
+  tenantId   String   @db.Uuid
+  rateSetId  String   @db.Uuid
+  decision   String   @db.VarChar(16)
+  text       String   @db.VarChar(255)
+  locale     String   @db.VarChar(2)
+  createdBy  String   @db.Uuid
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant  Tenant         @relation(fields: [tenantId], references: [id])
+  rateSet PayrollRateSet @relation(fields: [rateSetId], references: [id])
+
+  @@unique([tenantId, rateSetId, decision])
+  @@map("payroll_rate_confirmations")
+}
+
+/// A prime or indemnité of the tenant (master data, soft delete).
+model PayItemType {
+  id        String      @id @default(uuid()) @db.Uuid
+  tenantId  String      @db.Uuid
+  /// RENDEMENT, PANIER, TRANSPORT, EXCEPTIONNELLE on the seeded ones.
+  key       String?     @db.VarChar(30)
+  name      String      @db.VarChar(80)
+  cotisable Boolean
+  imposable Boolean
+  mode      PayItemMode @default(FIXED)
+  deletedAt DateTime?   @db.Timestamptz(3)
+  createdAt DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime    @updatedAt @db.Timestamptz(3)
+
+  tenant      Tenant              @relation(fields: [tenantId], references: [id])
+  items       EmployeePayItem[]
+  manualLines PayrollManualLine[]
+
+  @@unique([tenantId, key])
+  @@index([tenantId, deletedAt])
+  @@map("pay_item_types")
+}
+
+/// A recurring prime of an employee. Append-only, like the salary: the last row of a type
+/// on or before the day applies, and a row at 0 ends it.
+model EmployeePayItem {
+  id            String   @id @default(uuid()) @db.Uuid
+  seq           BigInt   @unique @default(autoincrement())
+  tenantId      String   @db.Uuid
+  employeeId    String   @db.Uuid
+  typeId        String   @db.Uuid
+  amount        Decimal  @db.Decimal(14, 2)
+  effectiveFrom DateTime @db.Date
+  createdBy     String?  @db.Uuid
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant   Tenant      @relation(fields: [tenantId], references: [id])
+  employee Employee    @relation(fields: [employeeId], references: [id])
+  type     PayItemType @relation(fields: [typeId], references: [id])
+
+  @@index([tenantId, employeeId, effectiveFrom])
+  @@map("employee_pay_items")
+}
+
+/// The payroll of a month, for one dépôt or (warehouseId null) the company. A DRAFT is
+/// recomputed at will; APPROVED is frozen (DB trigger) and only moves to CANCELLED, while
+/// nothing was paid. At most one live run per month and dépôt (partial unique index).
+model PayrollRun {
+  id           String           @id @default(uuid()) @db.Uuid
+  tenantId     String           @db.Uuid
+  /// PAIE-YYYY-000001, given at approval.
+  number       String?          @db.VarChar(20)
+  /// YYYY-MM
+  month        String           @db.VarChar(7)
+  warehouseId  String?          @db.Uuid
+  status       PayrollRunStatus @default(DRAFT)
+  rateSetId    String           @db.Uuid
+  /// Goes up on each recompute; the owner approves the version he read.
+  version      Int              @default(1)
+  /// Hash of the computed payslips: tells whether the figures moved.
+  fingerprint  String           @db.VarChar(64)
+  computedAt   DateTime         @db.Timestamptz(3)
+  computedBy   String?          @db.Uuid
+  approvedAt   DateTime?        @db.Timestamptz(3)
+  approvedBy   String?          @db.Uuid
+  cancelledAt  DateTime?        @db.Timestamptz(3)
+  cancelledBy  String?          @db.Uuid
+  cancelReason String?          @db.VarChar(255)
+  createdBy    String?          @db.Uuid
+  createdAt    DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime         @updatedAt @db.Timestamptz(3)
+
+  tenant      Tenant              @relation(fields: [tenantId], references: [id])
+  warehouse   Warehouse?          @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  rateSet     PayrollRateSet      @relation(fields: [rateSetId], references: [id])
+  payslips    Payslip[]
+  manualLines PayrollManualLine[]
+  expenses    Expense[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId, month])
+  @@index([tenantId, status, month])
+  @@map("payroll_runs")
+}
+
+/// One employee on one run, with everything printed frozen. No row is ever updated once
+/// the run left DRAFT (DB trigger).
+model Payslip {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @db.Uuid
+  runId           String   @db.Uuid
+  employeeId      String   @db.Uuid
+  /// YYYY-MM, as on the run.
+  month           String   @db.VarChar(7)
+  /// The employee's dépôt for this month: the charges count here.
+  warehouseId     String?  @db.Uuid
+  rateSetId       String   @db.Uuid
+  rateSetToVerify Boolean
+  fullName        String   @db.VarChar(120)
+  matricule       String   @db.VarChar(20)
+  position        String?  @db.VarChar(80)
+  nss             String?  @db.VarChar(30)
+  declared        Boolean
+  payType         PayType?
+  salary          Decimal  @db.Decimal(14, 2)
+  /// PayDaySummary (packages/shared/payroll.ts).
+  days            Json
+  /// PayslipIssue[]: what blocks or warns, for the run screen.
+  issues          Json
+  /// IrgDetail.
+  irgDetail       Json
+  gross           Decimal  @db.Decimal(14, 2)
+  cotisable       Decimal  @db.Decimal(14, 2)
+  cnasEmployee    Decimal  @db.Decimal(14, 2)
+  cnasEmployer    Decimal  @db.Decimal(14, 2)
+  taxable         Decimal  @db.Decimal(14, 2)
+  irg             Decimal  @db.Decimal(14, 2)
+  net             Decimal  @db.Decimal(14, 2)
+  retenues        Decimal  @db.Decimal(14, 2)
+  advanceDeducted Decimal  @db.Decimal(14, 2)
+  advanceCarried  Decimal  @db.Decimal(14, 2)
+  netToPay        Decimal  @db.Decimal(14, 2)
+  employerCost    Decimal  @db.Decimal(14, 2)
+  /// Year to date, this month included.
+  cumulGross      Decimal  @db.Decimal(14, 2)
+  cumulIrg        Decimal  @db.Decimal(14, 2)
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant   Tenant        @relation(fields: [tenantId], references: [id])
+  run      PayrollRun    @relation(fields: [runId], references: [id])
+  employee Employee      @relation(fields: [employeeId], references: [id])
+  lines    PayslipLine[]
+
+  @@unique([runId, employeeId])
+  @@index([tenantId, employeeId, month])
+  @@index([tenantId, month])
+  @@map("payslips")
+}
+
+model PayslipLine {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @db.Uuid
+  runId          String   @db.Uuid
+  payslipId      String   @db.Uuid
+  position       Int      @db.SmallInt
+  /// PayLineCode.
+  code           String   @db.VarChar(30)
+  label          String   @db.VarChar(120)
+  quantity       Decimal? @db.Decimal(10, 2)
+  base           Decimal? @db.Decimal(14, 2)
+  rate           Decimal? @db.Decimal(8, 4)
+  amount         Decimal  @db.Decimal(14, 2)
+  cotisable      Boolean
+  imposable      Boolean
+  /// The approved incentive run a prime comes from: it is paid once.
+  incentiveRunId String?  @db.Uuid
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  payslip Payslip @relation(fields: [payslipId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, payslipId])
+  @@index([tenantId, incentiveRunId])
+  @@map("payslip_lines")
+}
+
+/// What was entered by hand on a draft: it survives a recompute, and freezes with the run.
+model PayrollManualLine {
+  id         String            @id @default(uuid()) @db.Uuid
+  tenantId   String            @db.Uuid
+  runId      String            @db.Uuid
+  employeeId String            @db.Uuid
+  kind       PayrollManualKind
+  typeId     String?           @db.Uuid
+  label      String            @db.VarChar(120)
+  /// Signed for a régularisation.
+  amount     Decimal           @db.Decimal(14, 2)
+  cotisable  Boolean           @default(false)
+  imposable  Boolean           @default(false)
+  note       String?           @db.VarChar(255)
+  createdBy  String?           @db.Uuid
+  createdAt  DateTime          @default(now()) @db.Timestamptz(3)
+
+  tenant Tenant       @relation(fields: [tenantId], references: [id])
+  run    PayrollRun   @relation(fields: [runId], references: [id])
+  type   PayItemType? @relation(fields: [typeId], references: [id])
+
+  @@index([tenantId, runId, employeeId])
+  @@map("payroll_manual_lines")
 }
 
 /// Fêtes légales. Fixed ones are seeded every year with a key; lunar ones are entered by

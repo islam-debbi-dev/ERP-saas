@@ -44,6 +44,7 @@ import {
   toDay,
 } from './attendance-days.service';
 import { EmployeeAccessService, type LockedEmployee } from './employee-access.service';
+import { ACCRUAL_TX, LeaveAccrualService } from './leave-accrual.service';
 import { LeaveService } from './leave.service';
 
 const LONG_TX = { timeout: 30_000 };
@@ -88,6 +89,7 @@ export class AttendanceService {
     private readonly access: EmployeeAccessService,
     private readonly days: AttendanceDaysService,
     private readonly leaves: LeaveService,
+    private readonly accruals: LeaveAccrualService,
   ) {}
 
   private assertNotFuture(date: string): void {
@@ -179,7 +181,7 @@ export class AttendanceService {
       await this.days.assertUnlockedMany(
         tx,
         tenantId,
-        rows.map((r) => r.employee.warehouseId),
+        rows.map((r) => r.employee),
         date,
       );
       if (rows.length > 0) {
@@ -237,7 +239,7 @@ export class AttendanceService {
       if (!this.employed(employee, input.date)) {
         throw new AppException(ErrorCode.EMPLOYEE_NOT_EMPLOYED, 'Not employed on this day');
       }
-      await this.days.assertUnlocked(tx, tenantId, employee.warehouseId, [input.date]);
+      await this.days.assertUnlocked(tx, tenantId, employee.warehouseId, [input.date], employee.id);
       const before = await tx.attendanceDay.findFirst({
         where: { employeeId: employee.id, day: fromDay(input.date) },
         select: { status: true },
@@ -306,7 +308,7 @@ export class AttendanceService {
       if (!this.employed(employee, today)) {
         throw new AppException(ErrorCode.EMPLOYEE_NOT_EMPLOYED, 'Not employed on this day');
       }
-      await this.days.assertUnlocked(tx, tenantId, employee.warehouseId, [today]);
+      await this.days.assertUnlocked(tx, tenantId, employee.warehouseId, [today], employee.id);
       await this.assertSelfState(tx, tenantId, employee.id, today, kind);
 
       const event = await tx.attendanceEvent.create({
@@ -515,8 +517,12 @@ export class AttendanceService {
 
   /** "Mon pointage": no permission needed, only a linked employee file. */
   async mine(user: CurrentUserInfo): Promise<MyAttendanceDto> {
-    const db = this.prisma.db;
+    return this.prisma.db.$transaction((tx) => this.mineIn(tx, user), ACCRUAL_TX);
+  }
+
+  private async mineIn(db: Tx, user: CurrentUserInfo): Promise<MyAttendanceDto> {
     const { id } = await this.access.own(db, user);
+    await this.accruals.ensureAccruals(db, id);
     const today = algiersDay();
     const { from, to } = monthBounds(today.slice(0, 7));
     const [employee, events, balance, selfCheckIn, leaves] = await Promise.all([

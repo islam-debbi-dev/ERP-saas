@@ -44,6 +44,7 @@ export type NavKey =
   | 'expenses'
   | 'hr'
   | 'myAttendance'
+  | 'myPayslips'
   | 'reports'
   | 'settings';
 
@@ -170,6 +171,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         permission: Permission.HR_VIEW,
       },
       { key: 'myAttendance', url: '/mon-pointage', icon: Fingerprint, feature: Feature.HR },
+      { key: 'myPayslips', url: '/mes-bulletins', icon: ReceiptText, feature: Feature.PAYROLL },
       { key: 'reports', url: '/rapports', icon: ChartColumn },
       { key: 'settings', url: '/parametres', icon: Settings },
     ],

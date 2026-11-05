@@ -31,6 +31,9 @@ import {
   type SubscriptionSummary,
   type UpdateSubscriptionInput,
   updateSubscriptionSchema,
+  type PayrollRateSetDto,
+  type PayrollRateSetInput,
+  payrollRateSetSchema,
 } from '@erp/shared';
 import type { ClientMeta } from '../auth/auth.types';
 import { AppException } from '../common/app-exception';
@@ -41,6 +44,7 @@ import {
   type AdminIssuedTokens,
   AdminAuthService,
 } from './admin-auth.service';
+import { AdminPayrollRatesService } from './admin-payroll-rates.service';
 import { AdminTenantsService } from './admin-tenants.service';
 import { AdminController, AdminPublic, CurrentAdmin } from './admin.decorators';
 import type { CurrentAdminInfo } from './admin.types';
@@ -117,6 +121,25 @@ export class AdminAuthController {
       maxAge: ADMIN_SESSION_HOURS * 3_600_000,
     });
     return rest;
+  }
+}
+
+/** Country-wide paie rates (phase 31b): read and appended, never edited. */
+@AdminController('payroll-rate-sets')
+export class AdminPayrollRatesController {
+  constructor(private readonly rates: AdminPayrollRatesService) {}
+
+  @Get()
+  list(): Promise<PayrollRateSetDto[]> {
+    return this.rates.list();
+  }
+
+  @Post()
+  append(
+    @CurrentAdmin() admin: CurrentAdminInfo,
+    @Body(new ZodValidationPipe(payrollRateSetSchema)) body: PayrollRateSetInput,
+  ): Promise<PayrollRateSetDto> {
+    return this.rates.append(admin, body);
   }
 }
 

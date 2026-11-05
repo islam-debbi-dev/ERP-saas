@@ -29,6 +29,14 @@ export const TENANT_SCOPED_MODELS = new Set<string>([
   'Client',
   'ClientLedgerEntry',
   'ClientBalance',
+  'PayItemType',
+  'EmployeePayItem',
+  'PayrollRateSet',
+  'PayrollRateConfirmation',
+  'PayrollRun',
+  'Payslip',
+  'PayslipLine',
+  'PayrollManualLine',
   'Sale',
   'SaleLine',
   'SaleReturn',
@@ -103,7 +111,12 @@ const APPEND_ONLY_MODELS = new Set<string>([
   'Visit',
   'GeoCheckReview',
   'ClientPackagingEntry',
+  'PayrollRateSet',
+  'PayrollRateConfirmation',
 ]);
+
+/** Rows with a null tenantId belong to the platform: every company reads them. */
+const SHARED_READ_MODELS = new Set<string>(['PayrollRateSet']);
 
 const WHERE_OPERATIONS = new Set<string>([
   'findUnique',
@@ -176,7 +189,15 @@ export const tenantExtension = Prisma.defineExtension({
         const scopeKey = isTenantModel ? 'id' : 'tenantId';
 
         if (WHERE_OPERATIONS.has(operation)) {
-          a.where = { ...a.where, [scopeKey]: tenantId };
+          a.where = SHARED_READ_MODELS.has(model)
+            ? {
+                ...a.where,
+                AND: [
+                  ...[a.where?.['AND'] ?? []].flat(),
+                  { OR: [{ tenantId }, { tenantId: null }] },
+                ],
+              }
+            : { ...a.where, [scopeKey]: tenantId };
         }
 
         if (isTenantModel) {

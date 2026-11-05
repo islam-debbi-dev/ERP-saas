@@ -1,10 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { EmployeeLedgerType, type LeaveEntryType, money, toMoneyString } from '@erp/shared';
+import {
+  employeeBalanceDelta,
+  EmployeeLedgerType,
+  LeaveEntryType,
+  money,
+  toMoneyString,
+} from '@erp/shared';
 import { tenantContext } from '../common/tenant-context';
 import { type Tx } from '../prisma/prisma.service';
 
 interface LockedBalance {
   advanceBalance: string;
+  salaryDue: string;
   leaveDays: string;
 }
 
@@ -24,7 +31,8 @@ export class EmployeeLedgerService {
       VALUES (gen_random_uuid(), ${tenantId}::uuid, ${employeeId}::uuid, CURRENT_TIMESTAMP)
       ON CONFLICT DO NOTHING`;
     const rows = await tx.$queryRaw<LockedBalance[]>`
-      SELECT "advanceBalance"::text AS "advanceBalance", "leaveDays"::text AS "leaveDays"
+      SELECT "advanceBalance"::text AS "advanceBalance", "salaryDue"::text AS "salaryDue",
+             "leaveDays"::text AS "leaveDays"
       FROM employee_balances
       WHERE "employeeId" = ${employeeId}::uuid AND "tenantId" = ${tenantId}::uuid
       FOR UPDATE`;
@@ -33,7 +41,10 @@ export class EmployeeLedgerService {
     return row;
   }
 
-  /** `amount` is signed: + the worker owes more, − he owes less. */
+  /**
+   * `amount` is signed: + the worker owes more, − he owes less. Avances and salary owed are
+   * two balances (`employeeBalanceDelta`); `balanceAfter` is the one the type moves.
+   */
   async post(
     tx: Tx,
     entry: {
@@ -41,12 +52,16 @@ export class EmployeeLedgerService {
       type: EmployeeLedgerType;
       amount: string;
       expenseId?: string | null;
+      payrollRunId?: string | null;
       note?: string | null;
       userId?: string | null;
     },
   ): Promise<{ id: string; balanceAfter: string }> {
     const before = await this.lock(tx, entry.employeeId);
-    const balanceAfter = toMoneyString(money(before.advanceBalance).add(money(entry.amount)));
+    const delta = employeeBalanceDelta(entry.type, entry.amount);
+    const advanceBalance = toMoneyString(money(before.advanceBalance).add(delta.advance));
+    const salaryDue = toMoneyString(money(before.salaryDue).add(delta.salaryDue));
+    const balanceAfter = delta.advance.isZero() ? salaryDue : advanceBalance;
     const row = await tx.employeeLedgerEntry.create({
       data: {
         tenantId: tenantContext.requireTenantId(),
@@ -55,6 +70,7 @@ export class EmployeeLedgerService {
         amount: entry.amount,
         balanceAfter,
         expenseId: entry.expenseId ?? null,
+        payrollRunId: entry.payrollRunId ?? null,
         note: entry.note ?? null,
         createdBy: entry.userId ?? null,
       },
@@ -62,7 +78,7 @@ export class EmployeeLedgerService {
     });
     await tx.employeeBalance.update({
       where: { employeeId: entry.employeeId },
-      data: { advanceBalance: balanceAfter },
+      data: { advanceBalance, salaryDue },
     });
     return { id: row.id, balanceAfter };
   }
@@ -77,17 +93,42 @@ export class EmployeeLedgerService {
   ): Promise<void> {
     const entries = await tx.employeeLedgerEntry.findMany({
       where: { employeeId, expenseId },
-      select: { amount: true },
+      select: { amount: true, type: true },
     });
     const net = entries.reduce((total, e) => total.add(money(e.amount.toString())), money(0));
     if (net.isZero()) return;
+    // A salary payment goes back to the salary owed, never to the avances.
+    const salary = entries.some((e) => e.type === EmployeeLedgerType.SALARY_PAID);
     await this.post(tx, {
       employeeId,
-      type: EmployeeLedgerType.REVERSAL,
+      type: salary ? EmployeeLedgerType.SALARY_REVERSAL : EmployeeLedgerType.REVERSAL,
       amount: toMoneyString(net.neg()),
       expenseId,
       note: reason,
       userId,
+    });
+  }
+
+  /** Several months of accrual in one write: a first catch-up can be years long. */
+  async postAccruals(
+    tx: Tx,
+    employeeId: string,
+    entries: { month: string; days: string }[],
+  ): Promise<void> {
+    const before = await this.lock(tx, employeeId);
+    const after = entries.reduce((t, e) => t.add(money(e.days)), money(before.leaveDays));
+    await tx.leaveEntry.createMany({
+      data: entries.map((e) => ({
+        tenantId: tenantContext.requireTenantId(),
+        employeeId,
+        type: LeaveEntryType.ACCRUAL,
+        days: e.days,
+        month: e.month,
+      })),
+    });
+    await tx.employeeBalance.update({
+      where: { employeeId },
+      data: { leaveDays: after.toFixed(1) },
     });
   }
 

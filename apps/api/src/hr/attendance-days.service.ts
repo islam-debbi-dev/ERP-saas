@@ -15,6 +15,7 @@ import {
 } from '@erp/shared';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
+import { type Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 
 type Db = PrismaService['db'] | Tx;
@@ -163,39 +164,66 @@ export class AttendanceDaysService {
     return { status, ...dayFigures(events) };
   }
 
-  /** PERIOD_APPROVED when one of the days is in a month locked for this dépôt. */
+  /**
+   * PERIOD_APPROVED when one of the days is in a month locked for this dépôt or this
+   * employee (a worker moved during the month is locked by name, phase 31b).
+   */
   async assertUnlocked(
     db: Db,
     tenantId: string,
     warehouseId: string | null,
     days: string[],
+    employeeId?: string,
+  ): Promise<void> {
+    await this.refuseLock(db, tenantId, days, {
+      OR: [
+        { employeeId: null, warehouseId: null },
+        ...(warehouseId ? [{ employeeId: null, warehouseId }] : []),
+        ...(employeeId ? [{ employeeId }] : []),
+      ],
+    });
+  }
+
+  /** `assertUnlocked` for one day of several employees ("Tous présents" spans a whole team). */
+  async assertUnlockedMany(
+    db: Db,
+    tenantId: string,
+    employees: readonly { id: string; warehouseId: string | null }[],
+    day: string,
+  ): Promise<void> {
+    await this.refuseLock(db, tenantId, [day], {
+      OR: [
+        { employeeId: null, warehouseId: null },
+        {
+          employeeId: null,
+          warehouseId: { in: employees.flatMap((e) => (e.warehouseId ? [e.warehouseId] : [])) },
+        },
+        { employeeId: { in: employees.map((e) => e.id) } },
+      ],
+    });
+  }
+
+  /** The calendar is the company's: any lock on these months stops a change to it. */
+  async assertNoLock(db: Db, tenantId: string, days: string[]): Promise<void> {
+    await this.refuseLock(db, tenantId, days, {});
+  }
+
+  private async refuseLock(
+    db: Db,
+    tenantId: string,
+    days: string[],
+    where: Prisma.AttendanceMonthLockWhereInput,
   ): Promise<void> {
     const months = [...new Set(days.map((d) => d.slice(0, 7)))];
     if (months.length === 0) return;
     const lock = await db.attendanceMonthLock.findFirst({
-      where: {
-        tenantId,
-        month: { in: months },
-        OR: [{ warehouseId: null }, ...(warehouseId ? [{ warehouseId }] : [])],
-      },
+      where: { tenantId, month: { in: months }, ...where },
       select: { month: true },
     });
     if (lock) {
       throw new AppException(ErrorCode.PERIOD_APPROVED, 'The payroll of this month is approved', {
         month: lock.month,
       });
-    }
-  }
-
-  /** `assertUnlocked` for one day of several dépôts ("Tous présents" spans a whole team). */
-  async assertUnlockedMany(
-    db: Db,
-    tenantId: string,
-    warehouseIds: (string | null)[],
-    day: string,
-  ): Promise<void> {
-    for (const warehouseId of new Set(warehouseIds)) {
-      await this.assertUnlocked(db, tenantId, warehouseId, [day]);
     }
   }
 
@@ -306,7 +334,7 @@ export class AttendanceDaysService {
       this.approvedLeaves(db, tenantId, null, '1900-01-01', '2999-12-31'),
       db.attendanceMonthLock.findMany({
         where: { tenantId },
-        select: { month: true, warehouseId: true },
+        select: { month: true, warehouseId: true, employeeId: true },
       }),
     ]);
     const days = new Map<string, { employeeId: string; day: string }>();
@@ -338,7 +366,9 @@ export class AttendanceDaysService {
       const warehouseId = row?.warehouseId ?? eventWarehouse.get(key) ?? employee.warehouseId;
       const locked = locks.some(
         (l) =>
-          l.month === day.slice(0, 7) && (l.warehouseId === null || l.warehouseId === warehouseId),
+          l.month === day.slice(0, 7) &&
+          (l.employeeId === employeeId ||
+            (l.employeeId === null && (l.warehouseId === null || l.warehouseId === warehouseId))),
       );
       if (locked) continue;
       const expected = this.view(

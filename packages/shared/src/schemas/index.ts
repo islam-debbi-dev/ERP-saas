@@ -23,3 +23,4 @@ export * from './import-files';
 export * from './promotions';
 export * from './expenses';
 export * from './hr';
+export * from './payroll';

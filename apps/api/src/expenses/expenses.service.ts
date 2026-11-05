@@ -141,11 +141,12 @@ export class ExpensesService {
   }
 
   /**
-   * The dépense of an avance sur salaire (phase 31), inside the caller's transaction: the
-   * caller writes the employee ledger entry and the audit row. Category Salaires, linked
-   * to the employee, in his dépôt. It is hidden without SALARY_VIEW and never a charge.
+   * The dépense of an avance sur salaire (phase 31) or of a salary payment (31b, with its
+   * run), inside the caller's transaction: the caller writes the employee ledger entry and
+   * the audit row. Category Salaires, linked to the employee, in his dépôt. It is hidden
+   * without SALARY_VIEW and never a charge.
    */
-  async createAdvanceInTx(
+  async createEmployeePaymentInTx(
     tx: Tx,
     input: {
       employeeId: string;
@@ -156,6 +157,7 @@ export class ExpensesService {
       date: string;
       reference: string | null;
       note: string | null;
+      payrollRunId?: string;
     },
     user: CurrentUserInfo,
   ): Promise<{ id: string; number: string }> {
@@ -174,10 +176,40 @@ export class ExpensesService {
         payee: input.employeeName,
         note: input.note,
         employeeId: input.employeeId,
+        payrollRunId: input.payrollRunId ?? null,
         createdBy: user.id,
       },
       select: { id: true, number: true },
     });
+  }
+
+  /** Salaires dépenses of a period with no employee: entered by hand, they are charges. */
+  async manualSalaryTotal(tx: Tx, from: string, to: string): Promise<string> {
+    const total = await tx.expense.aggregate({
+      where: {
+        categoryId: await this.categories.salariesId(tx),
+        employeeId: null,
+        status: ExpenseStatus.VALID,
+        date: { gte: fromDay(from), lte: fromDay(to) },
+      },
+      _sum: { amount: true },
+    });
+    return toMoneyString(total._sum.amount?.toString() ?? '0');
+  }
+
+  /** What was really paid on a run, per employee: cancelled payments do not count. */
+  async paidOnRuns(tx: Tx, runIds: string[]): Promise<Map<string, string>> {
+    const rows = await tx.expense.groupBy({
+      by: ['payrollRunId', 'employeeId'],
+      where: { payrollRunId: { in: runIds }, status: ExpenseStatus.VALID },
+      _sum: { amount: true },
+    });
+    return new Map(
+      rows.map((r) => [
+        `${r.payrollRunId}|${r.employeeId}`,
+        toMoneyString(r._sum.amount?.toString() ?? '0'),
+      ]),
+    );
   }
 
   /** Input mistake: the expense stays, marked cancelled, with the reason. Never deleted. */
@@ -190,10 +222,12 @@ export class ExpensesService {
           warehouseId: string | null;
           rentContractId: string | null;
           employeeId: string | null;
+          payrollRunId: string | null;
           createdBy: string | null;
         }[]
       >`
-        SELECT id, status, "warehouseId", "rentContractId", "employeeId", "createdBy" FROM expenses
+        SELECT id, status, "warehouseId", "rentContractId", "employeeId", "payrollRunId",
+               "createdBy" FROM expenses
         WHERE id = ${id}::uuid AND "tenantId" = ${tenantContext.requireTenantId()}::uuid
         FOR UPDATE`;
       const e = rows[0];
@@ -215,12 +249,17 @@ export class ExpensesService {
           version: { increment: 1 },
         },
       });
-      // An avance is reversed with its dépense, and its journal line stays behind SALARY_VIEW.
+      // An avance or a salary payment is reversed with its dépense, and its journal line
+      // stays behind SALARY_VIEW. A cancelled payment is due again (paid is derived).
       if (e.employeeId) {
         await this.employeeLedger.reverseExpense(tx, e.employeeId, id, reason, user.id);
       }
       await this.audit.log(tx, {
-        action: e.employeeId ? 'ADVANCE_CANCELLED' : 'EXPENSE_CANCELLED',
+        action: e.payrollRunId
+          ? 'SALARY_PAYMENT_CANCELLED'
+          : e.employeeId
+            ? 'ADVANCE_CANCELLED'
+            : 'EXPENSE_CANCELLED',
         entity: e.employeeId ? 'EmployeeAdvance' : 'Expense',
         entityId: id,
         before: { status: e.status },

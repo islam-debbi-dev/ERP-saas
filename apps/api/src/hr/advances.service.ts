@@ -43,7 +43,7 @@ export class AdvancesService {
       const employee = (await this.access.lock(tx, [employeeId])).get(employeeId)!;
       if (employee.deletedAt) throw new AppException(ErrorCode.NOT_FOUND, 'Employee not found');
       const date = input.date ?? algiersDay();
-      const expense = await this.expenses.createAdvanceInTx(
+      const expense = await this.expenses.createEmployeePaymentInTx(
         tx,
         {
           employeeId,

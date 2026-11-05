@@ -73,7 +73,7 @@ export function AppSidebar() {
           items: g.items.filter(
             (i) =>
               (i.key !== 'overview' || hasOverview) &&
-              (i.key !== 'myAttendance' || hasEmployeeFile),
+              ((i.key !== 'myAttendance' && i.key !== 'myPayslips') || hasEmployeeFile),
           ),
         }))
         .filter((g) => g.items.length > 0),

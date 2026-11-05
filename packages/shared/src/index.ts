@@ -8,6 +8,7 @@ export * from './errors';
 export * from './features';
 export * from './geo';
 export * from './money';
+export * from './payroll';
 export * from './periods';
 export * from './permissions';
 export * from './phone';

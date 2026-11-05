@@ -3,6 +3,7 @@ import {
   type CreateLeaveRequestInput,
   ErrorCode,
   type LeaveBalanceDto,
+  type LeaveEntryInput,
   LeaveEntryType,
   leaveDaysTaken,
   type LeaveRequestDto,
@@ -13,6 +14,7 @@ import {
   listDays,
   money,
   Permission,
+  Role,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
@@ -24,13 +26,12 @@ import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { AttendanceDaysService, fromDay, toDay } from './attendance-days.service';
 import { EmployeeAccessService, type LockedEmployee } from './employee-access.service';
 import { EmployeeLedgerService } from './employee-ledger.service';
+import { ACCRUAL_TX, LeaveAccrualService } from './leave-accrual.service';
 
 const include = {
   employee: { select: { id: true, matricule: true, fullName: true } },
 } satisfies Prisma.LeaveRequestInclude;
 type LeaveRow = Prisma.LeaveRequestGetPayload<{ include: typeof include }>;
-
-const LONG_TX = { timeout: 30_000 };
 
 /** Congés (phase 31): requests, and the ledger entries an approval posts. */
 @Injectable()
@@ -41,6 +42,7 @@ export class LeaveService {
     private readonly access: EmployeeAccessService,
     private readonly days: AttendanceDaysService,
     private readonly ledger: EmployeeLedgerService,
+    private readonly accruals: LeaveAccrualService,
   ) {}
 
   private async toDtos(rows: LeaveRow[]): Promise<LeaveRequestDto[]> {
@@ -101,17 +103,25 @@ export class LeaveService {
   }
 
   async balance(employeeId: string, user: CurrentUserInfo): Promise<LeaveBalanceDto> {
-    await this.access.assertReach(this.prisma.db, user, employeeId);
-    const [balance, entries] = await Promise.all([
-      this.prisma.db.employeeBalance.findUnique({ where: { employeeId } }),
-      this.prisma.db.leaveEntry.findMany({
-        where: { employeeId },
-        orderBy: { seq: 'desc' },
-        take: 100,
-      }),
-    ]);
+    const { balance, entries, hasOpening } = await this.prisma.db.$transaction(async (tx) => {
+      await this.access.assertReach(tx, user, employeeId);
+      await this.accruals.ensureAccruals(tx, employeeId);
+      return {
+        hasOpening:
+          (await tx.leaveEntry.count({
+            where: { employeeId, type: LeaveEntryType.OPENING },
+          })) > 0,
+        balance: await tx.employeeBalance.findUnique({ where: { employeeId } }),
+        entries: await tx.leaveEntry.findMany({
+          where: { employeeId },
+          orderBy: { seq: 'desc' },
+          take: 100,
+        }),
+      };
+    }, ACCRUAL_TX);
     return {
       balance: balance?.leaveDays.toFixed(1) ?? '0.0',
+      hasOpening,
       entries: entries.map((e) => ({
         id: e.id,
         type: e.type,
@@ -121,6 +131,52 @@ export class LeaveService {
         createdAt: e.createdAt.toISOString(),
       })),
     };
+  }
+
+  /**
+   * The only way to correct a balance by hand. The ledger is append-only, so this is for the
+   * owner alone: LEAVE_APPROVE, which managers hold by default, is not enough by itself.
+   */
+  async postEntry(
+    employeeId: string,
+    input: LeaveEntryInput,
+    user: CurrentUserInfo,
+  ): Promise<LeaveBalanceDto> {
+    if (user.role !== Role.OWNER) {
+      throw new AppException(ErrorCode.FORBIDDEN, 'Only the owner corrects a leave balance');
+    }
+    await this.prisma.db.$transaction(async (tx) => {
+      await this.access.assertReach(tx, user, employeeId);
+      const employee = (await this.access.lock(tx, [employeeId])).get(employeeId);
+      if (!employee || employee.deletedAt) {
+        throw new AppException(ErrorCode.NOT_FOUND, 'Employee not found');
+      }
+      await this.accruals.ensureAccruals(tx, employeeId);
+      if (input.type === LeaveEntryType.OPENING) {
+        const opening = await tx.leaveEntry.findFirst({
+          where: { employeeId, type: LeaveEntryType.OPENING },
+          select: { id: true },
+        });
+        if (opening) {
+          throw new AppException(ErrorCode.LEAVE_OPENING_EXISTS, 'A solde initial exists');
+        }
+      }
+      const after = await this.ledger.postLeave(tx, {
+        employeeId,
+        type: input.type,
+        days: money(input.days).toFixed(1),
+        note: input.note,
+        userId: user.id,
+      });
+      await this.audit.log(tx, {
+        action: 'LEAVE_BALANCE_CORRECTED',
+        entity: 'Employee',
+        entityId: employeeId,
+        before: { leaveBalance: money(after).minus(money(input.days)).toFixed(1) },
+        after: { leaveBalance: after, ...input },
+      });
+    }, ACCRUAL_TX);
+    return this.balance(employeeId, user);
   }
 
   private async workingDays(tx: Tx, e: LockedEmployee, from: string, to: string): Promise<number> {
@@ -147,6 +203,7 @@ export class LeaveService {
       if (!employee || employee.deletedAt) {
         throw new AppException(ErrorCode.NOT_FOUND, 'Employee not found');
       }
+      await this.accruals.ensureAccruals(tx, employeeId);
       if (input.startDate < toDay(employee.hireDate)) {
         throw new AppException(ErrorCode.EMPLOYEE_NOT_EMPLOYED, 'Before the hire date');
       }
@@ -188,7 +245,7 @@ export class LeaveService {
         after: { employeeId, ...input, days },
       });
       return row.id;
-    });
+    }, ACCRUAL_TX);
     return this.one(id);
   }
 
@@ -218,10 +275,11 @@ export class LeaveService {
           status: request.status,
         });
       }
+      await this.accruals.ensureAccruals(tx, request.employeeId);
       const from = toDay(request.startDate);
       const to = toDay(request.endDate);
       const range = listDays(from, to);
-      await this.days.assertUnlocked(tx, tenantId, employee.warehouseId, range);
+      await this.days.assertUnlocked(tx, tenantId, employee.warehouseId, range, employee.id);
       // The calendar may have changed since the request (a fête entered in between).
       const days = await this.workingDays(tx, employee, from, to);
       await tx.leaveRequest.update({
@@ -251,7 +309,7 @@ export class LeaveService {
         before: { status: request.status },
         after: { days, overBalance },
       });
-    }, LONG_TX);
+    }, ACCRUAL_TX);
     return { ...(await this.one(id)), overBalance };
   }
 
@@ -313,7 +371,8 @@ export class LeaveService {
         });
       }
       const range = listDays(toDay(request.startDate), toDay(request.endDate));
-      if (approved) await this.days.assertUnlocked(tx, tenantId, employee.warehouseId, range);
+      if (approved)
+        await this.days.assertUnlocked(tx, tenantId, employee.warehouseId, range, employee.id);
       await tx.leaveRequest.update({
         where: { id },
         data: {
@@ -324,6 +383,7 @@ export class LeaveService {
         },
       });
       if (approved) {
+        await this.accruals.ensureAccruals(tx, request.employeeId);
         const entries = await tx.leaveEntry.findMany({
           where: { leaveRequestId: id },
           select: { days: true },
@@ -348,7 +408,7 @@ export class LeaveService {
         before: { status: request.status },
         after: { reason },
       });
-    }, LONG_TX);
+    }, ACCRUAL_TX);
     return this.one(id);
   }
 }

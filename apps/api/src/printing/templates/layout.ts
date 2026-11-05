@@ -174,3 +174,21 @@ export function layout(p: DocumentPage): string {
       </body>
     </html>`.value;
 }
+
+/**
+ * Several documents in one file, each on its own page (the bulk PDF of a payroll run).
+ * Built from `layout` so a single document's output never changes.
+ */
+export function layoutPages(pages: DocumentPage[]): string {
+  const bodies = pages.map((p) => {
+    const out = layout(p);
+    return out.slice(out.indexOf('>', out.indexOf('<body')) + 1, out.lastIndexOf('</body>'));
+  });
+  const first = layout(pages[0]!);
+  const open = first.slice(0, first.indexOf('>', first.indexOf('<body')) + 1);
+  const sections = bodies.map(
+    (body, i) =>
+      `<section class="page"${i < bodies.length - 1 ? ' style="break-after: page"' : ''}>${body}</section>`,
+  );
+  return `${open}${sections.join('')}</body></html>`;
+}

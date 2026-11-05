@@ -13,6 +13,8 @@ type TitleKey =
   | 'nav.stock'
   | 'nav.reports'
   | 'nav.settings'
+  | 'nav.myPayslips'
+  | 'admin.rateSets'
   | 'imports.title'
   | 'users.title'
   | 'sessions.title'

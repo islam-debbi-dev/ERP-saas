@@ -25,7 +25,7 @@ import type { CurrentUserInfo } from '../auth/auth.types';
 import { requirePermission } from '../auth/permissions';
 import { AppException } from '../common/app-exception';
 import { type Prisma } from '../generated/prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
 import {
   fromDay,
@@ -157,7 +157,10 @@ export class RunsService {
         id = preview.id;
         // Previews are not business history: their lines are simply replaced.
         await tx.incentiveLine.deleteMany({ where: { runId: id } });
-        await tx.incentiveRun.update({ where: { id }, data: { computedAt: now, computedBy: user.id } });
+        await tx.incentiveRun.update({
+          where: { id },
+          data: { computedAt: now, computedBy: user.id },
+        });
       } else {
         id = (
           await tx.incentiveRun.create({
@@ -220,14 +223,12 @@ export class RunsService {
         return {
           user: { id: u.id, fullName: u.fullName, role: u.role },
           total: toMoneyString(sum(mine.map((l) => l.amount.toString()))),
-          lines: mine.map(
-            (l): IncentiveLineDto => ({
-              ruleId: l.ruleId,
-              ruleName: l.rule.name,
-              amount: toMoneyString(l.amount.toString()),
-              explanation: l.explanation as unknown as RuleExplanation,
-            }),
-          ),
+          lines: mine.map((l): IncentiveLineDto => ({
+            ruleId: l.ruleId,
+            ruleName: l.rule.name,
+            amount: toMoneyString(l.amount.toString()),
+            explanation: l.explanation as unknown as RuleExplanation,
+          })),
         };
       }),
     };
@@ -250,7 +251,10 @@ export class RunsService {
           status: run.status,
         });
       }
-      const total = await tx.incentiveLine.aggregate({ where: { runId: id }, _sum: { amount: true } });
+      const total = await tx.incentiveLine.aggregate({
+        where: { runId: id },
+        _sum: { amount: true },
+      });
       const now = new Date();
       await tx.incentiveRun.update({
         where: { id },
@@ -270,6 +274,49 @@ export class RunsService {
       });
     });
     return this.get(id, user);
+  }
+
+  /**
+   * Approved bonuses for the paie (phase 31b), per run and user, read only. EXPORTED runs
+   * are approved runs too. Only periods ending from `fromDay` to `toDay`: older months were
+   * paid outside the software, from the Excel export.
+   */
+  async approvedForPayroll(
+    db: Tx,
+    fromDay: Date,
+    toDay: Date,
+  ): Promise<
+    { runId: string; period: string; userId: string; fullName: string; amount: string }[]
+  > {
+    const lines = await db.incentiveLine.groupBy({
+      by: ['runId', 'userId'],
+      where: {
+        run: {
+          status: { in: [IncentiveRunStatus.APPROVED, IncentiveRunStatus.EXPORTED] },
+          periodEnd: { gte: fromDay, lte: toDay },
+        },
+      },
+      _sum: { amount: true },
+    });
+    const [runs, users] = await Promise.all([
+      db.incentiveRun.findMany({
+        where: { id: { in: [...new Set(lines.map((l) => l.runId))] } },
+        select: { id: true, periodStart: true },
+      }),
+      db.user.findMany({
+        where: { id: { in: [...new Set(lines.map((l) => l.userId))] } },
+        select: { id: true, fullName: true },
+      }),
+    ]);
+    const periods = new Map(runs.map((r) => [r.id, monthOf(r.periodStart)]));
+    const names = new Map(users.map((u) => [u.id, u.fullName]));
+    return lines.map((l) => ({
+      runId: l.runId,
+      period: periods.get(l.runId) ?? '',
+      userId: l.userId,
+      fullName: names.get(l.userId) ?? '',
+      amount: toMoneyString(l._sum.amount?.toString() ?? '0'),
+    }));
   }
 
   /** The approved run for payroll; the first export marks it EXPORTED. */
