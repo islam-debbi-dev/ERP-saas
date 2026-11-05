@@ -15,6 +15,7 @@ import {
   type PaymentMode,
   type PayType,
   Permission,
+  Role,
 } from '@erp/shared';
 import { Amount } from '@/components/shared/amount';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -35,9 +36,10 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { usePermission } from '@/lib/auth';
+import { useAuth, usePermission } from '@/lib/auth';
 import { useCancelExpense } from '@/lib/expenses';
 import {
+  useAddLeaveEntry,
   useAddSalary,
   useArchiveEmployee,
   useEmployee,
@@ -148,6 +150,9 @@ function Leave({ employeeId }: { employeeId: string }) {
   const t = useTranslations('hr');
   const balance = useLeaveBalance(employeeId);
   const [open, setOpen] = useState(false);
+  const [correcting, setCorrecting] = useState(false);
+  const canApprove = usePermission(Permission.LEAVE_APPROVE);
+  const owner = useAuth().state.user?.role === Role.OWNER;
   return (
     <Card className="gap-3 p-4">
       <div className="flex items-center justify-between gap-2">
@@ -160,6 +165,7 @@ function Leave({ employeeId }: { employeeId: string }) {
             <span className="min-w-0 truncate">
               {t(`leaveEntry_${l.type}`)}
               {l.month ? ` ${l.month}` : ''}
+              {l.note ? ` (${l.note})` : ''}
             </span>
             <span dir="ltr" className="num">
               {l.days}
@@ -167,12 +173,109 @@ function Leave({ employeeId }: { employeeId: string }) {
           </li>
         ))}
       </ul>
-      <Button variant="outline" className="min-h-11 self-start" onClick={() => setOpen(true)}>
-        <Plus aria-hidden />
-        {t('newLeave')}
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" className="min-h-11" onClick={() => setOpen(true)}>
+          <Plus aria-hidden />
+          {t('newLeave')}
+        </Button>
+        {owner && canApprove && balance.data ? (
+          <Button variant="outline" className="min-h-11" onClick={() => setCorrecting(true)}>
+            {t('leaveEntryNew')}
+          </Button>
+        ) : null}
+      </div>
       <LeaveDialog open={open} employeeId={employeeId} onOpenChange={setOpen} />
+      {correcting ? (
+        <LeaveEntryDialog
+          employeeId={employeeId}
+          hasOpening={balance.data?.hasOpening ?? true}
+          onClose={() => setCorrecting(false)}
+        />
+      ) : null}
     </Card>
+  );
+}
+
+/** Owner only: a first balance, once, or a signed correction with its reason. */
+function LeaveEntryDialog({
+  employeeId,
+  hasOpening,
+  onClose,
+}: {
+  employeeId: string;
+  hasOpening: boolean;
+  onClose: () => void;
+}) {
+  const t = useTranslations('hr');
+  const errorMessage = useErrorMessage();
+  const add = useAddLeaveEntry(employeeId);
+  const key = useIdempotencyKey(true);
+  const [type, setType] = useState<'OPENING' | 'ADJUST'>(hasOpening ? 'ADJUST' : 'OPENING');
+  const [days, setDays] = useState('');
+  const [note, setNote] = useState('');
+  return (
+    <ResponsiveDialog open onOpenChange={(o) => !o && onClose()}>
+      <ResponsiveDialogContent className="md:max-w-sm">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>{t('leaveEntryNew')}</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>{t('leaveEntryHelp')}</ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="leave-entry-type">{t('leaveEntryType')}</Label>
+            <NativeSelect
+              id="leave-entry-type"
+              value={type}
+              onChange={(e) => setType(e.target.value as 'OPENING' | 'ADJUST')}
+            >
+              {hasOpening ? null : <option value="OPENING">{t('leaveEntry_OPENING')}</option>}
+              <option value="ADJUST">{t('leaveEntry_ADJUST')}</option>
+            </NativeSelect>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="leave-entry-days">{t('leaveEntryDays')}</Label>
+            <Input
+              id="leave-entry-days"
+              inputMode="decimal"
+              dir="ltr"
+              className="h-11 text-base"
+              value={days}
+              onChange={(e) => setDays(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="leave-entry-note">{t('leaveEntryNote')}</Label>
+            <Input
+              id="leave-entry-note"
+              className="h-11 text-base"
+              maxLength={255}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </div>
+        </div>
+        <ResponsiveDialogFooter>
+          <Button
+            className="min-h-11"
+            disabled={add.isPending || !days.trim() || note.trim().length < 3}
+            onClick={() =>
+              add.mutate(
+                { key, body: { type, days: days.trim().replace(',', '.'), note: note.trim() } },
+                {
+                  onSuccess: () => {
+                    toast.success(t('leaveEntrySaved'));
+                    onClose();
+                  },
+                  onError: (err) => toast.error(errorMessage(err)),
+                },
+              )
+            }
+          >
+            {t('leaveEntrySave')}
+          </Button>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
 

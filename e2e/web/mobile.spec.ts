@@ -789,6 +789,15 @@ for (const locale of LOCALES) {
           await page.waitForURL((url) => url.pathname === to);
           await settle(page);
         };
+        await go(`/rh/employes/${v.employeeId}`);
+        const correct = page.getByRole('button', { name: m['hr']?.['leaveEntryNew'] });
+        await correct.click();
+        await page.locator('[role="dialog"]').waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        await check(page, '/rh/employes/solde', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+        await page.locator('[role="dialog"]').waitFor({ state: 'hidden' });
+
         await go('/rh/paie/taux');
         await page.getByRole('button', { name: pay['ratesCreateFrom'] }).first().waitFor();
         await check(page, '/rh/paie/taux', locale, results);

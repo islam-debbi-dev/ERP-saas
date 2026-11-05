@@ -458,7 +458,8 @@
     "PAYROLL_ALREADY_PAID": "تم دفع رواتب بالفعل: صحّح ذلك بتسوية في الشهر التالي.",
     "PAYROLL_OVERPAYMENT": "المبلغ يتجاوز ما تبقى للدفع.",
     "PAYROLL_NO_RATE_SET": "لا توجد جداول نسب تغطي هذا الشهر.",
-    "PAYROLL_RATES_NOT_CONFIRMED": "لا توجد نسب مؤكدة لهذه الرواتب: اقبلوا نسب المنصة أو أنشئوا نسبكم."
+    "PAYROLL_RATES_NOT_CONFIRMED": "لا توجد نسب مؤكدة لهذه الرواتب: اقبلوا نسب المنصة أو أنشئوا نسبكم.",
+    "LEAVE_OPENING_EXISTS": "لهذا الموظف رصيد افتتاحي من قبل: استعملوا التعديل."
   },
   "units": {
     "PIECE": "قطعة",
@@ -3350,7 +3351,14 @@
     "ledger_ADVANCE_DEDUCTION": "سلفة مخصومة من الراتب",
     "ledger_SALARY_REVERSAL": "إلغاء راتب",
     "tabPayroll": "الرواتب",
-    "salaryDue": "راتب مستحق"
+    "salaryDue": "راتب مستحق",
+    "leaveEntryNew": "تصحيح الرصيد",
+    "leaveEntryHelp": "تُضاف هذه القيمة إلى الرصيد المعروض ولا يمكن تعديلها لاحقاً.",
+    "leaveEntryType": "نوع القيد",
+    "leaveEntryDays": "الأيام (بالسالب للخصم)",
+    "leaveEntryNote": "السبب",
+    "leaveEntrySave": "حفظ القيد",
+    "leaveEntrySaved": "تم تصحيح الرصيد"
   },
   "payroll": {
     "title": "الرواتب",

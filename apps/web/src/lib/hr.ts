@@ -21,6 +21,7 @@ import {
   type HrSettingsDto,
   type HrSettingsInput,
   type LeaveBalanceDto,
+  type LeaveEntryInput,
   type LeaveRequestDto,
   type LeaveRequestPage,
   type LeaveRequestStatus,
@@ -154,6 +155,19 @@ export function useLeaveBalance(id: string) {
     queryKey: hrKeys.leaveBalance(id),
     queryFn: ({ signal }) =>
       api.request<LeaveBalanceDto>(`/employees/${id}/leave-balance`, { signal }),
+  });
+}
+
+export function useAddLeaveEntry(id: string) {
+  const refresh = useRefreshHr();
+  return useMutation({
+    mutationFn: ({ body, key }: { body: LeaveEntryInput; key: string }) =>
+      api.request<LeaveBalanceDto>(`/employees/${id}/leave-entries`, {
+        method: 'POST',
+        idempotencyKey: key,
+        body,
+      }),
+    onSuccess: refresh,
   });
 }
 

@@ -458,7 +458,8 @@
     "PAYROLL_ALREADY_PAID": "Des salaires sont déjà payés : corrigez par une régularisation le mois suivant.",
     "PAYROLL_OVERPAYMENT": "Le montant dépasse ce qui reste à payer.",
     "PAYROLL_NO_RATE_SET": "Aucun barème ne couvre ce mois.",
-    "PAYROLL_RATES_NOT_CONFIRMED": "Aucun taux confirmé pour cette paie : acceptez ceux de la plateforme ou créez les vôtres."
+    "PAYROLL_RATES_NOT_CONFIRMED": "Aucun taux confirmé pour cette paie : acceptez ceux de la plateforme ou créez les vôtres.",
+    "LEAVE_OPENING_EXISTS": "Cet employé a déjà un solde initial : utilisez un ajustement."
   },
   "units": {
     "PIECE": "Pièce",
@@ -3350,7 +3351,14 @@
     "ledger_ADVANCE_DEDUCTION": "Avance retenue sur salaire",
     "ledger_SALARY_REVERSAL": "Annulation salaire",
     "tabPayroll": "Paie",
-    "salaryDue": "Salaire dû"
+    "salaryDue": "Salaire dû",
+    "leaveEntryNew": "Corriger le solde",
+    "leaveEntryHelp": "L’écriture s’ajoute au solde affiché et ne peut pas être modifiée ensuite.",
+    "leaveEntryType": "Type d’écriture",
+    "leaveEntryDays": "Jours (négatif pour retirer)",
+    "leaveEntryNote": "Motif",
+    "leaveEntrySave": "Enregistrer l’écriture",
+    "leaveEntrySaved": "Solde corrigé"
   },
   "payroll": {
     "title": "Paie",

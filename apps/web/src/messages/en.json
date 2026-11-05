@@ -458,7 +458,8 @@
     "PAYROLL_ALREADY_PAID": "Salaries were already paid: fix it with an adjustment next month.",
     "PAYROLL_OVERPAYMENT": "The amount is more than what remains to pay.",
     "PAYROLL_NO_RATE_SET": "No rate set covers this month.",
-    "PAYROLL_RATES_NOT_CONFIRMED": "No confirmed rates for this payroll: accept the platform’s or create your own."
+    "PAYROLL_RATES_NOT_CONFIRMED": "No confirmed rates for this payroll: accept the platform’s or create your own.",
+    "LEAVE_OPENING_EXISTS": "This employee already has an opening balance: use an adjustment."
   },
   "units": {
     "PIECE": "Piece",
@@ -3350,7 +3351,14 @@
     "ledger_ADVANCE_DEDUCTION": "Advance taken from salary",
     "ledger_SALARY_REVERSAL": "Salary reversal",
     "tabPayroll": "Payroll",
-    "salaryDue": "Salary due"
+    "salaryDue": "Salary due",
+    "leaveEntryNew": "Correct the balance",
+    "leaveEntryHelp": "This entry adds to the balance shown and can’t be changed afterwards.",
+    "leaveEntryType": "Entry type",
+    "leaveEntryDays": "Days (negative to remove)",
+    "leaveEntryNote": "Reason",
+    "leaveEntrySave": "Save the entry",
+    "leaveEntrySaved": "Balance corrected"
   },
   "payroll": {
     "title": "Payroll",

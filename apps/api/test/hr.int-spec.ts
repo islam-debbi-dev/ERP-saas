@@ -621,12 +621,19 @@ describe('hr attendance (phase 31)', () => {
     describe('congés owed without the nightly job', () => {
       const LAST = previousMonth(TODAY.slice(0, 7));
       const THREE_AGO = previousMonth(previousMonth(LAST));
+      /** A file entered three months ago, with nothing read since: what the timer missed. */
+      const veteran = async (over: object = {}, who: Who = d) => {
+        const e = await employee({ hireDate: `${THREE_AGO}-01`, ...over }, who);
+        await tamper(t)`UPDATE employees SET "createdAt" = ${`${THREE_AGO}-01`}::timestamptz
+                        WHERE id = ${e.id}::uuid`;
+        return e;
+      };
       const entriesOf = async (id: string) =>
         ((await as(d).get(`/employees/${id}/leave-balance`).expect(200)).body as LeaveBalanceDto)
           .entries;
 
       it('catches up every closed month on the first read, and only once', async () => {
-        const e = await employee({ hireDate: `${THREE_AGO}-01` });
+        const e = await veteran();
         const reads = await Promise.all(
           Array.from({ length: 5 }, () => as(d).get(`/employees/${e.id}/leave-balance`)),
         );
@@ -641,19 +648,19 @@ describe('hr attendance (phase 31)', () => {
       });
 
       it('shows it on the fiche and the list', async () => {
-        const fiche = await employee({ hireDate: `${THREE_AGO}-01` });
+        const fiche = await veteran();
         expect(
           ((await as(d).get(`/employees/${fiche.id}`).expect(200)).body as EmployeeDto)
             .leaveBalance,
         ).toBe('7.5');
-        const listed = await employee({ hireDate: `${THREE_AGO}-01`, fullName: 'Liste Congés' });
+        const listed = await veteran({ fullName: 'Liste Congés' });
         const page = (await as(d).get('/employees?search=Liste%20Cong').expect(200))
           .body as EmployeePage;
         expect(page.items.find((x) => x.id === listed.id)?.leaveBalance).toBe('7.5');
       });
 
       it('counts them in a leave request and its approval', async () => {
-        const e = await employee({ hireDate: `${THREE_AGO}-01` });
+        const e = await veteran();
         const leave = await request(e.id);
         const res = (await as(d).post(`/leave-requests/${leave.id}/approve`).expect(200))
           .body as LeaveRequestDto;
@@ -663,7 +670,7 @@ describe('hr attendance (phase 31)', () => {
       });
 
       it('posts them on a request, even if nobody read the balance', async () => {
-        const e = await employee({ hireDate: `${THREE_AGO}-01` });
+        const e = await veteran();
         const leave = await request(e.id);
         const rows = await tenantContext.runAsSystem(() =>
           t.prisma.db.leaveEntry.count({ where: { employeeId: e.id, type: 'ACCRUAL' } }),
@@ -672,28 +679,96 @@ describe('hr attendance (phase 31)', () => {
         await as(d).post(`/leave-requests/${leave.id}/cancel`, { reason: 'Annulé' }).expect(200);
       });
 
+      it('a 2015 hire entered today owes nothing before his file', async () => {
+        const today = await employee({ hireDate: '2015-01-01' });
+        expect(await balance(today.id)).toBe('0.0');
+        const older = await veteran({ hireDate: '2015-01-01' });
+        expect(await balance(older.id)).toBe('7.5');
+        expect(await entriesOf(older.id)).toHaveLength(3);
+      });
+
       it('never adds what an opening balance already holds', async () => {
-        const e = await employee({ hireDate: '2015-01-01' });
+        const e = await veteran({ hireDate: '2015-01-01' });
         await seed(e.id, '12.5');
         expect(await balance(e.id)).toBe('12.5');
       });
 
       it('stops at the exit', async () => {
-        const gone = await employee({
-          hireDate: `${THREE_AGO}-01`,
-          exitDate: monthBounds(THREE_AGO).to,
-        });
+        const gone = await veteran({ exitDate: monthBounds(THREE_AGO).to });
         expect(await balance(gone.id)).toBe('2.5');
       });
 
       it('the nightly job posts every missing month too', async () => {
         const fresh = await registerTenant(t, 'Rattrapage', { activity: Activity.DISTRIBUTEUR });
         const main = ((await as(fresh).get('/warehouses').expect(200)).body as WarehouseDto[])[0]!;
-        await employee({ warehouseId: main.id, hireDate: `${THREE_AGO}-01` }, fresh);
+        await veteran({ warehouseId: main.id }, fresh);
         t.app.get(FeaturesService).invalidate(fresh.tenantId);
         const close = t.app.get(MonthCloseService);
         expect(await close.run(LAST)).toBeGreaterThanOrEqual(3);
         expect(await close.run(LAST)).toBe(0);
+      });
+    });
+
+    describe('the owner corrects a balance', () => {
+      const post = (id: string, body: object, who: Who = d, key: string | null = randomUUID()) =>
+        as(who).post(`/employees/${id}/leave-entries`, body, key);
+
+      it('enters one opening balance, then signed adjustments', async () => {
+        const e = await employee({ hireDate: '2015-01-01' });
+        const opened = await post(e.id, {
+          type: 'OPENING',
+          days: '22.5',
+          note: 'Reprise du registre',
+        }).expect(201);
+        expect(opened.body).toMatchObject({ balance: '22.5', hasOpening: true });
+        const again = await post(e.id, { type: 'OPENING', days: '1', note: 'Encore' }).expect(409);
+        expect((again.body as { code: string }).code).toBe('LEAVE_OPENING_EXISTS');
+
+        await post(e.id, { type: 'ADJUST', days: '-2.5', note: 'Erreur de saisie' }).expect(201);
+        expect(await balance(e.id)).toBe('20.0');
+        const [log] = await tenantContext.runAsSystem(
+          () =>
+            t.prisma.db.$queryRaw<{ before: object; after: object }[]>`
+            SELECT before, after FROM audit_logs
+            WHERE "entityId" = ${e.id} AND action = 'LEAVE_BALANCE_CORRECTED'
+            ORDER BY "createdAt" DESC LIMIT 1`,
+        );
+        expect(log).toMatchObject({
+          before: { leaveBalance: '22.5' },
+          after: { leaveBalance: '20.0', days: '-2.5', note: 'Erreur de saisie' },
+        });
+        expect(await mismatches()).toEqual([]);
+      });
+
+      it('replays once with the same key, and two openings at once give one', async () => {
+        const e = await employee();
+        const key = randomUUID();
+        const body = { type: 'ADJUST', days: '1', note: 'Rejeu' };
+        await post(e.id, body, d, key).expect(201);
+        await post(e.id, body, d, key).expect(201);
+        expect(await balance(e.id)).toBe('1.0');
+
+        const both = await Promise.all(
+          [1, 2].map(() => post(e.id, { type: 'OPENING', days: '3', note: 'Deux clics' })),
+        );
+        expect(both.map((r) => r.status).sort()).toEqual([201, 409]);
+        expect(await balance(e.id)).toBe('4.0');
+      });
+
+      it('needs a reason and a real number of days', async () => {
+        const e = await employee();
+        await post(e.id, { type: 'ADJUST', days: '2', note: ' ' }).expect(400);
+        await post(e.id, { type: 'ADJUST', days: '0', note: 'Zéro' }).expect(400);
+        await post(e.id, { type: 'ADJUST', days: '1.25', note: 'Deux décimales' }).expect(400);
+        await post(e.id, { type: 'TAKEN', days: '1', note: 'Type interdit' }).expect(400);
+      });
+
+      it('is for the owner: LEAVE_APPROVE alone is not enough', async () => {
+        const e = await employee();
+        const refused = await post(e.id, { type: 'ADJUST', days: '1', note: 'Gérant' }, managerA);
+        expect(refused.status).toBe(403);
+        expect(await balance(e.id)).toBe('0.0');
+        await post(e.id, { type: 'ADJUST', days: '1', note: 'Autre société' }, other).expect(404);
       });
     });
 
@@ -1109,6 +1184,8 @@ describe('hr attendance (phase 31)', () => {
       const full = await employee({ warehouseId: main.id, hireDate: from }, fresh);
       const half = await employee({ warehouseId: main.id, hireDate: addDays(to, -14) }, fresh);
       const after = await employee({ warehouseId: main.id, hireDate: addDays(to, 1) }, fresh);
+      await tamper(t)`UPDATE employees SET "createdAt" = ${from}::timestamptz
+                      WHERE "tenantId" = ${fresh.tenantId}::uuid`;
       expect(from < to).toBe(true);
 
       const close = t.app.get(MonthCloseService);

@@ -203,6 +203,8 @@ export const ErrorCode = {
   SELF_CHECK_IN_DISABLED: 'SELF_CHECK_IN_DISABLED',
   /** Check-out without a check-in, or a second check-in. */
   CHECK_IN_STATE_INVALID: 'CHECK_IN_STATE_INVALID',
+  /** This employee already has a solde initial: correct it with an ADJUST. */
+  LEAVE_OPENING_EXISTS: 'LEAVE_OPENING_EXISTS',
   LEAVE_NOT_PENDING: 'LEAVE_NOT_PENDING',
   LEAVE_NOT_APPROVED: 'LEAVE_NOT_APPROVED',
   /** The dates overlap another pending or approved leave. */

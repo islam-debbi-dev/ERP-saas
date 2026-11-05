@@ -11,7 +11,7 @@ import {
   type EmployeeLedgerType,
   LEAVE_REQUEST_STATUSES,
   LEAVE_TYPES,
-  type LeaveEntryType,
+  LeaveEntryType,
   type LeaveRequestStatus,
   type LeaveType,
   PAY_TYPES,
@@ -399,8 +399,22 @@ export interface LeaveEntryDto {
   createdAt: string;
 }
 
+/** The owner's hand on the congé ledger: a first balance, or a signed correction. */
+export const leaveEntryInputSchema = z.object({
+  type: z.enum([LeaveEntryType.OPENING, LeaveEntryType.ADJUST]),
+  days: z
+    .string()
+    .trim()
+    .regex(/^-?\d{1,4}(\.\d)?$/)
+    .refine((d) => Number(d) !== 0, 'not_zero'),
+  note: z.string().trim().min(3).max(255),
+});
+export type LeaveEntryInput = z.infer<typeof leaveEntryInputSchema>;
+
 export interface LeaveBalanceDto {
   balance: string;
+  /** An OPENING entry exists: there can be only one. */
+  hasOpening: boolean;
   entries: LeaveEntryDto[];
 }
 

@@ -203,20 +203,23 @@ export function nextMonth(month: string): string {
 }
 
 /**
- * Closed months still owed a congé accrual, oldest first: every month from the hire to the
- * last closed one, or to the exit, that has none. An OPENING balance already holds what was
- * earned before it, so months before the one it was entered in are not owed.
+ * Closed months still owed a congé accrual, oldest first: every month to the last closed
+ * one, or to the exit, that has none. They start at the latest of the hire, the month the
+ * file was created (a company brings its long-serving staff in with their balance, not their
+ * whole career) and an OPENING balance, which holds what was earned before it.
  */
 export function missingAccrualMonths(input: {
   hireDate: string;
   exitDate?: string | null;
+  createdMonth: string;
   openingMonth?: string | null;
   lastClosedMonth: string;
   posted: Iterable<string>;
 }): string[] {
   const posted = new Set(input.posted);
-  const hired = input.hireDate.slice(0, 7);
-  const start = input.openingMonth && input.openingMonth > hired ? input.openingMonth : hired;
+  const start = [input.hireDate.slice(0, 7), input.createdMonth, input.openingMonth ?? '']
+    .sort()
+    .at(-1)!;
   const left = input.exitDate?.slice(0, 7);
   const end = left && left < input.lastClosedMonth ? left : input.lastClosedMonth;
   const months: string[] = [];

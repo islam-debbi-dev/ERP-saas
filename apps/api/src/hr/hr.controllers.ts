@@ -45,6 +45,8 @@ import {
   type LedgerQuery,
   ledgerQuerySchema,
   type LeaveBalanceDto,
+  type LeaveEntryInput,
+  leaveEntryInputSchema,
   type LeaveReasonInput,
   leaveReasonSchema,
   type LeaveRequestDto,
@@ -184,6 +186,17 @@ export class EmployeesController {
     @CurrentUser() user: CurrentUserInfo,
   ): Promise<LeaveBalanceDto> {
     return this.leaves.balance(id, user);
+  }
+
+  @Post(':id/leave-entries')
+  @RequirePermission(Permission.LEAVE_APPROVE)
+  @Idempotent()
+  leaveEntry(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(leaveEntryInputSchema)) body: LeaveEntryInput,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<LeaveBalanceDto> {
+    return this.leaves.postEntry(id, body, user);
   }
 
   @Post(':id/advances')

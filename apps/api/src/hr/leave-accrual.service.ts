@@ -69,6 +69,7 @@ export class LeaveAccrualService {
         id: true,
         hireDate: true,
         exitDate: true,
+        createdAt: true,
         leaveEntries: {
           where: { type: { in: [LeaveEntryType.ACCRUAL, LeaveEntryType.OPENING] } },
           select: { type: true, month: true, createdAt: true },
@@ -87,6 +88,7 @@ export class LeaveAccrualService {
       const months = missingAccrualMonths({
         hireDate,
         exitDate,
+        createdMonth: algiersDay(e.createdAt).slice(0, 7),
         openingMonth: openings.at(-1) ?? null,
         lastClosedMonth,
         posted: e.leaveEntries.flatMap((l) =>

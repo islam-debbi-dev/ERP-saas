@@ -127,6 +127,7 @@ const STATUS_BY_CODE: Record<ErrorCode, HttpStatus> = {
   [ErrorCode.PAYROLL_RATES_NOT_CONFIRMED]: HttpStatus.UNPROCESSABLE_ENTITY,
   [ErrorCode.SELF_CHECK_IN_DISABLED]: HttpStatus.FORBIDDEN,
   [ErrorCode.CHECK_IN_STATE_INVALID]: HttpStatus.CONFLICT,
+  [ErrorCode.LEAVE_OPENING_EXISTS]: HttpStatus.CONFLICT,
   [ErrorCode.LEAVE_NOT_PENDING]: HttpStatus.CONFLICT,
   [ErrorCode.LEAVE_NOT_APPROVED]: HttpStatus.CONFLICT,
   [ErrorCode.LEAVE_OVERLAP]: HttpStatus.CONFLICT,

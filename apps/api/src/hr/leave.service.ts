@@ -3,6 +3,7 @@ import {
   type CreateLeaveRequestInput,
   ErrorCode,
   type LeaveBalanceDto,
+  type LeaveEntryInput,
   LeaveEntryType,
   leaveDaysTaken,
   type LeaveRequestDto,
@@ -13,6 +14,7 @@ import {
   listDays,
   money,
   Permission,
+  Role,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
@@ -101,10 +103,14 @@ export class LeaveService {
   }
 
   async balance(employeeId: string, user: CurrentUserInfo): Promise<LeaveBalanceDto> {
-    const { balance, entries } = await this.prisma.db.$transaction(async (tx) => {
+    const { balance, entries, hasOpening } = await this.prisma.db.$transaction(async (tx) => {
       await this.access.assertReach(tx, user, employeeId);
       await this.accruals.ensureAccruals(tx, employeeId);
       return {
+        hasOpening:
+          (await tx.leaveEntry.count({
+            where: { employeeId, type: LeaveEntryType.OPENING },
+          })) > 0,
         balance: await tx.employeeBalance.findUnique({ where: { employeeId } }),
         entries: await tx.leaveEntry.findMany({
           where: { employeeId },
@@ -115,6 +121,7 @@ export class LeaveService {
     }, ACCRUAL_TX);
     return {
       balance: balance?.leaveDays.toFixed(1) ?? '0.0',
+      hasOpening,
       entries: entries.map((e) => ({
         id: e.id,
         type: e.type,
@@ -124,6 +131,52 @@ export class LeaveService {
         createdAt: e.createdAt.toISOString(),
       })),
     };
+  }
+
+  /**
+   * The only way to correct a balance by hand. The ledger is append-only, so this is for the
+   * owner alone: LEAVE_APPROVE, which managers hold by default, is not enough by itself.
+   */
+  async postEntry(
+    employeeId: string,
+    input: LeaveEntryInput,
+    user: CurrentUserInfo,
+  ): Promise<LeaveBalanceDto> {
+    if (user.role !== Role.OWNER) {
+      throw new AppException(ErrorCode.FORBIDDEN, 'Only the owner corrects a leave balance');
+    }
+    await this.prisma.db.$transaction(async (tx) => {
+      await this.access.assertReach(tx, user, employeeId);
+      const employee = (await this.access.lock(tx, [employeeId])).get(employeeId);
+      if (!employee || employee.deletedAt) {
+        throw new AppException(ErrorCode.NOT_FOUND, 'Employee not found');
+      }
+      await this.accruals.ensureAccruals(tx, employeeId);
+      if (input.type === LeaveEntryType.OPENING) {
+        const opening = await tx.leaveEntry.findFirst({
+          where: { employeeId, type: LeaveEntryType.OPENING },
+          select: { id: true },
+        });
+        if (opening) {
+          throw new AppException(ErrorCode.LEAVE_OPENING_EXISTS, 'A solde initial exists');
+        }
+      }
+      const after = await this.ledger.postLeave(tx, {
+        employeeId,
+        type: input.type,
+        days: money(input.days).toFixed(1),
+        note: input.note,
+        userId: user.id,
+      });
+      await this.audit.log(tx, {
+        action: 'LEAVE_BALANCE_CORRECTED',
+        entity: 'Employee',
+        entityId: employeeId,
+        before: { leaveBalance: money(after).minus(money(input.days)).toFixed(1) },
+        after: { leaveBalance: after, ...input },
+      });
+    }, ACCRUAL_TX);
+    return this.balance(employeeId, user);
   }
 
   private async workingDays(tx: Tx, e: LockedEmployee, from: string, to: string): Promise<number> {
