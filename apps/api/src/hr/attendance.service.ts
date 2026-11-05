@@ -44,6 +44,7 @@ import {
   toDay,
 } from './attendance-days.service';
 import { EmployeeAccessService, type LockedEmployee } from './employee-access.service';
+import { ACCRUAL_TX, LeaveAccrualService } from './leave-accrual.service';
 import { LeaveService } from './leave.service';
 
 const LONG_TX = { timeout: 30_000 };
@@ -88,6 +89,7 @@ export class AttendanceService {
     private readonly access: EmployeeAccessService,
     private readonly days: AttendanceDaysService,
     private readonly leaves: LeaveService,
+    private readonly accruals: LeaveAccrualService,
   ) {}
 
   private assertNotFuture(date: string): void {
@@ -515,8 +517,12 @@ export class AttendanceService {
 
   /** "Mon pointage": no permission needed, only a linked employee file. */
   async mine(user: CurrentUserInfo): Promise<MyAttendanceDto> {
-    const db = this.prisma.db;
+    return this.prisma.db.$transaction((tx) => this.mineIn(tx, user), ACCRUAL_TX);
+  }
+
+  private async mineIn(db: Tx, user: CurrentUserInfo): Promise<MyAttendanceDto> {
     const { id } = await this.access.own(db, user);
+    await this.accruals.ensureAccruals(db, id);
     const today = algiersDay();
     const { from, to } = monthBounds(today.slice(0, 7));
     const [employee, events, balance, selfCheckIn, leaves] = await Promise.all([

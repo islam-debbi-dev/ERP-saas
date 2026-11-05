@@ -24,13 +24,12 @@ import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { AttendanceDaysService, fromDay, toDay } from './attendance-days.service';
 import { EmployeeAccessService, type LockedEmployee } from './employee-access.service';
 import { EmployeeLedgerService } from './employee-ledger.service';
+import { ACCRUAL_TX, LeaveAccrualService } from './leave-accrual.service';
 
 const include = {
   employee: { select: { id: true, matricule: true, fullName: true } },
 } satisfies Prisma.LeaveRequestInclude;
 type LeaveRow = Prisma.LeaveRequestGetPayload<{ include: typeof include }>;
-
-const LONG_TX = { timeout: 30_000 };
 
 /** Congés (phase 31): requests, and the ledger entries an approval posts. */
 @Injectable()
@@ -41,6 +40,7 @@ export class LeaveService {
     private readonly access: EmployeeAccessService,
     private readonly days: AttendanceDaysService,
     private readonly ledger: EmployeeLedgerService,
+    private readonly accruals: LeaveAccrualService,
   ) {}
 
   private async toDtos(rows: LeaveRow[]): Promise<LeaveRequestDto[]> {
@@ -101,15 +101,18 @@ export class LeaveService {
   }
 
   async balance(employeeId: string, user: CurrentUserInfo): Promise<LeaveBalanceDto> {
-    await this.access.assertReach(this.prisma.db, user, employeeId);
-    const [balance, entries] = await Promise.all([
-      this.prisma.db.employeeBalance.findUnique({ where: { employeeId } }),
-      this.prisma.db.leaveEntry.findMany({
-        where: { employeeId },
-        orderBy: { seq: 'desc' },
-        take: 100,
-      }),
-    ]);
+    const { balance, entries } = await this.prisma.db.$transaction(async (tx) => {
+      await this.access.assertReach(tx, user, employeeId);
+      await this.accruals.ensureAccruals(tx, employeeId);
+      return {
+        balance: await tx.employeeBalance.findUnique({ where: { employeeId } }),
+        entries: await tx.leaveEntry.findMany({
+          where: { employeeId },
+          orderBy: { seq: 'desc' },
+          take: 100,
+        }),
+      };
+    }, ACCRUAL_TX);
     return {
       balance: balance?.leaveDays.toFixed(1) ?? '0.0',
       entries: entries.map((e) => ({
@@ -147,6 +150,7 @@ export class LeaveService {
       if (!employee || employee.deletedAt) {
         throw new AppException(ErrorCode.NOT_FOUND, 'Employee not found');
       }
+      await this.accruals.ensureAccruals(tx, employeeId);
       if (input.startDate < toDay(employee.hireDate)) {
         throw new AppException(ErrorCode.EMPLOYEE_NOT_EMPLOYED, 'Before the hire date');
       }
@@ -188,7 +192,7 @@ export class LeaveService {
         after: { employeeId, ...input, days },
       });
       return row.id;
-    });
+    }, ACCRUAL_TX);
     return this.one(id);
   }
 
@@ -218,6 +222,7 @@ export class LeaveService {
           status: request.status,
         });
       }
+      await this.accruals.ensureAccruals(tx, request.employeeId);
       const from = toDay(request.startDate);
       const to = toDay(request.endDate);
       const range = listDays(from, to);
@@ -251,7 +256,7 @@ export class LeaveService {
         before: { status: request.status },
         after: { days, overBalance },
       });
-    }, LONG_TX);
+    }, ACCRUAL_TX);
     return { ...(await this.one(id)), overBalance };
   }
 
@@ -325,6 +330,7 @@ export class LeaveService {
         },
       });
       if (approved) {
+        await this.accruals.ensureAccruals(tx, request.employeeId);
         const entries = await tx.leaveEntry.findMany({
           where: { leaveRequestId: id },
           select: { days: true },
@@ -349,7 +355,7 @@ export class LeaveService {
         before: { status: request.status },
         after: { reason },
       });
-    }, LONG_TX);
+    }, ACCRUAL_TX);
     return this.one(id);
   }
 }

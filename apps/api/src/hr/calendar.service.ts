@@ -25,6 +25,7 @@ import {
   toDay,
 } from './attendance-days.service';
 import { EmployeeLedgerService } from './employee-ledger.service';
+import { LeaveAccrualService } from './leave-accrual.service';
 
 type Db = PrismaService['db'] | Tx;
 
@@ -40,6 +41,7 @@ export class CalendarService {
     private readonly audit: AuditService,
     private readonly days: AttendanceDaysService,
     private readonly ledger: EmployeeLedgerService,
+    private readonly accruals: LeaveAccrualService,
   ) {}
 
   async settings(): Promise<HrSettingsDto> {
@@ -227,6 +229,10 @@ export class CalendarService {
       select: dayEmployeeSelect,
     });
     const calendar = await this.days.calendar(tx, tenantId, date, date);
+    await this.accruals.ensureMany(
+      tx,
+      leaves.map((l) => l.employeeId),
+    );
     for (const employee of employees) {
       const own = this.days.calendarOf(employee, calendar);
       const restDay = !isWorkingDay(date, { restDays: own.restDays, holidays: new Set() });

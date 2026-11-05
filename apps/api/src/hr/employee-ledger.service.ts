@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   employeeBalanceDelta,
   EmployeeLedgerType,
-  type LeaveEntryType,
+  LeaveEntryType,
   money,
   toMoneyString,
 } from '@erp/shared';
@@ -106,6 +106,29 @@ export class EmployeeLedgerService {
       expenseId,
       note: reason,
       userId,
+    });
+  }
+
+  /** Several months of accrual in one write: a first catch-up can be years long. */
+  async postAccruals(
+    tx: Tx,
+    employeeId: string,
+    entries: { month: string; days: string }[],
+  ): Promise<void> {
+    const before = await this.lock(tx, employeeId);
+    const after = entries.reduce((t, e) => t.add(money(e.days)), money(before.leaveDays));
+    await tx.leaveEntry.createMany({
+      data: entries.map((e) => ({
+        tenantId: tenantContext.requireTenantId(),
+        employeeId,
+        type: LeaveEntryType.ACCRUAL,
+        days: e.days,
+        month: e.month,
+      })),
+    });
+    await tx.employeeBalance.update({
+      where: { employeeId },
+      data: { leaveDays: after.toFixed(1) },
     });
   }
 

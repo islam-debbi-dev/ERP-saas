@@ -31,6 +31,7 @@ import { ScopeService } from '../sales-force/scope.service';
 import { AttendanceDaysService, fromDay, toDay } from './attendance-days.service';
 import { CalendarService } from './calendar.service';
 import { EmployeeAccessService } from './employee-access.service';
+import { ACCRUAL_TX, LeaveAccrualService } from './leave-accrual.service';
 
 const include = {
   warehouse: { select: { id: true, name: true } },
@@ -54,6 +55,7 @@ export class EmployeesService {
     private readonly access: EmployeeAccessService,
     private readonly days: AttendanceDaysService,
     private readonly calendar: CalendarService,
+    private readonly accruals: LeaveAccrualService,
   ) {}
 
   private toDto(e: EmployeeRow, user: CurrentUserInfo): EmployeeDto {
@@ -95,44 +97,64 @@ export class EmployeesService {
 
   async list(query: EmployeeListQuery, user: CurrentUserInfo): Promise<EmployeePage> {
     const search = query.search;
-    const rows = await this.prisma.db.employee.findMany({
-      where: {
-        AND: [
-          await this.access.where(user, 'operate', query.warehouseId),
-          { deletedAt: query.archived ? { not: null } : null },
-          search
-            ? {
-                OR: [
-                  { fullName: { contains: search, mode: 'insensitive' } },
-                  { matricule: { contains: search, mode: 'insensitive' } },
-                  { phone: { contains: search } },
-                ],
-              }
-            : {},
-        ],
-      },
-      include,
-      orderBy: [{ fullName: 'asc' }, { id: 'asc' }],
-      take: query.limit + 1,
-      ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
-    });
-    const page = rows.slice(0, query.limit);
-    return {
-      items: page.map((e) => this.toDto(e, user)),
-      nextCursor: rows.length > query.limit ? (page.at(-1)?.id ?? null) : null,
+    const where: Prisma.EmployeeWhereInput = {
+      AND: [
+        await this.access.where(user, 'operate', query.warehouseId),
+        { deletedAt: query.archived ? { not: null } : null },
+        search
+          ? {
+              OR: [
+                { fullName: { contains: search, mode: 'insensitive' } },
+                { matricule: { contains: search, mode: 'insensitive' } },
+                { phone: { contains: search } },
+              ],
+            }
+          : {},
+      ],
     };
+    const orderBy = [
+      { fullName: 'asc' },
+      { id: 'asc' },
+    ] satisfies Prisma.EmployeeOrderByWithRelationInput[];
+    return this.prisma.db.$transaction(async (tx) => {
+      const found = await tx.employee.findMany({
+        where,
+        select: { id: true },
+        orderBy,
+        take: query.limit + 1,
+        ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
+      });
+      const ids = found.slice(0, query.limit).map((e) => e.id);
+      // Each row shows a congé balance: the months owed are posted before it is read.
+      await this.accruals.ensureMany(tx, ids);
+      const page = await tx.employee.findMany({ where: { id: { in: ids } }, include, orderBy });
+      return {
+        items: page.map((e) => this.toDto(e, user)),
+        nextCursor: found.length > query.limit ? (ids.at(-1) ?? null) : null,
+      };
+    }, ACCRUAL_TX);
   }
 
   async get(id: string, user: CurrentUserInfo): Promise<EmployeeDto> {
-    await this.access.assertReach(this.prisma.db, user, id);
-    const e = await this.prisma.db.employee.findFirstOrThrow({ where: { id }, include });
-    return this.toDto(e, user);
+    return this.prisma.db.$transaction(async (tx) => {
+      await this.access.assertReach(tx, user, id);
+      await this.accruals.ensureAccruals(tx, id);
+      return this.toDto(await tx.employee.findFirstOrThrow({ where: { id }, include }), user);
+    }, ACCRUAL_TX);
+  }
+
+  /** No accrual yet: an opening balance may still be entered for this new file. */
+  private async created(id: string, user: CurrentUserInfo): Promise<EmployeeDto> {
+    return this.toDto(
+      await this.prisma.db.employee.findFirstOrThrow({ where: { id }, include }),
+      user,
+    );
   }
 
   async create(input: CreateEmployeeInput, user: CurrentUserInfo): Promise<EmployeeDto> {
     if (input.salary) requirePermission(user, Permission.SALARY_VIEW);
     const id = await this.prisma.db.$transaction((tx) => this.createInTx(tx, input, user));
-    return this.get(id, user);
+    return this.created(id, user);
   }
 
   /** Also used by the Excel import, inside its transaction. */

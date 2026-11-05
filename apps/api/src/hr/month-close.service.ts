@@ -6,31 +6,24 @@ import {
   type OnApplicationShutdown,
 } from '@nestjs/common';
 import * as Sentry from '@sentry/nestjs';
-import {
-  accrualForMonth,
-  algiersDay,
-  Feature,
-  LeaveEntryType,
-  monthBounds,
-  previousMonth,
-} from '@erp/shared';
+import { algiersDay, Feature, previousMonth } from '@erp/shared';
 import { FeaturesService } from '../billing/features.service';
 import { nextAlgiersTime } from '../common/algiers';
 import { tenantContext } from '../common/tenant-context';
 import { APP_CONFIG, type AppConfig } from '../config/app-config';
 import { PrismaService } from '../prisma/prisma.service';
-import { fromDay, toDay } from './attendance-days.service';
 import { CalendarService } from './calendar.service';
-import { EmployeeLedgerService } from './employee-ledger.service';
+import { ACCRUAL_TX, LeaveAccrualService } from './leave-accrual.service';
 
 /** Arbitrary constant: one month close at a time across API instances. */
 const LOCK_KEY = 7_120_431;
+const BATCH = 50;
 
 /**
- * Runs every night, not only on the 1st: it posts the congé accrual of the previous month
- * for whoever does not have it yet, so a server that was down on the 1st catches up. The
- * unique index on (employee, month) makes a second run a no-op. Also keeps the fixed fêtes
- * seeded for this year and the next.
+ * Runs every night on a long-running server, not only on the 1st: it posts every congé
+ * accrual still owed, however long the server was down. It is not the only way in: a
+ * balance read or write posts them too (LeaveAccrualService), which is all a serverless
+ * deployment has. Also keeps the fixed fêtes seeded for this year and the next.
  */
 @Injectable()
 export class MonthCloseService implements OnApplicationBootstrap, OnApplicationShutdown {
@@ -40,7 +33,7 @@ export class MonthCloseService implements OnApplicationBootstrap, OnApplicationS
   constructor(
     private readonly prisma: PrismaService,
     private readonly features: FeaturesService,
-    private readonly ledger: EmployeeLedgerService,
+    private readonly accruals: LeaveAccrualService,
     private readonly calendar: CalendarService,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
@@ -70,7 +63,7 @@ export class MonthCloseService implements OnApplicationBootstrap, OnApplicationS
     }
   }
 
-  /** `month` defaults to the one before today. Returns how many accruals were posted. */
+  /** `month`: the last closed one, by default the one before today. Returns months posted. */
   async run(month: string = previousMonth(algiersDay().slice(0, 7))): Promise<number> {
     const tenants = await tenantContext.runAsSystem(() =>
       this.prisma.db.employee.findMany({
@@ -95,46 +88,30 @@ export class MonthCloseService implements OnApplicationBootstrap, OnApplicationS
     return posted;
   }
 
-  private closeTenant(tenantId: string, month: string): Promise<number> {
-    const { from, to } = monthBounds(month);
-    return this.prisma.db.$transaction(
-      async (tx) => {
-        const [lock] = await tx.$queryRaw<{ locked: boolean }[]>`
-          SELECT pg_try_advisory_xact_lock(${LOCK_KEY}, hashtext(${tenantId})) AS locked`;
-        if (!lock?.locked) return 0;
+  private async closeTenant(tenantId: string, month: string): Promise<number> {
+    const locked = await this.prisma.db.$transaction(async (tx) => {
+      const [lock] = await tx.$queryRaw<{ locked: boolean }[]>`
+        SELECT pg_try_advisory_xact_lock(${LOCK_KEY}, hashtext(${tenantId})) AS locked`;
+      if (lock?.locked) {
         await this.calendar.ensureFixedHolidays(tx, tenantId, this.calendar.thisAndNextYear());
-        const tenant = await tx.tenant.findUniqueOrThrow({
-          where: { id: tenantId },
-          select: { hrLeaveAccrualDays: true },
-        });
-        const employees = await tx.employee.findMany({
-          where: {
-            deletedAt: null,
-            hireDate: { lte: fromDay(to) },
-            OR: [{ exitDate: null }, { exitDate: { gte: fromDay(from) } }],
-            leaveEntries: { none: { type: LeaveEntryType.ACCRUAL, month } },
-          },
-          select: { id: true, hireDate: true, exitDate: true },
-        });
-        let posted = 0;
-        for (const e of employees) {
-          const days = accrualForMonth(
-            month,
-            toDay(e.hireDate),
-            e.exitDate ? toDay(e.exitDate) : null,
-            tenant.hrLeaveAccrualDays.toFixed(1),
-          );
-          await this.ledger.postLeave(tx, {
-            employeeId: e.id,
-            type: LeaveEntryType.ACCRUAL,
-            days,
-            month,
-          });
-          posted++;
-        }
-        return posted;
-      },
-      { timeout: 60_000 },
-    );
+      }
+      return lock?.locked ?? false;
+    });
+    if (!locked) return 0;
+    const employees = await this.prisma.db.employee.findMany({
+      where: { deletedAt: null },
+      orderBy: { id: 'asc' },
+      select: { id: true },
+    });
+    // Short transactions: the employee rows stay locked only while a batch is posted.
+    let posted = 0;
+    for (let i = 0; i < employees.length; i += BATCH) {
+      const ids = employees.slice(i, i + BATCH).map((e) => e.id);
+      posted += await this.prisma.db.$transaction(
+        (tx) => this.accruals.ensureMany(tx, ids, month),
+        ACCRUAL_TX,
+      );
+    }
+    return posted;
   }
 }

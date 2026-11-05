@@ -618,6 +618,85 @@ describe('hr attendance (phase 31)', () => {
       await opening(id, days);
     };
 
+    describe('congés owed without the nightly job', () => {
+      const LAST = previousMonth(TODAY.slice(0, 7));
+      const THREE_AGO = previousMonth(previousMonth(LAST));
+      const entriesOf = async (id: string) =>
+        ((await as(d).get(`/employees/${id}/leave-balance`).expect(200)).body as LeaveBalanceDto)
+          .entries;
+
+      it('catches up every closed month on the first read, and only once', async () => {
+        const e = await employee({ hireDate: `${THREE_AGO}-01` });
+        const reads = await Promise.all(
+          Array.from({ length: 5 }, () => as(d).get(`/employees/${e.id}/leave-balance`)),
+        );
+        for (const r of reads) expect((r.body as LeaveBalanceDto).balance).toBe('7.5');
+        expect(await balance(e.id)).toBe('7.5');
+        expect((await entriesOf(e.id)).map((x) => x.month).sort()).toEqual([
+          THREE_AGO,
+          previousMonth(LAST),
+          LAST,
+        ]);
+        expect(await mismatches()).toEqual([]);
+      });
+
+      it('shows it on the fiche and the list', async () => {
+        const fiche = await employee({ hireDate: `${THREE_AGO}-01` });
+        expect(
+          ((await as(d).get(`/employees/${fiche.id}`).expect(200)).body as EmployeeDto)
+            .leaveBalance,
+        ).toBe('7.5');
+        const listed = await employee({ hireDate: `${THREE_AGO}-01`, fullName: 'Liste Congés' });
+        const page = (await as(d).get('/employees?search=Liste%20Cong').expect(200))
+          .body as EmployeePage;
+        expect(page.items.find((x) => x.id === listed.id)?.leaveBalance).toBe('7.5');
+      });
+
+      it('counts them in a leave request and its approval', async () => {
+        const e = await employee({ hireDate: `${THREE_AGO}-01` });
+        const leave = await request(e.id);
+        const res = (await as(d).post(`/leave-requests/${leave.id}/approve`).expect(200))
+          .body as LeaveRequestDto;
+        expect(res.overBalance).toBe(false);
+        expect(await balance(e.id)).toBe('1.5');
+        expect(await mismatches()).toEqual([]);
+      });
+
+      it('posts them on a request, even if nobody read the balance', async () => {
+        const e = await employee({ hireDate: `${THREE_AGO}-01` });
+        const leave = await request(e.id);
+        const rows = await tenantContext.runAsSystem(() =>
+          t.prisma.db.leaveEntry.count({ where: { employeeId: e.id, type: 'ACCRUAL' } }),
+        );
+        expect(rows).toBe(3);
+        await as(d).post(`/leave-requests/${leave.id}/cancel`, { reason: 'Annulé' }).expect(200);
+      });
+
+      it('never adds what an opening balance already holds', async () => {
+        const e = await employee({ hireDate: '2015-01-01' });
+        await seed(e.id, '12.5');
+        expect(await balance(e.id)).toBe('12.5');
+      });
+
+      it('stops at the exit', async () => {
+        const gone = await employee({
+          hireDate: `${THREE_AGO}-01`,
+          exitDate: monthBounds(THREE_AGO).to,
+        });
+        expect(await balance(gone.id)).toBe('2.5');
+      });
+
+      it('the nightly job posts every missing month too', async () => {
+        const fresh = await registerTenant(t, 'Rattrapage', { activity: Activity.DISTRIBUTEUR });
+        const main = ((await as(fresh).get('/warehouses').expect(200)).body as WarehouseDto[])[0]!;
+        await employee({ warehouseId: main.id, hireDate: `${THREE_AGO}-01` }, fresh);
+        t.app.get(FeaturesService).invalidate(fresh.tenantId);
+        const close = t.app.get(MonthCloseService);
+        expect(await close.run(LAST)).toBeGreaterThanOrEqual(3);
+        expect(await close.run(LAST)).toBe(0);
+      });
+    });
+
     it('posts the working days only, and the balance matches the ledger', async () => {
       const e = await employee();
       await seed(e.id, '10');
@@ -650,11 +729,12 @@ describe('hr attendance (phase 31)', () => {
 
     it('warns, never refuses, beyond the balance', async () => {
       const e = await employee();
+      await seed(e.id, '1');
       const leave = await request(e.id);
       const res = (await as(d).post(`/leave-requests/${leave.id}/approve`).expect(200))
         .body as LeaveRequestDto;
       expect(res.overBalance).toBe(true);
-      expect(await balance(e.id)).toBe('-6.0');
+      expect(await balance(e.id)).toBe('-5.0');
     });
 
     it('gives the days back with a reverse entry when an approved leave is cancelled', async () => {
@@ -1026,7 +1106,7 @@ describe('hr attendance (phase 31)', () => {
       const main = ((await as(fresh).get('/warehouses').expect(200)).body as WarehouseDto[])[0]!;
       const month = previousMonth(TODAY.slice(0, 7));
       const { from, to } = monthBounds(month);
-      const full = await employee({ warehouseId: main.id }, fresh);
+      const full = await employee({ warehouseId: main.id, hireDate: from }, fresh);
       const half = await employee({ warehouseId: main.id, hireDate: addDays(to, -14) }, fresh);
       const after = await employee({ warehouseId: main.id, hireDate: addDays(to, 1) }, fresh);
       expect(from < to).toBe(true);
