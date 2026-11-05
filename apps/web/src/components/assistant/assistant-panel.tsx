@@ -331,7 +331,12 @@ export function AssistantPanel({
                     {m.content}
                   </p>
                 ) : m.content === '' ? null : (
-                  <Answer key={m.key} message={m} onRate={(id, useful) => void chat.rate(id, useful)} onNavigate={close} />
+                  <Answer
+                    key={m.key}
+                    message={m}
+                    onRate={(id, useful) => void chat.rate(id, useful)}
+                    onNavigate={close}
+                  />
                 ),
               )}
 

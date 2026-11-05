@@ -4,11 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  saveTenantAiConfig,
-  testTenantAiConfig,
-  useTenantAiConfig,
-} from '@/lib/assistant';
+import { saveTenantAiConfig, testTenantAiConfig, useTenantAiConfig } from '@/lib/assistant';
 import { AiProviderForm } from './ai-provider-form';
 
 /** Paramètres > Assistant IA: the OWNER's own provider, when his company may have one. */
