@@ -103,7 +103,7 @@ describe('editions and feature flags (phase 13b)', () => {
     // Dépenses are in every edition (phase 25).
     expect(grossiste.auth.user).toMatchObject({
       edition: Edition.ESSENTIEL,
-      features: [Feature.EXPENSES],
+      features: [Feature.EXPENSES, Feature.AI_ASSISTANT],
     });
 
     const importer = await registerTenant(t, 'Edition Import', {
@@ -115,6 +115,7 @@ describe('editions and feature flags (phase 13b)', () => {
       Feature.WAREHOUSES,
       Feature.IMPORT_COSTS,
       Feature.EXPENSES,
+      Feature.AI_ASSISTANT,
     ]);
 
     const distributor = await registerTenant(t, 'Edition Distribution', {
@@ -161,17 +162,22 @@ describe('editions and feature flags (phase 13b)', () => {
     }
 
     // Prime the cache, then grant: the change applies on the next request, same token.
-    expect((await me(a)).features).toEqual([Feature.EXPENSES]);
+    expect((await me(a)).features).toEqual([Feature.EXPENSES, Feature.AI_ASSISTANT]);
     const granted = await patchSubscription(a.tenantId, {
       featureGrants: [Feature.GEO_CHECK],
     }).expect(200);
     expect((granted.body as SubscriptionSummary).features).toEqual([
       Feature.GEO_CHECK,
       Feature.EXPENSES,
+      Feature.AI_ASSISTANT,
     ]);
     await getGeo(a).expect(200);
     await postGeo(a).expect(201);
-    expect((await me(a)).features).toEqual([Feature.GEO_CHECK, Feature.EXPENSES]);
+    expect((await me(a)).features).toEqual([
+      Feature.GEO_CHECK,
+      Feature.EXPENSES,
+      Feature.AI_ASSISTANT,
+    ]);
 
     // A revoke wins over the edition: DISTRIBUTION minus GEO_CHECK.
     await patchSubscription(a.tenantId, {
@@ -208,7 +214,7 @@ describe('editions and feature flags (phase 13b)', () => {
     await patchSubscription(a.tenantId, { edition: Edition.ENTREPRISE }).expect(200);
     await getGeo(a).expect(200);
     await getGeo(b).expect(403);
-    expect((await me(b)).features).toEqual([Feature.EXPENSES]);
+    expect((await me(b)).features).toEqual([Feature.EXPENSES, Feature.AI_ASSISTANT]);
   });
 
   it('only the super-admin changes modules, and every change is audited', async () => {
