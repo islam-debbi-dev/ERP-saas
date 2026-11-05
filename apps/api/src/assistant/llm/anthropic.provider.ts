@@ -1,4 +1,4 @@
-import type Anthropic from '@anthropic-ai/sdk';
+import type { Anthropic } from '@anthropic-ai/sdk';
 import {
   errorCodeOf,
   LLM_TIMEOUT_MS,
@@ -129,7 +129,7 @@ export class AnthropicProvider implements LlmProvider {
   async *chat(request: LlmChatRequest): AsyncGenerator<LlmEvent> {
     try {
       // Loaded on first use: most requests of the API never need a provider SDK.
-      const { default: Client } = await import('@anthropic-ai/sdk');
+      const { Anthropic: Client } = await import('@anthropic-ai/sdk');
       const client = new Client({ apiKey: this.apiKey, timeout: LLM_TIMEOUT_MS });
       yield* anthropicEvents(
         client.beta.messages.stream(anthropicRequest(this.model, request), {

@@ -1,4 +1,4 @@
-import type OpenAI from 'openai';
+import type { OpenAI } from 'openai';
 import {
   errorCodeOf,
   LLM_TIMEOUT_MS,
@@ -149,7 +149,7 @@ export class OpenAiCompatibleProvider implements LlmProvider {
 
   async *chat(request: LlmChatRequest): AsyncGenerator<LlmEvent> {
     try {
-      const { default: Client } = await import('openai');
+      const { OpenAI: Client } = await import('openai');
       const client = new Client({
         apiKey: this.apiKey,
         baseURL: this.baseUrl,
