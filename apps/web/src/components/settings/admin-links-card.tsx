@@ -1,6 +1,6 @@
 'use client';
 
-import { Laptop, Users } from 'lucide-react';
+import { History, Laptop, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Role } from '@erp/shared';
