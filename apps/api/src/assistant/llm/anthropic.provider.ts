@@ -1,6 +1,7 @@
 import type { Anthropic } from '@anthropic-ai/sdk';
 import {
   errorCodeOf,
+  errorEvent,
   LLM_TIMEOUT_MS,
   type LlmChatRequest,
   type LlmEvent,
@@ -137,7 +138,7 @@ export class AnthropicProvider implements LlmProvider {
         }),
       );
     } catch (err) {
-      yield { type: 'error', code: errorCodeOf(err) };
+      yield errorEvent('anthropic', errorCodeOf(err), err, this.apiKey);
     }
   }
 }

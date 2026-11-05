@@ -198,6 +198,8 @@ export interface AiTenantConfigResponse {
 export interface AiConfigTestResult {
   ok: boolean;
   code: ErrorCode | null;
+  /** On failure: the provider's status and message (never the key), to see what went wrong. */
+  detail?: string | null;
 }
 
 export const allowTenantAiKeySchema = z.object({ allowed: z.boolean() });

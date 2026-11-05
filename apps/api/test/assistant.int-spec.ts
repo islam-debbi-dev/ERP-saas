@@ -815,14 +815,16 @@ describe('assistant (phase 30)', () => {
     });
 
     it('tests a connection before saving, and normalizes the error', async () => {
-      llm.script([{ type: 'error', code: ErrorCode.AI_INVALID_KEY }]);
+      llm.script([
+        { type: 'error', code: ErrorCode.AI_INVALID_KEY, detail: '401 invalid x-api-key' },
+      ]);
       expect(
         (
           await as(admin())
             .post('/admin/assistant/config/test', form({ apiKey: KEY }))
             .expect(200)
         ).body,
-      ).toEqual({ ok: false, code: ErrorCode.AI_INVALID_KEY });
+      ).toEqual({ ok: false, code: ErrorCode.AI_INVALID_KEY, detail: '401 invalid x-api-key' });
       llm.script(say('OK'));
       expect(
         (

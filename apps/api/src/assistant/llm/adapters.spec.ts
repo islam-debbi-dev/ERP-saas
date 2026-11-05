@@ -9,7 +9,7 @@ import {
   type AnthropicStream,
 } from './anthropic.provider';
 import { geminiErrorCode, geminiEvents, geminiRequest, geminiTools } from './gemini.provider';
-import { errorCodeOf, type LlmChatRequest, type LlmEvent } from './llm-provider';
+import { describeLlmError, errorCodeOf, type LlmChatRequest, type LlmEvent } from './llm-provider';
 import { openAiEvents, openAiRequest, openAiTools } from './openai-compatible.provider';
 import { llmTools } from './tool-schemas';
 
@@ -193,6 +193,15 @@ describe('error mapping', () => {
     expect(errorCodeOf({ ...secret, status: 429 })).toBe(ErrorCode.AI_RATE_LIMITED);
     expect(errorCodeOf({ ...secret, status: 529 })).toBe(ErrorCode.AI_UNAVAILABLE);
     expect(errorCodeOf(new Error('socket hang up'))).toBe(ErrorCode.AI_UNAVAILABLE);
+  });
+
+  it('describes the failure for the connection test without the key', () => {
+    const err = Object.assign(new Error('invalid x-api-key sk-ant-secret'), { status: 400 });
+    expect(describeLlmError(err, 'sk-ant-secret')).toBe('400 Error invalid x-api-key ***');
+    expect(describeLlmError({ code: 'ERR_MODULE_NOT_FOUND', message: 'no sdk' }, 'sk-ant-k')).toBe(
+      'ERR_MODULE_NOT_FOUND no sdk',
+    );
+    expect(describeLlmError({ message: 'x'.repeat(900) }, 'sk-ant-k')).toHaveLength(500);
   });
 
   it('reads Gemini bad keys from its 400', () => {

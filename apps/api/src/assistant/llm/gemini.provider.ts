@@ -8,6 +8,7 @@ import type {
 } from '@google/genai';
 import {
   errorCodeOf,
+  errorEvent,
   LLM_TIMEOUT_MS,
   type LlmChatRequest,
   type LlmErrorCode,
@@ -153,7 +154,7 @@ export class GeminiProvider implements LlmProvider {
         await client.models.generateContentStream(geminiRequest(this.model, request)),
       );
     } catch (err) {
-      yield { type: 'error', code: geminiErrorCode(err) };
+      yield errorEvent('gemini', geminiErrorCode(err), err, this.apiKey);
     }
   }
 }
