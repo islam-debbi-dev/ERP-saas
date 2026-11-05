@@ -13,6 +13,7 @@
     "db:backfill-units": "node dist/stock/unit-backfill.cli.js",
     "db:check-migrations": "tsx scripts/check-migrations.ts",
     "admin:create": "tsx scripts/admin-create.ts",
+    "assistant:help": "tsx scripts/assistant-help.ts",
     "lint": "eslint .",
     "typecheck": "prisma generate && tsc --noEmit",
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings=ExperimentalWarning' jest",

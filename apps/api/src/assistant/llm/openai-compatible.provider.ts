@@ -73,7 +73,7 @@ export function openAiRequest(
       { role: 'system', content: `${request.system.stable}\n\n${request.system.dynamic}` },
       ...openAiMessages(request.messages),
     ],
-    tools: openAiTools(request.tools, official),
+    ...(request.tools.length > 0 ? { tools: openAiTools(request.tools, official) } : {}),
     ...(official
       ? { max_completion_tokens: request.maxOutputTokens }
       : { max_tokens: request.maxOutputTokens }),

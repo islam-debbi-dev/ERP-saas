@@ -68,7 +68,9 @@ export function geminiRequest(model: string, request: LlmChatRequest): GenerateC
     config: {
       // Implicit caching matches on the prefix: the stable text comes first.
       systemInstruction: `${request.system.stable}\n\n${request.system.dynamic}`,
-      tools: [{ functionDeclarations: geminiTools(request.tools) }],
+      ...(request.tools.length > 0
+        ? { tools: [{ functionDeclarations: geminiTools(request.tools) }] }
+        : {}),
       maxOutputTokens: request.maxOutputTokens,
       abortSignal: request.signal,
       httpOptions: { timeout: LLM_TIMEOUT_MS },

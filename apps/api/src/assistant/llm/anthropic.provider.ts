@@ -72,7 +72,7 @@ export function anthropicRequest(model: string, request: LlmChatRequest): BetaPa
       { type: 'text', text: request.system.stable, cache_control: { type: 'ephemeral' } },
       { type: 'text', text: request.system.dynamic },
     ],
-    tools: anthropicTools(request.tools),
+    ...(request.tools.length > 0 ? { tools: anthropicTools(request.tools) } : {}),
     messages: anthropicMessages(request.messages),
     ...(EFFORT_MODELS.test(model) ? { output_config: { effort: 'low' as const } } : {}),
     ...(fallback ? { fallbacks: 'default' as const, betas: [FALLBACK_BETA] } : {}),
