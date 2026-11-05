@@ -37,7 +37,7 @@ Each phase is one branch, one PR and one Claude Code session. Prompts live in [`
 | 28 | [Relances automatiques](prompts/phase-28-auto-reminders.md) | Scheduled debtor reminders on WhatsApp, per-client exclude / pause, preview and log | 21, 27 | v2 |
 | 29 | [Édition mono-société](prompts/phase-29-single-company-edition.md) | `DEPLOYMENT_MODE=single`, signed license, installer for one company on its own VPS | 28 | v2 |
 | 32 | [Verrouillage automatique](prompts/phase-32-idle-lock.md) | Idle lock screen enforced by the API, per-user PIN, lock across tabs, owner sets the delay | 11 | v1.1 |
-| 30 | [Assistant IA](prompts/phase-30-ai-assistant.md) | In-app help assistant (Claude): how-to answers in ar / darja / fr, read-only questions on the user's own data, quotas per plan | 13b, 24 | v2 |
+| 30 | [Assistant IA](prompts/phase-30-ai-assistant.md) | In-app help assistant, any model provider chosen by the admin (Claude, Gemini, OpenAI-compatible; own key in single-company mode): how-to answers in ar / darja / fr, read-only questions on the user's own data, quotas per plan | 13b, 24 | v2 |
 | 31 | [DRH: personnel et pointage](prompts/phase-31-hr-attendance.md) | Employés, pointage du jour présent / absent (manager or self check-in with GPS), congés ledger, avances sur salaire | 24, 25 | v2 |
 | 31b | [DRH: paie](prompts/phase-31b-payroll.md) | Monthly payroll run from the pointage, CNAS + IRG as dated rate sets, bulletin de paie PDF, salary payments, CNAS / IRG / DAS exports | 31 | v2 |
 
