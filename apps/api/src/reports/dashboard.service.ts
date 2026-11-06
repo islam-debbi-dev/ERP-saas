@@ -25,6 +25,7 @@ import { PaymentsService } from '../payments/payments.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
 import { StockQueriesService } from '../stock/stock-queries.service';
+import { TreasuryService } from '../treasury/treasury.service';
 import { algiersDayOf, saleDocumentFacts, saleLineFacts, type Scope } from './reports-sql';
 
 const TOP_DEBTORS = 10;
@@ -43,6 +44,7 @@ interface DayTotals {
 @Injectable()
 export class DashboardService {
   constructor(
+    private readonly treasury: TreasuryService,
     private readonly prisma: PrismaService,
     private readonly clients: ClientsService,
     private readonly payments: PaymentsService,
@@ -99,10 +101,14 @@ export class DashboardService {
           )
         : null;
     const result = charges ? netResult(margin, charges.total) : null;
+    const treasury = (await this.scopes.treasuryOn(scope.tenantId))
+      ? await this.treasury.balancesFor(user, warehouseIds, await this.mainId(units))
+      : null;
     return {
       date,
       sales,
       cash: cash ? { total: cash.total, byMode: cash.byMode } : null,
+      treasury,
       credit:
         credit && debtors
           ? {
@@ -120,6 +126,15 @@ export class DashboardService {
           ? { margin, charges: charges.total, result }
           : null,
     };
+  }
+
+  private async mainId(units: { defaultWarehouseId: string | null }): Promise<string | null> {
+    if (units.defaultWarehouseId) return units.defaultWarehouseId;
+    const main = await this.prisma.db.warehouse.findFirst({
+      where: { isDefault: true },
+      select: { id: true },
+    });
+    return main?.id ?? null;
   }
 
   /** What a user's figures cover, the same for the dashboard and the assistant. */

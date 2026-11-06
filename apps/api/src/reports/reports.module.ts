@@ -6,6 +6,7 @@ import { PaymentsModule } from '../payments/payments.module';
 import { SalesForceModule } from '../sales-force/sales-force.module';
 import { StockModule } from '../stock/stock.module';
 import { TenantsModule } from '../tenants/tenants.module';
+import { TreasuryModule } from '../treasury/treasury.module';
 import { DashboardService } from './dashboard.service';
 import { OnboardingService } from './onboarding.service';
 import { OverviewService } from './overview.service';
@@ -20,6 +21,7 @@ import { SellOutService } from './sell-out.service';
  */
 @Module({
   imports: [
+    TreasuryModule,
     ClientsModule,
     CreditModule,
     ExpensesModule,

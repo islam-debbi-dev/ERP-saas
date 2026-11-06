@@ -160,6 +160,20 @@ export const ErrorCode = {
   PACKAGING_OPENING_ALREADY_SET: 'PACKAGING_OPENING_ALREADY_SET',
   PACKAGING_TYPE_NAME_TAKEN: 'PACKAGING_TYPE_NAME_TAKEN',
   // Dépenses and rent (phase 25)
+  /** Unknown, archived or out of reach: it does not exist for this user. */
+  CASH_ACCOUNT_NOT_FOUND: 'CASH_ACCOUNT_NOT_FOUND',
+  CASH_ACCOUNT_NAME_TAKEN: 'CASH_ACCOUNT_NAME_TAKEN',
+  /** Only an empty account that is not a default can be archived. */
+  CASH_ACCOUNT_NOT_EMPTY: 'CASH_ACCOUNT_NOT_EMPTY',
+  CASH_ACCOUNT_IS_DEFAULT: 'CASH_ACCOUNT_IS_DEFAULT',
+  CASH_ACCOUNT_NOT_CAISSE: 'CASH_ACCOUNT_NOT_CAISSE',
+  CASH_ACCOUNT_MODIFIED: 'CASH_ACCOUNT_MODIFIED',
+  CASH_OPENING_ALREADY_SET: 'CASH_OPENING_ALREADY_SET',
+  /** A transfer takes more than the account holds. */
+  CASH_INSUFFICIENT: 'CASH_INSUFFICIENT',
+  CASH_TRANSFER_NOT_VALID: 'CASH_TRANSFER_NOT_VALID',
+  /** A règlement made at reception is cancelled with its BR. */
+  SUPPLIER_PAYMENT_LINKED_TO_PURCHASE: 'SUPPLIER_PAYMENT_LINKED_TO_PURCHASE',
   EXPENSE_NOT_VALID: 'EXPENSE_NOT_VALID',
   EXPENSE_CATEGORY_NAME_TAKEN: 'EXPENSE_CATEGORY_NAME_TAKEN',
   /** The Loyer category is used by rent payments: it is never archived. */

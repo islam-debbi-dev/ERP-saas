@@ -13,6 +13,7 @@ import {
   type SaleResultDto,
   type StockLevelDto,
 } from '@erp/shared';
+import { tenantContext } from '../src/common/tenant-context';
 import {
   asTenant,
   bearer,
@@ -641,6 +642,33 @@ describe('sales', () => {
     });
 
     const facture = (body: object) => quick(tt, { type: 'FACTURE', ...body });
+
+    it('the money of a sale goes in the caisse, and its cancel takes it out (phase 34)', async () => {
+      const p = await product(tt, cat);
+      const c = await client(tt);
+      const r = (
+        await quick(tt, {
+          type: 'BL',
+          clientId: c.id,
+          lines: [cartons(p, '1')],
+          paidAmount: '1000',
+          paymentMode: 'ESPECES',
+        }).expect(201)
+      ).body as SaleResultDto;
+      const moved = () =>
+        tenantContext.runAsSystem(() =>
+          t.prisma.db.$queryRaw<{ type: string; amount: string }[]>`
+            SELECT m.type, m.amount::text FROM cash_movements m
+            JOIN payments p ON p.id = m."refId" AND m."refType" = 'Payment'
+            WHERE p."saleId" = ${r.sale.id}::uuid ORDER BY m."createdAt"`,
+        );
+      expect(await moved()).toEqual([{ type: 'VERSEMENT', amount: '1000.00' }]);
+      await as(tt).post(`/sales/${r.sale.id}/cancel`, { reason: 'erreur' }).expect(200);
+      expect(await moved()).toEqual([
+        { type: 'VERSEMENT', amount: '1000.00' },
+        { type: 'REVERSAL', amount: '-1000.00' },
+      ]);
+    });
 
     it('a facture paid in cash owes TTC + timbre: stored, on the ledger, fully paid', async () => {
       const p = await product(tt, cat);

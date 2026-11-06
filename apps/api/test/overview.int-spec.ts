@@ -382,7 +382,12 @@ describe("vue d'ensemble (phase 26)", () => {
       const b = card(o, depotB.id);
       // A's truck sale was paid at the sale: a versement of A.
       expect(a.cashIn).toBe('2380.00');
-      expect(a.cashOut).toEqual({ supplierPayments: '0.00', expenses: '700.00', total: '700.00' });
+      expect(a.cashOut).toEqual({
+        supplierPayments: '0.00',
+        expenses: '700.00',
+        importCosts: '0.00',
+        total: '700.00',
+      });
       expect(a.netCash).toBe('1680.00');
       expect(b.cashIn).toBe('500.00');
       expect(b.cashOut.supplierPayments).toBe('300.00');

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TreasuryModule } from '../treasury/treasury.module';
 import { DocumentsModule } from '../documents/documents.module';
 import { PurchasesModule } from '../purchases/purchases.module';
 import { StockModule } from '../stock/stock.module';
@@ -10,7 +11,7 @@ import { ImportFilesService } from './import-files.service';
  * StockService, supplier accounts through SupplierAccountService.
  */
 @Module({
-  imports: [StockModule, PurchasesModule, DocumentsModule],
+  imports: [StockModule, PurchasesModule, DocumentsModule, TreasuryModule],
   controllers: [ImportFilesController],
   providers: [ImportFilesService],
   exports: [ImportFilesService],

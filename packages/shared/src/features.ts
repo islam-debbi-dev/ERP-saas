@@ -35,6 +35,8 @@ export const Feature = {
   PAYROLL: 'PAYROLL',
   /** The in-app help assistant (phase 30). In every edition: help is useful to everyone. */
   AI_ASSISTANT: 'AI_ASSISTANT',
+  /** Caisses, bank accounts, balances (phase 34). In every edition. */
+  TREASURY: 'TREASURY',
 } as const;
 export type Feature = (typeof Feature)[keyof typeof Feature];
 export const FEATURES = Object.values(Feature);
@@ -52,12 +54,13 @@ export type Edition = (typeof Edition)[keyof typeof Edition];
 export const EDITIONS = Object.values(Edition);
 
 export const EDITION_FEATURES: Record<Edition, readonly Feature[]> = {
-  [Edition.ESSENTIEL]: [Feature.EXPENSES, Feature.AI_ASSISTANT],
+  [Edition.ESSENTIEL]: [Feature.EXPENSES, Feature.AI_ASSISTANT, Feature.TREASURY],
   [Edition.IMPORT]: [
     Feature.IMPORT_COSTS,
     Feature.WAREHOUSES,
     Feature.EXPENSES,
     Feature.AI_ASSISTANT,
+    Feature.TREASURY,
   ],
   [Edition.DISTRIBUTION]: [
     Feature.SALES_FORCE,
@@ -73,6 +76,7 @@ export const EDITION_FEATURES: Record<Edition, readonly Feature[]> = {
     Feature.HR,
     Feature.PAYROLL,
     Feature.AI_ASSISTANT,
+    Feature.TREASURY,
   ],
   [Edition.ENTREPRISE]: FEATURES,
 };

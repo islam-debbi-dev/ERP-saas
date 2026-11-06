@@ -5,6 +5,7 @@ export const purchaseInclude = {
   supplier: { select: { id: true, name: true } },
   warehouse: { select: { id: true, name: true } },
   importFile: { select: { id: true, number: true, status: true } },
+  paidCashAccount: { select: { id: true, name: true } },
   lines: { orderBy: { position: 'asc' }, include: { returnLines: { select: { qtyBase: true } } } },
   returns: { orderBy: { createdAt: 'asc' }, include: { lines: true } },
 } satisfies Prisma.PurchaseInclude;
@@ -42,6 +43,8 @@ export function toPurchaseDto(p: PurchaseWithRelations): PurchaseDto {
       tva: toMoneyString(r.tva),
     })),
     paidAmount: toMoneyString(p.paidAmount.toString()),
+    paidMode: p.paidMode,
+    paidCashAccount: p.paidCashAccount,
     currency: p.currency,
     exchangeRate: p.exchangeRate.toString(),
     totalCurrency: p.totalCurrency ? toMoneyString(p.totalCurrency.toString()) : null,

@@ -134,6 +134,8 @@ export type CancelPayrollRunInput = z.infer<typeof cancelPayrollRunSchema>;
 
 export const payPayrollRunSchema = z.object({
   mode: z.enum(PAYMENT_MODES),
+  /** The account the salaries leave from (phase 34). Omitted: the default for the mode. */
+  cashAccountId: id.optional(),
   date: dateString.optional(),
   reference: optionalText(80),
   /** Left out: everyone with something left to pay. No amount: all that remains. */

@@ -103,7 +103,7 @@ describe('editions and feature flags (phase 13b)', () => {
     // Dépenses are in every edition (phase 25).
     expect(grossiste.auth.user).toMatchObject({
       edition: Edition.ESSENTIEL,
-      features: [Feature.EXPENSES, Feature.AI_ASSISTANT],
+      features: [Feature.EXPENSES, Feature.AI_ASSISTANT, Feature.TREASURY],
     });
 
     const importer = await registerTenant(t, 'Edition Import', {
@@ -116,6 +116,7 @@ describe('editions and feature flags (phase 13b)', () => {
       Feature.IMPORT_COSTS,
       Feature.EXPENSES,
       Feature.AI_ASSISTANT,
+      Feature.TREASURY,
     ]);
 
     const distributor = await registerTenant(t, 'Edition Distribution', {
@@ -162,7 +163,7 @@ describe('editions and feature flags (phase 13b)', () => {
     }
 
     // Prime the cache, then grant: the change applies on the next request, same token.
-    expect((await me(a)).features).toEqual([Feature.EXPENSES, Feature.AI_ASSISTANT]);
+    expect((await me(a)).features).toEqual([Feature.EXPENSES, Feature.AI_ASSISTANT, Feature.TREASURY]);
     const granted = await patchSubscription(a.tenantId, {
       featureGrants: [Feature.GEO_CHECK],
     }).expect(200);
@@ -170,6 +171,7 @@ describe('editions and feature flags (phase 13b)', () => {
       Feature.GEO_CHECK,
       Feature.EXPENSES,
       Feature.AI_ASSISTANT,
+      Feature.TREASURY,
     ]);
     await getGeo(a).expect(200);
     await postGeo(a).expect(201);
@@ -177,6 +179,7 @@ describe('editions and feature flags (phase 13b)', () => {
       Feature.GEO_CHECK,
       Feature.EXPENSES,
       Feature.AI_ASSISTANT,
+      Feature.TREASURY,
     ]);
 
     // A revoke wins over the edition: DISTRIBUTION minus GEO_CHECK.
@@ -214,7 +217,7 @@ describe('editions and feature flags (phase 13b)', () => {
     await patchSubscription(a.tenantId, { edition: Edition.ENTREPRISE }).expect(200);
     await getGeo(a).expect(200);
     await getGeo(b).expect(403);
-    expect((await me(b)).features).toEqual([Feature.EXPENSES, Feature.AI_ASSISTANT]);
+    expect((await me(b)).features).toEqual([Feature.EXPENSES, Feature.AI_ASSISTANT, Feature.TREASURY]);
   });
 
   it('only the super-admin changes modules, and every change is audited', async () => {

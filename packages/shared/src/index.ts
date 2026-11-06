@@ -24,3 +24,4 @@ export * from './packaging';
 export * from './promotions';
 export * from './rent';
 export * from './overview';
+export * from './treasury';

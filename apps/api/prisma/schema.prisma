@@ -60,6 +60,8 @@ enum DocType {
   EMP
   /// Paie: one approved payroll run (phase 31b).
   PAIE
+  /// Transfert de trésorerie (phase 34).
+  TRF
 }
 
 enum PrintFormat {
@@ -96,14 +98,16 @@ model Tenant {
   maxDiscountPct    Decimal           @default(0) @db.Decimal(5, 2)
 
   // Timbre fiscal rule (cash-paid factures). Off until the tenant sets current law values.
-  timbreEnabled   Boolean  @default(false)
+  timbreEnabled           Boolean  @default(false)
   /// Deprecated (phase 8): replaced by timbreTranches, no longer read. Drop in a later release.
-  timbreRate      Decimal? @db.Decimal(7, 4)
-  timbreMin       Decimal? @db.Decimal(14, 2)
-  timbreMax       Decimal? @db.Decimal(14, 2)
-  timbreThreshold Decimal? @db.Decimal(14, 2)
+  timbreRate              Decimal? @db.Decimal(7, 4)
+  timbreMin               Decimal? @db.Decimal(14, 2)
+  timbreMax               Decimal? @db.Decimal(14, 2)
+  timbreThreshold         Decimal? @db.Decimal(14, 2)
+  /// A comptage with an écart from this amount up alerts the owner (phase 34).
+  cashCountAlertThreshold Decimal  @default(5000) @db.Decimal(14, 2)
   /// [{ upTo: "30000.00" | null, rate: "1" }] in increasing order, see packages/shared/timbre.
-  timbreTranches  Json     @default("[]")
+  timbreTranches          Json     @default("[]")
 
   // Printed documents
   defaultPrintFormat PrintFormat @default(A4)
@@ -218,6 +222,11 @@ model Tenant {
   warehouseCategories      WarehouseCategory[]
   expenseCategories        ExpenseCategory[]
   expenses                 Expense[]
+  cashAccounts             CashAccount[]
+  cashAccountBalances      CashAccountBalance[]
+  cashMovements            CashMovement[]
+  cashTransfers            CashTransfer[]
+  cashCounts               CashCount[]
   rentContracts            RentContract[]
   employees                Employee[]
   employeeSalaries         EmployeeSalary[]
@@ -836,6 +845,10 @@ model SupplierPayment {
   paidAt         DateTime              @default(now()) @db.Timestamptz(3)
   /// Phase 26: the dépôt that paid (figures per dépôt); null = the dépôt principal's.
   warehouseId    String?               @db.Uuid
+  /// The account it left (phase 34). Nullable until the contract release.
+  cashAccountId  String?               @db.Uuid
+  /// Paid at reception of this BR (phase 34): cancelled with it, never alone.
+  purchaseId     String?               @unique @db.Uuid
   cancelReason   String?               @db.VarChar(255)
   cancelledBy    String?               @db.Uuid
   cancelledAt    DateTime?             @db.Timestamptz(3)
@@ -843,13 +856,16 @@ model SupplierPayment {
   createdAt      DateTime              @default(now()) @db.Timestamptz(3)
   updatedAt      DateTime              @updatedAt @db.Timestamptz(3)
 
-  tenant    Tenant     @relation(fields: [tenantId], references: [id])
-  supplier  Supplier   @relation(fields: [supplierId], references: [id])
-  warehouse Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  tenant      Tenant       @relation(fields: [tenantId], references: [id])
+  supplier    Supplier     @relation(fields: [supplierId], references: [id])
+  warehouse   Warehouse?   @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  cashAccount CashAccount? @relation(fields: [cashAccountId], references: [id], onDelete: Restrict)
+  purchase    Purchase?    @relation(fields: [purchaseId], references: [id], onDelete: Restrict)
 
   @@unique([tenantId, number])
   @@index([tenantId, supplierId])
   @@index([tenantId, paidAt])
+  @@index([tenantId, cashAccountId])
   @@index([tenantId, warehouseId, paidAt])
   @@index([tenantId, mode, status, dueDate])
   @@map("supplier_payments")
@@ -858,41 +874,46 @@ model SupplierPayment {
 /// Bon de réception. Only validation has effects (stock, CUMP); the number is
 /// assigned at validation so abandoned drafts never consume one.
 model Purchase {
-  id            String         @id @default(uuid()) @db.Uuid
-  tenantId      String         @db.Uuid
-  number        String?        @db.VarChar(20)
-  supplierId    String         @db.Uuid
-  status        PurchaseStatus @default(DRAFT)
-  documentDate  DateTime       @db.Date
-  supplierRef   String?        @db.VarChar(60)
-  note          String?        @db.VarChar(255)
-  totalHt       Decimal        @default(0) @db.Decimal(14, 2)
-  totalTva      Decimal        @default(0) @db.Decimal(14, 2)
-  totalTtc      Decimal        @default(0) @db.Decimal(14, 2)
+  id                String         @id @default(uuid()) @db.Uuid
+  tenantId          String         @db.Uuid
+  number            String?        @db.VarChar(20)
+  supplierId        String         @db.Uuid
+  status            PurchaseStatus @default(DRAFT)
+  documentDate      DateTime       @db.Date
+  supplierRef       String?        @db.VarChar(60)
+  note              String?        @db.VarChar(255)
+  totalHt           Decimal        @default(0) @db.Decimal(14, 2)
+  totalTva          Decimal        @default(0) @db.Decimal(14, 2)
+  totalTtc          Decimal        @default(0) @db.Decimal(14, 2)
   /// Paid at reception. Supplier accounts come in v1.1.
-  paidAmount    Decimal        @default(0) @db.Decimal(14, 2)
+  paidAmount        Decimal        @default(0) @db.Decimal(14, 2)
+  /// How the paid part leaves, on a draft (phase 34): validating makes it a règlement.
+  paidMode          PaymentMode    @default(ESPECES)
+  paidCashAccountId String?        @db.Uuid
   /// The dépôt the goods enter or leave (phase 15); nullable until the contract release.
-  warehouseId   String?        @db.Uuid
+  warehouseId       String?        @db.Uuid
   /// Phase 22: the supplier's currency and the bank rate (DZD per 1 unit). Totals stay in DZD.
-  currency      String         @default("DZD") @db.VarChar(3)
-  exchangeRate  Decimal        @default(1) @db.Decimal(12, 6)
-  totalCurrency Decimal?       @db.Decimal(14, 2)
-  importFileId  String?        @db.Uuid
-  version       Int            @default(1)
-  createdBy     String?        @db.Uuid
-  validatedBy   String?        @db.Uuid
-  validatedAt   DateTime?      @db.Timestamptz(3)
-  cancelledBy   String?        @db.Uuid
-  cancelledAt   DateTime?      @db.Timestamptz(3)
-  createdAt     DateTime       @default(now()) @db.Timestamptz(3)
-  updatedAt     DateTime       @updatedAt @db.Timestamptz(3)
+  currency          String         @default("DZD") @db.VarChar(3)
+  exchangeRate      Decimal        @default(1) @db.Decimal(12, 6)
+  totalCurrency     Decimal?       @db.Decimal(14, 2)
+  importFileId      String?        @db.Uuid
+  version           Int            @default(1)
+  createdBy         String?        @db.Uuid
+  validatedBy       String?        @db.Uuid
+  validatedAt       DateTime?      @db.Timestamptz(3)
+  cancelledBy       String?        @db.Uuid
+  cancelledAt       DateTime?      @db.Timestamptz(3)
+  createdAt         DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime       @updatedAt @db.Timestamptz(3)
 
-  tenant     Tenant           @relation(fields: [tenantId], references: [id])
-  supplier   Supplier         @relation(fields: [supplierId], references: [id])
-  warehouse  Warehouse?       @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
-  importFile ImportFile?      @relation(fields: [importFileId], references: [id], onDelete: Restrict)
-  lines      PurchaseLine[]
-  returns    PurchaseReturn[]
+  tenant          Tenant           @relation(fields: [tenantId], references: [id])
+  supplier        Supplier         @relation(fields: [supplierId], references: [id])
+  warehouse       Warehouse?       @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  importFile      ImportFile?      @relation(fields: [importFileId], references: [id], onDelete: Restrict)
+  paidCashAccount CashAccount?     @relation(fields: [paidCashAccountId], references: [id], onDelete: Restrict)
+  paidPayment     SupplierPayment?
+  lines           PurchaseLine[]
+  returns         PurchaseReturn[]
 
   @@unique([tenantId, number])
   @@index([tenantId, importFileId])
@@ -1303,41 +1324,44 @@ model SaleReturnLine {
 /// Versement: money received. Created at sale time for the paid part (also for
 /// counter sales, without client); phase 7 adds standalone versements.
 model Payment {
-  id           String        @id @default(uuid()) @db.Uuid
-  tenantId     String        @db.Uuid
-  number       String        @db.VarChar(20)
-  clientId     String?       @db.Uuid
-  saleId       String?       @db.Uuid
-  amount       Decimal       @db.Decimal(14, 2)
-  mode         PaymentMode
-  status       PaymentStatus @default(VALID)
+  id            String        @id @default(uuid()) @db.Uuid
+  tenantId      String        @db.Uuid
+  number        String        @db.VarChar(20)
+  clientId      String?       @db.Uuid
+  saleId        String?       @db.Uuid
+  amount        Decimal       @db.Decimal(14, 2)
+  mode          PaymentMode
+  status        PaymentStatus @default(VALID)
   /// Cheque or transfer number.
-  reference    String?       @db.VarChar(80)
-  bank         String?       @db.VarChar(80)
+  reference     String?       @db.VarChar(80)
+  bank          String?       @db.VarChar(80)
   /// Cheque due date (échéance).
-  dueDate      DateTime?     @db.Date
-  note         String?       @db.VarChar(255)
-  receivedBy   String?       @db.Uuid
+  dueDate       DateTime?     @db.Date
+  note          String?       @db.VarChar(255)
+  receivedBy    String?       @db.Uuid
   /// Who collected the money from the client (phase 14); the receiver when he is a SELLER.
-  collectedBy  String?       @db.Uuid
-  receivedAt   DateTime      @default(now()) @db.Timestamptz(3)
-  cancelReason String?       @db.VarChar(255)
-  cancelledBy  String?       @db.Uuid
-  cancelledAt  DateTime?     @db.Timestamptz(3)
-  bounceReason String?       @db.VarChar(255)
-  bouncedBy    String?       @db.Uuid
-  bouncedAt    DateTime?     @db.Timestamptz(3)
+  collectedBy   String?       @db.Uuid
+  receivedAt    DateTime      @default(now()) @db.Timestamptz(3)
+  cancelReason  String?       @db.VarChar(255)
+  cancelledBy   String?       @db.Uuid
+  cancelledAt   DateTime?     @db.Timestamptz(3)
+  bounceReason  String?       @db.VarChar(255)
+  bouncedBy     String?       @db.Uuid
+  bouncedAt     DateTime?     @db.Timestamptz(3)
   /// The dépôt the cash came in at (phase 24). Nullable until the contract release.
-  warehouseId  String?       @db.Uuid
-  version      Int           @default(1)
-  createdAt    DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime      @updatedAt @db.Timestamptz(3)
+  warehouseId   String?       @db.Uuid
+  /// The account it went into (phase 34). Nullable until the contract release.
+  cashAccountId String?       @db.Uuid
+  version       Int           @default(1)
+  createdAt     DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime      @updatedAt @db.Timestamptz(3)
 
   tenant      Tenant              @relation(fields: [tenantId], references: [id])
   client      Client?             @relation(fields: [clientId], references: [id])
   sale        Sale?               @relation(fields: [saleId], references: [id])
   collector   User?               @relation("PaymentCollector", fields: [collectedBy], references: [id], onDelete: Restrict)
   warehouse   Warehouse?          @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  cashAccount CashAccount?        @relation(fields: [cashAccountId], references: [id], onDelete: Restrict)
   allocations PaymentAllocation[]
 
   @@unique([tenantId, number])
@@ -1347,6 +1371,7 @@ model Payment {
   @@index([tenantId, mode, status, dueDate])
   @@index([tenantId, collectedBy, receivedAt])
   @@index([tenantId, warehouseId, receivedAt])
+  @@index([tenantId, cashAccountId])
   @@map("payments")
 }
 
@@ -1722,6 +1747,7 @@ model Warehouse {
   payrollRuns      PayrollRun[]
   rentContracts    RentContract[]
   supplierPayments SupplierPayment[]
+  cashAccounts     CashAccount[]
 
   @@unique([tenantId, name])
   @@index([tenantId, type])
@@ -2437,6 +2463,11 @@ model ImportCost {
   manualSplit    Json?
   /// Added after the dossier was closed (COST_ADJUST).
   isLate         Boolean          @default(false)
+  /// Paid now from this account (phase 34): a cost without a supplier, like the douane.
+  cashAccountId  String?          @db.Uuid
+  paidMode       PaymentMode?
+  /// The Algiers day the money left.
+  paidDate       DateTime?        @db.Date
   createdBy      String?          @db.Uuid
   createdAt      DateTime         @default(now()) @db.Timestamptz(3)
   cancelledBy    String?          @db.Uuid
@@ -2445,9 +2476,11 @@ model ImportCost {
   tenant      Tenant                 @relation(fields: [tenantId], references: [id])
   importFile  ImportFile             @relation(fields: [importFileId], references: [id])
   supplier    Supplier?              @relation(fields: [supplierId], references: [id])
+  cashAccount CashAccount?           @relation(fields: [cashAccountId], references: [id], onDelete: Restrict)
   allocations ImportCostAllocation[]
 
   @@index([tenantId, importFileId])
+  @@index([tenantId, cashAccountId, paidDate])
   @@map("import_costs")
 }
 
@@ -2751,6 +2784,8 @@ model Expense {
   employeeId     String?       @db.Uuid
   /// A salary payment: the approved run it pays (phase 31b).
   payrollRunId   String?       @db.Uuid
+  /// The account it left (phase 34). Nullable until the contract release.
+  cashAccountId  String?       @db.Uuid
   status         ExpenseStatus @default(VALID)
   createdBy      String?       @db.Uuid
   cancelReason   String?       @db.VarChar(255)
@@ -2766,8 +2801,10 @@ model Expense {
   rentContract RentContract?   @relation(fields: [rentContractId], references: [id], onDelete: Restrict)
   employee     Employee?       @relation(fields: [employeeId], references: [id], onDelete: Restrict)
   payrollRun   PayrollRun?     @relation(fields: [payrollRunId], references: [id], onDelete: Restrict)
+  cashAccount  CashAccount?    @relation(fields: [cashAccountId], references: [id], onDelete: Restrict)
 
   @@unique([tenantId, number])
+  @@index([tenantId, cashAccountId])
   @@index([tenantId, employeeId])
   @@index([tenantId, payrollRunId])
   @@index([tenantId, date])
@@ -3474,4 +3511,159 @@ model AssistantMessage {
   @@index([tenantId, userId, role, createdAt])
   @@index([conversationId, seq])
   @@map("assistant_messages")
+}
+
+// ---------------------------------------------------------------- trésorerie (phase 34)
+
+enum CashAccountType {
+  CAISSE
+  BANQUE
+  CCP
+}
+
+enum CashMovementType {
+  OPENING
+  VERSEMENT
+  SUPPLIER_PAYMENT
+  EXPENSE
+  IMPORT_COST
+  TRANSFER_OUT
+  TRANSFER_IN
+  COUNT_ADJUST
+  REVERSAL
+}
+
+enum CashTransferStatus {
+  VALID
+  CANCELLED
+}
+
+/// A caisse or a bank account. Master data: archived, never deleted. One default per type and
+/// dépôt, and one live name per tenant: partial unique indexes in the migration.
+model CashAccount {
+  id          String          @id @default(uuid()) @db.Uuid
+  tenantId    String          @db.Uuid
+  name        String          @db.VarChar(80)
+  type        CashAccountType
+  /// Null: a company account, reached by managers only.
+  warehouseId String?         @db.Uuid
+  bankName    String?         @db.VarChar(80)
+  rib         String?         @db.VarChar(30)
+  isDefault   Boolean         @default(false)
+  /// DZD only for now: foreign accounts are parked.
+  currency    String          @default("DZD") @db.VarChar(3)
+  /// The day of the solde initial: movements dated before it are not in the balance.
+  openingDate DateTime?       @db.Date
+  version     Int             @default(1)
+  createdBy   String?         @db.Uuid
+  deletedAt   DateTime?       @db.Timestamptz(3)
+  createdAt   DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime        @updatedAt @db.Timestamptz(3)
+
+  tenant           Tenant              @relation(fields: [tenantId], references: [id])
+  warehouse        Warehouse?          @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  balance          CashAccountBalance?
+  movements        CashMovement[]
+  counts           CashCount[]
+  transfersOut     CashTransfer[]      @relation("CashTransferFrom")
+  transfersIn      CashTransfer[]      @relation("CashTransferTo")
+  payments         Payment[]
+  supplierPayments SupplierPayment[]
+  expenses         Expense[]
+  importCosts      ImportCost[]
+  purchases        Purchase[]
+
+  @@index([tenantId, type])
+  @@index([tenantId, warehouseId])
+  @@map("cash_accounts")
+}
+
+/// Cached balance of an account: updated in the same transaction as its movement and
+/// reconcilable from the ledger. Locked by id order when a transfer takes two.
+model CashAccountBalance {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @db.Uuid
+  cashAccountId String   @unique @db.Uuid
+  balance       Decimal  @default(0) @db.Decimal(14, 2)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(3)
+
+  tenant  Tenant      @relation(fields: [tenantId], references: [id])
+  account CashAccount @relation(fields: [cashAccountId], references: [id])
+
+  @@index([tenantId])
+  @@map("cash_account_balances")
+}
+
+/// The cash ledger: append-only (DB trigger). Signed: + in, - out.
+model CashMovement {
+  id            String           @id @default(uuid()) @db.Uuid
+  tenantId      String           @db.Uuid
+  cashAccountId String           @db.Uuid
+  amount        Decimal          @db.Decimal(14, 2)
+  type          CashMovementType
+  refType       String?          @db.VarChar(40)
+  refId         String?          @db.Uuid
+  /// The Algiers day the money moved.
+  date          DateTime         @db.Date
+  note          String?          @db.VarChar(255)
+  createdBy     String?          @db.Uuid
+  createdAt     DateTime         @default(now()) @db.Timestamptz(3)
+
+  tenant  Tenant      @relation(fields: [tenantId], references: [id])
+  account CashAccount @relation(fields: [cashAccountId], references: [id])
+
+  @@index([tenantId, cashAccountId, date, createdAt])
+  @@index([tenantId, date])
+  @@index([tenantId, refType, refId])
+  @@map("cash_movements")
+}
+
+/// Transfert (TRF): from one account to another. Neither income nor a charge.
+model CashTransfer {
+  id            String             @id @default(uuid()) @db.Uuid
+  tenantId      String             @db.Uuid
+  number        String             @db.VarChar(20)
+  fromAccountId String             @db.Uuid
+  toAccountId   String             @db.Uuid
+  amount        Decimal            @db.Decimal(14, 2)
+  date          DateTime           @db.Date
+  note          String?            @db.VarChar(255)
+  status        CashTransferStatus @default(VALID)
+  createdBy     String?            @db.Uuid
+  cancelReason  String?            @db.VarChar(255)
+  cancelledBy   String?            @db.Uuid
+  cancelledAt   DateTime?          @db.Timestamptz(3)
+  createdAt     DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime           @updatedAt @db.Timestamptz(3)
+
+  tenant Tenant      @relation(fields: [tenantId], references: [id])
+  from   CashAccount @relation("CashTransferFrom", fields: [fromAccountId], references: [id], onDelete: Restrict)
+  to     CashAccount @relation("CashTransferTo", fields: [toAccountId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, number])
+  @@index([tenantId, date])
+  @@map("cash_transfers")
+}
+
+/// Comptage de caisse: what was counted against the balance at that moment. The écart, when
+/// there is one, is a COUNT_ADJUST movement.
+model CashCount {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @db.Uuid
+  cashAccountId String   @db.Uuid
+  counted       Decimal  @db.Decimal(14, 2)
+  expected      Decimal  @db.Decimal(14, 2)
+  ecart         Decimal  @db.Decimal(14, 2)
+  reason        String?  @db.VarChar(255)
+  /// The écart reached the tenant's threshold: shown to the owner.
+  alert         Boolean  @default(false)
+  createdBy     String?  @db.Uuid
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant  Tenant      @relation(fields: [tenantId], references: [id])
+  account CashAccount @relation(fields: [cashAccountId], references: [id])
+
+  @@index([tenantId, cashAccountId, createdAt])
+  @@index([tenantId, alert, createdAt])
+  @@map("cash_counts")
 }

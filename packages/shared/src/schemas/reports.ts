@@ -3,6 +3,7 @@ import { type PaymentMode, Role } from '../enums';
 import { rangeLength } from '../periods';
 import { type DebtorDto } from './clients';
 import { type DueChequesDto } from './credit';
+import { type CashBalances } from './treasury';
 
 const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'invalid_date');
 
@@ -173,6 +174,8 @@ export interface DashboardDto {
     total: string;
     byMode: { mode: PaymentMode; count: number; total: string }[];
   } | null;
+  /** En caisse (phase 34): today's balances; null without TREASURY_VIEW or the module. */
+  treasury: CashBalances | null;
   credit: {
     /** What clients owe (positive balances only). */
     total: string;
@@ -215,7 +218,9 @@ export interface OverviewFigures {
   /** Versements received. */
   cashIn: string;
   /** Règlements fournisseur + dépenses paid. */
-  cashOut: { supplierPayments: string; expenses: string; total: string };
+  cashOut: { supplierPayments: string; expenses: string; importCosts: string; total: string };
+  /** Today's balances (phase 34), like the créances; null without TREASURY_VIEW. */
+  balances: CashBalances | null;
   netCash: string;
   /** null without VIEW_COST_AND_MARGIN. */
   margin: string | null;

@@ -40,6 +40,7 @@ import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
 import { ExpensesService } from '../expenses/expenses.service';
+import { type CashEntry } from '../treasury/cash-ledger.service';
 import { EmployeeAccessService } from '../hr/employee-access.service';
 import { EmployeeLedgerService } from '../hr/employee-ledger.service';
 import { type Prisma } from '../generated/prisma/client';
@@ -489,6 +490,7 @@ export class PayrollRunsService {
         });
       }
       await this.access.lock(tx, ids);
+      const cash: CashEntry[] = [];
       for (const item of [...wanted].sort((a, b) => a.employeeId.localeCompare(b.employeeId))) {
         const slip = slips.find((s) => s.employeeId === item.employeeId);
         if (!slip) throw new AppException(ErrorCode.NOT_FOUND, 'Employee not on this run');
@@ -509,6 +511,7 @@ export class PayrollRunsService {
             warehouseId: slip.warehouseId,
             amount: value,
             mode: input.mode,
+            cashAccountId: input.cashAccountId,
             date,
             reference: input.reference,
             note: `Salaire ${run.month} (${run.number})`,
@@ -516,6 +519,7 @@ export class PayrollRunsService {
           },
           user,
         );
+        cash.push(expense.cash);
         await this.ledger.post(tx, {
           employeeId: item.employeeId,
           type: EmployeeLedgerType.SALARY_PAID,
@@ -532,6 +536,8 @@ export class PayrollRunsService {
           after: { runId: id, employeeId: item.employeeId, amount: value, mode: input.mode },
         });
       }
+      // Once, after every employee balance: the cash balance is always the last lock.
+      await this.expenses.postCashInTx(tx, cash);
       return this.detail(tx, id, user);
     }, TX_OPTIONS);
   }

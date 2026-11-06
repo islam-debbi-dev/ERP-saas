@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import {
+  algiersDay,
+  CashMovementType,
   type CreateSupplierPaymentInput,
   DocType,
   ErrorCode,
+  money,
   type PaymentMode,
   SupplierLedgerType,
   type SupplierPaymentDto,
@@ -17,11 +20,14 @@ import { DocumentNumberingService } from '../documents/document-numbering.servic
 import { type Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
+import { CashLedgerService } from '../treasury/cash-ledger.service';
 import { convert } from './currency';
 import { SupplierAccountService } from './supplier-account.service';
 
 const paymentInclude = {
   supplier: { select: { id: true, code: true, name: true } },
+  cashAccount: { select: { id: true, name: true } },
+  purchase: { select: { id: true, number: true } },
 } satisfies Prisma.SupplierPaymentInclude;
 type PaymentWithSupplier = Prisma.SupplierPaymentGetPayload<{ include: typeof paymentInclude }>;
 
@@ -47,13 +53,15 @@ function toDto(
     paidAt: p.paidAt.toISOString(),
     cancelReason: p.cancelReason,
     cancelledAt: p.cancelledAt?.toISOString() ?? null,
+    cashAccount: p.cashAccount,
+    purchase: p.purchase,
   };
 }
 
 /**
  * Règlements fournisseur (RGF, phase 21): the only writer of supplier_payments. The
  * money side goes through SupplierAccountService. Lock order: payment row, then the
- * supplier balance.
+ * supplier balance, then the cash balance.
  */
 @Injectable()
 export class SupplierPaymentsService {
@@ -63,6 +71,7 @@ export class SupplierPaymentsService {
     private readonly numbering: DocumentNumberingService,
     private readonly audit: AuditService,
     private readonly scope: ScopeService,
+    private readonly cash: CashLedgerService,
   ) {}
 
   async create(
@@ -83,6 +92,11 @@ export class SupplierPaymentsService {
       // The amount is typed in the supplier's currency (phase 22): DZD at the bank rate.
       const paid = convert(supplier.currency, input.amount, input.exchangeRate);
       const warehouseId = await this.warehouseFor(tx, input.warehouseId, user);
+      const cashAccountId = await this.cash.resolve(
+        tx,
+        { requested: input.cashAccountId, mode: input.mode, warehouseId },
+        user,
+      );
       const number = await this.numbering.next(tx, tenantId, DocType.RGF);
       const payment = await tx.supplierPayment.create({
         data: {
@@ -100,6 +114,7 @@ export class SupplierPaymentsService {
           note: input.note,
           paidBy: user.id,
           warehouseId,
+          cashAccountId,
         },
       });
       await this.account.post(tx, [
@@ -113,6 +128,13 @@ export class SupplierPaymentsService {
           refId: payment.id,
         },
       ]);
+      await this.postCash(tx, {
+        cashAccountId,
+        amount: paid.dzd.toString(),
+        id: payment.id,
+        number,
+        paidAt: payment.paidAt,
+      });
       await this.audit.log(tx, {
         action: 'SUPPLIER_PAYMENT_CREATED',
         entity: 'SupplierPayment',
@@ -126,11 +148,119 @@ export class SupplierPaymentsService {
             : {}),
           mode: input.mode,
           warehouseId,
+          cashAccountId,
         },
       });
       return payment.id;
     });
     return this.get(id);
+  }
+
+  /**
+   * What was paid at reception (phase 34): a real règlement, written as the BR is validated.
+   * The supplier ledger gets the same single PAYMENT as before, now pointing here. The caller
+   * has checked the amount; a foreign supplier is never paid at reception.
+   */
+  async createForPurchaseInTx(
+    tx: Tx,
+    input: {
+      purchaseId: string;
+      /** The BR's number: the supplier's statement reads as it always did. */
+      purchaseNumber: string;
+      supplierId: string;
+      amount: string;
+      mode: PaymentMode;
+      cashAccountId: string | null;
+      warehouseId: string;
+    },
+    user: CurrentUserInfo,
+  ): Promise<void> {
+    const tenantId = tenantContext.requireTenantId();
+    const cashAccountId = await this.cash.resolve(
+      tx,
+      { requested: input.cashAccountId, mode: input.mode, warehouseId: input.warehouseId },
+      user,
+    );
+    const number = await this.numbering.next(tx, tenantId, DocType.RGF);
+    const payment = await tx.supplierPayment.create({
+      data: {
+        tenantId,
+        number,
+        supplierId: input.supplierId,
+        amount: input.amount,
+        mode: input.mode,
+        paidBy: user.id,
+        warehouseId: input.warehouseId,
+        cashAccountId,
+        purchaseId: input.purchaseId,
+      },
+    });
+    await this.account.post(tx, [
+      {
+        supplierId: input.supplierId,
+        type: SupplierLedgerType.PAYMENT,
+        amount: money(input.amount).negated().toString(),
+        label: input.purchaseNumber,
+        reason: 'paid_at_reception',
+        refType: 'SupplierPayment',
+        refId: payment.id,
+      },
+    ]);
+    await this.postCash(tx, {
+      cashAccountId,
+      amount: input.amount,
+      id: payment.id,
+      number,
+      paidAt: payment.paidAt,
+    });
+    await this.audit.log(tx, {
+      action: 'SUPPLIER_PAYMENT_CREATED',
+      entity: 'SupplierPayment',
+      entityId: payment.id,
+      after: {
+        number,
+        supplierId: input.supplierId,
+        amount: input.amount,
+        mode: input.mode,
+        purchaseId: input.purchaseId,
+        cashAccountId,
+      },
+    });
+  }
+
+  /**
+   * The BR is cancelled: its règlement goes with it, so the supplier account ends where it did
+   * before phase 34 and the money comes back on the account it left.
+   */
+  async cancelForPurchaseInTx(
+    tx: Tx,
+    purchaseId: string,
+    reason: string,
+    user: CurrentUserInfo,
+  ): Promise<void> {
+    const rows = await tx.$queryRaw<{ id: string }[]>`
+      SELECT id FROM supplier_payments
+      WHERE "tenantId" = ${tenantContext.requireTenantId()}::uuid
+        AND "purchaseId" = ${purchaseId}::uuid AND status = 'VALID'
+      FOR UPDATE`;
+    for (const { id } of rows) await this.cancelInTx(tx, id, reason, user);
+  }
+
+  private postCash(
+    tx: Tx,
+    p: { cashAccountId: string; amount: string; id: string; number: string; paidAt: Date },
+  ): Promise<void> {
+    return this.cash.post(tx, [
+      {
+        cashAccountId: p.cashAccountId,
+        amount: money(p.amount).negated().toString(),
+        type: CashMovementType.SUPPLIER_PAYMENT,
+        refType: 'SupplierPayment',
+        refId: p.id,
+        date: algiersDay(p.paidAt),
+        note: p.number,
+      },
+    ]);
   }
 
   /**
@@ -156,58 +286,81 @@ export class SupplierPaymentsService {
   /** Input mistake or a cheque that never left: the debt comes back. Never deleted. */
   async cancel(id: string, reason: string, user: CurrentUserInfo): Promise<SupplierPaymentDto> {
     await this.prisma.db.$transaction(async (tx) => {
-      const rows = await tx.$queryRaw<
-        {
-          id: string;
-          number: string;
-          status: SupplierPaymentStatus;
-          amount: Prisma.Decimal;
-          amountCurrency: Prisma.Decimal | null;
-          supplierId: string;
-          mode: PaymentMode;
-        }[]
-      >`
-        SELECT id, number, status, amount, "amountCurrency", "supplierId", mode FROM supplier_payments
-        WHERE id = ${id}::uuid AND "tenantId" = ${tenantContext.requireTenantId()}::uuid
-        FOR UPDATE`;
-      const p = rows[0];
-      if (!p) throw new AppException(ErrorCode.NOT_FOUND, 'Supplier payment not found');
-      if (p.status !== SupplierPaymentStatus.VALID) {
-        throw new AppException(ErrorCode.SUPPLIER_PAYMENT_NOT_VALID, 'Already cancelled', {
-          status: p.status,
-        });
+      const linked = await this.cancelInTx(tx, id, reason, user, true);
+      if (linked) {
+        throw new AppException(
+          ErrorCode.SUPPLIER_PAYMENT_LINKED_TO_PURCHASE,
+          'Cancel the BR instead',
+          { purchaseId: linked },
+        );
       }
-      await tx.supplierPayment.update({
-        where: { id },
-        data: {
-          status: SupplierPaymentStatus.CANCELLED,
-          cancelReason: reason,
-          cancelledBy: user.id,
-          cancelledAt: new Date(),
-          version: { increment: 1 },
-        },
-      });
-      await this.account.post(tx, [
-        {
-          supplierId: p.supplierId,
-          type: SupplierLedgerType.REVERSAL,
-          amount: p.amount.toString(),
-          amountCurrency: p.amountCurrency?.toString() ?? null,
-          label: p.number,
-          reason,
-          refType: 'SupplierPayment',
-          refId: id,
-        },
-      ]);
-      await this.audit.log(tx, {
-        action: 'SUPPLIER_PAYMENT_CANCELLED',
-        entity: 'SupplierPayment',
-        entityId: id,
-        before: { status: p.status },
-        after: { reason },
-      });
     });
     return this.get(id);
+  }
+
+  /** Returns the BR instead of cancelling, when `refuseLinked` and it was paid at reception. */
+  private async cancelInTx(
+    tx: Tx,
+    id: string,
+    reason: string,
+    user: CurrentUserInfo,
+    refuseLinked = false,
+  ): Promise<string | null> {
+    const rows = await tx.$queryRaw<
+      {
+        id: string;
+        number: string;
+        status: SupplierPaymentStatus;
+        amount: Prisma.Decimal;
+        amountCurrency: Prisma.Decimal | null;
+        supplierId: string;
+        mode: PaymentMode;
+        purchaseId: string | null;
+      }[]
+    >`
+      SELECT id, number, status, amount, "amountCurrency", "supplierId", mode, "purchaseId"
+      FROM supplier_payments
+      WHERE id = ${id}::uuid AND "tenantId" = ${tenantContext.requireTenantId()}::uuid
+      FOR UPDATE`;
+    const p = rows[0];
+    if (!p) throw new AppException(ErrorCode.NOT_FOUND, 'Supplier payment not found');
+    if (p.status !== SupplierPaymentStatus.VALID) {
+      throw new AppException(ErrorCode.SUPPLIER_PAYMENT_NOT_VALID, 'Already cancelled', {
+        status: p.status,
+      });
+    }
+    if (refuseLinked && p.purchaseId) return p.purchaseId;
+    await tx.supplierPayment.update({
+      where: { id },
+      data: {
+        status: SupplierPaymentStatus.CANCELLED,
+        cancelReason: reason,
+        cancelledBy: user.id,
+        cancelledAt: new Date(),
+        version: { increment: 1 },
+      },
+    });
+    await this.account.post(tx, [
+      {
+        supplierId: p.supplierId,
+        type: SupplierLedgerType.REVERSAL,
+        amount: p.amount.toString(),
+        amountCurrency: p.amountCurrency?.toString() ?? null,
+        label: p.number,
+        reason,
+        refType: 'SupplierPayment',
+        refId: id,
+      },
+    ]);
+    await this.cash.reverse(tx, { refType: 'SupplierPayment', refId: id, note: reason });
+    await this.audit.log(tx, {
+      action: 'SUPPLIER_PAYMENT_CANCELLED',
+      entity: 'SupplierPayment',
+      entityId: id,
+      before: { status: p.status },
+      after: { reason },
+    });
+    return null;
   }
 
   async get(id: string): Promise<SupplierPaymentDto> {

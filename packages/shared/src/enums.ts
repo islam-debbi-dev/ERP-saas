@@ -60,6 +60,8 @@ export const DocType = {
   EMP: 'EMP',
   /** Paie: one approved payroll run (phase 31b). */
   PAIE: 'PAIE',
+  /** Transfert de trésorerie: from one account to another (phase 34). */
+  TRF: 'TRF',
 } as const;
 export type DocType = (typeof DocType)[keyof typeof DocType];
 export const DOC_TYPES = Object.values(DocType);

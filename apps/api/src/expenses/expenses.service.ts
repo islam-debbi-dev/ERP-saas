@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   algiersDay,
   alignedRentPeriods,
+  CashMovementType,
   type CreateExpenseInput,
   DocType,
   ErrorCode,
@@ -11,6 +12,7 @@ import {
   type ExpensePage,
   ExpenseStatus,
   Feature,
+  money,
   Permission,
   type RentPeriod,
   toMoneyString,
@@ -27,6 +29,7 @@ import { EmployeeLedgerService } from '../hr/employee-ledger.service';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
 import { WarehousesService } from '../stock/warehouses.service';
+import { type CashEntry, CashLedgerService } from '../treasury/cash-ledger.service';
 import { ExpenseCategoriesService } from './expense-categories.service';
 
 export const expenseInclude = {
@@ -78,6 +81,7 @@ export class ExpensesService {
     private readonly features: FeaturesService,
     private readonly categories: ExpenseCategoriesService,
     private readonly employeeLedger: EmployeeLedgerService,
+    private readonly cash: CashLedgerService,
   ) {}
 
   async create(input: CreateExpenseInput, user: CurrentUserInfo): Promise<ExpenseDto> {
@@ -101,11 +105,17 @@ export class ExpensesService {
         categoryId = await this.liveCategory(tx, input.categoryId!);
         warehouseId = await this.warehouseFor(tx, input.warehouseId, user);
       }
+      const cashAccountId = await this.cash.resolve(
+        tx,
+        { requested: input.cashAccountId, mode: input.mode, warehouseId },
+        user,
+      );
       const number = await this.numbering.next(tx, tenantId, DocType.DEP);
       const expense = await tx.expense.create({
         data: {
           tenantId,
           number,
+          cashAccountId,
           date: fromDay(date),
           warehouseId,
           categoryId,
@@ -120,6 +130,9 @@ export class ExpensesService {
           createdBy: user.id,
         },
       });
+      await this.cash.post(tx, [
+        this.cashEntry({ ...expense, cashAccountId, amount: input.amount, date }),
+      ]);
       await this.audit.log(tx, {
         action: 'EXPENSE_CREATED',
         entity: 'Expense',
@@ -131,6 +144,7 @@ export class ExpensesService {
           categoryId,
           warehouseId,
           mode: input.mode,
+          cashAccountId,
           ...(input.periodStart ? { period: [input.periodStart, input.periodEnd] } : {}),
           ...(input.rentContractId ? { rentContractId: input.rentContractId } : {}),
         },
@@ -144,7 +158,8 @@ export class ExpensesService {
    * The dépense of an avance sur salaire (phase 31) or of a salary payment (31b, with its
    * run), inside the caller's transaction: the caller writes the employee ledger entry and
    * the audit row. Category Salaires, linked to the employee, in his dépôt. It is hidden
-   * without SALARY_VIEW and never a charge.
+   * without SALARY_VIEW and never a charge. The caller posts `cash` after its employee ledger
+   * entries: the cash balance is always the last lock.
    */
   async createEmployeePaymentInTx(
     tx: Tx,
@@ -154,18 +169,25 @@ export class ExpensesService {
       warehouseId: string | null;
       amount: string;
       mode: ExpenseRow['mode'];
+      cashAccountId?: string;
       date: string;
       reference: string | null;
       note: string | null;
       payrollRunId?: string;
     },
     user: CurrentUserInfo,
-  ): Promise<{ id: string; number: string }> {
+  ): Promise<{ id: string; number: string; cash: CashEntry }> {
     const tenantId = tenantContext.requireTenantId();
     const warehouseId = await this.warehouseFor(tx, input.warehouseId, user);
-    return tx.expense.create({
+    const cashAccountId = await this.cash.resolve(
+      tx,
+      { requested: input.cashAccountId, mode: input.mode, warehouseId },
+      user,
+    );
+    const expense = await tx.expense.create({
       data: {
         tenantId,
+        cashAccountId,
         number: await this.numbering.next(tx, tenantId, DocType.DEP),
         date: fromDay(input.date),
         warehouseId,
@@ -181,6 +203,33 @@ export class ExpensesService {
       },
       select: { id: true, number: true },
     });
+    return {
+      ...expense,
+      cash: this.cashEntry({ ...expense, cashAccountId, amount: input.amount, date: input.date }),
+    };
+  }
+
+  /** The caller's employee ledger is written: the cash of its payments can go out now. */
+  postCashInTx(tx: Tx, entries: CashEntry[]): Promise<void> {
+    return this.cash.post(tx, entries);
+  }
+
+  private cashEntry(e: {
+    id: string;
+    number: string;
+    cashAccountId: string;
+    amount: string;
+    date: string;
+  }): CashEntry {
+    return {
+      cashAccountId: e.cashAccountId,
+      amount: money(e.amount).negated().toString(),
+      type: CashMovementType.EXPENSE,
+      refType: 'Expense',
+      refId: e.id,
+      date: e.date,
+      note: e.number,
+    };
   }
 
   /** Salaires dépenses of a period with no employee: entered by hand, they are charges. */
@@ -254,6 +303,7 @@ export class ExpensesService {
       if (e.employeeId) {
         await this.employeeLedger.reverseExpense(tx, e.employeeId, id, reason, user.id);
       }
+      await this.cash.reverse(tx, { refType: 'Expense', refId: id, note: reason });
       await this.audit.log(tx, {
         action: e.payrollRunId
           ? 'SALARY_PAYMENT_CANCELLED'

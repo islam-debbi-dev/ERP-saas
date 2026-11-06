@@ -53,6 +53,10 @@ export class PurchasesService {
           supplierRef: input.supplierRef,
           note: input.note,
           paidAmount: input.paidAmount,
+          paidMode: input.paidMode,
+          ...(input.paidCashAccountId !== undefined
+            ? { paidCashAccountId: input.paidCashAccountId }
+            : {}),
           totalHt: totals.totalHt.toString(),
           totalTva: totals.totalTva.toString(),
           totalTtc: totals.totalTtc.toString(),
@@ -128,6 +132,10 @@ export class PurchasesService {
           supplierRef: input.supplierRef,
           note: input.note,
           paidAmount: input.paidAmount,
+          paidMode: input.paidMode,
+          ...(input.paidCashAccountId !== undefined
+            ? { paidCashAccountId: input.paidCashAccountId }
+            : {}),
           ...(warehouseId !== undefined ? { warehouseId } : {}),
           ...(importFileId !== undefined ? { importFileId } : {}),
           totalHt: totals.totalHt.toString(),

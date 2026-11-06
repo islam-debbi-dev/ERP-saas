@@ -30,7 +30,8 @@ import {
   type UpdateImportFileInput,
   updateImportFileSchema,
 } from '@erp/shared';
-import { RequireFeature, Roles } from '../auth/decorators';
+import type { CurrentUserInfo } from '../auth/auth.types';
+import { CurrentUser, RequireFeature, Roles } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { Idempotent } from '../idempotency/idempotent.decorator';
 import { ImportFilesService } from './import-files.service';
@@ -108,8 +109,9 @@ export class ImportFilesController {
   addCost(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(importCostSchema)) body: ImportCostInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<ImportFileDto> {
-    return this.files.addCost(id, body);
+    return this.files.addCost(id, body, user);
   }
 
   @Post(':id/costs/:costId/cancel')
@@ -135,7 +137,8 @@ export class ImportFilesController {
   lateCost(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(importCostSchema)) body: ImportCostInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<ImportFileDto> {
-    return this.files.lateCost(id, body);
+    return this.files.lateCost(id, body, user);
   }
 }

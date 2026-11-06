@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   addDays,
+  type CashBalances,
   changePercent,
   type DayRange,
   money,
@@ -29,6 +30,7 @@ import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
 import { StockQueriesService } from '../stock/stock-queries.service';
+import { TreasuryService } from '../treasury/treasury.service';
 import {
   algiersDayOf,
   inWarehouses,
@@ -45,6 +47,9 @@ interface Unit {
   cashIn: Money;
   supplierPayments: Money;
   expenses: Money;
+  importCosts: Money;
+  caisses: Money;
+  banques: Money;
   margin: Money;
   charges: Money;
   credit: Money;
@@ -61,6 +66,9 @@ const newUnit = (): Unit => ({
   cashIn: ZERO,
   supplierPayments: ZERO,
   expenses: ZERO,
+  importCosts: ZERO,
+  caisses: ZERO,
+  banques: ZERO,
   margin: ZERO,
   charges: ZERO,
   credit: ZERO,
@@ -89,6 +97,7 @@ export class OverviewService {
     private readonly charges: ChargesService,
     private readonly aging: AgingService,
     private readonly stock: StockQueriesService,
+    private readonly treasury: TreasuryService,
   ) {}
 
   async get(query: OverviewQuery, user: CurrentUserInfo): Promise<OverviewDto> {
@@ -116,6 +125,9 @@ export class OverviewService {
     const previous = previousPeriod(range);
     const seesCost = can(user, Permission.VIEW_COST_AND_MARGIN);
     const withCharges = await this.scopes.expensesOn(tenantId);
+    const balances = (await this.scopes.treasuryOn(tenantId))
+      ? await this.treasury.balancesByUnit(user, mainId)
+      : null;
 
     const depots = await this.prisma.db.warehouse.findMany({
       where: {
@@ -130,17 +142,27 @@ export class OverviewService {
     const at = (unitId: string | null): Unit | undefined =>
       unitId ? byUnit.get(unitId) : undefined;
 
-    const [sales, margins, cashIn, supplierPayments, expenses, charges, credit, stock] =
-      await Promise.all([
-        this.salesByDay(scope, previous.from, range.to),
-        seesCost ? this.margins(scope, range) : [],
-        this.cashIn(scope, range),
-        this.supplierPayments(scope, range),
-        this.expenses(scope, range),
-        withCharges ? this.charges.report({ from: range.from, to: range.to }, user) : null,
-        this.aging.clientsByUnit(mainId, reach),
-        this.stock.summaryByUnit(seesCost, reach),
-      ]);
+    const [
+      sales,
+      margins,
+      cashIn,
+      supplierPayments,
+      expenses,
+      importCosts,
+      charges,
+      credit,
+      stock,
+    ] = await Promise.all([
+      this.salesByDay(scope, previous.from, range.to),
+      seesCost ? this.margins(scope, range) : [],
+      this.cashIn(scope, range),
+      this.supplierPayments(scope, range),
+      this.expenses(scope, range),
+      this.importCosts(scope, range),
+      withCharges ? this.charges.report({ from: range.from, to: range.to }, user) : null,
+      this.aging.clientsByUnit(mainId, reach),
+      this.stock.summaryByUnit(seesCost, reach),
+    ]);
 
     for (const r of sales) {
       const u = at(r.unitId);
@@ -170,6 +192,16 @@ export class OverviewService {
       const u = at(r.unitId);
       if (u) u.expenses = dec(r.total);
     }
+    for (const r of importCosts) {
+      const u = at(r.unitId);
+      if (u) u.importCosts = dec(r.total);
+    }
+    for (const [unitId, b] of balances ?? []) {
+      const u = at(unitId);
+      if (!u) continue;
+      u.caisses = money(b.caisses);
+      u.banques = money(b.banques);
+    }
     for (const r of charges?.byWarehouse ?? []) {
       const u = at(r.warehouse?.id ?? null);
       if (u) u.charges = money(r.total);
@@ -191,7 +223,7 @@ export class OverviewService {
     // An archived dépôt only shows when it still has figures in the period.
     const shown = depots.filter((d) => !d.deletedAt || hasFigures(byUnit.get(d.id)!));
     const names = await this.userNames(shown.map((d) => byUnit.get(d.id)!));
-    const flags = { seesCost, withCharges };
+    const flags = { seesCost, withCharges, seesBalances: balances !== null };
     const warehouses: OverviewWarehouse[] = shown.map((d) => ({
       warehouse: { id: d.id, name: d.name, isDefault: d.isDefault },
       ...figures(byUnit.get(d.id)!, range, flags, names),
@@ -276,6 +308,21 @@ export class OverviewService {
       GROUP BY 1`;
   }
 
+  /**
+   * Import costs paid from an account (phase 34), by the account's dépôt. A cost that was
+   * cancelled gave the money back, so it is left out, as a cancelled dépense is.
+   */
+  private importCosts(scope: Scope, range: DayRange) {
+    const u = businessUnit('a."warehouseId"', scope.defaultWarehouseId ?? null);
+    return this.prisma.db.$queryRaw<{ unitId: string | null; total: Prisma.Decimal }[]>`
+      SELECT ${u.unit} AS "unitId", SUM(ic.amount) AS total
+      FROM import_costs ic JOIN cash_accounts a ON a.id = ic."cashAccountId" ${u.join}
+      WHERE ic."tenantId" = ${scope.tenantId}::uuid AND ic."cancelledAt" IS NULL
+        AND ic."paidDate" >= ${range.from}::date AND ic."paidDate" <= ${range.to}::date
+        ${inWarehouses(scope, 'a')}
+      GROUP BY 1`;
+  }
+
   private async userNames(units: Unit[]): Promise<Map<string, string>> {
     const ids = [...new Set(units.flatMap((u) => [...u.sellers.keys()]))];
     if (ids.length === 0) return new Map();
@@ -294,6 +341,9 @@ function hasFigures(u: Unit): boolean {
     !u.cashIn.isZero() ||
     !u.supplierPayments.isZero() ||
     !u.expenses.isZero() ||
+    !u.importCosts.isZero() ||
+    !u.caisses.isZero() ||
+    !u.banques.isZero() ||
     !u.charges.isZero() ||
     !u.credit.isZero()
   );
@@ -311,6 +361,9 @@ function mergeUnits(units: Unit[]): Unit {
     t.cashIn = t.cashIn.plus(u.cashIn);
     t.supplierPayments = t.supplierPayments.plus(u.supplierPayments);
     t.expenses = t.expenses.plus(u.expenses);
+    t.importCosts = t.importCosts.plus(u.importCosts);
+    t.caisses = t.caisses.plus(u.caisses);
+    t.banques = t.banques.plus(u.banques);
     t.margin = t.margin.plus(u.margin);
     t.charges = t.charges.plus(u.charges);
     t.credit = t.credit.plus(u.credit);
@@ -327,7 +380,7 @@ function mergeUnits(units: Unit[]): Unit {
 function figures(
   u: Unit,
   range: DayRange,
-  flags: { seesCost: boolean; withCharges: boolean },
+  flags: { seesCost: boolean; withCharges: boolean; seesBalances: boolean },
   names: Map<string, string>,
 ): OverviewFigures {
   const perDay: { date: string; ttc: string }[] = [];
@@ -338,7 +391,10 @@ function figures(
     perDay.push({ date: day, ttc: toMoneyString(v?.ttc ?? 0) });
   }
   const ttc = sum([...u.perDay.values()].map((v) => v.ttc));
-  const cashOut = u.supplierPayments.plus(u.expenses);
+  const cashOut = u.supplierPayments.plus(u.expenses).plus(u.importCosts);
+  const balances: CashBalances | null = flags.seesBalances
+    ? { caisses: toMoneyString(u.caisses), banques: toMoneyString(u.banques) }
+    : null;
   const margin = flags.seesCost ? toMoneyString(u.margin) : null;
   const charges = flags.withCharges ? toMoneyString(u.charges) : null;
   // Highest CA wins; a tie goes to the name, so the card never flickers between two.
@@ -362,8 +418,10 @@ function figures(
     cashOut: {
       supplierPayments: toMoneyString(u.supplierPayments),
       expenses: toMoneyString(u.expenses),
+      importCosts: toMoneyString(u.importCosts),
       total: toMoneyString(cashOut),
     },
+    balances,
     netCash: toMoneyString(u.cashIn.minus(cashOut)),
     margin,
     charges,

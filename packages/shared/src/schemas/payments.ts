@@ -34,6 +34,8 @@ export const createPaymentSchema = z.object({
   /** Cheque due date (date d'échéance). */
   dueDate: dateString.nullable().default(null),
   note: optionalText(255),
+  /** The account the money goes through (phase 34). Omitted: the default for the mode. */
+  cashAccountId: id.optional(),
   /**
    * Documents this versement pays, informational only (the balance is the ledger).
    * Omitted = automatic, oldest unpaid document first.

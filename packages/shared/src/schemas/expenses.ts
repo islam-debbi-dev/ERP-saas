@@ -66,6 +66,8 @@ export const createExpenseSchema = z
     note: optionalText(255),
     /** A rent payment: the contract it pays, for whole periods of it. */
     rentContractId: id.nullable().default(null),
+    /** The account it was paid from (phase 34). Omitted: the default for the mode. */
+    cashAccountId: id.optional(),
   })
   .refine((e) => (e.periodStart === null) === (e.periodEnd === null), {
     message: 'period_incomplete',

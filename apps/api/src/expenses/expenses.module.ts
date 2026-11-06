@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TreasuryModule } from '../treasury/treasury.module';
 import { BillingModule } from '../billing/billing.module';
 import { DocumentsModule } from '../documents/documents.module';
 import { HrCoreModule } from '../hr/hr-core.module';
@@ -21,6 +22,7 @@ import { RentContractsService } from './rent-contracts.service';
  */
 @Module({
   imports: [
+    TreasuryModule,
     BillingModule,
     DocumentsModule,
     HrCoreModule,

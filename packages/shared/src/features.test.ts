@@ -26,12 +26,14 @@ describe('effectiveFeatures', () => {
     expect(effectiveFeatures(Edition.ESSENTIEL)).toEqual([
       Feature.EXPENSES,
       Feature.AI_ASSISTANT,
+      Feature.TREASURY,
     ]);
     expect(effectiveFeatures(Edition.IMPORT)).toEqual([
       Feature.WAREHOUSES,
       Feature.IMPORT_COSTS,
       Feature.EXPENSES,
       Feature.AI_ASSISTANT,
+      Feature.TREASURY,
     ]);
     expect(effectiveFeatures(Edition.DISTRIBUTION)).not.toContain(Feature.IMPORT_COSTS);
     expect(effectiveFeatures(Edition.DISTRIBUTION)).toContain(Feature.MOBILE_APP);
@@ -48,16 +50,19 @@ describe('effectiveFeatures', () => {
       Feature.GEO_CHECK,
       Feature.EXPENSES,
       Feature.AI_ASSISTANT,
+      Feature.TREASURY,
     ]);
     expect(effectiveFeatures(Edition.IMPORT, [], [Feature.WAREHOUSES])).toEqual([
       Feature.IMPORT_COSTS,
       Feature.EXPENSES,
       Feature.AI_ASSISTANT,
+      Feature.TREASURY,
     ]);
     // A revoke wins over a grant of the same feature.
     expect(effectiveFeatures(Edition.ESSENTIEL, [Feature.GEO_CHECK], [Feature.GEO_CHECK])).toEqual([
       Feature.EXPENSES,
       Feature.AI_ASSISTANT,
+      Feature.TREASURY,
     ]);
     // Every edition has the dépenses (phase 25); the super-admin can still take them away.
     for (const e of Object.values(Edition)) {
@@ -65,6 +70,7 @@ describe('effectiveFeatures', () => {
     }
     expect(effectiveFeatures(Edition.ESSENTIEL, [], [Feature.EXPENSES])).toEqual([
       Feature.AI_ASSISTANT,
+      Feature.TREASURY,
     ]);
     // The assistant too (phase 30): in every edition, switchable off per company.
     for (const e of Object.values(Edition)) {
@@ -77,6 +83,7 @@ describe('effectiveFeatures', () => {
     expect(effectiveFeatures(Edition.ESSENTIEL, ['TELEPORT', ''], ['NOPE'])).toEqual([
       Feature.EXPENSES,
       Feature.AI_ASSISTANT,
+      Feature.TREASURY,
     ]);
   });
 
@@ -88,6 +95,7 @@ describe('effectiveFeatures', () => {
       Feature.IMPORT_COSTS,
       Feature.EXPENSES,
       Feature.AI_ASSISTANT,
+      Feature.TREASURY,
     ]);
   });
 });

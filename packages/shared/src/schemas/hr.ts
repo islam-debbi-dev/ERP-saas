@@ -423,6 +423,8 @@ export interface LeaveBalanceDto {
 export const createAdvanceSchema = z.object({
   amount: positiveAmount,
   mode: z.enum(PAYMENT_MODES),
+  /** The account it was paid from (phase 34). Omitted: the default for the mode. */
+  cashAccountId: id.optional(),
   date: dateString.optional(),
   reference: optionalText(80),
   note: optionalText(255),

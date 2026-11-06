@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { type PurchaseStatus } from '../enums';
+import { PAYMENT_MODES, type PaymentMode, type PurchaseStatus } from '../enums';
 import { parseDA } from '../money';
 import {
   amountString,
@@ -123,6 +123,10 @@ const purchaseFields = {
   note: optionalText(255),
   /** Paid to the supplier at reception; the rest goes on the supplier account. */
   paidAmount: amountString.transform(normalizeDecimal).default('0'),
+  /** How the paid part left (phase 34): it becomes a règlement when the BR is validated. */
+  paidMode: z.enum(PAYMENT_MODES).default('ESPECES'),
+  /** The account it left from. Omitted: the default for the mode. */
+  paidCashAccountId: id.nullable().optional(),
   lines: z.array(purchaseLineInputSchema).max(300),
   /**
    * The dépôt receiving the goods (phase 15, WAREHOUSES). Omitted = unchanged (none on
@@ -238,6 +242,8 @@ export interface PurchaseDto {
   totalTtc: string;
   tvaByRate: { rate: string; baseHt: string; tva: string }[];
   paidAmount: string;
+  paidMode: PaymentMode;
+  paidCashAccount: { id: string; name: string } | null;
   /** The dépôt that received (or will receive) the goods. */
   warehouse: { id: string; name: string } | null;
   currency: string;
