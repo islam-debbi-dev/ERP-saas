@@ -1,30 +1,32 @@
 import {
   BadgePercent,
   Banknote,
+  ChartColumn,
   ClipboardList,
   Fingerprint,
+  Landmark,
+  LayoutDashboard,
   LayoutGrid,
   MapPinCheck,
   MapPinned,
   Navigation,
-  PackageCheck,
-  ChartColumn,
-  LayoutDashboard,
-  type LucideIcon,
   Package,
+  PackageCheck,
   ReceiptText,
   Settings,
+  Ship,
   Trophy,
   Truck,
+  type LucideIcon,
   UserCheck,
   Users,
-  Warehouse,
-  Ship,
   Wallet,
+  Warehouse,
 } from 'lucide-react';
 import { Feature, Permission, Role } from '@erp/shared';
 
 export type NavKey =
+  | 'treasury'
   | 'overview'
   | 'dashboard'
   | 'sales'
@@ -161,6 +163,14 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         icon: Wallet,
         feature: Feature.EXPENSES,
         permission: Permission.EXPENSES_VIEW,
+      },
+      // Phase 34, in every edition: who may see the balances.
+      {
+        key: 'treasury',
+        url: '/tresorerie',
+        icon: Landmark,
+        feature: Feature.TREASURY,
+        permission: Permission.TREASURY_VIEW,
       },
       // Phase 31: managers of the DRH; "Mon pointage" only for a user with an employee file.
       {

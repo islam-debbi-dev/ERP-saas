@@ -199,6 +199,14 @@ function Sections({ d }: { d: DashboardDto }) {
               ) : null}
             </>
           ) : null}
+          {d.treasury ? (
+            <Stat
+              label={t('inTill')}
+              value={formatDA(d.treasury.caisses)}
+              href="/tresorerie"
+              hint={t('inBank', { amount: isolateLtr(formatDA(d.treasury.banques)) })}
+            />
+          ) : null}
           {d.cash ? (
             <Stat
               label={t('cashToday')}

@@ -127,6 +127,8 @@ export function PurchasePage({ id }: { id: string | null }) {
           warehouseId: p?.warehouse?.id ?? '',
           note: p?.note ?? '',
           paidAmount: p && p.paidAmount !== '0.00' ? p.paidAmount : '',
+          paidMode: p?.paidMode ?? 'ESPECES',
+          paidCashAccountId: p?.paidCashAccount?.id ?? '',
           exchangeRate: p && p.currency !== 'DZD' ? p.exchangeRate : '',
           importFileId: p ? (p.importFile?.id ?? '') : fromFile,
         }}

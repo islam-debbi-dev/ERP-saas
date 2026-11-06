@@ -247,6 +247,19 @@ docker compose -p erp-production -f /srv/erp/deploy/compose.yml --env-file /srv/
 
 It posts, dated at the original validation, the BR's TTC, minus what was paid at reception, minus its retours. Cancelled BRs post nothing. Then run the reconcile above: it must report no supplier difference.
 
+### Treasury backfill (once, after the phase 34 deploy, **staging first**)
+
+After `db:deploy`, run it **twice**, then the reconcile. It is safe with the app running: the second run must report `0 rows linked, 0 movements written`, unless the version being replaced wrote rows in between.
+
+```bash
+docker compose -p erp-production -f /srv/erp/deploy/compose.yml --env-file /srv/erp/production.env \
+  exec api node dist/treasury/treasury-backfill.cli.js
+```
+
+It links every versement, règlement and dépense without an account to the default account, and writes the movements of the valid ones, dated at the row's date. A row already cancelled or bounced gets its account and no movement. It prints the BRs paid at reception it cannot turn into règlements (count, total): tell the owner, whose opening balance has to be the real figure of that day. Balances mean nothing until each account has its solde initial.
+
+`cashAccountId` stays nullable until a later contract release.
+
 ### Warehouse backfill (once, after the phase 15 deploy, **staging first**)
 
 Rows written before phase 15 have no dépôt. The app already treats them as the main dépôt (the first stock write of a product creates its main-dépôt row from `ProductStock`), so nothing is wrong in the meantime; the backfill makes it explicit before the contract release turns the columns `NOT NULL`.

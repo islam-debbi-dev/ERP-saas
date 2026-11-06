@@ -32,7 +32,7 @@ import { cn } from '@/lib/utils';
 
 type FormInput = z.input<typeof tenantSettingsSchema>;
 type TextField = 'raisonSociale' | 'adresse' | 'telephone' | 'rc' | 'nif' | 'nis' | 'ai' | 'rib';
-type AmountField = 'timbreMin' | 'timbreMax' | 'timbreThreshold';
+type AmountField = 'timbreMin' | 'timbreMax' | 'timbreThreshold' | 'cashCountAlertThreshold';
 type ValidationKey =
   'tooShort' | 'range' | 'invalidAmount' | 'invalidRate' | 'invalidTranches' | 'required';
 
@@ -69,6 +69,7 @@ function toForm(s: TenantSettingsResponse): FormInput {
     timbreMin: amount(s.timbreMin),
     timbreMax: amount(s.timbreMax),
     timbreThreshold: amount(s.timbreThreshold),
+    cashCountAlertThreshold: formatDA(s.cashCountAlertThreshold, { currency: false }),
     defaultPrintFormat: s.defaultPrintFormat,
     documentFooter: s.documentFooter ?? '',
     tvaMention: s.tvaMention,
@@ -90,6 +91,7 @@ const ERROR_KEYS: Partial<Record<keyof FormInput, ValidationKey>> = {
   timbreMin: 'invalidAmount',
   timbreMax: 'invalidAmount',
   timbreThreshold: 'invalidAmount',
+  cashCountAlertThreshold: 'invalidAmount',
 };
 
 function Section({
@@ -220,6 +222,7 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
     (state.user.role === Role.OWNER || state.user.role === Role.MANAGER);
   const salesForce = useFeature(Feature.SALES_FORCE);
   const geoCheck = useFeature(Feature.GEO_CHECK);
+  const treasuryOn = useFeature(Feature.TREASURY);
 
   const form = useForm<FormInput, unknown, TenantSettings>({
     resolver: zodResolver(tenantSettingsSchema),
@@ -555,6 +558,12 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
             </>
           ) : null}
         </Section>
+
+        {treasuryOn ? (
+          <Section title={t('settings.treasurySection')} description={t('settings.treasuryHelp')}>
+            {amount('cashCountAlertThreshold')}
+          </Section>
+        ) : null}
 
         <Section title={t('settings.documentsSection')} description={t('settings.documentsHelp')}>
           <FieldShell id="defaultPrintFormat" label={t('settings.defaultPrintFormat')}>

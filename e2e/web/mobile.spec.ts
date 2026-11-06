@@ -1016,6 +1016,30 @@ for (const locale of LOCALES) {
         await check(page, '/tableau-de-bord/onboarding', locale, results);
       });
 
+      await test.step('trésorerie: transfer, comptage and opening dialogs on screen', async () => {
+        await page.evaluate((to) => {
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
+        }, '/tresorerie');
+        await page.waitForURL((url) => url.pathname === '/tresorerie');
+        await settle(page);
+        await expectOnScreen(page, `button:has-text("${m['treasury']?.['transfer']}")`);
+        for (const [button, field, name] of [
+          ['transfer', '#trf-amount', '/tresorerie/transfert'],
+          ['count', '#count-amount', '/tresorerie/comptage'],
+          ['opening', '#opening-amount', '/tresorerie/solde-initial'],
+        ] as const) {
+          await page.getByRole('button', { name: m['treasury']?.[button], exact: true }).first().click();
+          await page.locator(field).waitFor();
+          await page.waitForTimeout(400); // the sheet slides in
+          await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
+          await check(page, name, locale, results, { fullPage: false });
+          await page.keyboard.press('Escape');
+          await page.locator('[role="dialog"]').waitFor({ state: 'hidden' });
+        }
+      });
+
       await test.step('tournées: visit sheet, deliver dialog and cash closing on screen', async () => {
         const go = async (path: string) => {
           await page.evaluate((to) => {

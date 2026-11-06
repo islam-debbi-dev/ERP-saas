@@ -14,6 +14,7 @@ import {
   type SupplierDto,
   type SupplierPaymentDto,
 } from '@erp/shared';
+import { CashAccountPicker } from '@/components/treasury/cash-account-picker';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -54,6 +55,7 @@ export function SupplierPaymentDialog({
   const warehouseId = useWarehouseFilter();
   const [amount, setAmount] = useState('');
   const [mode, setMode] = useState<PaymentMode>('ESPECES');
+  const [cashAccountId, setCashAccountId] = useState('');
   const [reference, setReference] = useState('');
   const [bank, setBank] = useState('');
   const [dueDate, setDueDate] = useState('');
@@ -82,6 +84,7 @@ export function SupplierPaymentDialog({
           amount: value?.toString(),
           ...(foreign && rateValue ? { exchangeRate: rateValue.toString() } : {}),
           mode,
+          ...(cashAccountId ? { cashAccountId } : {}),
           reference: mode === 'ESPECES' ? '' : reference.trim(),
           bank: mode === 'CHEQUE' ? bank.trim() : '',
           dueDate: mode === 'CHEQUE' && dueDate ? dueDate : null,
@@ -173,6 +176,13 @@ export function SupplierPaymentDialog({
                 ))}
               </NativeSelect>
             </div>
+            <CashAccountPicker
+              id="rgf-account"
+              mode={mode}
+              warehouseId={warehouseId}
+              value={cashAccountId}
+              onChange={setCashAccountId}
+            />
             {mode !== 'ESPECES' ? (
               <div className="space-y-2">
                 <Label htmlFor="rgf-ref">

@@ -40,6 +40,7 @@ Each phase is one branch, one PR and one Claude Code session. Prompts live in [`
 | 30 | [Assistant IA](prompts/phase-30-ai-assistant.md) | In-app help assistant, any model provider chosen by the admin (Claude, Gemini, OpenAI-compatible; own key in single-company mode): how-to answers in ar / darja / fr, read-only questions on the user's own data, quotas per plan | 13b, 24 | v2 |
 | 31 | [DRH: personnel et pointage](prompts/phase-31-hr-attendance.md) | Employés, pointage du jour présent / absent (manager or self check-in with GPS), congés ledger, avances sur salaire | 24, 25 | v2 |
 | 31b | [DRH: paie](prompts/phase-31b-payroll.md) | Monthly payroll run from the pointage, CNAS + IRG as dated rate sets, bulletin de paie PDF, salary payments, CNAS / IRG / DAS exports | 31 | v2 |
+| 34 | [Trésorerie](prompts/phase-34-treasury.md) | Caisses and bank accounts with balances, cash ledger, transfers, comptage, paid-at-reception RGFs, import costs paid now | 21, 22, 24, 25, 31b | v2 |
 
 **MVP = phases 1 to 12b.** Put the pilot grossiste on it after phase 12b (traders open it on their phones); phase 13 can follow during the free pilot month.
 

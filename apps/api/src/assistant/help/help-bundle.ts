@@ -639,6 +639,7 @@ export const WEB_ROUTES: readonly string[] = [
   "/tournees/aujourdhui",
   "/tournees/cloture",
   "/tournees/rapports",
+  "/tresorerie",
   "/ventes",
   "/ventes/[id]",
   "/ventes/nouvelle",

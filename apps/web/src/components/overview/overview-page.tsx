@@ -329,6 +329,16 @@ function UnitCard({
           <Line label={t('netCash')} strong>
             <Signed value={f.netCash} />
           </Line>
+          {f.balances ? (
+            <>
+              <Line label={t('balanceCaisses')}>
+                <Amount value={f.balances.caisses} />
+              </Line>
+              <Line label={t('balanceBanques')}>
+                <Amount value={f.balances.banques} />
+              </Line>
+            </>
+          ) : null}
           {f.margin !== null ? (
             <Line label={t('margin')}>
               <Amount value={f.margin} />
