@@ -6,7 +6,7 @@ import {
   type ImportCostType,
   type ImportFileStatus,
 } from '../landed-cost';
-import { type PurchaseStatus } from '../enums';
+import { PAYMENT_MODES, type PaymentMode, type PurchaseStatus } from '../enums';
 import { parseDA } from '../money';
 import { amountString, currencyCode, exchangeRateString, normalizeDecimal } from './common';
 
@@ -71,6 +71,15 @@ export const importCostSchema = z
       .record(z.uuid(), amountString.transform(normalizeDecimal))
       .nullable()
       .default(null),
+    /** Paid now, without a supplier (douane at the port): the money leaves an account. */
+    paid: z.boolean().default(false),
+    mode: z.enum(PAYMENT_MODES).default('ESPECES'),
+    /** Omitted: the default for the mode. */
+    cashAccountId: id.optional(),
+  })
+  .refine((c) => !c.paid || c.supplierId === null, {
+    message: 'paid_cost_has_no_supplier',
+    path: ['paid'],
   })
   .refine((c) => c.currency === 'DZD' || c.exchangeRate !== undefined, {
     message: 'exchange_rate_required',
@@ -109,6 +118,9 @@ export interface ImportCostDto {
   method: AllocationMethod;
   manualSplit: Record<string, string> | null;
   isLate: boolean;
+  /** Paid now from an account (phase 34); null when it is owed or a supplier's. */
+  paidFrom: { id: string; name: string } | null;
+  mode: PaymentMode | null;
   createdAt: string;
   cancelledAt: string | null;
 }

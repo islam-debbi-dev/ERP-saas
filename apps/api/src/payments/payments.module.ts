@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TreasuryModule } from '../treasury/treasury.module';
 import { ClientsModule } from '../clients/clients.module';
 import { DocumentsModule } from '../documents/documents.module';
 import { GeoModule } from '../geo/geo.module';
@@ -9,7 +10,14 @@ import { PaymentsService } from './payments.service';
 
 /** Versements. Sales record the part paid at sale time through PaymentsService. */
 @Module({
-  imports: [ClientsModule, DocumentsModule, SalesForceModule, GeoModule, StockModule],
+  imports: [
+    ClientsModule,
+    DocumentsModule,
+    SalesForceModule,
+    GeoModule,
+    StockModule,
+    TreasuryModule,
+  ],
   controllers: [PaymentsController, ClientPaymentsController],
   providers: [PaymentsService],
   exports: [PaymentsService],

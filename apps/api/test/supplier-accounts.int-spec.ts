@@ -141,7 +141,7 @@ describe('supplier accounts', () => {
       ['PAYMENT', '-4000.00', '7900.00', br.number],
       ['PURCHASE', '11900.00', '11900.00', br.number],
     ]);
-    expect(page.items[0]?.refType).toBe('Purchase');
+    expect(page.items[0]?.refType).toBe('SupplierPayment');
   });
 
   it('a retour fournisseur lowers the debt and a cancel takes back exactly what is left', async () => {

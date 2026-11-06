@@ -170,7 +170,8 @@ function Payments({ supplierId }: { supplierId: string }) {
                       </span>
                     ) : null}
                   </span>
-                  {p.status === 'VALID' ? (
+                  {/* Paid at reception (phase 34): it is cancelled with its BR. */}
+                  {p.status === 'VALID' && !p.purchase ? (
                     <Button
                       variant="ghost"
                       size="icon"

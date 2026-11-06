@@ -17,6 +17,7 @@ export * from './credit';
 export * from './sales-force';
 export * from './warehouses';
 export * from './tournees';
+export * from './treasury';
 export * from './geo';
 export * from './incentives';
 export * from './import-files';

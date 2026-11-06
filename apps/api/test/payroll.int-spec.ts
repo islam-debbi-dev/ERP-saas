@@ -645,6 +645,30 @@ describe('payroll (phase 31b)', () => {
       expect((await ledgerOf(e.id)).salaryDue).toBe('0.00');
     });
 
+    it('leaves the caisse once per payment, and a cancel brings it back (phase 34)', async () => {
+      const w = await depot();
+      const a = await employee(w.id);
+      const b = await employee(w.id);
+      await markMonth([a.id, b.id]);
+      const run = await approve(await draft(w.id));
+      const paid = (
+        await as(d).post(`/payroll-runs/${run.id}/payments`, { mode: 'ESPECES' }).expect(201)
+      ).body as PayrollRunDetailDto;
+      const rows = await read<{ id: string; amount: string; moved: string }[]>`
+        SELECT e.id, e.amount::text, m.amount::text AS moved
+        FROM expenses e JOIN cash_movements m ON m."refType" = 'Expense' AND m."refId" = e.id
+        WHERE e."payrollRunId" = ${run.id}::uuid AND m.type = 'EXPENSE'`;
+      expect(rows).toHaveLength(2);
+      for (const r of rows) expect(r.moved).toBe(`-${r.amount}`);
+      expect(paid.totals.remaining).toBe('0.00');
+
+      await as(d).post(`/expenses/${rows[0]!.id}/cancel`, { reason: 'erreur' }).expect(200);
+      const net = await read<{ net: string }[]>`
+        SELECT SUM(amount)::text AS net FROM cash_movements
+        WHERE "refType" = 'Expense' AND "refId" = ${rows[0]!.id}::uuid`;
+      expect(Number(net[0]!.net)).toBe(0);
+    });
+
     it('allows a partial payment and refuses to go over', async () => {
       const w = await depot();
       const a = await employee(w.id);

@@ -51,6 +51,7 @@ export class AdvancesService {
           warehouseId: employee.warehouseId,
           amount: input.amount,
           mode: input.mode,
+          cashAccountId: input.cashAccountId,
           date,
           reference: input.reference,
           note: input.note,
@@ -65,6 +66,7 @@ export class AdvancesService {
         note: input.note,
         userId: user.id,
       });
+      await this.expenses.postCashInTx(tx, [expense.cash]);
       await this.audit.log(tx, {
         action: 'ADVANCE_PAID',
         entity: 'EmployeeAdvance',

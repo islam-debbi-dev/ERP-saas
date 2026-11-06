@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TreasuryModule } from '../treasury/treasury.module';
 import { BillingModule } from '../billing/billing.module';
 import { CatalogModule } from '../catalog/catalog.module';
 import { DocumentsModule } from '../documents/documents.module';
@@ -22,7 +23,14 @@ import { SuppliersService } from './suppliers.service';
  * StockService only; supplier account entries through SupplierAccountService only.
  */
 @Module({
-  imports: [StockModule, CatalogModule, DocumentsModule, BillingModule, SalesForceModule],
+  imports: [
+    StockModule,
+    CatalogModule,
+    DocumentsModule,
+    BillingModule,
+    SalesForceModule,
+    TreasuryModule,
+  ],
   controllers: [SuppliersController, PurchasesController, SupplierPaymentsController],
   providers: [
     SuppliersService,

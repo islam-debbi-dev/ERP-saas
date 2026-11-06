@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import {
+  algiersDay,
   allocate,
   allocatedAmount,
   AllocationError,
   type AllocationLine,
   AllocationMethod,
   type AttachPurchaseInput,
+  CashMovementType,
   type CreateImportFileInput,
   DocType,
   ErrorCode,
@@ -35,6 +37,7 @@ import {
   type UpdateImportFileInput,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
+import type { CurrentUserInfo } from '../auth/auth.types';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
@@ -46,6 +49,7 @@ import { lockPurchase } from '../purchases/purchases.service';
 import { SupplierAccountService } from '../purchases/supplier-account.service';
 import { StockService } from '../stock/stock.service';
 import { WarehousesService } from '../stock/warehouses.service';
+import { CashLedgerService } from '../treasury/cash-ledger.service';
 
 type Db = PrismaService['db'] | Tx;
 
@@ -62,6 +66,7 @@ const fileInclude = {
     orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
     include: {
       supplier: { select: { id: true, name: true } },
+      cashAccount: { select: { id: true, name: true } },
       allocations: { select: { amount: true } },
     },
   },
@@ -105,6 +110,7 @@ export class ImportFilesService {
     private readonly stock: StockService,
     private readonly warehouses: WarehousesService,
     private readonly accounts: SupplierAccountService,
+    private readonly cash: CashLedgerService,
   ) {}
 
   // ---------------------------------------------------------------- reads
@@ -393,10 +399,11 @@ export class ImportFilesService {
   // ---------------------------------------------------------------- costs
 
   /** A cost of an open dossier; the transitaire's (or any supplier's) account is posted now. */
-  async addCost(id: string, input: ImportCostInput): Promise<ImportFileDto> {
+  async addCost(id: string, input: ImportCostInput, user: CurrentUserInfo): Promise<ImportFileDto> {
     await this.prisma.db.$transaction(async (tx) => {
       const file = await lockImportFileOpen(tx, id);
-      const cost = await this.createCost(tx, id, file.number, input, false);
+      const cost = await this.createCost(tx, id, file.number, input, false, user);
+      await this.postCostCash(tx, cost, file.number);
       await this.audit.log(tx, {
         action: 'IMPORT_COST_ADDED',
         entity: 'ImportFile',
@@ -542,7 +549,11 @@ export class ImportFilesService {
    * units still on hand (COST_ADJUST) and the rest is an écart de coût (units already
    * sold: their sales are never changed, AGENTS.md rule 9).
    */
-  async lateCost(id: string, input: ImportCostInput): Promise<ImportFileDto> {
+  async lateCost(
+    id: string,
+    input: ImportCostInput,
+    user: CurrentUserInfo,
+  ): Promise<ImportFileDto> {
     await this.prisma.db.$transaction(async (tx) => {
       const file = await lockImportFile(tx, id);
       if (file.status !== ImportFileStatus.CLOSED) {
@@ -553,7 +564,7 @@ export class ImportFilesService {
       const assujetti = await this.assujettiTva(tx);
       const lines = await this.lines(tx, id, false);
       if (lines.length === 0) throw new AppException(ErrorCode.IMPORT_FILE_EMPTY, 'No lines');
-      const cost = await this.createCost(tx, id, file.number, input, true);
+      const cost = await this.createCost(tx, id, file.number, input, true, user);
       const shares = this.allocateOrThrow(lines, cost, assujetti);
 
       // Per product: its share V, what the dossier still accounts for R, stock now Q.
@@ -611,6 +622,8 @@ export class ImportFilesService {
       }
       await tx.importCostAllocation.createMany({ data: allocations });
       await this.stock.applyMovements(tx, adjustments);
+      // After the stock rows: the cash balance is always the last lock.
+      await this.postCostCash(tx, cost, file.number);
       await this.audit.log(tx, {
         action: 'IMPORT_LATE_COST_ADDED',
         entity: 'ImportFile',
@@ -634,6 +647,7 @@ export class ImportFilesService {
     fileNumber: string,
     input: ImportCostInput,
     isLate: boolean,
+    user: CurrentUserInfo,
   ) {
     if (input.supplierId) {
       const supplier = await tx.supplier.findFirst({
@@ -661,10 +675,24 @@ export class ImportFilesService {
       });
     }
     const tenantId = tenantContext.requireTenantId();
+    // Paid now (douane at the port): no supplier to owe, the money leaves an account. It is
+    // never a dépense: the cost is already in the CUMP, so it stays out of the charges.
+    const paid = input.paid
+      ? {
+          cashAccountId: await this.cash.resolve(
+            tx,
+            { requested: input.cashAccountId, mode: input.mode, warehouseId: null },
+            user,
+          ),
+          paidMode: input.mode,
+          paidDate: fromIsoDate(algiersDay()),
+        }
+      : {};
     const cost = await tx.importCost.create({
       data: {
         tenantId,
         importFileId,
+        ...paid,
         type: input.type,
         label: input.label,
         supplierId: input.supplierId,
@@ -695,6 +723,30 @@ export class ImportFilesService {
     return cost;
   }
 
+  private async postCostCash(
+    tx: Tx,
+    cost: {
+      id: string;
+      amount: Prisma.Decimal;
+      cashAccountId: string | null;
+      paidDate: Date | null;
+    },
+    fileNumber: string,
+  ): Promise<void> {
+    if (!cost.cashAccountId || !cost.paidDate) return;
+    await this.cash.post(tx, [
+      {
+        cashAccountId: cost.cashAccountId,
+        amount: money(cost.amount.toString()).negated().toString(),
+        type: CashMovementType.IMPORT_COST,
+        refType: 'ImportCost',
+        refId: cost.id,
+        date: toIsoDate(cost.paidDate),
+        note: fileNumber,
+      },
+    ]);
+  }
+
   private async reverseCost(
     tx: Tx,
     cost: { id: string; supplierId: string | null },
@@ -705,7 +757,10 @@ export class ImportFilesService {
       where: { id: cost.id },
       data: { cancelledAt: new Date(), cancelledBy: tenantContext.get()?.userId ?? null },
     });
-    if (!cost.supplierId) return;
+    if (!cost.supplierId) {
+      await this.cash.reverse(tx, { refType: 'ImportCost', refId: cost.id, note: reason });
+      return;
+    }
     const net = await this.accounts.netWithCurrency(tx, {
       refType: 'ImportCost',
       refIds: [cost.id],
@@ -918,6 +973,8 @@ export class ImportFilesService {
       method: c.method,
       manualSplit: (c.manualSplit as Record<string, string> | null) ?? null,
       isLate: c.isLate,
+      paidFrom: c.cashAccount,
+      mode: c.paidMode,
       createdAt: c.createdAt.toISOString(),
       cancelledAt: c.cancelledAt?.toISOString() ?? null,
     };

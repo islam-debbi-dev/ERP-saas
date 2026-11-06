@@ -37,6 +37,7 @@ import { useErrorMessage } from '@/lib/use-error-message';
 import { useIdempotencyKey } from '@/lib/use-idempotency-key';
 import { GeoPrivacyNotice, isGeoCancelled, useGeoSubmit } from '@/components/geo/use-geo-submit';
 import { isolateLtr } from '@/lib/utils';
+import { CashAccountPicker } from '@/components/treasury/cash-account-picker';
 import { Amount } from '@/components/shared/amount';
 
 /** Nouveau versement. `client` pre-selects the client (from the client page). */
@@ -58,6 +59,7 @@ export function PaymentDialog({
   const [pickerOpen, setPickerOpen] = useState(!fixedClient);
   const [amount, setAmount] = useState('');
   const [mode, setMode] = useState<PaymentMode>('ESPECES');
+  const [cashAccountId, setCashAccountId] = useState('');
   const [reference, setReference] = useState('');
   const [bank, setBank] = useState('');
   const [dueDate, setDueDate] = useState('');
@@ -102,6 +104,7 @@ export function PaymentDialog({
             clientId: client?.id,
             amount: value?.toString(),
             mode,
+            ...(cashAccountId ? { cashAccountId } : {}),
             reference: reference.trim(),
             bank: mode === 'CHEQUE' ? bank.trim() : '',
             dueDate: mode === 'CHEQUE' && dueDate ? dueDate : null,
@@ -196,6 +199,12 @@ export function PaymentDialog({
                   ))}
                 </NativeSelect>
               </div>
+              <CashAccountPicker
+                id="pay-account"
+                mode={mode}
+                value={cashAccountId}
+                onChange={setCashAccountId}
+              />
               {mode !== 'ESPECES' ? (
                 <div className="space-y-2">
                   <Label htmlFor="pay-ref">

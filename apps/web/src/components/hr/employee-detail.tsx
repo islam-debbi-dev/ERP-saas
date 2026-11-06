@@ -17,6 +17,7 @@ import {
   Permission,
   Role,
 } from '@erp/shared';
+import { CashAccountPicker } from '@/components/treasury/cash-account-picker';
 import { Amount } from '@/components/shared/amount';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FeatureGate } from '@/components/shared/feature-gate';
@@ -402,6 +403,7 @@ function Advances({ e }: { e: EmployeeDto }) {
   const key = useIdempotencyKey(open);
   const [amount, setAmount] = useState('');
   const [mode, setMode] = useState<PaymentMode>('ESPECES');
+  const [cashAccountId, setCashAccountId] = useState('');
   const [note, setNote] = useState('');
   const [cancelling, setCancelling] = useState<EmployeeLedgerEntryDto | null>(null);
 
@@ -410,7 +412,16 @@ function Advances({ e }: { e: EmployeeDto }) {
 
   const submit = () =>
     pay.mutate(
-      { key, body: { amount, mode, note: note.trim() || null, reference: null } },
+      {
+        key,
+        body: {
+          amount,
+          mode,
+          ...(cashAccountId ? { cashAccountId } : {}),
+          note: note.trim() || null,
+          reference: null,
+        },
+      },
       {
         onSuccess: () => {
           toast.success(t('advancePaid'));
@@ -505,6 +516,13 @@ function Advances({ e }: { e: EmployeeDto }) {
                 ))}
               </NativeSelect>
             </div>
+            <CashAccountPicker
+              id="advance-account"
+              mode={mode}
+              warehouseId={e.warehouse?.id}
+              value={cashAccountId}
+              onChange={setCashAccountId}
+            />
             <div className="space-y-2">
               <Label htmlFor="advance-note">{t('note')}</Label>
               <Input

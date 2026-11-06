@@ -38,6 +38,7 @@ import { PayrollModule } from './payroll/payroll.module';
 import { ImportFilesModule } from './import-files/import-files.module';
 import { PurchasesModule } from './purchases/purchases.module';
 import { ReconcileModule } from './reconcile/reconcile.module';
+import { TreasuryModule } from './treasury/treasury.module';
 import { ReportsModule } from './reports/reports.module';
 import { StockModule } from './stock/stock.module';
 import { TenantsModule } from './tenants/tenants.module';
@@ -121,6 +122,7 @@ import { UsersModule } from './users/users.module';
     ReportsModule,
     UsersModule,
     ReconcileModule,
+    TreasuryModule,
     TourneesModule,
     AssistantModule,
     AdminModule,

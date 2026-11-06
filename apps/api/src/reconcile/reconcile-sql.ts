@@ -7,7 +7,7 @@
 export interface ReconcileCheck {
   name: string;
   /** What the rows point at, for the audit row and the alert. */
-  entity: 'Product' | 'Client' | 'Supplier' | 'Employee';
+  entity: 'Product' | 'Client' | 'Supplier' | 'Employee' | 'CashAccount';
   sql: string;
 }
 
@@ -240,5 +240,32 @@ export const RECONCILE_CHECKS: ReconcileCheck[] = [
       LEFT JOIN employee_balances eb
         ON eb."tenantId" = x."tenantId" AND eb."employeeId" = x."employeeId"
       WHERE eb.id IS NULL`,
+  },
+  {
+    // Phase 34: a balance equals its ledger, without what is dated before the opening.
+    name: 'cash_balance_equals_ledger',
+    entity: 'CashAccount',
+    sql: `
+      SELECT b."tenantId"::text AS "tenantId", b."cashAccountId"::text AS "entityId",
+             b.balance::text AS cached,
+             COALESCE(SUM(m.amount) FILTER (
+               WHERE a."openingDate" IS NULL OR m.date >= a."openingDate"), 0)::text AS ledger
+      FROM cash_account_balances b
+      JOIN cash_accounts a ON a.id = b."cashAccountId"
+      LEFT JOIN cash_movements m
+        ON m."tenantId" = b."tenantId" AND m."cashAccountId" = b."cashAccountId"
+      GROUP BY b."tenantId", b."cashAccountId", b.balance
+      HAVING b.balance <> COALESCE(SUM(m.amount) FILTER (
+        WHERE a."openingDate" IS NULL OR m.date >= a."openingDate"), 0)`,
+  },
+  {
+    name: 'cash_missing_balance',
+    entity: 'CashAccount',
+    sql: `
+      SELECT a."tenantId"::text AS "tenantId", a.id::text AS "entityId",
+             NULL AS cached, 'account without a balance' AS ledger
+      FROM cash_accounts a
+      LEFT JOIN cash_account_balances b ON b."cashAccountId" = a.id
+      WHERE b.id IS NULL`,
   },
 ];

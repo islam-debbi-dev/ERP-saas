@@ -86,6 +86,13 @@ export const Permission = {
   /** Work in and see every dépôt, as the owner does. */
   VIEW_ALL_WAREHOUSES: 'VIEW_ALL_WAREHOUSES',
 
+  // Trésorerie (phase 34, module TREASURY).
+  /** See the balances and the movements of the accounts in reach. */
+  TREASURY_VIEW: 'TREASURY_VIEW',
+  /** Transfers between accounts and comptages de caisse. */
+  TREASURY_OPERATE: 'TREASURY_OPERATE',
+  /** Create and archive accounts, enter a solde initial. */
+  TREASURY_MANAGE: 'TREASURY_MANAGE',
   // Dépenses and rent (phase 25, module EXPENSES).
   EXPENSES_VIEW: 'EXPENSES_VIEW',
   EXPENSES_CREATE: 'EXPENSES_CREATE',
@@ -188,6 +195,11 @@ export const PERMISSION_GROUPS = {
     Permission.EXPENSE_CANCEL,
     Permission.RENT_MANAGE,
   ],
+  treasury: [
+    Permission.TREASURY_VIEW,
+    Permission.TREASURY_OPERATE,
+    Permission.TREASURY_MANAGE,
+  ],
   hr: [
     Permission.HR_VIEW,
     Permission.HR_MANAGE,
@@ -254,6 +266,8 @@ const OWNER_ONLY: readonly Permission[] = [
   Permission.SELL_ANY_PRODUCT,
   Permission.WAREHOUSE_ACCESS_MANAGE,
   Permission.VIEW_ALL_WAREHOUSES,
+  // The solde initial is the owner's figure (phase 34).
+  Permission.TREASURY_MANAGE,
   // A dépôt manager marks attendance but does not see pay (phase 31).
   Permission.SALARY_VIEW,
   Permission.ADVANCE_PAY,

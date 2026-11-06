@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   type BouncePaymentInput,
   type CashSummaryDto,
+  CashMovementType,
   ClientLedgerType,
   type CreatePaymentInput,
   DocType,
@@ -32,6 +33,7 @@ import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { type DataScope, ScopeService } from '../sales-force/scope.service';
 import { WarehousesService } from '../stock/warehouses.service';
+import { CashLedgerService } from '../treasury/cash-ledger.service';
 
 const paymentInclude = {
   client: { select: { id: true, code: true, name: true } },
@@ -94,7 +96,7 @@ function toDto(
 /**
  * Versements: the only writer of payments and payment_allocations. The money side
  * goes through ClientAccountService. Lock order everywhere: payment rows, then the
- * client balance (sales take sale and stock rows before both).
+ * client balance, then the cash balance (sales take sale and stock rows before all).
  */
 @Injectable()
 export class PaymentsService {
@@ -106,6 +108,7 @@ export class PaymentsService {
     private readonly scope: ScopeService,
     private readonly geo: GeoCheckService,
     private readonly warehouses: WarehousesService,
+    private readonly cash: CashLedgerService,
   ) {}
 
   // ---------------------------------------------------------------- used by sales
@@ -128,9 +131,11 @@ export class PaymentsService {
     },
   ): Promise<void> {
     const tenantId = tenantContext.requireTenantId();
+    const cashAccountId = await this.cash.defaultFor(tx, input);
     const payment = await tx.payment.create({
       data: {
         tenantId,
+        cashAccountId,
         number: await this.numbering.next(tx, tenantId, DocType.VER),
         clientId: input.clientId,
         saleId: input.saleId,
@@ -144,6 +149,17 @@ export class PaymentsService {
     await tx.paymentAllocation.create({
       data: { tenantId, paymentId: payment.id, saleId: input.saleId, amount: input.amount },
     });
+    await this.cash.post(tx, [
+      {
+        cashAccountId,
+        amount: input.amount,
+        type: CashMovementType.VERSEMENT,
+        refType: 'Payment',
+        refId: payment.id,
+        date: algiersDay(payment.receivedAt),
+        note: payment.number,
+      },
+    ]);
   }
 
   /**
@@ -155,14 +171,14 @@ export class PaymentsService {
     saleId: string,
     user: CurrentUserInfo,
     reason: string,
-  ): Promise<Money> {
+  ): Promise<{ total: Money; ids: string[] }> {
     const rows = await tx.$queryRaw<{ id: string; amount: Prisma.Decimal }[]>`
       SELECT id, amount FROM payments
       WHERE "tenantId" = ${tenantContext.requireTenantId()}::uuid
         AND "saleId" = ${saleId}::uuid AND status = 'VALID'
       ORDER BY id
       FOR UPDATE`;
-    if (rows.length === 0) return money(0);
+    if (rows.length === 0) return { total: money(0), ids: [] };
     await tx.payment.updateMany({
       where: { id: { in: rows.map((r) => r.id) } },
       data: {
@@ -173,7 +189,17 @@ export class PaymentsService {
         version: { increment: 1 },
       },
     });
-    return rows.reduce((s, r) => s.plus(r.amount.toString()), money(0));
+    return {
+      total: rows.reduce((s, r) => s.plus(r.amount.toString()), money(0)),
+      ids: rows.map((r) => r.id),
+    };
+  }
+
+  /** After the client balance (lock order): takes the sale's cancelled payments off the caisse. */
+  async reverseCashInTx(tx: Tx, paymentIds: string[], reason: string): Promise<void> {
+    for (const refId of paymentIds) {
+      await this.cash.reverse(tx, { refType: 'Payment', refId, note: reason });
+    }
   }
 
   // ---------------------------------------------------------------- versements
@@ -189,6 +215,11 @@ export class PaymentsService {
       }
       await this.scope.assertClient(tx, user, client.id);
       const warehouseId = await this.warehouseFor(tx, input.warehouseId, user);
+      const cashAccountId = await this.cash.resolve(
+        tx,
+        { requested: input.cashAccountId, mode: input.mode, warehouseId },
+        user,
+      );
       const number = await this.numbering.next(tx, tenantId, DocType.VER);
       const payment = await tx.payment.create({
         data: {
@@ -205,6 +236,7 @@ export class PaymentsService {
           // A seller who takes the money collected it himself (phase 14).
           collectedBy: user.role === Role.SELLER ? user.id : null,
           warehouseId,
+          cashAccountId,
         },
       });
       // Posting first locks the client balance: concurrent versements of the same
@@ -236,6 +268,17 @@ export class PaymentsService {
           })),
         });
       }
+      await this.cash.post(tx, [
+        {
+          cashAccountId,
+          amount: input.amount,
+          type: CashMovementType.VERSEMENT,
+          refType: 'Payment',
+          refId: payment.id,
+          date: algiersDay(payment.receivedAt),
+          note: number,
+        },
+      ]);
       await this.audit.log(tx, {
         action: 'PAYMENT_CREATED',
         entity: 'Payment',
@@ -246,6 +289,7 @@ export class PaymentsService {
           amount: input.amount,
           mode: input.mode,
           warehouseId,
+          cashAccountId,
           allocations: allocations.map((a) => ({ saleId: a.saleId, amount: a.amount.toString() })),
         },
       });
@@ -306,6 +350,7 @@ export class PaymentsService {
           },
         ]);
       }
+      await this.cash.reverse(tx, { refType: 'Payment', refId: id, note: reason });
       await this.audit.log(tx, {
         action: 'PAYMENT_CANCELLED',
         entity: 'Payment',
@@ -372,6 +417,13 @@ export class PaymentsService {
             ]
           : []),
       ]);
+      // The bank really took the money back, today, from the account it went into.
+      await this.cash.reverse(tx, {
+        refType: 'Payment',
+        refId: id,
+        note: input.reason,
+        realEvent: true,
+      });
       await this.audit.log(tx, {
         action: 'PAYMENT_BOUNCED',
         entity: 'Payment',

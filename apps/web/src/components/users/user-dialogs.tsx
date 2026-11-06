@@ -465,9 +465,9 @@ export function PermissionsDialog({ user, open, onOpenChange }: DialogProps & { 
       ([group, list]) =>
         [
           group,
-          // The dépenses (phase 25) and the DRH (phase 31) do not need MULTI_UNIT, so their
-          // rights show without it.
-          multiUnit || group === 'expenses' || group === 'hr'
+          // The dépenses (phase 25), the DRH (31) and the trésorerie (34) do not need MULTI_UNIT,
+          // so their rights show without it.
+          multiUnit || group === 'expenses' || group === 'hr' || group === 'treasury'
             ? list
             : list.filter((p) => SENSITIVE_PERMISSIONS.includes(p)),
         ] as const,

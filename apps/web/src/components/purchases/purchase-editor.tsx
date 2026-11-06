@@ -15,6 +15,8 @@ import {
   type ProductDto,
   type PurchaseDto,
   qty,
+  PAYMENT_MODES,
+  type PaymentMode,
 } from '@erp/shared';
 import {
   AlertDialog,
@@ -50,6 +52,7 @@ import { stockKeys, formatQty } from '@/lib/stock';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { Amount } from '@/components/shared/amount';
 import { WarehouseSelect } from '@/components/stock/warehouse-select';
+import { CashAccountPicker } from '@/components/treasury/cash-account-picker';
 
 export interface EditorLine {
   key: string;
@@ -67,6 +70,10 @@ interface Header {
   warehouseId: string;
   note: string;
   paidAmount: string;
+  /** Phase 34: how the paid part leaves; it becomes a règlement at validation. */
+  paidMode: PaymentMode;
+  /** '' = the default account for the mode. */
+  paidCashAccountId: string;
   /** Phase 22: bank rate for a foreign supplier (DZD per 1 unit). */
   exchangeRate: string;
   /** Phase 22: '' = not in a dossier d'importation. */
@@ -90,6 +97,7 @@ export function PurchaseEditor({
   levels: PriceLevelDto[];
 }) {
   const t = useTranslations('purchases');
+  const ts = useTranslations('sales');
   const errorMessage = useErrorMessage();
   const unitLabel = useUnitLabel();
   const router = useRouter();
@@ -183,6 +191,8 @@ export function PurchaseEditor({
       ...(importOn ? { importFileId: header.importFileId || null } : {}),
       ...(foreign && rate ? { exchangeRate: rate.toString() } : {}),
       paidAmount: foreign ? '0' : (parseDA(header.paidAmount) ?? qty(0)).toString(),
+      paidMode: header.paidMode,
+      paidCashAccountId: header.paidCashAccountId || null,
       lines: lines.map((l) => ({
         productId: l.product.id,
         unitId: l.unitId,
@@ -625,6 +635,33 @@ export function PurchaseEditor({
                 value={header.paidAmount}
                 onChange={(e) => setHeader({ ...header, paidAmount: e.target.value })}
               />
+              {parseDA(header.paidAmount)?.gt(0) ? (
+                <div className="grid gap-3 sm:max-w-48">
+                  <div className="space-y-2">
+                    <Label htmlFor="paid-mode">{t('paidMode')}</Label>
+                    <NativeSelect
+                      id="paid-mode"
+                      value={header.paidMode}
+                      onChange={(e) =>
+                        setHeader({ ...header, paidMode: e.target.value as PaymentMode })
+                      }
+                    >
+                      {PAYMENT_MODES.map((m) => (
+                        <option key={m} value={m}>
+                          {ts(`mode${m}`)}
+                        </option>
+                      ))}
+                    </NativeSelect>
+                  </div>
+                  <CashAccountPicker
+                    id="paid-account"
+                    mode={header.paidMode}
+                    warehouseId={header.warehouseId}
+                    value={header.paidCashAccountId}
+                    onChange={(id) => setHeader((h) => ({ ...h, paidCashAccountId: id }))}
+                  />
+                </div>
+              ) : null}
               {!assujettiTva ? (
                 <p className="text-xs text-muted-foreground">{t('tvaOff')}</p>
               ) : null}

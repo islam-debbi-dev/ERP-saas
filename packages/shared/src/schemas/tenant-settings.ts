@@ -80,6 +80,8 @@ export const tenantSettingsSchema = z.object({
   timbreMin: amountString.nullable(),
   timbreMax: amountString.nullable(),
   timbreThreshold: amountString.nullable(),
+  /** A comptage de caisse with an écart from this amount up alerts the owner (phase 34). */
+  cashCountAlertThreshold: amountString,
   // Printed documents
   defaultPrintFormat: z.enum([PrintFormat.A4, PrintFormat.A5]),
   documentFooter: optionalText(500),

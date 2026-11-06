@@ -30,6 +30,7 @@ import { snapshotLines } from './purchase-lines';
 import { lockImportFile, lockImportFileOpen } from './import-file-lock';
 import { lockPurchase, PurchasesService } from './purchases.service';
 import { SupplierAccountService } from './supplier-account.service';
+import { SupplierPaymentsService } from './supplier-payments.service';
 
 /**
  * The steps of a bon de réception that have effects: validation (stock in, CUMP),
@@ -48,6 +49,7 @@ export class PurchaseWorkflowService {
     private readonly account: SupplierAccountService,
     private readonly warehouses: WarehousesService,
     private readonly scope: ScopeService,
+    private readonly supplierPayments: SupplierPaymentsService,
   ) {}
 
   async validate(
@@ -150,35 +152,36 @@ export class PurchaseWorkflowService {
         },
       });
       // Dettes fournisseurs (phase 21): the BR as it stores it, minus what was paid on the spot.
+      if (totals.totalTtc.gt(0)) {
+        await this.account.post(tx, [
+          {
+            supplierId: purchase.supplierId,
+            type: SupplierLedgerType.PURCHASE,
+            amount: totals.totalTtc.toString(),
+            amountCurrency: totalCurrency?.toString() ?? null,
+            label: number,
+            refType: 'Purchase',
+            refId: id,
+          },
+        ]);
+      }
+      // Paid on the spot: a real règlement since phase 34, with its mode and its account.
       const paid = money(purchase.paidAmount.toString());
-      await this.account.post(tx, [
-        ...(totals.totalTtc.gt(0)
-          ? [
-              {
-                supplierId: purchase.supplierId,
-                type: SupplierLedgerType.PURCHASE,
-                amount: totals.totalTtc.toString(),
-                amountCurrency: totalCurrency?.toString() ?? null,
-                label: number,
-                refType: 'Purchase',
-                refId: id,
-              },
-            ]
-          : []),
-        ...(paid.gt(0)
-          ? [
-              {
-                supplierId: purchase.supplierId,
-                type: SupplierLedgerType.PAYMENT,
-                amount: paid.negated().toString(),
-                label: number,
-                reason: 'paid_at_reception',
-                refType: 'Purchase',
-                refId: id,
-              },
-            ]
-          : []),
-      ]);
+      if (paid.gt(0)) {
+        await this.supplierPayments.createForPurchaseInTx(
+          tx,
+          {
+            purchaseId: id,
+            purchaseNumber: number,
+            supplierId: purchase.supplierId,
+            amount: paid.toString(),
+            mode: purchase.paidMode,
+            cashAccountId: purchase.paidCashAccountId,
+            warehouseId,
+          },
+          user,
+        );
+      }
       await this.audit.log(tx, {
         action: 'PURCHASE_VALIDATED',
         entity: 'Purchase',
@@ -235,6 +238,7 @@ export class PurchaseWorkflowService {
             },
           ]);
         }
+        await this.supplierPayments.cancelForPurchaseInTx(tx, id, purchase.number ?? '', user);
       }
       if (current.status === PurchaseStatus.VALIDATED) {
         const purchase = await tx.purchase.findUniqueOrThrow({
@@ -289,6 +293,7 @@ export class PurchaseWorkflowService {
             },
           ]);
         }
+        await this.supplierPayments.cancelForPurchaseInTx(tx, id, purchase.number ?? '', user);
       }
       await tx.purchase.update({
         where: { id },

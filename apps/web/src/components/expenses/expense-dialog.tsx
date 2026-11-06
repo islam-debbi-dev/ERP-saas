@@ -19,6 +19,7 @@ import {
   toMoneyString,
 } from '@erp/shared';
 import { Amount } from '@/components/shared/amount';
+import { CashAccountPicker } from '@/components/treasury/cash-account-picker';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -85,6 +86,7 @@ export function ExpenseDialog({
   const [categoryId, setCategoryId] = useState('');
   const [date, setDate] = useState(todayInAlgiers);
   const [mode, setMode] = useState<PaymentMode>('ESPECES');
+  const [cashAccountId, setCashAccountId] = useState('');
   const [reference, setReference] = useState('');
   const [payee, setPayee] = useState(rent?.landlordName ?? '');
   const [withPeriod, setWithPeriod] = useState(false);
@@ -111,6 +113,7 @@ export function ExpenseDialog({
           amount: value?.toString(),
           date,
           mode,
+          ...(cashAccountId ? { cashAccountId } : {}),
           reference: reference.trim(),
           payee: payee.trim(),
           note: note.trim(),
@@ -283,6 +286,13 @@ export function ExpenseDialog({
                 ))}
               </NativeSelect>
             </div>
+            <CashAccountPicker
+              id="exp-account"
+              mode={mode}
+              warehouseId={warehouseId}
+              value={cashAccountId}
+              onChange={setCashAccountId}
+            />
             {needsDepot ? (
               <div className="space-y-2">
                 <Label htmlFor="exp-depot">{t('depot')}</Label>

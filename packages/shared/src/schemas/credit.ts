@@ -47,6 +47,8 @@ export const createSupplierPaymentSchema = z.object({
   note: optionalText(255),
   /** Phase 26: the dépôt that pays (figures per dépôt); else the user's only one. */
   warehouseId: id.optional(),
+  /** The account the money goes through (phase 34). Omitted: the default for the mode. */
+  cashAccountId: id.optional(),
 });
 export type CreateSupplierPaymentInput = z.infer<typeof createSupplierPaymentSchema>;
 
@@ -84,6 +86,10 @@ export interface SupplierPaymentDto {
   paidAt: string;
   cancelReason: string | null;
   cancelledAt: string | null;
+  /** The account it went through (phase 34). */
+  cashAccount: { id: string; name: string } | null;
+  /** Paid at reception of this BR: it is cancelled with the BR, never alone. */
+  purchase: { id: string; number: string | null } | null;
 }
 
 // ---------------------------------------------------------------- supplier ledger

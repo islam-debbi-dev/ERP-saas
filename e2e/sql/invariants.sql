@@ -416,3 +416,17 @@ LEFT JOIN client_packaging_entries pe
  AND pe."packagingTypeId" = pb."packagingTypeId"
 GROUP BY pb."tenantId", pb."clientId", pb."packagingTypeId", pb.balance
 HAVING pb.balance <> COALESCE(SUM(pe.qty), 0);
+
+-- name: cash_balance_equals_ledger
+-- Phase 34: each account's cached balance equals its ledger, without what is dated before
+-- its opening.
+SELECT b."tenantId", b."cashAccountId", b.balance,
+       COALESCE(SUM(m.amount) FILTER (
+         WHERE a."openingDate" IS NULL OR m.date >= a."openingDate"), 0) AS ledger
+FROM cash_account_balances b
+JOIN cash_accounts a ON a.id = b."cashAccountId"
+LEFT JOIN cash_movements m
+  ON m."tenantId" = b."tenantId" AND m."cashAccountId" = b."cashAccountId"
+GROUP BY b."tenantId", b."cashAccountId", b.balance
+HAVING b.balance <> COALESCE(SUM(m.amount) FILTER (
+  WHERE a."openingDate" IS NULL OR m.date >= a."openingDate"), 0);

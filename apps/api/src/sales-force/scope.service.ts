@@ -223,6 +223,10 @@ export class ScopeService {
     return (await this.features.of(tenantId)).features.includes(Feature.EXPENSES);
   }
 
+  async treasuryOn(tenantId: string): Promise<boolean> {
+    return (await this.features.of(tenantId)).features.includes(Feature.TREASURY);
+  }
+
   async salesForceOn(tenantId: string): Promise<boolean> {
     return (await this.features.of(tenantId)).features.includes(Feature.SALES_FORCE);
   }

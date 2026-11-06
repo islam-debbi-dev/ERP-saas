@@ -451,7 +451,12 @@ export class SaleWorkflowService {
         }
         // Payments before the client balance (lock order). Only payments that still
         // count are reversed: a bounced cheque already gave its amount back.
-        const paidBack = await this.payments.cancelForSaleInTx(tx, id, user, reason);
+        const { total: paidBack, ids: paymentIds } = await this.payments.cancelForSaleInTx(
+          tx,
+          id,
+          user,
+          reason,
+        );
         if (sale.clientId) {
           const saleNet = (
             await this.account.netOf(tx, {
@@ -481,6 +486,8 @@ export class SaleWorkflowService {
           await this.account.post(tx, entries);
         }
         if (!grouped) await this.packaging.reverseForSaleInTx(tx, sale, reason);
+        // Last: the cash balance comes after the client balance, as for a versement.
+        await this.payments.reverseCashInTx(tx, paymentIds, reason);
       }
       await tx.sale.update({
         where: { id },

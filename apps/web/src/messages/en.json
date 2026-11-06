@@ -58,7 +58,8 @@
     "overview": "Overview",
     "hr": "HR",
     "myAttendance": "My attendance",
-    "myPayslips": "My payslips"
+    "myPayslips": "My payslips",
+    "treasury": "Treasury"
   },
   "roles": {
     "OWNER": "Owner",
@@ -133,7 +134,9 @@
     "allBrands": "All brands",
     "filtersHint": "Filters change the sales figures. Cash, credit and stock stay company-wide.",
     "netMonth": "Net result this month",
-    "netHint": "Margin {margin} − expenses {charges}"
+    "netHint": "Margin {margin} − expenses {charges}",
+    "inTill": "In the till",
+    "inBank": "In the bank: {amount}"
   },
   "reports": {
     "title": "Reports",
@@ -293,7 +296,10 @@
     "geoMaxAccuracyM": "Minimum accuracy (m)",
     "geoMaxAccuracyMHint": "A less precise position is flagged “Inaccurate GPS”. Default 200 m.",
     "assistantLink": "AI assistant",
-    "assistantLinkHelp": "The assistant's provider and API key."
+    "assistantLinkHelp": "The assistant's provider and API key.",
+    "treasurySection": "Treasury",
+    "treasuryHelp": "A cash count alerts the owner from this difference up.",
+    "cashCountAlertThreshold": "Difference alert threshold (DA)"
   },
   "validation": {
     "required": "This field is required.",
@@ -472,7 +478,17 @@
     "AI_TENANT_KEY_NOT_ALLOWED": "Your company cannot use its own key.",
     "AI_KEY_REQUIRED": "Enter the API key.",
     "AI_BASE_URL_NOT_ALLOWED": "This address is not allowed: use a public https URL.",
-    "SECRETS_KEY_UNAVAILABLE": "Key encryption is not set up on the server."
+    "SECRETS_KEY_UNAVAILABLE": "Key encryption is not set up on the server.",
+    "CASH_ACCOUNT_NOT_FOUND": "This account does not exist or is out of your reach.",
+    "CASH_ACCOUNT_NAME_TAKEN": "This account name already exists.",
+    "CASH_ACCOUNT_NOT_EMPTY": "The balance must be zero to archive this account.",
+    "CASH_ACCOUNT_IS_DEFAULT": "Choose another default account first.",
+    "CASH_ACCOUNT_NOT_CAISSE": "Only a till can be counted.",
+    "CASH_ACCOUNT_MODIFIED": "This account changed in the meantime. Reload the page.",
+    "CASH_OPENING_ALREADY_SET": "This account already has its opening balance.",
+    "CASH_INSUFFICIENT": "The account does not hold enough money.",
+    "CASH_TRANSFER_NOT_VALID": "This transfer is already cancelled.",
+    "SUPPLIER_PAYMENT_LINKED_TO_PURCHASE": "This payment was made at reception: cancel the goods receipt."
   },
   "units": {
     "PIECE": "Piece",
@@ -824,7 +840,8 @@
     "readOnlyInTransit": "Receipt in transit: the supplier debt is recorded, the goods enter stock when the import file is closed. They cannot be sold yet.",
     "currencyRate": "Currency × rate",
     "landedPerBase": "Landed cost / base unit:",
-    "cancelBodyInTransit": "The receipt leaves the supplier account. Stock is not touched (nothing had entered)."
+    "cancelBodyInTransit": "The receipt leaves the supplier account. Stock is not touched (nothing had entered).",
+    "paidMode": "Payment method"
   },
   "suppliers": {
     "title": "Suppliers",
@@ -1693,6 +1710,18 @@
     "USE_ASSISTANT": {
       "label": "Use the assistant",
       "help": "Ask the AI assistant questions."
+    },
+    "TREASURY_VIEW": {
+      "label": "See the treasury",
+      "help": "See the balances and movements of the accounts."
+    },
+    "TREASURY_OPERATE": {
+      "label": "Transfers and counts",
+      "help": "Transfer between accounts and count a till."
+    },
+    "TREASURY_MANAGE": {
+      "label": "Manage accounts",
+      "help": "Create and archive accounts, enter an opening balance."
     }
   },
   "sessions": {
@@ -1928,7 +1957,8 @@
     "featureEXPENSES": "Expenses and rent",
     "featureHR": "HR",
     "featurePAYROLL": "Payroll and payslips",
-    "featureAI_ASSISTANT": "AI assistant"
+    "featureAI_ASSISTANT": "AI assistant",
+    "featureTREASURY": "Treasury: tills and accounts"
   },
   "share": {
     "button": "Share link",
@@ -2768,7 +2798,9 @@
     "cancelFile": "Cancel the file",
     "cancelFileTitle": "Cancel the file",
     "fileCancelled": "File cancelled.",
-    "costTypeTVA_IMPORT": "Import VAT"
+    "costTypeTVA_IMPORT": "Import VAT",
+    "costPaidNow": "Paid now (no supplier)",
+    "costPaidMode": "Payment method"
   },
   "promotions": {
     "title": "Promotions",
@@ -2984,7 +3016,8 @@
     "reducedLine": "Dépôt {name}: details not available",
     "notFound": "This dépôt does not exist or you have no access to it.",
     "group_expenses": "Expenses",
-    "group_hr": "HR"
+    "group_hr": "HR",
+    "group_treasury": "Treasury"
   },
   "expenses": {
     "title": "Expenses",
@@ -3154,7 +3187,9 @@
     "col_stockValue": "Stock (DA)",
     "col_lowStock": "Below threshold",
     "total": "Total",
-    "compareHint": "Tap a column title to sort. Credit and stock: as of today."
+    "compareHint": "Tap a column title to sort. Credit and stock: as of today.",
+    "balanceCaisses": "Till balances",
+    "balanceBanques": "Bank balances"
   },
   "hr": {
     "title": "HR",
@@ -3638,5 +3673,80 @@
     "colFeedback": "Feedback",
     "cachedTokens": "{count} cached",
     "feedbackCount": "👍 {up} · 👎 {down}"
+  },
+  "treasury": {
+    "title": "Treasury",
+    "subtitle": "Your tills and accounts: what is in them today.",
+    "account": "Account",
+    "defaultAccount": "Default account",
+    "transfer": "Transfer",
+    "count": "Cash count",
+    "opening": "Opening balance",
+    "newAccount": "New account",
+    "editAccount": "Edit account",
+    "accountHelp": "A till, a bank account or a CCP account.",
+    "saveAccount": "Save",
+    "accountName": "Name",
+    "accountType": "Type",
+    "depot": "Depot",
+    "noDepot": "None (company)",
+    "bankName": "Bank",
+    "rib": "RIB",
+    "isDefault": "Default account for this type and depot",
+    "type_CAISSE": "Till",
+    "type_BANQUE": "Bank",
+    "type_CCP": "CCP",
+    "totalCaisses": "In tills",
+    "totalBanques": "In banks",
+    "cashInToday": "Received today",
+    "cashOutToday": "Paid out today",
+    "in": "In",
+    "out": "Out",
+    "noOpening": "No opening balance yet",
+    "alertsTitle": "Cash differences to check",
+    "showMovements": "Show movements of {name}",
+    "movementsOf": "Movements: {name}",
+    "noMovements": "No movements on this account.",
+    "loadMore": "Show more",
+    "beforeOpening": "before the opening balance",
+    "editAccountOf": "Edit {name}",
+    "archiveAccountOf": "Archive {name}",
+    "archived": "Account archived.",
+    "movement_OPENING": "Opening balance",
+    "movement_VERSEMENT": "Client payment",
+    "movement_SUPPLIER_PAYMENT": "Supplier payment",
+    "movement_EXPENSE": "Expense",
+    "movement_IMPORT_COST": "Import cost",
+    "movement_TRANSFER_OUT": "Transfer out",
+    "movement_TRANSFER_IN": "Transfer in",
+    "movement_COUNT_ADJUST": "Count difference",
+    "movement_REVERSAL": "Reversal",
+    "transferTitle": "New transfer",
+    "transferHelp": "From one account to another: neither income nor a charge.",
+    "transferSubmit": "Transfer",
+    "transferDone": "Transfer {number} saved.",
+    "from": "From",
+    "to": "To",
+    "available": "Available:",
+    "amount": "Amount",
+    "note": "Note",
+    "tooMuch": "The amount is more than the account holds.",
+    "countTitle": "Cash count: {name}",
+    "countHelp": "Enter what you counted. The difference will be recorded.",
+    "countSubmit": "Save the count",
+    "countOk": "The till is right.",
+    "countAdjusted": "Difference recorded: {ecart}",
+    "expected": "Expected balance:",
+    "counted": "Amount counted",
+    "ecart": "Difference:",
+    "reason": "Reason",
+    "openingTitle": "Opening balance: {name}",
+    "openingHelp": "Once per account. Anything dated before this day is left out of the balance.",
+    "openingSubmit": "Save",
+    "openingDone": "Opening balance saved.",
+    "openingDate": "Balance date",
+    "cancelTransfer": "Cancel the transfer",
+    "cancelTransferTitle": "Cancel this transfer",
+    "cancelTransferHelp": "Both movements are reversed. Nothing is deleted."
   }
 }

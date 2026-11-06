@@ -58,7 +58,8 @@
     "overview": "Vue d'ensemble",
     "hr": "DRH",
     "myAttendance": "Mon pointage",
-    "myPayslips": "Mes bulletins"
+    "myPayslips": "Mes bulletins",
+    "treasury": "Trésorerie"
   },
   "roles": {
     "OWNER": "Propriétaire",
@@ -133,7 +134,9 @@
     "allBrands": "Toutes les marques",
     "filtersHint": "Les filtres changent les chiffres de ventes. Caisse, crédit et stock restent ceux de toute l’entreprise.",
     "netMonth": "Résultat net du mois",
-    "netHint": "Marge {margin} − charges {charges}"
+    "netHint": "Marge {margin} − charges {charges}",
+    "inTill": "En caisse",
+    "inBank": "En banque : {amount}"
   },
   "reports": {
     "title": "Rapports",
@@ -293,7 +296,10 @@
     "geoMaxAccuracyM": "Précision minimale (m)",
     "geoMaxAccuracyMHint": "Une position moins précise est signalée « GPS imprécis ». Par défaut 200 m.",
     "assistantLink": "Assistant IA",
-    "assistantLinkHelp": "Fournisseur et clé API de l'assistant."
+    "assistantLinkHelp": "Fournisseur et clé API de l'assistant.",
+    "treasurySection": "Trésorerie",
+    "treasuryHelp": "Le comptage de caisse alerte le propriétaire à partir de cet écart.",
+    "cashCountAlertThreshold": "Seuil d’alerte d’écart (DA)"
   },
   "validation": {
     "required": "Ce champ est obligatoire.",
@@ -472,7 +478,17 @@
     "AI_TENANT_KEY_NOT_ALLOWED": "Votre société ne peut pas utiliser sa propre clé.",
     "AI_KEY_REQUIRED": "Entrez la clé API.",
     "AI_BASE_URL_NOT_ALLOWED": "Cette adresse n'est pas autorisée : utilisez une URL https publique.",
-    "SECRETS_KEY_UNAVAILABLE": "Le chiffrement des clés n'est pas configuré sur le serveur."
+    "SECRETS_KEY_UNAVAILABLE": "Le chiffrement des clés n'est pas configuré sur le serveur.",
+    "CASH_ACCOUNT_NOT_FOUND": "Ce compte n’existe pas ou n’est pas accessible.",
+    "CASH_ACCOUNT_NAME_TAKEN": "Ce nom de compte existe déjà.",
+    "CASH_ACCOUNT_NOT_EMPTY": "Le solde doit être à zéro pour archiver ce compte.",
+    "CASH_ACCOUNT_IS_DEFAULT": "Choisissez d’abord un autre compte par défaut.",
+    "CASH_ACCOUNT_NOT_CAISSE": "Seule une caisse se compte.",
+    "CASH_ACCOUNT_MODIFIED": "Ce compte a été modifié entre-temps. Rechargez la page.",
+    "CASH_OPENING_ALREADY_SET": "Le solde initial de ce compte est déjà saisi.",
+    "CASH_INSUFFICIENT": "Le compte ne contient pas assez d’argent.",
+    "CASH_TRANSFER_NOT_VALID": "Ce transfert est déjà annulé.",
+    "SUPPLIER_PAYMENT_LINKED_TO_PURCHASE": "Ce règlement a été fait à la réception : annulez le bon de réception."
   },
   "units": {
     "PIECE": "Pièce",
@@ -824,7 +840,8 @@
     "readOnlyInTransit": "Bon en transit : la dette fournisseur est enregistrée, la marchandise entrera en stock à la clôture du dossier. Elle n'est pas encore vendable.",
     "currencyRate": "Devise × taux",
     "landedPerBase": "Coût de revient / unité de base :",
-    "cancelBodyInTransit": "Le bon sort du compte fournisseur. Le stock n'est pas touché (rien n'y était entré)."
+    "cancelBodyInTransit": "Le bon sort du compte fournisseur. Le stock n'est pas touché (rien n'y était entré).",
+    "paidMode": "Mode de paiement"
   },
   "suppliers": {
     "title": "Fournisseurs",
@@ -1693,6 +1710,18 @@
     "USE_ASSISTANT": {
       "label": "Utiliser l'assistant",
       "help": "Poser des questions à l'assistant IA."
+    },
+    "TREASURY_VIEW": {
+      "label": "Voir la trésorerie",
+      "help": "Voir les soldes et les mouvements des comptes."
+    },
+    "TREASURY_OPERATE": {
+      "label": "Transferts et comptages",
+      "help": "Faire un transfert entre comptes et un comptage de caisse."
+    },
+    "TREASURY_MANAGE": {
+      "label": "Gérer les comptes",
+      "help": "Créer et archiver les comptes, saisir un solde initial."
     }
   },
   "sessions": {
@@ -1928,7 +1957,8 @@
     "featureEXPENSES": "Dépenses et loyers",
     "featureHR": "DRH",
     "featurePAYROLL": "Paie et bulletins",
-    "featureAI_ASSISTANT": "Assistant IA"
+    "featureAI_ASSISTANT": "Assistant IA",
+    "featureTREASURY": "Trésorerie : caisses et comptes"
   },
   "share": {
     "button": "Partager le lien",
@@ -2768,7 +2798,9 @@
     "cancelFile": "Annuler le dossier",
     "cancelFileTitle": "Annuler le dossier",
     "fileCancelled": "Dossier annulé.",
-    "costTypeTVA_IMPORT": "TVA à l'importation"
+    "costTypeTVA_IMPORT": "TVA à l'importation",
+    "costPaidNow": "Payé maintenant (sans fournisseur)",
+    "costPaidMode": "Mode de paiement"
   },
   "promotions": {
     "title": "Promotions",
@@ -2984,7 +3016,8 @@
     "reducedLine": "Dépôt {name} : détail non accessible",
     "notFound": "Ce dépôt n’existe pas ou vous n’y avez pas accès.",
     "group_expenses": "Dépenses",
-    "group_hr": "DRH"
+    "group_hr": "DRH",
+    "group_treasury": "Trésorerie"
   },
   "expenses": {
     "title": "Dépenses",
@@ -3154,7 +3187,9 @@
     "col_stockValue": "Stock (DA)",
     "col_lowStock": "Sous le seuil",
     "total": "Total",
-    "compareHint": "Touchez un titre de colonne pour trier. Créances et stock : à ce jour."
+    "compareHint": "Touchez un titre de colonne pour trier. Créances et stock : à ce jour.",
+    "balanceCaisses": "Solde des caisses",
+    "balanceBanques": "Solde des banques"
   },
   "hr": {
     "title": "DRH",
@@ -3638,5 +3673,80 @@
     "colFeedback": "Avis",
     "cachedTokens": "dont {count} en cache",
     "feedbackCount": "👍 {up} · 👎 {down}"
+  },
+  "treasury": {
+    "title": "Trésorerie",
+    "subtitle": "Vos caisses et vos comptes : ce qu’il y a dedans, aujourd’hui.",
+    "account": "Compte",
+    "defaultAccount": "Compte par défaut",
+    "transfer": "Transfert",
+    "count": "Comptage",
+    "opening": "Solde initial",
+    "newAccount": "Nouveau compte",
+    "editAccount": "Modifier le compte",
+    "accountHelp": "Une caisse, un compte bancaire ou un CCP.",
+    "saveAccount": "Enregistrer",
+    "accountName": "Nom",
+    "accountType": "Type",
+    "depot": "Dépôt",
+    "noDepot": "Aucun (société)",
+    "bankName": "Banque",
+    "rib": "RIB",
+    "isDefault": "Compte par défaut pour ce type et ce dépôt",
+    "type_CAISSE": "Caisse",
+    "type_BANQUE": "Banque",
+    "type_CCP": "CCP",
+    "totalCaisses": "En caisse",
+    "totalBanques": "En banque",
+    "cashInToday": "Encaissé aujourd’hui",
+    "cashOutToday": "Décaissé aujourd’hui",
+    "in": "Entrées",
+    "out": "Sorties",
+    "noOpening": "Solde initial non saisi",
+    "alertsTitle": "Écarts de caisse à vérifier",
+    "showMovements": "Voir les mouvements de {name}",
+    "movementsOf": "Mouvements : {name}",
+    "noMovements": "Aucun mouvement sur ce compte.",
+    "loadMore": "Afficher plus",
+    "beforeOpening": "avant le solde initial",
+    "editAccountOf": "Modifier {name}",
+    "archiveAccountOf": "Archiver {name}",
+    "archived": "Compte archivé.",
+    "movement_OPENING": "Solde initial",
+    "movement_VERSEMENT": "Versement",
+    "movement_SUPPLIER_PAYMENT": "Règlement fournisseur",
+    "movement_EXPENSE": "Dépense",
+    "movement_IMPORT_COST": "Frais d’importation",
+    "movement_TRANSFER_OUT": "Transfert sortant",
+    "movement_TRANSFER_IN": "Transfert entrant",
+    "movement_COUNT_ADJUST": "Écart de comptage",
+    "movement_REVERSAL": "Annulation",
+    "transferTitle": "Nouveau transfert",
+    "transferHelp": "D’un compte à l’autre : ni une recette, ni une charge.",
+    "transferSubmit": "Transférer",
+    "transferDone": "Transfert {number} enregistré.",
+    "from": "Depuis",
+    "to": "Vers",
+    "available": "Disponible :",
+    "amount": "Montant",
+    "note": "Note",
+    "tooMuch": "Le montant dépasse ce que contient le compte.",
+    "countTitle": "Comptage : {name}",
+    "countHelp": "Saisissez ce que vous avez compté. L’écart sera enregistré.",
+    "countSubmit": "Enregistrer le comptage",
+    "countOk": "La caisse est juste.",
+    "countAdjusted": "Écart enregistré : {ecart}",
+    "expected": "Solde attendu :",
+    "counted": "Montant compté",
+    "ecart": "Écart :",
+    "reason": "Motif",
+    "openingTitle": "Solde initial : {name}",
+    "openingHelp": "Une seule fois par compte. Ce qui est daté d’avant cette date n’entre pas dans le solde.",
+    "openingSubmit": "Enregistrer",
+    "openingDone": "Solde initial enregistré.",
+    "openingDate": "Date du solde",
+    "cancelTransfer": "Annuler le transfert",
+    "cancelTransferTitle": "Annuler ce transfert",
+    "cancelTransferHelp": "Les deux mouvements sont annulés. Rien n’est supprimé."
   }
 }

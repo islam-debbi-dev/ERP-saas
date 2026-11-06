@@ -15,7 +15,10 @@ import {
   type LandedCostPreviewLineDto,
   money,
   parseDA,
+  PAYMENT_MODES,
+  type PaymentMode,
 } from '@erp/shared';
+import { CashAccountPicker } from '@/components/treasury/cash-account-picker';
 import { Amount } from '@/components/shared/amount';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -61,6 +64,7 @@ export function ImportCostDialog({
 }) {
   const t = useTranslations('importFiles');
   const tc = useTranslations('common');
+  const ts = useTranslations('sales');
   const errorMessage = useErrorMessage();
   const queryClient = useQueryClient();
   const key = useIdempotencyKey(open);
@@ -73,6 +77,9 @@ export function ImportCostDialog({
   const [rate, setRate] = useState('');
   const [tva, setTva] = useState('');
   const [method, setMethod] = useState<AllocationMethod>('VALUE');
+  const [paid, setPaid] = useState(false);
+  const [mode, setMode] = useState<PaymentMode>('ESPECES');
+  const [cashAccountId, setCashAccountId] = useState('');
   const [split, setSplit] = useState<Record<string, string>>({});
 
   // A cost owed to a supplier is in that supplier's currency.
@@ -103,6 +110,9 @@ export function ImportCostDialog({
           type,
           label: label.trim(),
           supplierId: supplierId || null,
+          ...(paid && !supplierId
+            ? { paid: true, mode, ...(cashAccountId ? { cashAccountId } : {}) }
+            : {}),
           currency,
           amount: amountValue?.toString(),
           ...(foreign && rateValue ? { exchangeRate: rateValue.toString() } : {}),
@@ -291,6 +301,43 @@ export function ImportCostDialog({
               </p>
             </fieldset>
           ) : null}
+          {supplierId ? null : (
+            <div className="grid gap-3 rounded-md border p-3">
+              <label className="flex min-h-11 items-center gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  className="size-5"
+                  checked={paid}
+                  onChange={(e) => setPaid(e.target.checked)}
+                />
+                {t('costPaidNow')}
+              </label>
+              {paid ? (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="cost-mode">{t('costPaidMode')}</Label>
+                    <NativeSelect
+                      id="cost-mode"
+                      value={mode}
+                      onChange={(e) => setMode(e.target.value as PaymentMode)}
+                    >
+                      {PAYMENT_MODES.map((m) => (
+                        <option key={m} value={m}>
+                          {ts(`mode${m}`)}
+                        </option>
+                      ))}
+                    </NativeSelect>
+                  </div>
+                  <CashAccountPicker
+                    id="cost-account"
+                    mode={mode}
+                    value={cashAccountId}
+                    onChange={setCashAccountId}
+                  />
+                </>
+              ) : null}
+            </div>
+          )}
           <ResponsiveDialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               {tc('cancel')}

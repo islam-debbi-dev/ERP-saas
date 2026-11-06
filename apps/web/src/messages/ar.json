@@ -58,7 +58,8 @@
     "overview": "نظرة شاملة",
     "hr": "الموارد البشرية",
     "myAttendance": "حضوري",
-    "myPayslips": "كشوف راتبي"
+    "myPayslips": "كشوف راتبي",
+    "treasury": "الخزينة"
   },
   "roles": {
     "OWNER": "المالك",
@@ -133,7 +134,9 @@
     "allBrands": "كل العلامات",
     "filtersHint": "المرشحات تغيّر أرقام المبيعات فقط. الصندوق والديون والمخزون تبقى للشركة كلها.",
     "netMonth": "النتيجة الصافية للشهر",
-    "netHint": "الهامش {margin} − الأعباء {charges}"
+    "netHint": "الهامش {margin} − الأعباء {charges}",
+    "inTill": "في الصندوق",
+    "inBank": "في البنك: {amount}"
   },
   "reports": {
     "title": "التقارير",
@@ -293,7 +296,10 @@
     "geoMaxAccuracyM": "الدقة الدنيا (م)",
     "geoMaxAccuracyMHint": "الموقع الأقل دقة يُبلَّغ عنه «GPS غير دقيق». القيمة الافتراضية 200 م.",
     "assistantLink": "المساعد الذكي",
-    "assistantLinkHelp": "مزوّد المساعد ومفتاح API."
+    "assistantLinkHelp": "مزوّد المساعد ومفتاح API.",
+    "treasurySection": "الخزينة",
+    "treasuryHelp": "ينبّه جرد الصندوق المالك ابتداء من هذا الفارق.",
+    "cashCountAlertThreshold": "حد التنبيه للفارق (دج)"
   },
   "validation": {
     "required": "هذا الحقل إلزامي.",
@@ -472,7 +478,17 @@
     "AI_TENANT_KEY_NOT_ALLOWED": "لا يمكن لشركتك استعمال مفتاحها الخاص.",
     "AI_KEY_REQUIRED": "أدخل مفتاح API.",
     "AI_BASE_URL_NOT_ALLOWED": "هذا العنوان غير مسموح: استعمل رابط https عامّا.",
-    "SECRETS_KEY_UNAVAILABLE": "تشفير المفاتيح غير مضبوط على الخادم."
+    "SECRETS_KEY_UNAVAILABLE": "تشفير المفاتيح غير مضبوط على الخادم.",
+    "CASH_ACCOUNT_NOT_FOUND": "هذا الحساب غير موجود أو خارج صلاحياتك.",
+    "CASH_ACCOUNT_NAME_TAKEN": "اسم هذا الحساب موجود مسبقا.",
+    "CASH_ACCOUNT_NOT_EMPTY": "يجب أن يكون الرصيد صفرا لأرشفة هذا الحساب.",
+    "CASH_ACCOUNT_IS_DEFAULT": "اختر أولا حسابا افتراضيا آخر.",
+    "CASH_ACCOUNT_NOT_CAISSE": "الصندوق وحده يُجرد.",
+    "CASH_ACCOUNT_MODIFIED": "تغيّر هذا الحساب في الأثناء. أعد تحميل الصفحة.",
+    "CASH_OPENING_ALREADY_SET": "الرصيد الافتتاحي لهذا الحساب مُدخل مسبقا.",
+    "CASH_INSUFFICIENT": "لا يحتوي الحساب على مال كاف.",
+    "CASH_TRANSFER_NOT_VALID": "هذا التحويل ملغى مسبقا.",
+    "SUPPLIER_PAYMENT_LINKED_TO_PURCHASE": "تم هذا التسديد عند الاستلام: ألغِ وصل الاستلام."
   },
   "units": {
     "PIECE": "قطعة",
@@ -824,7 +840,8 @@
     "readOnlyInTransit": "وصل في الطريق: دين المورد مسجَّل، والبضاعة تدخل المخزون عند إغلاق الملف. لا يمكن بيعها بعد.",
     "currencyRate": "العملة × السعر",
     "landedPerBase": "سعر التكلفة / الوحدة الأساسية:",
-    "cancelBodyInTransit": "يخرج الوصل من حساب المورد. لا يتغير المخزون (لم يدخله شيء)."
+    "cancelBodyInTransit": "يخرج الوصل من حساب المورد. لا يتغير المخزون (لم يدخله شيء).",
+    "paidMode": "طريقة الدفع"
   },
   "suppliers": {
     "title": "الموردون",
@@ -1693,6 +1710,18 @@
     "USE_ASSISTANT": {
       "label": "استعمال المساعد",
       "help": "طرح الأسئلة على المساعد الذكي."
+    },
+    "TREASURY_VIEW": {
+      "label": "عرض الخزينة",
+      "help": "عرض أرصدة الحسابات وحركاتها."
+    },
+    "TREASURY_OPERATE": {
+      "label": "التحويلات والجرد",
+      "help": "التحويل بين الحسابات وجرد الصندوق."
+    },
+    "TREASURY_MANAGE": {
+      "label": "إدارة الحسابات",
+      "help": "إنشاء الحسابات وأرشفتها وإدخال الرصيد الافتتاحي."
     }
   },
   "sessions": {
@@ -1928,7 +1957,8 @@
     "featureEXPENSES": "المصاريف والكراء",
     "featureHR": "الموارد البشرية",
     "featurePAYROLL": "الرواتب وكشوف الراتب",
-    "featureAI_ASSISTANT": "المساعد الذكي"
+    "featureAI_ASSISTANT": "المساعد الذكي",
+    "featureTREASURY": "الخزينة: الصناديق والحسابات"
   },
   "share": {
     "button": "مشاركة الرابط",
@@ -2768,7 +2798,9 @@
     "cancelFile": "إلغاء الملف",
     "cancelFileTitle": "إلغاء الملف",
     "fileCancelled": "تم إلغاء الملف.",
-    "costTypeTVA_IMPORT": "الرسم على القيمة المضافة عند الاستيراد"
+    "costTypeTVA_IMPORT": "الرسم على القيمة المضافة عند الاستيراد",
+    "costPaidNow": "مدفوع الآن (بدون مورد)",
+    "costPaidMode": "طريقة الدفع"
   },
   "promotions": {
     "title": "العروض",
@@ -2984,7 +3016,8 @@
     "reducedLine": "المستودع {name}: التفاصيل غير متاحة",
     "notFound": "هذا المستودع غير موجود أو ليس لديك وصول إليه.",
     "group_expenses": "المصاريف",
-    "group_hr": "الموارد البشرية"
+    "group_hr": "الموارد البشرية",
+    "group_treasury": "الخزينة"
   },
   "expenses": {
     "title": "المصاريف",
@@ -3154,7 +3187,9 @@
     "col_stockValue": "المخزون (دج)",
     "col_lowStock": "تحت الحد",
     "total": "المجموع",
-    "compareHint": "المس عنوان عمود للترتيب. الديون والمخزون: إلى اليوم."
+    "compareHint": "المس عنوان عمود للترتيب. الديون والمخزون: إلى اليوم.",
+    "balanceCaisses": "رصيد الصناديق",
+    "balanceBanques": "رصيد البنوك"
   },
   "hr": {
     "title": "الموارد البشرية",
@@ -3638,5 +3673,80 @@
     "colFeedback": "التقييم",
     "cachedTokens": "منها {count} مخزّنة",
     "feedbackCount": "👍 {up} · 👎 {down}"
+  },
+  "treasury": {
+    "title": "الخزينة",
+    "subtitle": "صناديقك وحساباتك: ما بداخلها اليوم.",
+    "account": "الحساب",
+    "defaultAccount": "الحساب الافتراضي",
+    "transfer": "تحويل",
+    "count": "جرد الصندوق",
+    "opening": "الرصيد الافتتاحي",
+    "newAccount": "حساب جديد",
+    "editAccount": "تعديل الحساب",
+    "accountHelp": "صندوق أو حساب بنكي أو حساب بريدي CCP.",
+    "saveAccount": "حفظ",
+    "accountName": "الاسم",
+    "accountType": "النوع",
+    "depot": "المستودع",
+    "noDepot": "بدون (الشركة)",
+    "bankName": "البنك",
+    "rib": "RIB",
+    "isDefault": "الحساب الافتراضي لهذا النوع وهذا المستودع",
+    "type_CAISSE": "صندوق",
+    "type_BANQUE": "بنك",
+    "type_CCP": "CCP",
+    "totalCaisses": "في الصناديق",
+    "totalBanques": "في البنوك",
+    "cashInToday": "المقبوضات اليوم",
+    "cashOutToday": "المدفوعات اليوم",
+    "in": "الداخل",
+    "out": "الخارج",
+    "noOpening": "لم يُدخل الرصيد الافتتاحي بعد",
+    "alertsTitle": "فوارق صندوق يجب التحقق منها",
+    "showMovements": "عرض حركات {name}",
+    "movementsOf": "الحركات: {name}",
+    "noMovements": "لا توجد حركات في هذا الحساب.",
+    "loadMore": "عرض المزيد",
+    "beforeOpening": "قبل الرصيد الافتتاحي",
+    "editAccountOf": "تعديل {name}",
+    "archiveAccountOf": "أرشفة {name}",
+    "archived": "تمت أرشفة الحساب.",
+    "movement_OPENING": "الرصيد الافتتاحي",
+    "movement_VERSEMENT": "دفعة زبون",
+    "movement_SUPPLIER_PAYMENT": "تسديد مورد",
+    "movement_EXPENSE": "مصروف",
+    "movement_IMPORT_COST": "مصاريف الاستيراد",
+    "movement_TRANSFER_OUT": "تحويل صادر",
+    "movement_TRANSFER_IN": "تحويل وارد",
+    "movement_COUNT_ADJUST": "فارق الجرد",
+    "movement_REVERSAL": "إلغاء",
+    "transferTitle": "تحويل جديد",
+    "transferHelp": "من حساب إلى آخر: ليس دخلا ولا مصروفا.",
+    "transferSubmit": "تحويل",
+    "transferDone": "تم تسجيل التحويل {number}.",
+    "from": "من",
+    "to": "إلى",
+    "available": "المتوفر:",
+    "amount": "المبلغ",
+    "note": "ملاحظة",
+    "tooMuch": "المبلغ أكبر مما في الحساب.",
+    "countTitle": "جرد: {name}",
+    "countHelp": "أدخل ما قمت بعدّه. سيُسجَّل الفارق.",
+    "countSubmit": "حفظ الجرد",
+    "countOk": "الصندوق مضبوط.",
+    "countAdjusted": "تم تسجيل الفارق: {ecart}",
+    "expected": "الرصيد المتوقع:",
+    "counted": "المبلغ المعدود",
+    "ecart": "الفارق:",
+    "reason": "السبب",
+    "openingTitle": "الرصيد الافتتاحي: {name}",
+    "openingHelp": "مرة واحدة لكل حساب. ما هو مؤرخ قبل هذا اليوم لا يدخل في الرصيد.",
+    "openingSubmit": "حفظ",
+    "openingDone": "تم تسجيل الرصيد الافتتاحي.",
+    "openingDate": "تاريخ الرصيد",
+    "cancelTransfer": "إلغاء التحويل",
+    "cancelTransferTitle": "إلغاء هذا التحويل",
+    "cancelTransferHelp": "تُلغى الحركتان معا. لا يُحذف شيء."
   }
 }

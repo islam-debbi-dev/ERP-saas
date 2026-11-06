@@ -11,6 +11,7 @@
     "db:backfill-supplier-ledger": "node dist/purchases/supplier-backfill.cli.js",
     "db:backfill-warehouses": "node dist/stock/warehouse-backfill.cli.js",
     "db:backfill-units": "node dist/stock/unit-backfill.cli.js",
+    "treasury:backfill": "node dist/treasury/treasury-backfill.cli.js",
     "db:check-migrations": "tsx scripts/check-migrations.ts",
     "admin:create": "tsx scripts/admin-create.ts",
     "assistant:help": "tsx scripts/assistant-help.ts",

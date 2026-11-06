@@ -24,6 +24,7 @@ import {
   type PayslipDto,
   Permission,
 } from '@erp/shared';
+import { CashAccountPicker } from '@/components/treasury/cash-account-picker';
 import { Amount } from '@/components/shared/amount';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FeatureGate } from '@/components/shared/feature-gate';
@@ -639,6 +640,7 @@ function PayDialog({
   const { pay } = usePayrollRunActions(run.id);
   const key = useIdempotencyKey(open);
   const [mode, setMode] = useState<PaymentMode>('ESPECES');
+  const [cashAccountId, setCashAccountId] = useState('');
   const [reference, setReference] = useState('');
   const [left, setLeft] = useState<Set<string>>(new Set());
   const due = run.payslips.filter((p) => money(p.remaining).gt(0));
@@ -659,6 +661,7 @@ function PayDialog({
         key,
         body: {
           mode,
+          ...(cashAccountId ? { cashAccountId } : {}),
           reference: reference.trim() || null,
           items: chosen.map((p) => ({ employeeId: p.employeeId })),
         },
@@ -695,6 +698,12 @@ function PayDialog({
               ))}
             </NativeSelect>
           </div>
+          <CashAccountPicker
+            id="pay-account"
+            mode={mode}
+            value={cashAccountId}
+            onChange={setCashAccountId}
+          />
           <div className="space-y-2">
             <Label htmlFor="pay-reference">{t('reference')}</Label>
             <Input

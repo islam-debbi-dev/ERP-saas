@@ -41,6 +41,7 @@ function toResponse(t: Tenant): TenantSettingsResponse {
     timbreMin: t.timbreMin ? toMoneyString(t.timbreMin) : null,
     timbreMax: t.timbreMax ? toMoneyString(t.timbreMax) : null,
     timbreThreshold: t.timbreThreshold ? toMoneyString(t.timbreThreshold) : null,
+    cashCountAlertThreshold: toMoneyString(t.cashCountAlertThreshold.toString()),
     defaultPrintFormat: t.defaultPrintFormat,
     documentFooter: t.documentFooter,
     tvaMention: t.tvaMention,
@@ -88,6 +89,7 @@ export class TenantsService {
           timbreMin: normalizeAmount(input.timbreMin),
           timbreMax: normalizeAmount(input.timbreMax),
           timbreThreshold: normalizeAmount(input.timbreThreshold),
+          cashCountAlertThreshold: normalizeAmount(input.cashCountAlertThreshold) ?? undefined,
         },
       });
       if (after.priceLevelCount > before.priceLevelCount) {
