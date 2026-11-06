@@ -86,3 +86,6 @@ Every phase that adds a screen follows [`ui.md`](ui.md): phone first, RTL, Playw
 ## Phase 30 (plan of 2026-11-04)
 - Independent of 23, 27, 28: can be built any time after 26.
 - Read-only by design: the assistant never creates or changes business data.
+
+## Phase 34 (plan of 2026-11-06)
+- Trésorerie: caisses and bank accounts with balances, paid-at-reception BRs become règlements, import costs paid at the port, transfers, cash count. Prompt: [`phase-34-treasury.md`](prompts/phase-34-treasury.md). Fixes the gaps listed in `docs/guide-workflow-ar.md` §10. Replaces "Multiple caisses" in the v1.1 backlog, except sessions de caisse.
