@@ -12,6 +12,7 @@ import {
   Permission,
 } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
+import { ErrorState } from '@/components/shared/error-state';
 import { FeatureGate } from '@/components/shared/feature-gate';
 import { PageHeader } from '@/components/shared/page-header';
 import { Badge } from '@/components/ui/badge';
@@ -43,7 +44,6 @@ export function LeavesPage() {
 
 function Leaves() {
   const t = useTranslations('hr');
-  const errorMessage = useErrorMessage();
   const [status, setStatus] = useState<LeaveRequestStatus | ''>('PENDING');
   const pages = useLeavePages(status);
   const items = useMemo(() => pages.data?.pages.flatMap((p) => p.items) ?? [], [pages.data]);
@@ -70,7 +70,7 @@ function Leaves() {
       {pages.isPending ? (
         <Skeleton className="h-32 w-full" />
       ) : pages.isError ? (
-        <EmptyState icon={CalendarCheck} title={errorMessage(pages.error)} />
+        <ErrorState icon={CalendarCheck} error={pages.error} onRetry={() => void pages.refetch()} />
       ) : items.length === 0 ? (
         <EmptyState icon={CalendarCheck} title={t('noLeaves')} />
       ) : (

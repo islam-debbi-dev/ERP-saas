@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react';
 import { type EmployeeDto, Feature, Permission } from '@erp/shared';
 import { Amount } from '@/components/shared/amount';
 import { EmptyState } from '@/components/shared/empty-state';
+import { ErrorState } from '@/components/shared/error-state';
 import { FeatureGate } from '@/components/shared/feature-gate';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/table/data-table';
@@ -140,7 +141,11 @@ function Employees() {
         isLoading={pages.isPending}
         onRowClick={(e) => router.push(`/rh/employes/${e.id}`)}
         emptyState={
-          <EmptyState icon={Users} title={t('noEmployees')} description={t('noEmployeesHelp')} />
+          pages.isError ? (
+            <ErrorState icon={Users} error={pages.error} onRetry={() => void pages.refetch()} />
+          ) : (
+            <EmptyState icon={Users} title={t('noEmployees')} description={t('noEmployeesHelp')} />
+          )
         }
       />
       {pages.hasNextPage ? (

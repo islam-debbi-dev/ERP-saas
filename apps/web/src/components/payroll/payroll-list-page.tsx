@@ -10,6 +10,7 @@ import { algiersDay, Feature, Permission, previousMonth } from '@erp/shared';
 import { HrTabs } from '@/components/hr/hr-tabs';
 import { Amount } from '@/components/shared/amount';
 import { EmptyState } from '@/components/shared/empty-state';
+import { ErrorState } from '@/components/shared/error-state';
 import { FeatureGate } from '@/components/shared/feature-gate';
 import { PageHeader } from '@/components/shared/page-header';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -85,7 +86,10 @@ function List() {
         </Alert>
       ) : null}
       {runs.isPending ? <Skeleton className="h-40 w-full" /> : null}
-      {!runs.isPending && items.length === 0 ? (
+      {runs.isError && items.length === 0 ? (
+        <ErrorState icon={Banknote} error={runs.error} onRetry={() => void runs.refetch()} />
+      ) : null}
+      {!runs.isPending && !runs.isError && items.length === 0 ? (
         <EmptyState icon={Banknote} title={t('noRuns')} description={t('noRunsHelp')} />
       ) : null}
       <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">

@@ -13,6 +13,7 @@ import {
   Permission,
 } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
+import { ErrorState } from '@/components/shared/error-state';
 import { FeatureGate } from '@/components/shared/feature-gate';
 import { PageHeader } from '@/components/shared/page-header';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -218,6 +219,13 @@ function Holidays({ canManage }: { canManage: boolean }) {
       ) : null}
       {list.isPending ? (
         <Skeleton className="h-32 w-full" />
+      ) : list.isError ? (
+        <ErrorState
+          icon={CalendarDays}
+          error={list.error}
+          onRetry={() => void list.refetch()}
+          className="py-6"
+        />
       ) : list.data && list.data.items.length > 0 ? (
         <ul className="divide-y text-sm">
           {list.data.items.map((h) => (

@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { algiersDay, Feature, type MonthCounts, Permission } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
+import { ErrorState } from '@/components/shared/error-state';
 import { FeatureGate } from '@/components/shared/feature-gate';
 import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
@@ -104,7 +105,7 @@ function Month() {
       {data.isPending ? (
         <Skeleton className="h-64 w-full" />
       ) : data.isError ? (
-        <EmptyState icon={CalendarRange} title={errorMessage(data.error)} />
+        <ErrorState icon={CalendarRange} error={data.error} onRetry={() => void data.refetch()} />
       ) : d?.countsOnly ? (
         <Card className="p-4">
           <p className="mb-3 text-sm text-muted-foreground">{t('countsOnly')}</p>
