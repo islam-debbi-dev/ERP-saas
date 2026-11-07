@@ -40,6 +40,7 @@ Each phase is one branch, one PR and one Claude Code session. Prompts live in [`
 | 30 | [Assistant IA](prompts/phase-30-ai-assistant.md) | In-app help assistant, any model provider chosen by the admin (Claude, Gemini, OpenAI-compatible; own key in single-company mode): how-to answers in ar / darja / fr, read-only questions on the user's own data, quotas per plan | 13b, 24 | v2 |
 | 31 | [DRH: personnel et pointage](prompts/phase-31-hr-attendance.md) | Employés, pointage du jour présent / absent (manager or self check-in with GPS), congés ledger, avances sur salaire | 24, 25 | v2 |
 | 31b | [DRH: paie](prompts/phase-31b-payroll.md) | Monthly payroll run from the pointage, CNAS + IRG as dated rate sets, bulletin de paie PDF, salary payments, CNAS / IRG / DAS exports | 31 | v2 |
+| 33 | [Tableau de bord interactif](prompts/phase-33-interactive-dashboard.md) | Every figure links to its filtered list, "À faire aujourd'hui" with one-tap actions, period switcher and tappable chart, top lists, auto refresh, monthly goal, per-user card layout | 21, 26 | v1.1 |
 | 34 | [Trésorerie](prompts/phase-34-treasury.md) | Caisses and bank accounts with balances, cash ledger, transfers, comptage, paid-at-reception RGFs, import costs paid now | 21, 22, 24, 25, 31b | v2 |
 
 **MVP = phases 1 to 12b.** Put the pilot grossiste on it after phase 12b (traders open it on their phones); phase 13 can follow during the free pilot month.
@@ -87,6 +88,9 @@ Every phase that adds a screen follows [`ui.md`](ui.md): phone first, RTL, Playw
 ## Phase 30 (plan of 2026-11-04)
 - Independent of 23, 27, 28: can be built any time after 26.
 - Read-only by design: the assistant never creates or changes business data.
+
+## Phase 33 (plan of 2026-11-07)
+- The owner finds the dashboard boring and static. Phase 33 makes it the place the trader starts his day: drill-down on every number, an action list, interactive period and chart, a live feel. It writes nothing itself. Prompt: [`phase-33-interactive-dashboard.md`](prompts/phase-33-interactive-dashboard.md).
 
 ## Phase 34 (plan of 2026-11-06)
 - Trésorerie: caisses and bank accounts with balances, paid-at-reception BRs become règlements, import costs paid at the port, transfers, cash count. Prompt: [`phase-34-treasury.md`](prompts/phase-34-treasury.md). Fixes the gaps listed in `docs/guide-workflow-ar.md` §10. Replaces "Multiple caisses" in the v1.1 backlog, except sessions de caisse.
