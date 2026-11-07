@@ -271,6 +271,8 @@ export interface PayslipIssue {
   code: PayslipIssueCode;
   /** The days concerned, for UNMARKED_DAYS. */
   days?: string[];
+  /** For NO_SALARY: the first salary starts after this month. */
+  details?: { salaryFrom: string };
 }
 
 export interface PayslipLineDto {

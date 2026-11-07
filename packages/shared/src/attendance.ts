@@ -262,6 +262,21 @@ export function salaryOn<T extends DatedSalary>(rows: readonly T[], day: string)
   return found;
 }
 
+/** The row in force on the earliest date: on a tie the last row wins, as in `salaryOn`. */
+export function firstSalary<T extends DatedSalary>(rows: readonly T[]): T | null {
+  let start: string | null = null;
+  for (const row of rows) {
+    if (start === null || row.effectiveFrom < start) start = row.effectiveFrom;
+  }
+  return start === null ? null : salaryOn(rows, start);
+}
+
+/** A `YYYY-MM-DD` day as shown to people: `dd/mm/yyyy`. */
+export function formatDay(day: string): string {
+  const [year, month, date] = day.split('-');
+  return `${date}/${month}/${year}`;
+}
+
 export interface MonthCounts {
   /** Half days count 0.5. */
   present: string;

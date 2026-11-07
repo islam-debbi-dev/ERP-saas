@@ -100,7 +100,13 @@ export const createEmployeeSchema = z
   .superRefine(contractDates);
 export type CreateEmployeeInput = z.infer<typeof createEmployeeSchema>;
 
-export const updateEmployeeSchema = z.object(employeeFields).superRefine(contractDates);
+export const updateEmployeeSchema = z
+  .object({
+    ...employeeFields,
+    /** The hire date moved before the first salary: start that salary on it too. */
+    alignFirstSalary: z.boolean().optional(),
+  })
+  .superRefine(contractDates);
 export type UpdateEmployeeInput = z.infer<typeof updateEmployeeSchema>;
 
 export const employeeListQuerySchema = z.object({
@@ -121,6 +127,8 @@ export interface EmployeePayDto {
   payType: PayType | null;
   salary: string | null;
   advanceBalance: string;
+  /** The row in force on `firstSalaryFrom`. */
+  firstSalary: { amount: string; payType: PayType } | null;
 }
 
 export interface EmployeeDto {
@@ -142,6 +150,8 @@ export interface EmployeeDto {
   restDays: number[] | null;
   leaveBalance: string;
   archived: boolean;
+  /** A date only, so that a user without SALARY_VIEW can be told the salary starts later. */
+  firstSalaryFrom: string | null;
   pay?: EmployeePayDto;
 }
 

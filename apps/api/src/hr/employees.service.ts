@@ -11,6 +11,7 @@ import {
   type EmployeeSalaryInput,
   ErrorCode,
   Feature,
+  firstSalary,
   type LedgerQuery,
   Permission,
   salaryOn,
@@ -31,6 +32,7 @@ import { ScopeService } from '../sales-force/scope.service';
 import { AttendanceDaysService, fromDay, toDay } from './attendance-days.service';
 import { CalendarService } from './calendar.service';
 import { EmployeeAccessService } from './employee-access.service';
+import { employeeAuditDiff, employeeAuditSelect } from './employee-audit';
 import { ACCRUAL_TX, LeaveAccrualService } from './leave-accrual.service';
 
 const include = {
@@ -42,6 +44,9 @@ const include = {
 type EmployeeRow = Prisma.EmployeeGetPayload<{ include: typeof include }>;
 
 const optionalDay = (d: string | null): Date | null => (d ? fromDay(d) : null);
+
+/** Written on the row that follows the hire date back: stored data, not UI text. */
+const ALIGNED_SALARY_REASON = "Date d'embauche avancée";
 
 /** Personnel (phase 31): master data, soft delete. Salaries are append-only rows. */
 @Injectable()
@@ -59,6 +64,8 @@ export class EmployeesService {
   ) {}
 
   private toDto(e: EmployeeRow, user: CurrentUserInfo): EmployeeDto {
+    const salaries = e.salaries.map((s) => ({ ...s, effectiveFrom: toDay(s.effectiveFrom) }));
+    const first = firstSalary(salaries);
     const dto: EmployeeDto = {
       id: e.id,
       matricule: e.matricule,
@@ -78,12 +85,10 @@ export class EmployeesService {
       restDays: e.restDays.length > 0 ? e.restDays : null,
       leaveBalance: e.balance?.leaveDays.toFixed(1) ?? '0.0',
       archived: e.deletedAt !== null,
+      firstSalaryFrom: first?.effectiveFrom ?? null,
     };
     if (!can(user, Permission.SALARY_VIEW)) return dto;
-    const current = salaryOn(
-      e.salaries.map((s) => ({ ...s, effectiveFrom: toDay(s.effectiveFrom) })),
-      algiersDay(),
-    );
+    const current = salaryOn(salaries, algiersDay());
     return {
       ...dto,
       pay: {
@@ -91,6 +96,9 @@ export class EmployeesService {
         payType: current?.payType ?? null,
         salary: current ? toMoneyString(current.amount.toString()) : null,
         advanceBalance: toMoneyString(e.balance?.advanceBalance.toString() ?? '0'),
+        firstSalary: first
+          ? { amount: toMoneyString(first.amount.toString()), payType: first.payType }
+          : null,
       },
     };
   }
@@ -191,10 +199,15 @@ export class EmployeesService {
     input: UpdateEmployeeInput,
     user: CurrentUserInfo,
   ): Promise<EmployeeDto> {
+    if (input.alignFirstSalary) requirePermission(user, Permission.SALARY_VIEW);
     await this.prisma.db.$transaction(
       async (tx) => {
         await this.access.assertReach(tx, user, id);
-        const locked = (await this.access.lock(tx, [id])).get(id)!;
+        await this.access.lock(tx, [id]);
+        const before = await tx.employee.findFirstOrThrow({
+          where: { id },
+          select: employeeAuditSelect,
+        });
         await this.assertWarehouse(tx, input.warehouseId, user);
         await this.assertUser(tx, input.userId, id);
         const updated = await tx.employee.update({
@@ -204,14 +217,9 @@ export class EmployeesService {
             // A user who cannot see the RIB cannot send it back: keep what is stored.
             ...(can(user, Permission.SALARY_VIEW) ? { bankAccount: input.bankAccount } : {}),
           },
-          select: {
-            id: true,
-            hireDate: true,
-            exitDate: true,
-            restDays: true,
-            warehouseId: true,
-          },
+          select: { ...employeeAuditSelect, id: true },
         });
+        if (input.alignFirstSalary) await this.alignFirstSalary(tx, id, input.hireDate, user);
         // Hire, exit or rest days decide what cached days say (locked months stay frozen).
         const tenantId = tenantContext.requireTenantId();
         for (const d of await this.days.diffs(tx, tenantId)) {
@@ -221,8 +229,7 @@ export class EmployeesService {
           action: 'EMPLOYEE_UPDATED',
           entity: 'Employee',
           entityId: id,
-          before: { fullName: locked.fullName, warehouseId: locked.warehouseId },
-          after: { fullName: input.fullName, warehouseId: input.warehouseId },
+          ...employeeAuditDiff(before, updated),
         });
       },
       { timeout: 30_000 },
@@ -286,6 +293,36 @@ export class EmployeesService {
       await this.addSalary(tx, id, input, user);
     });
     return this.salaries(id, user);
+  }
+
+  /**
+   * The hire date moved before the first salary: a new row starts that salary on it, as
+   * rows are never edited. Months already approved keep their frozen payslips.
+   */
+  private async alignFirstSalary(
+    tx: Tx,
+    employeeId: string,
+    hireDate: string,
+    user: CurrentUserInfo,
+  ): Promise<void> {
+    const rows = await tx.employeeSalary.findMany({
+      where: { employeeId },
+      orderBy: { seq: 'asc' },
+      select: { amount: true, payType: true, effectiveFrom: true },
+    });
+    const first = firstSalary(rows.map((r) => ({ ...r, effectiveFrom: toDay(r.effectiveFrom) })));
+    if (!first || first.effectiveFrom <= hireDate) return;
+    await this.addSalary(
+      tx,
+      employeeId,
+      {
+        amount: first.amount.toString(),
+        payType: first.payType,
+        effectiveFrom: hireDate,
+        reason: ALIGNED_SALARY_REASON,
+      },
+      user,
+    );
   }
 
   private async addSalary(

@@ -13,6 +13,8 @@ import {
   monthBounds,
   monthCounts,
   previousMonth,
+  firstSalary,
+  formatDay,
   salaryOn,
   workingDaysBetween,
 } from './attendance';
@@ -269,6 +271,35 @@ describe('accrualForMonth', () => {
   it('gives nothing outside employment', () => {
     expect(accrualForMonth('2026-11', '2026-12-01', null)).toBe('0.0');
     expect(accrualForMonth('2026-11', '2020-01-01', '2026-10-31')).toBe('0.0');
+  });
+});
+
+describe('firstSalary', () => {
+  it('finds the earliest row, whatever the order they were added in', () => {
+    const rows = [
+      { effectiveFrom: '2026-11-06', amount: '40000' },
+      { effectiveFrom: '2026-10-27', amount: '38000' },
+    ];
+    expect(firstSalary(rows)?.amount).toBe('38000');
+  });
+
+  it('keeps the last row of the earliest date, as salaryOn does', () => {
+    const rows = [
+      { effectiveFrom: '2026-11-06', amount: '40000' },
+      { effectiveFrom: '2026-11-06', amount: '46000' },
+      { effectiveFrom: '2026-12-01', amount: '50000' },
+    ];
+    expect(firstSalary(rows)?.amount).toBe('46000');
+  });
+
+  it('is null without a row', () => {
+    expect(firstSalary([])).toBeNull();
+  });
+});
+
+describe('formatDay', () => {
+  it('shows a day as dd/mm/yyyy', () => {
+    expect(formatDay('2026-10-27')).toBe('27/10/2026');
   });
 });
 

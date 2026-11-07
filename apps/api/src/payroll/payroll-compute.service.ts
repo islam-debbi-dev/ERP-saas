@@ -21,6 +21,7 @@ import {
   PayType,
   previousMonth,
   type RetenueInput,
+  firstSalary,
   salaryOn,
   summarizeDays,
   toMoneyString,
@@ -185,7 +186,8 @@ export class PayrollComputeService {
       this.days.calendar(tx, tenantId, from, to),
       this.days.read(tx, tenantId, employees, from, to),
       tx.employeeSalary.findMany({
-        where: { employeeId: { in: ids }, effectiveFrom: { lte: fromDay(to) } },
+        // Later rows too: `salaryOn` skips them, the NO_SALARY issue names the first one.
+        where: { employeeId: { in: ids } },
         orderBy: { seq: 'asc' },
       }),
       tx.employeePayItem.findMany({
@@ -247,12 +249,10 @@ export class PayrollComputeService {
       }));
       const days = summarizeDays(payDays);
       const unmarked = views.filter(([, v]) => v.status === DayStatus.UNMARKED).map(([d]) => d);
-      const salaryRow = salaryOn(
-        salaries
-          .filter((s) => s.employeeId === employee.id)
-          .map((s) => ({ ...s, effectiveFrom: toDay(s.effectiveFrom) })),
-        to,
-      );
+      const salaryRows = salaries
+        .filter((s) => s.employeeId === employee.id)
+        .map((s) => ({ ...s, effectiveFrom: toDay(s.effectiveFrom) }));
+      const salaryRow = salaryOn(salaryRows, to);
 
       const payItems: PayItemInput[] = payItemsOn(
         items
@@ -316,7 +316,13 @@ export class PayrollComputeService {
       if (unmarked.length > 0) {
         issues.push({ code: PayslipIssueCode.UNMARKED_DAYS, days: unmarked });
       }
-      if (!salaryRow) issues.push({ code: PayslipIssueCode.NO_SALARY });
+      if (!salaryRow) {
+        const first = firstSalary(salaryRows);
+        issues.push({
+          code: PayslipIssueCode.NO_SALARY,
+          ...(first ? { details: { salaryFrom: first.effectiveFrom } } : {}),
+        });
+      }
       if (money(result.netToPay).isNegative()) issues.push({ code: PayslipIssueCode.NEGATIVE_NET });
       if (
         salaryRow?.payType === PayType.MONTHLY &&
