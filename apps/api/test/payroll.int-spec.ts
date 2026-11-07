@@ -8,6 +8,7 @@ import {
   type ChargesReportDto,
   type EmployeeDto,
   type EmployeeLedgerPage,
+  type EmployeeSalaryDto,
   ErrorCode,
   type ExpensePage,
   FIXED_PUBLIC_HOLIDAYS,
@@ -142,6 +143,10 @@ describe('payroll (phase 31b)', () => {
       .expect(200);
     return { id, auth: relog.body as AuthResponse };
   };
+
+  /** One manager without SALARY_VIEW, shared: each invite costs two rate-limited logins. */
+  let plain: Promise<Member> | undefined;
+  const plainManager = () => (plain ??= invite());
 
   const depot = async (who: Who = d): Promise<WarehouseDto> =>
     (
@@ -821,6 +826,194 @@ describe('payroll (phase 31b)', () => {
     });
   });
 
+  describe('a salary that starts after the hire date', () => {
+    const MOVED = addDays(TO, -4);
+    const ALIGNED_REASON = "Date d'embauche avancée";
+
+    /** Created today, as the dialog does: hire date and first salary on the same day. */
+    const hiredToday = async (warehouseId: string, amount: string | null = '40000') => {
+      const e = await employee(warehouseId, null, { hireDate: TODAY });
+      if (amount) {
+        await as(d)
+          .post(`/employees/${e.id}/salaries`, {
+            amount,
+            payType: 'MONTHLY',
+            effectiveFrom: TODAY,
+          })
+          .expect(201);
+      }
+      return e;
+    };
+    const move = (e: EmployeeDto, hireDate: string, over: object = {}, who: Who = d) =>
+      as(who).put(`/employees/${e.id}`, {
+        fullName: e.fullName,
+        hireDate,
+        contract: 'CDI',
+        declared: true,
+        ...(e.warehouse ? { warehouseId: e.warehouse.id } : {}),
+        ...over,
+      });
+    const salaries = async (id: string) =>
+      (await as(d).get(`/employees/${id}/salaries`).expect(200)).body as EmployeeSalaryDto[];
+    const markFrom = async (id: string, day: string) => {
+      for (const date of WORKING_DAYS.filter((x) => x >= day)) {
+        await as(d)
+          .post('/attendance/events', { date, marks: [{ employeeId: id, kind: 'PRESENT' }] })
+          .expect(201);
+      }
+    };
+
+    it('starts the salary on the moved hire date, and the month computes prorated', async () => {
+      const w = await depot();
+      const e = await hiredToday(w.id);
+      const moved = (await move(e, MOVED, { alignFirstSalary: true }).expect(200))
+        .body as EmployeeDto;
+      expect(moved.firstSalaryFrom).toBe(MOVED);
+      expect(moved.pay?.firstSalary).toEqual({ amount: '40000.00', payType: 'MONTHLY' });
+
+      const rows = await salaries(e.id);
+      expect(rows).toHaveLength(2);
+      expect(rows.at(-1)).toMatchObject({
+        amount: '40000.00',
+        payType: 'MONTHLY',
+        effectiveFrom: MOVED,
+        reason: ALIGNED_REASON,
+      });
+      const audits = await tenantContext.runAsSystem(() =>
+        t.prisma.db.auditLog.findMany({
+          where: { action: 'EMPLOYEE_SALARY_ADDED', entityId: rows.at(-1)!.id },
+        }),
+      );
+      expect(audits).toHaveLength(1);
+
+      await markFrom(e.id, MOVED);
+      const slip = slipOf(await draft(w.id), e.id);
+      expect(slip.issues).toEqual([]);
+      // 5 days of a 31-day month are worked: 40 000 x 5 / 31 = 6 451,61 for October.
+      const days = listDays(FROM, TO).length;
+      expect(slip.gross).toBe(money('40000').mul(5).div(days).toFixed(2));
+    });
+
+    it('appends nothing without the flag, and the run says when the salary starts', async () => {
+      const w = await depot();
+      const e = await hiredToday(w.id);
+      await move(e, MOVED).expect(200);
+      expect(await salaries(e.id)).toHaveLength(1);
+
+      await markFrom(e.id, MOVED);
+      const slip = slipOf(await draft(w.id), e.id);
+      expect(slip.issues).toEqual([{ code: 'NO_SALARY', details: { salaryFrom: TODAY } }]);
+    });
+
+    it('names no date for an employee who has no salary at all', async () => {
+      const w = await depot();
+      const e = await employee(w.id, null);
+      await markMonth([e.id]);
+      expect(slipOf(await draft(w.id), e.id).issues).toEqual([{ code: 'NO_SALARY' }]);
+    });
+
+    /** A manager who reaches the dépôt and may edit employees, without SALARY_VIEW. */
+    const managerOf = async (warehouseId: string) => {
+      const manager = await plainManager();
+      await as(d)
+        .put(`/users/${manager.id}/access`, { access: [{ warehouseId, level: 'OPERATE' }] })
+        .expect(200);
+      return manager;
+    };
+
+    it('refuses the flag without SALARY_VIEW, and writes nothing', async () => {
+      const w = await depot();
+      const e = await hiredToday(w.id);
+      const manager = await managerOf(w.id);
+      const res = await move(e, MOVED, { alignFirstSalary: true }, manager).expect(403);
+      expect((res.body as { code: string }).code).toBe('FORBIDDEN');
+      expect(await salaries(e.id)).toHaveLength(1);
+      const stored = (await as(d).get(`/employees/${e.id}`).expect(200)).body as EmployeeDto;
+      expect(stored.hireDate).toBe(TODAY);
+
+      // Only the flag was refused: the same edit goes through without it.
+      const moved = (await move(e, MOVED, {}, manager).expect(200)).body as EmployeeDto;
+      expect(moved.hireDate).toBe(MOVED);
+      expect(await salaries(e.id)).toHaveLength(1);
+    });
+
+    it('gives a user without SALARY_VIEW the date only', async () => {
+      const w = await depot();
+      const e = await hiredToday(w.id);
+      const manager = await managerOf(w.id);
+      const seen = (await as(manager).get(`/employees/${e.id}`).expect(200)).body as EmployeeDto;
+      expect(seen.firstSalaryFrom).toBe(TODAY);
+      expect(seen.pay).toBeUndefined();
+    });
+
+    it('appends nothing when only the phone changes', async () => {
+      const e = await hiredToday((await depot()).id);
+      await move(e, MOVED).expect(200);
+      await move(e, MOVED, { phone: '0550000000' }).expect(200);
+      expect(await salaries(e.id)).toHaveLength(1);
+    });
+
+    it('appends once when called twice', async () => {
+      const e = await hiredToday((await depot()).id);
+      await move(e, MOVED, { alignFirstSalary: true }).expect(200);
+      await move(e, MOVED, { alignFirstSalary: true }).expect(200);
+      expect(await salaries(e.id)).toHaveLength(2);
+    });
+
+    it('does nothing without a salary, or when the salary already covers the date', async () => {
+      const w = await depot();
+      const none = await hiredToday(w.id, null);
+      await move(none, MOVED, { alignFirstSalary: true }).expect(200);
+      expect(await salaries(none.id)).toHaveLength(0);
+
+      const covered = await employee(w.id);
+      await move(covered, addDays(HIRED, 10), { alignFirstSalary: true }).expect(200);
+      expect(await salaries(covered.id)).toHaveLength(1);
+    });
+
+    it('leaves a month already approved as it was', async () => {
+      const w = await depot();
+      const hired = WORKING_DAYS[10]!;
+      const e = await employee(w.id, null, { hireDate: hired });
+      await as(d)
+        .post(`/employees/${e.id}/salaries`, {
+          amount: '40000',
+          payType: 'MONTHLY',
+          effectiveFrom: hired,
+        })
+        .expect(201);
+      await markFrom(e.id, hired);
+      const run = await approve(await draft(w.id));
+      const before = slipOf(run, e.id);
+
+      await move(e, addDays(FROM, -40), { alignFirstSalary: true }).expect(200);
+      expect(await salaries(e.id)).toHaveLength(2);
+      const after = (await as(d).get(`/payroll-runs/${run.id}`).expect(200))
+        .body as PayrollRunDetailDto;
+      expect(slipOf(after, e.id)).toMatchObject({
+        gross: before.gross,
+        netToPay: before.netToPay,
+        salary: before.salary,
+      });
+    });
+
+    it('audits the hire date, and only what changed', async () => {
+      const e = await hiredToday((await depot()).id);
+      await move(e, MOVED, { bankAccount: '00799999000123456789' }).expect(200);
+      const entry = await tenantContext.runAsSystem(() =>
+        t.prisma.db.auditLog.findFirst({ where: { action: 'EMPLOYEE_UPDATED', entityId: e.id } }),
+      );
+      expect(entry).toMatchObject({ before: { hireDate: TODAY }, after: { hireDate: MOVED } });
+      expect(entry?.after).toEqual({ hireDate: MOVED });
+    });
+
+    it('does not reach an employee of another tenant', async () => {
+      const e = await hiredToday((await depot()).id);
+      await move(e, MOVED, { alignFirstSalary: true }, other).expect(404);
+      expect(await salaries(e.id)).toHaveLength(1);
+    });
+  });
+
   describe('charges', () => {
     it('counts gross + employer CNAS once; payments and avances are cash', async () => {
       const { w, e } = await ready();
@@ -1231,7 +1424,7 @@ describe('payroll (phase 31b)', () => {
     it('hides everything without SALARY_VIEW', async () => {
       const { w } = await ready();
       const run = await approve(await draft(w.id));
-      const manager = await invite();
+      const manager = await plainManager();
       await as(manager).get('/payroll-runs').expect(403);
       await as(manager).get(`/payroll-runs/${run.id}`).expect(403);
       await as(manager).get('/payroll-settings').expect(403);

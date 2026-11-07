@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
+import { Loader2, TriangleAlert } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -11,11 +11,15 @@ import {
   type EmployeeDto,
   EmployeeContract as Contract,
   Feature,
+  formatDA,
+  formatDay,
   PAY_TYPES,
   type PayType,
   Permission,
   WarehouseType,
 } from '@erp/shared';
+import { ltr } from '@/components/shared/amount';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -122,6 +126,14 @@ function EmployeeForm({
   const set = <K extends keyof Form>(key: K, value: Form[K]) =>
     setF((v) => ({ ...v, [key]: value }));
 
+  // The typed hire date comes before the first salary: that month would have no salary.
+  const salaryFrom = employee?.firstSalaryFrom ?? null;
+  const salaryLater = !!f.hireDate && !!salaryFrom && f.hireDate < salaryFrom;
+  const firstSalary = employee?.pay?.firstSalary ?? null;
+  // Rows can't be removed: an edit that leaves the hire date alone never ticks this for the user.
+  const [alignChoice, setAlign] = useState<boolean | null>(null);
+  const align = alignChoice ?? f.hireDate !== employee?.hireDate;
+
   const needsDepot = multiUnit && !f.warehouseId;
   const needsEnd = f.contract === Contract.CDD && !f.contractEndDate;
   const invalid = !f.fullName.trim() || !f.hireDate || needsDepot || needsEnd;
@@ -143,6 +155,7 @@ function EmployeeForm({
       birthDate: f.birthDate || null,
       bankAccount: f.bankAccount || null,
       restDays: employee?.restDays ?? null,
+      ...(salaryLater && canPay && firstSalary && align ? { alignFirstSalary: true } : {}),
       ...(!employee && canPay && f.salary
         ? {
             salary: {
@@ -207,6 +220,33 @@ function EmployeeForm({
         </div>
         {field('hireDate', t('hireDate'), { type: 'date' })}
         {field('exitDate', t('exitDate'), { type: 'date' })}
+        {salaryLater ? (
+          <Alert className="md:col-span-2">
+            <TriangleAlert aria-hidden />
+            <AlertTitle>{t('salaryStartsLater')}</AlertTitle>
+            <AlertDescription>
+              {canPay && firstSalary ? (
+                <label className="flex min-h-11 items-center gap-3 text-foreground">
+                  <input
+                    type="checkbox"
+                    className="size-5 shrink-0"
+                    checked={align}
+                    onChange={(e) => setAlign(e.target.checked)}
+                  />
+                  <span>
+                    {t.rich('alignSalary', {
+                      amount: formatDA(firstSalary.amount),
+                      date: formatDay(f.hireDate),
+                      ltr,
+                    })}
+                  </span>
+                </label>
+              ) : (
+                t('salaryStartsLaterOwner')
+              )}
+            </AlertDescription>
+          </Alert>
+        ) : null}
         <div className="space-y-2">
           <Label htmlFor="emp-contract">{t('contract')}</Label>
           <NativeSelect

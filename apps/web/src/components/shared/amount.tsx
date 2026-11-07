@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { formatDA, type MoneyInput } from '@erp/shared';
 import { cn } from '@/lib/utils';
 
@@ -22,3 +23,10 @@ export function Amount({
     </bdi>
   );
 }
+
+/** For `t.rich`: an amount or a date inside a sentence stays left-to-right in Arabic. */
+export const ltr = (chunks: ReactNode) => (
+  <bdi dir="ltr" className="num whitespace-nowrap">
+    {chunks}
+  </bdi>
+);

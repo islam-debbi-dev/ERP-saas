@@ -117,6 +117,8 @@ interface Ids {
   warehouseId: string;
   /** An employee for his file (phase 31). */
   employeeId: string;
+  /** His salary starts after his hire date: the notices of fix 31. */
+  lateSalaryEmployeeId: string;
   /** A draft paie with an unmarked worker, and an approved one to pay (phase 31b). */
   payrollDraftId: string;
   payrollApprovedId: string;
@@ -247,6 +249,24 @@ async function prepareIds(f: Fixture): Promise<Ids> {
     ).body;
     if (i === 0) employeeId = e.id;
   }
+  const lateSalaryEmployeeId = (
+    await call<{ id: string }>('/employees', {
+      method: 'POST',
+      token,
+      body: {
+        fullName: 'Abdelmadjid Benmohamed El Ouahrani Salaire Tardif',
+        hireDate: '2024-01-01',
+        contract: 'CDI',
+        warehouseId: warehouses.find((w) => w.isDefault)!.id,
+        salary: {
+          amount: '1234567.89',
+          payType: 'MONTHLY',
+          effectiveFrom: '2024-02-01',
+          reason: null,
+        },
+      },
+    })
+  ).body.id;
   await call(`/employees/${employeeId}/advances`, {
     method: 'POST',
     token,
@@ -552,6 +572,7 @@ async function prepareIds(f: Fixture): Promise<Ids> {
   const product = (await call<{ reference: string }>(`/products/${f.productId}`, { token })).body;
   return {
     employeeId,
+    lateSalaryEmployeeId,
     payrollDraftId: payrollDraft.id,
     payrollApprovedId: toApprove.id,
     importFileId: importFile.id,
@@ -798,6 +819,27 @@ for (const locale of LOCALES) {
         await page.keyboard.press('Escape');
         await page.locator('[role="dialog"]').waitFor({ state: 'hidden' });
 
+        await go(`/rh/employes/${v.lateSalaryEmployeeId}`);
+        const fixSalary = page.getByRole('button', { name: m['hr']?.['salaryStartsLateFix'] });
+        await fixSalary.scrollIntoViewIfNeeded();
+        await expect.soft(fixSalary).toBeVisible();
+        await check(page, '/rh/employes/salaire-tardif', locale, results);
+        // The top bar has the same menu: the page header's comes after it.
+        await page.getByRole('button', { name: m['nav']?.['moreOptions'] }).last().click();
+        await page.getByRole('menuitem', { name: m['hr']?.['editEmployee'] }).click();
+        await page.locator('[role="dialog"]').waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        const alignBox = page.locator('[role="dialog"] input[type="checkbox"]');
+        await alignBox.scrollIntoViewIfNeeded();
+        await expect.soft(alignBox).not.toBeChecked();
+        await page.locator('#emp-hireDate').fill('2023-12-01');
+        await expect.soft(alignBox).toBeChecked();
+        await check(page, '/rh/employes/salaire-tardif/modifier', locale, results, {
+          fullPage: false,
+        });
+        await page.keyboard.press('Escape');
+        await page.locator('[role="dialog"]').waitFor({ state: 'hidden' });
+
         await go('/rh/paie/taux');
         await page.getByRole('button', { name: pay['ratesCreateFrom'] }).first().waitFor();
         await check(page, '/rh/paie/taux', locale, results);
@@ -1030,7 +1072,10 @@ for (const locale of LOCALES) {
           ['count', '#count-amount', '/tresorerie/comptage'],
           ['opening', '#opening-amount', '/tresorerie/solde-initial'],
         ] as const) {
-          await page.getByRole('button', { name: m['treasury']?.[button], exact: true }).first().click();
+          await page
+            .getByRole('button', { name: m['treasury']?.[button], exact: true })
+            .first()
+            .click();
           await page.locator(field).waitFor();
           await page.waitForTimeout(400); // the sheet slides in
           await expectOnScreen(page, '[role="dialog"] button[type="submit"]');

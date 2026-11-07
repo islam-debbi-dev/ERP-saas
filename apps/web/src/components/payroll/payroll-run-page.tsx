@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import {
   BLOCKING_PAYSLIP_ISSUES,
+  formatDay,
   Feature,
   money,
   PAYMENT_MODES,
@@ -25,7 +26,7 @@ import {
   Permission,
 } from '@erp/shared';
 import { CashAccountPicker } from '@/components/treasury/cash-account-picker';
-import { Amount } from '@/components/shared/amount';
+import { Amount, ltr } from '@/components/shared/amount';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FeatureGate } from '@/components/shared/feature-gate';
 import { PageHeader } from '@/components/shared/page-header';
@@ -214,21 +215,29 @@ function Run({ id }: { id: string }) {
 }
 
 /** What stops the approval first, then what the owner should know. */
-function Notices({ run }: { run: PayrollRunDetailDto }) {
+export function Notices({ run }: { run: PayrollRunDetailDto }) {
   const t = useTranslations('payroll');
   const names = (code: string) =>
     run.payslips.filter((p) => p.issues.some((i) => i.code === code)).map((p) => p.fullName);
   const live = run.status === 'DRAFT';
   const unmarked = live ? names('UNMARKED_DAYS') : [];
-  const noSalary = live ? names('NO_SALARY') : [];
+  const noSalary = live
+    ? run.payslips.flatMap((p) => {
+        const issue = p.issues.find((i) => i.code === 'NO_SALARY');
+        return issue ? [{ slip: p, salaryFrom: issue.details?.salaryFrom ?? null }] : [];
+      })
+    : [];
   const negative = live ? names('NEGATIVE_NET') : [];
   const belowSnmg = live ? names('BELOW_SNMG') : [];
   const credit = live ? names('ADVANCE_CREDIT') : [];
-  const blocking: [string, string[]][] = [
-    [t('issueUnmarked'), unmarked],
-    [t('issueNoSalary'), noSalary],
-    [t('issueNegative'), negative],
-  ];
+  const blocking = ([title, who]: [string, string[]]) =>
+    who.length > 0 ? (
+      <Alert variant="destructive">
+        <TriangleAlert aria-hidden />
+        <AlertTitle>{title}</AlertTitle>
+        <AlertDescription className="break-words">{who.join(', ')}</AlertDescription>
+      </Alert>
+    ) : null;
   const warnings: [string, string[]][] = [
     [t('issueBelowSnmg'), belowSnmg],
     [t('issueAdvanceCredit'), credit],
@@ -237,15 +246,33 @@ function Notices({ run }: { run: PayrollRunDetailDto }) {
   return (
     <div className="space-y-2">
       <p className="text-sm text-muted-foreground">{t('ratesResponsibility')}</p>
-      {blocking
-        .filter(([, who]) => who.length > 0)
-        .map(([title, who]) => (
-          <Alert key={title} variant="destructive">
-            <TriangleAlert aria-hidden />
-            <AlertTitle>{title}</AlertTitle>
-            <AlertDescription className="break-words">{who.join(', ')}</AlertDescription>
-          </Alert>
-        ))}
+      {blocking([t('issueUnmarked'), unmarked])}
+      {noSalary.length > 0 ? (
+        <Alert variant="destructive">
+          <TriangleAlert aria-hidden />
+          <AlertTitle>{t('issueNoSalary')}</AlertTitle>
+          <AlertDescription>
+            <ul className="w-full">
+              {noSalary.map(({ slip, salaryFrom }) => (
+                <li key={slip.id} className="break-words">
+                  <Link
+                    href={`/rh/employes/${slip.employeeId}`}
+                    className="inline-flex min-h-11 items-center underline"
+                  >
+                    {slip.fullName}
+                  </Link>
+                  {salaryFrom ? (
+                    <p className="-mt-2 mb-2">
+                      {t.rich('issueSalaryFrom', { date: formatDay(salaryFrom), ltr })}
+                    </p>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      {blocking([t('issueNegative'), negative])}
       {!run.ratesConfirmed && run.status === 'DRAFT' ? (
         <Alert variant="destructive">
           <TriangleAlert aria-hidden />

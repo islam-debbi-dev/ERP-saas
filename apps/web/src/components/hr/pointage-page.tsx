@@ -18,6 +18,7 @@ import {
   Permission,
 } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
+import { ErrorState } from '@/components/shared/error-state';
 import { FeatureGate } from '@/components/shared/feature-gate';
 import { PageHeader } from '@/components/shared/page-header';
 import { StickyActions } from '@/components/shared/sticky-actions';
@@ -133,7 +134,7 @@ function Pointage() {
           ))}
         </div>
       ) : day.isError ? (
-        <EmptyState icon={CalendarOff} title={errorMessage(day.error)} />
+        <ErrorState icon={CalendarOff} error={day.error} onRetry={() => void day.refetch()} />
       ) : day.data.countsOnly ? (
         <Card className="p-4">
           <p className="mb-2 text-sm text-muted-foreground">{t('countsOnly')}</p>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Archive, ArrowLeft, Pencil, Plus, UserX } from 'lucide-react';
+import { Archive, ArrowLeft, Pencil, Plus, TriangleAlert, UserX } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -10,6 +10,7 @@ import {
   type EmployeeDto,
   type EmployeeLedgerEntryDto,
   Feature,
+  formatDay,
   PAY_TYPES,
   PAYMENT_MODES,
   type PaymentMode,
@@ -18,10 +19,11 @@ import {
   Role,
 } from '@erp/shared';
 import { CashAccountPicker } from '@/components/treasury/cash-account-picker';
-import { Amount } from '@/components/shared/amount';
+import { Amount, ltr } from '@/components/shared/amount';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FeatureGate } from '@/components/shared/feature-gate';
 import { PageHeader } from '@/components/shared/page-header';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -102,7 +104,7 @@ function Detail({ id }: { id: string }) {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Infos e={e} />
         <Leave employeeId={e.id} />
-        {canPay ? <Salaries employeeId={e.id} canAdd={canManage} /> : null}
+        {canPay ? <Salaries e={e} canAdd={canManage} /> : null}
         {canPay ? <Advances e={e} /> : null}
         <EmployeePayrollCards employeeId={e.id} />
       </div>
@@ -280,11 +282,11 @@ function LeaveEntryDialog({
   );
 }
 
-function Salaries({ employeeId, canAdd }: { employeeId: string; canAdd: boolean }) {
+function Salaries({ e, canAdd }: { e: EmployeeDto; canAdd: boolean }) {
   const t = useTranslations('hr');
   const errorMessage = useErrorMessage();
-  const rows = useSalaries(employeeId, true);
-  const add = useAddSalary(employeeId);
+  const rows = useSalaries(e.id, true);
+  const add = useAddSalary(e.id);
   const [open, setOpen] = useState(false);
   const key = useIdempotencyKey(open);
   const [amount, setAmount] = useState('');
@@ -292,15 +294,23 @@ function Salaries({ employeeId, canAdd }: { employeeId: string; canAdd: boolean 
   const [effectiveFrom, setFrom] = useState(algiersDay());
   const [reason, setReason] = useState('');
 
+  const salaryFrom = e.firstSalaryFrom;
+  const first = e.pay?.firstSalary ?? null;
+  const startsLate = !!salaryFrom && salaryFrom > e.hireDate;
+
+  const openForm = (values: { amount: string; payType: PayType; effectiveFrom: string }) => {
+    setAmount(values.amount);
+    setPayType(values.payType);
+    setFrom(values.effectiveFrom);
+    setReason('');
+    setOpen(true);
+  };
+
   const submit = () =>
     add.mutate(
       { key, body: { amount, payType, effectiveFrom, reason: reason.trim() || null } },
       {
-        onSuccess: () => {
-          setAmount('');
-          setReason('');
-          setOpen(false);
-        },
+        onSuccess: () => setOpen(false),
         onError: (err) => toast.error(errorMessage(err)),
       },
     );
@@ -308,6 +318,30 @@ function Salaries({ employeeId, canAdd }: { employeeId: string; canAdd: boolean 
   return (
     <Card className="gap-3 p-4">
       <h2 className="font-semibold">{t('salaryHistory')}</h2>
+      {startsLate ? (
+        <Alert>
+          <TriangleAlert aria-hidden />
+          <AlertTitle>{t('salaryStartsLate')}</AlertTitle>
+          <AlertDescription>
+            <p>
+              {t.rich('salaryStartsLateHelp', {
+                hire: formatDay(e.hireDate),
+                from: formatDay(salaryFrom),
+                ltr,
+              })}
+            </p>
+            {canAdd && first ? (
+              <Button
+                variant="outline"
+                className="mt-2 min-h-11 text-foreground"
+                onClick={() => openForm({ ...first, effectiveFrom: e.hireDate })}
+              >
+                {t('salaryStartsLateFix')}
+              </Button>
+            ) : null}
+          </AlertDescription>
+        </Alert>
+      ) : null}
       <ul className="divide-y text-sm">
         {(rows.data ?? []).map((s) => (
           <li key={s.id} className="flex items-center justify-between gap-2 py-1.5">
@@ -323,7 +357,11 @@ function Salaries({ employeeId, canAdd }: { employeeId: string; canAdd: boolean 
         ))}
       </ul>
       {canAdd ? (
-        <Button variant="outline" className="min-h-11 self-start" onClick={() => setOpen(true)}>
+        <Button
+          variant="outline"
+          className="min-h-11 self-start"
+          onClick={() => openForm({ amount: '', payType: 'MONTHLY', effectiveFrom: algiersDay() })}
+        >
           <Plus aria-hidden />
           {t('newSalary')}
         </Button>
