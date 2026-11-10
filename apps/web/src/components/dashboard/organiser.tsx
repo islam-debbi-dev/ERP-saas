@@ -96,7 +96,7 @@ export function Organiser({
     );
 
   return (
-    <Card className="gap-3 py-4">
+    <Card className="gap-3 py-4" data-testid="organiser">
       <CardHeader>
         <CardTitle role="heading" aria-level={2} className="text-base">
           {t('organiseTitle')}

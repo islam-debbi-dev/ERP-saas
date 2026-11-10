@@ -66,12 +66,13 @@ export function TargetCard({ target }: { target: SalesTargetProgress }) {
 /** The line under "Bonjour": the API picks the fact, the messages say it. */
 export function GreetingLine({ fact }: { fact: GreetingFact | null }) {
   const t = useTranslations('dashboard');
-  if (!fact) return null;
+  // The line keeps its height while loading or empty, so nothing below it jumps.
+  if (!fact) return <p className="min-h-5 text-sm" aria-hidden />;
   const params = Object.fromEntries(
     Object.entries(fact.params).map(([k, v]) => [
       k,
       k === 'amount' && typeof v === 'string' ? isolateLtr(formatDA(v)) : v,
     ]),
   );
-  return <p className="text-sm font-medium">{t(`greeting_${fact.key}`, params)}</p>;
+  return <p className="min-h-5 text-sm font-medium">{t(`greeting_${fact.key}`, params)}</p>;
 }

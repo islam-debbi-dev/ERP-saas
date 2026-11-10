@@ -207,41 +207,44 @@ export function SalesChart({
         <span>{points[0] ? day(points[0].from) : null}</span>
         <span>{points.at(-1) ? day(points.at(-1)!.to) : null}</span>
       </div>
-      <table className="sr-only">
-        <caption>{t('chartTitlePeriod')}</caption>
-        <thead>
-          <tr>
-            <th scope="col">{t('chartColDay')}</th>
-            <th scope="col">{t('series_ttc')}</th>
-            {hasCash ? <th scope="col">{t('series_cash')}</th> : null}
-            {hasMargin ? <th scope="col">{t('series_margin')}</th> : null}
-            <th scope="col">{t('chartColPrevious')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {points.map((p) => (
-            <tr key={p.from}>
-              <th scope="row">{name(p)}</th>
-              <td>
-                <Amount value={p.ttc} />
-              </td>
-              {hasCash ? (
-                <td>
-                  <Amount value={p.cash ?? '0'} />
-                </td>
-              ) : null}
-              {hasMargin ? (
-                <td>
-                  <Amount value={p.margin ?? '0'} />
-                </td>
-              ) : null}
-              <td>
-                <Amount value={p.previousTtc} />
-              </td>
+      {/* sr-only on a wrapper: a table never shrinks to 1 px and would push the page wide. */}
+      <div className="sr-only">
+        <table>
+          <caption>{t('chartTitlePeriod')}</caption>
+          <thead>
+            <tr>
+              <th scope="col">{t('chartColDay')}</th>
+              <th scope="col">{t('series_ttc')}</th>
+              {hasCash ? <th scope="col">{t('series_cash')}</th> : null}
+              {hasMargin ? <th scope="col">{t('series_margin')}</th> : null}
+              <th scope="col">{t('chartColPrevious')}</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {points.map((p) => (
+              <tr key={p.from}>
+                <th scope="row">{name(p)}</th>
+                <td>
+                  <Amount value={p.ttc} />
+                </td>
+                {hasCash ? (
+                  <td>
+                    <Amount value={p.cash ?? '0'} />
+                  </td>
+                ) : null}
+                {hasMargin ? (
+                  <td>
+                    <Amount value={p.margin ?? '0'} />
+                  </td>
+                ) : null}
+                <td>
+                  <Amount value={p.previousTtc} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </figure>
   );
 }

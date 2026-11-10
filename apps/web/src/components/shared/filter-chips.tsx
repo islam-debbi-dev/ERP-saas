@@ -20,14 +20,14 @@ export function FilterChips({ chips, onClear }: { chips: FilterChip[]; onClear?:
   return (
     <ul className="flex flex-wrap items-center gap-2" aria-label={t('chipsLabel')}>
       {chips.map((c) => (
-        <li key={c.key}>
+        <li key={c.key} className="min-w-0 max-w-full">
           <button
             type="button"
             onClick={c.onRemove}
             aria-label={t('chipRemove', { label: c.label })}
             className="inline-flex min-h-11 max-w-full items-center gap-1.5 rounded-full border bg-secondary px-3 text-sm text-secondary-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 active:bg-muted"
           >
-            <span dir="auto" className="truncate">
+            <span dir="auto" className="min-w-0 truncate">
               {c.label}
             </span>
             <X className="size-4 shrink-0" aria-hidden />

@@ -21,10 +21,11 @@ export function UpdatedBar({
   const format = useFormatter();
   // Re-renders every 30 s so "il y a" stays true.
   const now = useNow({ updateInterval: 30_000 });
-  if (!updatedAt) return null;
+  // Same height before the first fetch: the cards below never jump.
+  if (!updatedAt) return <div className="min-h-11" aria-hidden />;
   const fresh = now.getTime() - updatedAt < 60_000;
   return (
-    <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
+    <div className="flex min-h-11 items-center justify-end gap-1 text-xs text-muted-foreground">
       <span aria-live="polite">
         {fresh ? t('updatedNow') : t('updatedAgo', { ago: format.relativeTime(updatedAt, now) })}
       </span>

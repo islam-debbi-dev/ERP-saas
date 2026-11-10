@@ -8,6 +8,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import { Fragment, type ReactNode, useState } from 'react';
@@ -44,6 +45,7 @@ import { useAuth, useFeature } from '@/lib/auth';
 import { drill } from '@/lib/dashboard-links';
 import { useDashboardLayout } from '@/lib/dashboard-layout';
 import { todoKeys } from '@/lib/todo';
+import { todayInAlgiers } from '@/lib/purchases';
 import { useCountUp } from '@/lib/use-count-up';
 import {
   DEFAULT_PERIOD,
@@ -59,7 +61,6 @@ import { AttendanceTodayCard } from '@/components/hr/today-card';
 import { MyObjectivesCard } from '@/components/incentives/my-objectives-card';
 import { OnboardingCard } from './onboarding-card';
 import { PullToRefresh, UpdatedBar } from './live-bar';
-import { Organiser } from './organiser';
 import { PeriodSwitcher, usePeriodName } from './period-switcher';
 import { GreetingLine, TargetCard } from './target-card';
 import { QuickActionButtons, QuickActionFab } from './quick-actions';
@@ -70,6 +71,9 @@ import { Amount } from '@/components/shared/amount';
 
 /** A count shown while it counts up (decimal steps rounded for display). */
 const integer = (v: string) => money(v).toFixed(0);
+
+/** Loaded on the first tap of "Organiser" (dnd-kit stays out of the first load). */
+const Organiser = dynamic(() => import('./organiser').then((m) => m.Organiser), { ssr: false });
 
 /** Cards drawn from the dashboard's figures (the period switcher sits above the first). */
 const DATA_CARDS: readonly DashboardCardId[] = [
@@ -135,9 +139,10 @@ export function DashboardPage() {
     <>
       <PageHeader
         title={t('welcome', { name })}
-        description={
-          d ? format.dateTime(new Date(`${d.date}T12:00:00Z`), { dateStyle: 'full' }) : undefined
-        }
+        // Today from the clock, not the API: the header does not move when the figures land.
+        description={format.dateTime(new Date(`${d?.date ?? todayInAlgiers()}T12:00:00Z`), {
+          dateStyle: 'full',
+        })}
         actions={<QuickActionButtons />}
       />
       <GreetingLine fact={d?.greeting ?? null} />
@@ -209,7 +214,8 @@ export function DashboardPage() {
         })}
       {/* Room for the phone's "+" button under the last card. */}
       <div className="h-16 md:hidden" aria-hidden />
-      <QuickActionFab />
+      {/* Not while organising: it would cover the rows' buttons. */}
+      {organising ? null : <QuickActionFab />}
     </>
   );
 }
@@ -392,6 +398,7 @@ function Sections({
                       const to = door(drill.versements(d.date, m.mode));
                       const body = (
                         <>
+                          {to ? <span className="sr-only">{t('drillPrefix')} </span> : null}
                           {ts(`mode${m.mode}`)}{' '}
                           <span dir="ltr" className="num">
                             <Amount value={m.total} />
@@ -402,9 +409,6 @@ function Sections({
                         <Link
                           key={m.mode}
                           href={to}
-                          aria-label={t('drillLabel', {
-                            label: `${t('cashToday')} · ${ts(`mode${m.mode}`)}`,
-                          })}
                           className="relative z-10 inline-flex min-h-11 items-center rounded-md px-1.5 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
                         >
                           {body}

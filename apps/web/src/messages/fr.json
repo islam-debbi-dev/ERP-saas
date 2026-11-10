@@ -245,7 +245,8 @@
     "card_chart": "Évolution des ventes",
     "card_top": "Classements",
     "card_debtors": "Crédit clients",
-    "card_cheques": "Chèques à échéance"
+    "card_cheques": "Chèques à échéance",
+    "drillPrefix": "Voir le détail :"
   },
   "reports": {
     "title": "Rapports",

@@ -245,7 +245,8 @@
     "card_chart": "منحنى المبيعات",
     "card_top": "الأوائل",
     "card_debtors": "الكريدي تاع الكليان",
-    "card_cheques": "الشيكات"
+    "card_cheques": "الشيكات",
+    "drillPrefix": "شوف التفاصيل:"
   },
   "reports": {
     "title": "التقارير",
