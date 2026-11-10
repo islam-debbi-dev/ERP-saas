@@ -36,7 +36,9 @@ import { cn, isolateLtr } from '@/lib/utils';
 import { AttendanceTodayCard } from '@/components/hr/today-card';
 import { MyObjectivesCard } from '@/components/incentives/my-objectives-card';
 import { OnboardingCard } from './onboarding-card';
+import { QuickActionButtons, QuickActionFab } from './quick-actions';
 import { SalesChart } from './sales-chart';
+import { TodoCard } from './todo-card';
 import { Amount } from '@/components/shared/amount';
 
 export function DashboardPage() {
@@ -56,7 +58,9 @@ export function DashboardPage() {
         description={
           d ? format.dateTime(new Date(`${d.date}T12:00:00Z`), { dateStyle: 'full' }) : undefined
         }
+        actions={<QuickActionButtons />}
       />
+      <TodoCard />
       <OnboardingCard />
       <MyObjectivesCard />
       <AttendanceTodayCard />
@@ -74,6 +78,9 @@ export function DashboardPage() {
       ) : (
         <Sections d={d} filters={filters} />
       )}
+      {/* Room for the phone's "+" button under the last card. */}
+      <div className="h-16 md:hidden" aria-hidden />
+      <QuickActionFab />
     </>
   );
 }

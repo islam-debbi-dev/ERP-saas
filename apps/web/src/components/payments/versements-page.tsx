@@ -2,6 +2,7 @@
 
 import { type ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Banknote, Loader2, Plus } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import {
@@ -20,10 +21,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useClientPages } from '@/lib/clients';
+import { useClient, useClientPages } from '@/lib/clients';
 import { type PaymentFilters, useCashSummary, usePaymentPages } from '@/lib/payments';
 import { todayInAlgiers } from '@/lib/purchases';
-import { useUrlFilters } from '@/lib/url-filters';
+import { patchSearch, useUrlFilters } from '@/lib/url-filters';
 import { cn } from '@/lib/utils';
 import { PaymentDetailDialog } from './payment-detail-dialog';
 import { PaymentDialog } from './payment-dialog';
@@ -39,6 +40,8 @@ const PAYMENT_URL_FILTERS = {
   to: pq.to,
 };
 
+const validId = (v: string | null) => (v && pq.clientId.safeParse(v).success ? v : '');
+
 type Tab = 'list' | 'cheques' | 'journal';
 const TABS: Tab[] = ['list', 'cheques', 'journal'];
 
@@ -47,6 +50,27 @@ export function VersementsPage() {
   const [tab, setTab] = useState<Tab>('list');
   const [creating, setCreating] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
+  // Phase 33: "Versement" from the dashboard opens ?nouveau=1&clientId= with the client
+  // picked; closing the dialog takes both out of the URL so a refresh does not reopen it.
+  const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const asked = params.get('nouveau') === '1';
+  const askedClient = asked ? validId(params.get('clientId')) : '';
+  const linked = useClient(askedClient);
+  const [dismissed, setDismissed] = useState(false);
+  const linkOpen = asked && !dismissed && (askedClient === '' || linked.data !== undefined);
+  const closeLink = () => {
+    setDismissed(true);
+    const qs = patchSearch(params, { nouveau: '', clientId: '' });
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  };
+  // ?cheque= opens that versement (a cheque due, from "À faire").
+  const askedCheque = validId(params.get('cheque'));
+  const closeCheque = () => {
+    const qs = patchSearch(params, { cheque: '' });
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  };
 
   return (
     <>
@@ -109,8 +133,13 @@ export function VersementsPage() {
       </div>
 
       {creating ? <PaymentDialog open onOpenChange={(o) => !o && setCreating(false)} /> : null}
+      {linkOpen ? (
+        <PaymentDialog open client={linked.data} onOpenChange={(o) => !o && closeLink()} />
+      ) : null}
       {openId ? (
         <PaymentDetailDialog id={openId} open onOpenChange={(o) => !o && setOpenId(null)} />
+      ) : askedCheque ? (
+        <PaymentDetailDialog id={askedCheque} open onOpenChange={(o) => !o && closeCheque()} />
       ) : null}
     </>
   );

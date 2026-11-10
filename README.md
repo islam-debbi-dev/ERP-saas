@@ -19,6 +19,7 @@ Requirements: Node 22+ (24 or 26 also work), Docker (Docker Desktop or OrbStack)
 6. Create the demo company: `pnpm db:seed`.
 7. Start the API (http://localhost:3001) and the web app (http://localhost:3000): `pnpm dev`.
 8. Open http://localhost:3000 and log in with the demo account below.
+9. Optional, with the API running: `pnpm db:seed:activity` gives the dashboard's "À faire aujourd'hui" something to show (a client over his plafond, a product sold out, a cheque due today). It goes through the API, so every amount is posted like a real operation; running it again adds nothing, except a new cheque on a day none is due. `API_URL` defaults to `http://localhost:3001`.
 
 ### Demo account
 

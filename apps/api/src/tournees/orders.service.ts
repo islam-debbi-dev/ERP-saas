@@ -571,6 +571,30 @@ export class OrdersService {
    * Owner, manager and storekeeper see every order; a supervisor his team's, a seller his
    * own, a livreur only those assigned to him.
    */
+  /**
+   * Draft orders this user may confirm, oldest first (phase 33, "À faire"): the same
+   * visibility as the list; storekeepers and livreurs do not confirm.
+   */
+  async toConfirm(
+    user: CurrentUserInfo,
+    limit: number,
+  ): Promise<{ id: string; client: string; totalTtc: string; createdAt: Date }[]> {
+    if (!([Role.OWNER, Role.MANAGER, Role.SUPERVISOR, Role.SELLER] as Role[]).includes(user.role))
+      return [];
+    const rows = await this.prisma.db.order.findMany({
+      where: { AND: [await this.visibleWhere(user), { status: OrderStatus.DRAFT }] },
+      select: { id: true, totalTtc: true, createdAt: true, client: { select: { name: true } } },
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      take: limit,
+    });
+    return rows.map((o) => ({
+      id: o.id,
+      client: o.client.name,
+      totalTtc: toMoneyString(o.totalTtc.toString()),
+      createdAt: o.createdAt,
+    }));
+  }
+
   private async visibleWhere(user: CurrentUserInfo, db?: Tx): Promise<Prisma.OrderWhereInput> {
     const own = await this.ownWhere(user, db);
     // Phase 24: and only the orders of the dépôts he works in.

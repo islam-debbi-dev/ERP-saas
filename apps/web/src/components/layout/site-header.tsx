@@ -20,6 +20,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { type AppLocale, LOCALE_LABELS, LOCALES } from '@/i18n/config';
+import { useVisibleTodo } from '@/lib/todo';
 import { currentNavItem } from './navigation';
 import { WarehouseSwitcher } from './warehouse-switcher';
 
@@ -66,6 +67,22 @@ function HeaderMenu() {
   );
 }
 
+/**
+ * Phone (phase 33): a dot on the menu button while "À faire" has items, so they are seen
+ * from any page; the count itself is on the menu item. Hidden from `md` (the sidebar shows).
+ */
+function TodoDot() {
+  const t = useTranslations('dashboard');
+  const { count } = useVisibleTodo();
+  if (count === 0) return null;
+  return (
+    <span className="pointer-events-none absolute end-1.5 top-1.5 md:hidden">
+      <span className="block size-2.5 rounded-full bg-primary ring-2 ring-background" aria-hidden />
+      <span className="sr-only">{t('todoBadge', { count })}</span>
+    </span>
+  );
+}
+
 /** Sticky bar: sidebar trigger, current section, language and theme. */
 export function SiteHeader() {
   const t = useTranslations('nav');
@@ -73,7 +90,10 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-1 border-b bg-background/95 ps-2 pe-2 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:gap-2 md:px-4 lg:px-6">
-      <SidebarTrigger className="size-11 md:-ms-1 md:size-7" aria-label={t('toggleSidebar')} />
+      <span className="relative inline-flex">
+        <SidebarTrigger className="size-11 md:-ms-1 md:size-7" aria-label={t('toggleSidebar')} />
+        <TodoDot />
+      </span>
       <Separator orientation="vertical" className="mx-1 hidden h-4 md:block" />
       <p className="min-w-0 flex-1 truncate text-base font-medium md:text-sm">
         {current ? t(current.key) : null}

@@ -23,12 +23,14 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
   useSidebar,
 } from '@/components/ui/sidebar';
 import { useAuth } from '@/lib/auth';
+import { useVisibleTodo } from '@/lib/todo';
 import { tutorials, whatsappLink } from '@/lib/support';
 import { isActive, type NavItem } from './navigation';
 import { useVisibleNavGroups } from './use-visible-nav';
@@ -106,6 +108,7 @@ export function AppSidebar() {
                           <span className="truncate">{label}</span>
                         </Link>
                       </SidebarMenuButton>
+                      {item.key === 'dashboard' ? <TodoBadge /> : null}
                     </SidebarMenuItem>
                   );
                 })}
@@ -122,6 +125,21 @@ export function AppSidebar() {
 
       <SidebarRail />
     </Sidebar>
+  );
+}
+
+/** How many "À faire" items are left today (phase 33), on the Tableau de bord item. */
+function TodoBadge() {
+  const t = useTranslations('dashboard');
+  const { count } = useVisibleTodo();
+  if (count === 0) return null;
+  return (
+    <SidebarMenuBadge className="bg-primary text-primary-foreground peer-hover/menu-button:text-primary-foreground peer-data-[active=true]/menu-button:text-primary-foreground">
+      <span aria-hidden className="num">
+        {count > 9 ? '9+' : count}
+      </span>
+      <span className="sr-only">{t('todoBadge', { count })}</span>
+    </SidebarMenuBadge>
   );
 }
 

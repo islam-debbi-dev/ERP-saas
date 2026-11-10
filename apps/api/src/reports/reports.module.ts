@@ -6,6 +6,7 @@ import { PaymentsModule } from '../payments/payments.module';
 import { SalesForceModule } from '../sales-force/sales-force.module';
 import { StockModule } from '../stock/stock.module';
 import { TenantsModule } from '../tenants/tenants.module';
+import { TourneesModule } from '../tournees/tournees.module';
 import { TreasuryModule } from '../treasury/treasury.module';
 import { DashboardService } from './dashboard.service';
 import { OnboardingService } from './onboarding.service';
@@ -13,6 +14,7 @@ import { OverviewService } from './overview.service';
 import { DashboardController, ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
 import { SellOutService } from './sell-out.service';
+import { TodoService } from './todo.service';
 
 /**
  * Dashboard and reports. Read-only: the dashboard reuses the clients, payments and
@@ -29,9 +31,17 @@ import { SellOutService } from './sell-out.service';
     SalesForceModule,
     StockModule,
     TenantsModule,
+    TourneesModule,
   ],
   controllers: [DashboardController, ReportsController],
-  providers: [DashboardService, ReportsService, OnboardingService, OverviewService, SellOutService],
+  providers: [
+    DashboardService,
+    ReportsService,
+    OnboardingService,
+    OverviewService,
+    SellOutService,
+    TodoService,
+  ],
   exports: [DashboardService],
 })
 export class ReportsModule {}

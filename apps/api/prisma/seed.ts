@@ -215,6 +215,17 @@ async function main(): Promise<void> {
           },
         });
       }
+      // Phase 33: Benali has a plafond and a phone, so the dashboard's "À faire" can show
+      // him over it and call him (the debt itself comes from `pnpm db:seed:activity`).
+      // Master data, set only when missing.
+      await tx.client.updateMany({
+        where: { id: '00000000-0000-4000-8000-0000000016c2', creditLimit: null },
+        data: { creditLimit: '150000.00' },
+      });
+      await tx.client.updateMany({
+        where: { id: '00000000-0000-4000-8000-0000000016c2', phone: null },
+        data: { phone: '0550 12 34 56' },
+      });
       // Géolocalisation demo (phase 17): two of them have a saved point, the third none
       // (its first visit offers to save it). Only set when missing, so a rerun or a point
       // moved by hand stays as it is.

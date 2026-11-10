@@ -157,6 +157,7 @@
   "GET /dashboard": null,
   "GET /dashboard/onboarding": ["OWNER", "MANAGER"],
   "POST /dashboard/onboarding/dismiss": ["OWNER"],
+  "GET /dashboard/todo": null,
   "GET /reports/aging": ["OWNER", "MANAGER"],
   "GET /reports/supplier-aging": ["OWNER", "MANAGER"],
   "GET /reports/aging/export.xlsx": ["OWNER", "MANAGER"],
