@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { type PaymentMode, Role } from '../enums';
+import { DASHBOARD_PERIODS, type DashboardPeriodRange } from '../dashboard';
 import { rangeLength } from '../periods';
 import { type DebtorDto } from './clients';
 import { type DueChequesDto } from './credit';
@@ -67,14 +68,33 @@ export function resolveGroupBy(name: ReportName, groupBy?: string): ReportGroupB
   return allowed.includes(groupBy) ? (groupBy as ReportGroupBy) : null;
 }
 
-export const dashboardQuerySchema = z.object({
-  /** The day the dashboard is "as of" (Algiers); default today. */
-  date: dateString.optional(),
-  sellerId: z.uuid().optional(),
-  teamOf: z.uuid().optional(),
-  brandId: z.uuid().optional(),
-  warehouseId: z.uuid().optional(),
-});
+export const dashboardQuerySchema = z
+  .object({
+    /** The day the dashboard is "as of" (Algiers); default today. */
+    date: dateString.optional(),
+    sellerId: z.uuid().optional(),
+    teamOf: z.uuid().optional(),
+    brandId: z.uuid().optional(),
+    warehouseId: z.uuid().optional(),
+    /** Phase 33: the period of the figures and the chart; "Ce mois" by default. */
+    period: z.enum(DASHBOARD_PERIODS).default('month'),
+    /** Algiers days, both included; only with `period=custom`. */
+    from: dateString.optional(),
+    to: dateString.optional(),
+  })
+  .refine((q) => q.period !== 'custom' || (q.from !== undefined && q.to !== undefined), {
+    message: 'range_required',
+    path: ['from'],
+  })
+  .refine((q) => !q.from || !q.to || q.from <= q.to, { message: 'invalid_range', path: ['to'] })
+  .refine(
+    (q) =>
+      !q.from ||
+      !q.to ||
+      q.from > q.to ||
+      rangeLength({ from: q.from, to: q.to }) <= MAX_REPORT_DAYS,
+    { message: 'range_too_long', path: ['from'] },
+  );
 export type DashboardQuery = z.infer<typeof dashboardQuerySchema>;
 
 /** Vue d'ensemble (phase 26): Algiers days, both included, at most a year. */
@@ -156,6 +176,33 @@ export interface SalesFigure {
   count: number;
 }
 
+/** A bar of the dashboard chart (phase 33): `from`..`to` is one day or one week. */
+export interface DashboardSeriesPoint {
+  from: string;
+  to: string;
+  /** Ventes TTC net of avoirs, and their documents. */
+  ttc: string;
+  count: number;
+  /** Encaissements; null when the role does not see cash. */
+  cash: string | null;
+  /** Marge; null without VIEW_COST_AND_MARGIN. */
+  margin: string | null;
+  /** Ventes of the matching bar of the previous period. */
+  previousTtc: string;
+}
+
+/** Small lists of the period (phase 33), with the same seller / brand filters. */
+export interface DashboardTopDto {
+  /** By CA TTC; qty in the product's base unit. */
+  products: { id: string; designation: string; unit: string; qty: string; ttc: string }[];
+  clients: { id: string; name: string; ttc: string; count: number }[];
+  /**
+   * Clients qui n'achètent plus: a sale in the 90 days before the last 30, none in the
+   * last 30; `monthly` is their average CA per month over those 90 days.
+   */
+  dormant: { id: string; name: string; monthly: string; lastSale: string }[];
+}
+
 /** A section is null when the user's role does not see it. */
 export interface DashboardDto {
   date: string;
@@ -167,8 +214,16 @@ export interface DashboardDto {
     previousMonth: SalesFigure;
     /** One entry per day of the month so far. */
     perDay: { date: string; ttc: string }[];
-    /** Sales HT minus cost at sale; null without VIEW_COST_AND_MARGIN. */
+    /** Sales HT minus cost at sale over the period; null without VIEW_COST_AND_MARGIN. */
     margin: string | null;
+    /** Phase 33: the period picked, and the one of the same length just before. */
+    period: DashboardPeriodRange;
+    current: SalesFigure;
+    previous: SalesFigure;
+    /** current against previous in %, one decimal; null when previous ≤ 0. */
+    changePct: string | null;
+    /** One point per day (per week above 31 days) of the period. */
+    series: DashboardSeriesPoint[];
   } | null;
   cash: {
     total: string;
@@ -193,10 +248,12 @@ export interface DashboardDto {
   /** Client and supplier cheques due in the next 7 days (phase 21); managers only. */
   cheques: DueChequesDto | null;
   /**
-   * Month to date (phase 26): marge brute − charges (phase 25). Managers with
+   * The period (phase 26, 33): marge brute − charges (phase 25). Managers with
    * VIEW_COST_AND_MARGIN, when the EXPENSES module is on; null otherwise.
    */
   net: { margin: string; charges: string; result: string } | null;
+  /** null when the role does not see sales. */
+  top: DashboardTopDto | null;
 }
 
 /**

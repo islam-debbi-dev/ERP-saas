@@ -589,6 +589,26 @@ export class PaymentsService {
     };
   }
 
+  /** `collected` per Algiers day (phase 33, the dashboard chart): day → total. */
+  async collectedByDay(
+    from: string,
+    to: string,
+    user: CurrentUserInfo,
+    statsWarehouseIds?: string[] | null,
+  ): Promise<Map<string, string>> {
+    const tenantId = tenantContext.requireTenantId();
+    const base = await this.scope.of(user);
+    const scope =
+      statsWarehouseIds === undefined ? base : { ...base, warehouseIds: statsWarehouseIds };
+    const rows = await this.prisma.db.$queryRaw<{ day: string; total: Prisma.Decimal }[]>`
+      SELECT to_char("receivedAt" AT TIME ZONE 'Africa/Algiers', 'YYYY-MM-DD') AS day,
+             SUM(amount) AS total
+      FROM payments
+      WHERE ${this.collectedSql(tenantId, scope, from, to)}
+      GROUP BY 1`;
+    return new Map(rows.map((r) => [r.day, toMoneyString(r.total.toString())]));
+  }
+
   /** A versement by its number, in the user's scope. */
   async findByNumber(number: string, user: CurrentUserInfo): Promise<PaymentDto> {
     const scope = await this.scope.of(user);

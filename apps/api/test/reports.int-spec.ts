@@ -5,6 +5,7 @@ import {
   type AuthResponse,
   type ClientDto,
   type DashboardDto,
+  money,
   type PaymentDto,
   type ProductDto,
   type PurchaseDto,
@@ -375,6 +376,103 @@ describe('dashboard and reports', () => {
       expect(d.sales?.month.count).toBe(1);
       expect(d.credit?.topDebtors).toHaveLength(1);
       expect(d.stock).toEqual({ outOfStock: 0, lowStock: 0, value: '1910400.00' });
+    });
+
+    it('phase 33: a period, compared with the same length just before, and its chart', async () => {
+      const get = async (who: RegisteredTenant, q: string) =>
+        (await as(who).get(`/dashboard?date=${DATE}&${q}`).expect(200)).body as DashboardDto;
+
+      // Last month: 1–28 February (S9, S10, S11) against the 28 days before (S13 on 31 Jan).
+      const feb = await get(a, 'period=lastMonth');
+      expect(feb.sales?.period).toEqual({
+        period: 'lastMonth',
+        from: '2026-02-01',
+        to: '2026-02-28',
+        previousFrom: '2026-01-04',
+        previousTo: '2026-01-31',
+        bucket: 'day',
+      });
+      expect(feb.sales?.current).toEqual({ ttc: '8211.00', count: 3 });
+      expect(feb.sales?.previous).toEqual({ ttc: '2737.00', count: 1 });
+      expect(feb.sales?.changePct).toBe('200.0');
+      expect(feb.sales?.series).toHaveLength(28);
+      expect(feb.sales?.series.at(-1)).toMatchObject({
+        from: '2026-02-28',
+        ttc: '2737.00',
+        count: 1,
+        previousTtc: '2737.00', // 31 January
+      });
+      // The cards of the day stay today's.
+      expect(feb.sales?.today).toEqual({ ttc: '8211.00', count: 3 });
+
+      // 7 days (25–31 March): S3 on the 30th, then S1, S2, S12 and the DAMAGED avoir.
+      const week = await get(a, 'period=7d');
+      expect(week.sales?.current).toEqual({ ttc: '10948.00', count: 4 });
+      const last = week.sales?.series.at(-1);
+      expect(last).toMatchObject({ from: DATE, ttc: '8211.00', cash: '3500.00' });
+      expect(last?.margin).not.toBeNull();
+      // The margin of the period is the sum of its bars.
+      const sum = week.sales!.series.reduce((s, p) => s.plus(p.margin!), money(0));
+      expect(sum.toFixed(2)).toBe(week.sales?.margin);
+
+      // A custom quarter goes by week (90 days: 13 bars, the last one 6 days).
+      const quarter = await get(a, 'period=custom&from=2026-01-01&to=2026-03-31');
+      expect(quarter.sales?.period.bucket).toBe('week');
+      expect(quarter.sales?.series).toHaveLength(13);
+      expect(quarter.sales?.series.at(-1)).toMatchObject({ from: '2026-03-26', to: DATE });
+      const total = quarter.sales!.series.reduce((s, p) => s.plus(p.ttc), money(0));
+      expect(total.toFixed(2)).toBe(quarter.sales?.current.ttc);
+
+      // A seller: his own sales, no margin and no cash on the chart.
+      const his = await get(seller, 'period=7d');
+      expect(his.sales?.current).toEqual({ ttc: '2737.00', count: 1 });
+      expect(his.sales?.series.every((p) => p.cash === null && p.margin === null)).toBe(true);
+      expect(his.top?.clients.map((c) => c.id)).toEqual([c1.id]);
+
+      // Tenant B's period holds its own sale only.
+      expect((await get(b, 'period=7d')).sales?.current).toEqual({ ttc: '13685.00', count: 1 });
+
+      for (const bad of [
+        'period=custom',
+        'period=custom&from=2026-03-31&to=2026-03-01',
+        'period=custom&from=2024-01-01&to=2026-03-31',
+        'period=year',
+      ]) {
+        await as(a).get(`/dashboard?date=${DATE}&${bad}`).expect(400);
+      }
+    });
+
+    it('phase 33: top products and clients of the period, and the clients who stopped', async () => {
+      const d = (await as(a).get(`/dashboard?date=${DATE}`).expect(200)).body as DashboardDto;
+      // March: 10 cartons sold − 2 back (DAMAGED and RESTOCK) = 192 pièces of P.
+      expect(d.top?.products).toEqual([
+        {
+          id: productP,
+          designation: 'Article rapports',
+          unit: 'PIECE',
+          qty: '192.000',
+          ttc: '21896.00',
+        },
+      ]);
+      // The comptoir sale (S4) has no client.
+      expect(d.top?.clients).toEqual([
+        { id: c1.id, name: c1.name, ttc: '10948.00', count: 3 },
+        { id: c2.id, name: c2.name, ttc: '8211.00', count: 4 },
+      ]);
+      // As of 31 March both bought in the last 30 days.
+      expect(d.top?.dormant).toEqual([]);
+
+      // As of 15 May: nothing since 16 April, something in the 90 days before.
+      const may = (await as(a).get('/dashboard?date=2026-05-15').expect(200)).body as DashboardDto;
+      expect(may.top?.dormant).toEqual([
+        // S1, S2, S12, S9, S10, S11, S13: 21 896 over 3 months.
+        { id: c1.id, name: c1.name, monthly: '7298.67', lastSale: '2026-03-31' },
+        // S3, S5, S6, S8 net of the 2 avoirs: 8 211.
+        { id: c2.id, name: c2.name, monthly: '2737.00', lastSale: '2026-03-30' },
+      ]);
+      const sk = (await as(storekeeper).get(`/dashboard?date=${DATE}`).expect(200))
+        .body as DashboardDto;
+      expect(sk.top).toBeNull();
     });
 
     it('defaults to today and rejects a bad date', async () => {
