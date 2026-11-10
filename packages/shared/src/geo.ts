@@ -148,12 +148,14 @@ export function orderByNearest<T extends { lat: number | null; lng: number | nul
   return [...out, ...without];
 }
 
-/** A straight-line distance for people: `950 m`, `1,2 km`, `124 km`. */
+/** A straight-line distance for people: `950 m`, `1,2 km`, `5 km`, `124 km`. */
 export function formatDistanceM(metres: number): string {
   const m = Math.max(0, Math.round(metres));
   if (m < 1000) return `${m}\u00a0m`;
   const km = m / 1000;
-  return km < 100 ? `${km.toFixed(1).replace('.', ',')}\u00a0km` : `${Math.round(km)}\u00a0km`;
+  const shown =
+    km < 100 ? km.toFixed(1).replace(/\.0$/, '').replace('.', ',') : String(Math.round(km));
+  return `${shown}\u00a0km`;
 }
 
 /** A link that opens the phone's maps app (or the browser) on a point, for directions. */

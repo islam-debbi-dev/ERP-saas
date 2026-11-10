@@ -91,7 +91,9 @@ test.describe('the login itself', () => {
     await page.locator('#identifier').fill(f.session.email);
     await page.locator('#password').fill('Wrong1234!');
     await page.getByRole('button', { name: 'Log in' }).click();
-    await expect(page.getByRole('alert').filter({ hasNotText: 'Notifications' }).first()).toBeVisible();
+    await expect(
+      page.getByRole('alert').filter({ hasNotText: 'Notifications' }).first(),
+    ).toBeVisible();
     await expect(page).toHaveURL(/\/login/);
     await expect(page.locator('body')).not.toContainText('Wrong1234!');
     await expect(page.locator('body')).not.toContainText(f.session.email);
@@ -156,7 +158,9 @@ test('a hostile client name is shown as text, not executed', async ({ page }) =>
   await useEnglish(page);
   await open(page, '/clients');
   await expect(page.getByText(name)).toBeVisible();
-  const pwned = await page.evaluate(() => (window as unknown as Record<string, unknown>)['__pwned']);
+  const pwned = await page.evaluate(
+    () => (window as unknown as Record<string, unknown>)['__pwned'],
+  );
   expect(pwned).toBeUndefined();
 });
 
@@ -164,7 +168,9 @@ test('a hostile id in the URL gives a message, not a crash', async ({ page }) =>
   await useEnglish(page);
   await open(page, "/clients/'; DROP TABLE clients;--");
   // The API refuses the id, the screen says so and the app is still alive.
-  await expect(page.getByRole('alert').filter({ hasNotText: 'Notifications' }).first()).toBeVisible();
+  await expect(
+    page.getByRole('alert').filter({ hasNotText: 'Notifications' }).first(),
+  ).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Main menu' })).toBeVisible();
   await expect(page.locator('body')).not.toContainText('Application error');
 });
@@ -185,6 +191,100 @@ test('a payment made from the screen carries an idempotency key', async ({ page 
 });
 
 // The log out ends the shared session: it stays the last check.
+test.describe('client map and tournée stops from the map (phase 35)', () => {
+  const tiles = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+    'base64',
+  );
+  test.beforeEach(async ({ context }) => {
+    // CI never hits the tile server.
+    await context.route(/tile\.openstreetmap\.org/, (r) =>
+      r.fulfill({ contentType: 'image/png', body: tiles }),
+    );
+  });
+
+  /** Three clients of the owner around Oran, west to east: A, B (2 km), C (4 km). */
+  async function oranClients(): Promise<{ id: string; name: string }[]> {
+    const f = shared();
+    const out: { id: string; name: string }[] = [];
+    for (const [i, lng] of [-0.6308, -0.6088, -0.5868].entries()) {
+      const name = uniq(`Carte ${'ABC'[i]} `);
+      const c = (
+        await call<{ id: string }>('/clients', {
+          method: 'POST',
+          token: f.session.token,
+          body: { code: uniq('MAP-'), name, assignedSellerId: f.session.userId },
+        })
+      ).body;
+      await call(`/clients/${c.id}/location`, {
+        method: 'PATCH',
+        token: f.session.token,
+        body: { lat: 35.6971, lng },
+      });
+      out.push({ id: c.id, name });
+    }
+    return out;
+  }
+
+  const stopNames = (page: Page) => page.locator('ol > li p.font-medium').allTextContents();
+
+  test('picks stops on the map, saves them in tap order, orders them by distance', async ({
+    page,
+  }) => {
+    const [a, b, c] = await oranClients();
+    page.on('dialog', (d) => void d.accept());
+    await useEnglish(page);
+    await open(page, '/tournees');
+    await page.getByRole('button', { name: 'New route' }).first().click();
+    await page.locator('#route-name').fill(uniq('Oran '));
+    await page.locator('#route-seller').selectOption(shared().session.userId);
+    await page.locator('[role="dialog"] button[aria-pressed]').first().click();
+    await page.getByRole('button', { name: 'Create route' }).click();
+    await page.waitForURL(/\/tournees\/[0-9a-f-]{36}$/);
+    await expect(page.getByText('Pick the clients on the map.')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Pick on the map' }).first().click();
+    const sheet = page
+      .locator('[role="dialog"]')
+      .filter({ has: page.locator('.leaflet-container') });
+    for (const x of [a!, c!]) {
+      await sheet.locator(`path.cp-${x.id}`).click();
+      const bubble = sheet.getByRole('dialog', { name: x.name });
+      await bubble.getByRole('button', { name: 'Add to the route' }).click();
+      await bubble.getByRole('button', { name: 'Close', exact: true }).click();
+    }
+    // The added clients are numbered markers now: 1 and 2.
+    await expect(sheet.locator('.leaflet-marker-icon')).toHaveCount(2);
+    await sheet.getByRole('button', { name: 'Done' }).click();
+    expect(await stopNames(page)).toEqual([a!.name, c!.name]);
+
+    await page.getByRole('button', { name: 'Save route' }).click();
+    await expect(page.getByText('Route saved').first()).toBeVisible();
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    expect(await stopNames(page)).toEqual([a!.name, c!.name]);
+
+    // B lies between A and C: ordering by distance from the first stop puts it second.
+    await page.getByRole('button', { name: 'Pick on the map' }).first().click();
+    await sheet.locator(`path.cp-${b!.id}`).click();
+    await sheet.getByRole('button', { name: 'Add to the route' }).click();
+    await sheet.getByRole('button', { name: 'Done' }).click();
+    expect(await stopNames(page)).toEqual([a!.name, c!.name, b!.name]);
+    await page.getByRole('button', { name: 'Order by distance' }).click();
+    expect(await stopNames(page)).toEqual([a!.name, b!.name, c!.name]);
+  });
+
+  test('refused location explains itself and the map still loads', async ({ page, context }) => {
+    await context.clearPermissions();
+    await useEnglish(page);
+    await open(page, '/clients/carte');
+    await page.locator('.leaflet-container').waitFor();
+    await page.getByRole('button', { name: 'Near me' }).click();
+    await expect(page.getByText(/Location refused/)).toBeVisible();
+    await expect(page.locator('.leaflet-container')).toBeVisible();
+  });
+});
+
 test('logging out ends the session for good', async ({ page }) => {
   await useEnglish(page);
   await open(page, '/tableau-de-bord');
@@ -194,4 +294,3 @@ test('logging out ends the session for good', async ({ page }) => {
   await open(page, '/clients');
   await expect(page).toHaveURL(/\/login/);
 });
-

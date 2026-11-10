@@ -196,12 +196,14 @@ describe('orderByNearest', () => {
 
 describe('formatDistanceM', () => {
   it('shows metres below 1 km and km with one decimal above', () => {
-    expect(formatDistanceM(950)).toBe('950 m');
-    expect(formatDistanceM(349.6)).toBe('350 m');
-    expect(formatDistanceM(1200)).toBe('1,2 km');
-    expect(formatDistanceM(2449)).toBe('2,4 km');
-    expect(formatDistanceM(123_600)).toBe('124 km');
-    expect(formatDistanceM(-3)).toBe('0 m');
+    expect(formatDistanceM(950)).toBe('950\u00a0m');
+    expect(formatDistanceM(349.6)).toBe('350\u00a0m');
+    expect(formatDistanceM(1200)).toBe('1,2\u00a0km');
+    expect(formatDistanceM(1000)).toBe('1\u00a0km');
+    expect(formatDistanceM(25_000)).toBe('25\u00a0km');
+    expect(formatDistanceM(2449)).toBe('2,4\u00a0km');
+    expect(formatDistanceM(123_600)).toBe('124\u00a0km');
+    expect(formatDistanceM(-3)).toBe('0\u00a0m');
   });
 });
 

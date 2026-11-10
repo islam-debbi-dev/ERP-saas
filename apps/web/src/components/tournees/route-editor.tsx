@@ -26,7 +26,9 @@ import {
   Archive,
   GripVertical,
   Loader2,
+  Map as MapIcon,
   Plus,
+  Shuffle,
   Save,
   Trash2,
 } from 'lucide-react';
@@ -34,7 +36,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Feature, type RouteDto, type RouteStopDto, type UpdateRouteInput } from '@erp/shared';
+import { Feature, orderByNearest, type RouteDto, type UpdateRouteInput } from '@erp/shared';
 import { ClientPicker } from '@/components/sales/client-picker';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FeatureGate } from '@/components/shared/feature-gate';
@@ -49,12 +51,12 @@ import { NativeSelect } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { api } from '@/lib/api-client';
+import { useFeature } from '@/lib/auth';
 import { useSellers } from '@/lib/sales-force';
 import { tourneeKeys, useRoute } from '@/lib/tournees';
 import { useErrorMessage } from '@/lib/use-error-message';
+import { type Stop, RouteMapSheet } from './route-map-sheet';
 import { WeekdayPicker } from './weekdays';
-
-type Stop = RouteStopDto['client'];
 
 /** Tournées > one route: its seller and days, and the ordered list of its clients. */
 export function RouteEditor({ id }: { id: string }) {
@@ -100,6 +102,9 @@ function Loaded({ route }: { route: RouteDto }) {
   const [active, setActive] = useState(route.active);
   const [stops, setStops] = useState<Stop[]>(route.stops.map((s) => s.client));
   const [picking, setPicking] = useState(false);
+  // Phase 35: tap clients on a map (clients only have points with GEO_CHECK).
+  const geo = useFeature(Feature.GEO_CHECK);
+  const [mapOpen, setMapOpen] = useState(false);
   const [announce, setAnnounce] = useState('');
 
   const sensors = useSensors(
@@ -225,13 +230,45 @@ function Loaded({ route }: { route: RouteDto }) {
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-base font-semibold">{t('stops')}</h2>
-        <Button variant="outline" onClick={() => setPicking(true)}>
-          <Plus aria-hidden />
-          {t('addStop')}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => setPicking(true)}>
+            <Plus aria-hidden />
+            {t('addStop')}
+          </Button>
+          {geo ? (
+            <Button variant="outline" onClick={() => setMapOpen(true)}>
+              <MapIcon aria-hidden />
+              {t('pickOnMap')}
+            </Button>
+          ) : null}
+          {geo && stops.length > 1 ? (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                if (!window.confirm(t('orderByNearestConfirm'))) return;
+                setStops(orderByNearest(route.start, stops));
+                setAnnounce(t('orderedByNearest'));
+              }}
+            >
+              <Shuffle aria-hidden />
+              {t('orderByNearest')}
+            </Button>
+          ) : null}
+        </div>
       </div>
+      {geo && stops.length === 0 ? (
+        <Alert>
+          <MapIcon aria-hidden />
+          <AlertDescription className="flex flex-wrap items-center justify-between gap-2">
+            {t('pickOnMapHint')}
+            <Button size="sm" onClick={() => setMapOpen(true)}>
+              {t('pickOnMap')}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      ) : null}
       <p className="text-sm text-muted-foreground">{t('reorderHelp')}</p>
       <p className="sr-only" role="status" aria-live="polite">
         {announce}
@@ -282,10 +319,27 @@ function Loaded({ route }: { route: RouteDto }) {
           }
           setStops([
             ...stops,
-            { id: c.id, code: c.code, name: c.name, commune: c.commune, phone: c.phone },
+            {
+              id: c.id,
+              code: c.code,
+              name: c.name,
+              commune: c.commune,
+              phone: c.phone,
+              lat: c.location?.lat ?? null,
+              lng: c.location?.lng ?? null,
+            },
           ]);
         }}
       />
+      {geo && mapOpen ? (
+        <RouteMapSheet
+          open
+          onOpenChange={setMapOpen}
+          sellerId={sellerId}
+          stops={stops}
+          onChange={setStops}
+        />
+      ) : null}
     </>
   );
 }

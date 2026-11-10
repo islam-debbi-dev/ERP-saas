@@ -7,6 +7,7 @@ import {
   Landmark,
   LayoutDashboard,
   LayoutGrid,
+  Map as MapIcon,
   MapPinCheck,
   MapPinned,
   Navigation,
@@ -32,6 +33,7 @@ export type NavKey =
   | 'sales'
   | 'versements'
   | 'clients'
+  | 'clientsMap'
   | 'today'
   | 'tournees'
   | 'orders'
@@ -86,6 +88,14 @@ export const NAV_GROUPS: readonly NavGroup[] = [
       { key: 'sales', url: '/ventes', icon: ReceiptText },
       { key: 'versements', url: '/versements', icon: Banknote },
       { key: 'clients', url: '/clients', icon: Users },
+      // Phase 35: clients only get a point through phase 17 (GEO_CHECK).
+      {
+        key: 'clientsMap',
+        url: '/clients/carte',
+        icon: MapIcon,
+        feature: Feature.GEO_CHECK,
+        permission: Permission.CLIENTS_VIEW,
+      },
       // Phase 16: before 'tournees' so /tournees/aujourdhui is "today" for a seller.
       {
         key: 'today',

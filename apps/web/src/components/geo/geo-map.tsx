@@ -13,12 +13,13 @@ import {
   useMap,
 } from 'react-leaflet';
 import type { GeoMapProps } from './geo-map-lazy';
+import { MAP_TILE_ATTRIBUTION, MAP_TILE_URL } from './map-tiles';
 
 const CLIENT_COLOR = '#1d4ed8';
 const OPERATION_COLOR = '#b45309';
 
 /**
- * Leaflet map with OpenStreetMap tiles (phase 17): the client's saved point, the point of
+ * Leaflet map (phase 17; tiles from the env since phase 35): the client's saved point, the point of
  * the operation with its accuracy circle, and the line between them. Labels say what each
  * point is, so the colours are never the only clue.
  */
@@ -46,11 +47,7 @@ export default function GeoMap({ client, operation, labels, className }: GeoMapP
       attributionControl
     >
       <Refit bounds={bounds} />
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-        maxZoom={19}
-      />
+      <TileLayer attribution={MAP_TILE_ATTRIBUTION} url={MAP_TILE_URL} maxZoom={19} />
       {client && operation ? (
         <Polyline
           positions={[
