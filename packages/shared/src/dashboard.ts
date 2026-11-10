@@ -3,6 +3,7 @@
  * buckets of its chart. Algiers days (`YYYY-MM-DD`), pure functions, shared by the API
  * (which computes) and the web (which only builds links and labels).
  */
+import { Role } from './enums';
 import { money, type MoneyInput, toMoneyString } from './money';
 import { previousPeriod } from './overview';
 import { addDays, type DayRange, daysInMonth, rangeLength } from './periods';
@@ -166,4 +167,64 @@ export function pickGreetingFact(input: {
   }
   if (input.overLimitCount) return { key: 'overLimit', params: { count: input.overLimitCount } };
   return null;
+}
+
+// ---------------------------------------------------------------- my dashboard
+
+/** The cards a user can move or hide (phase 33.5). New cards are added at the end. */
+export const DASHBOARD_CARD_IDS = [
+  'todo',
+  'objectives',
+  'attendance',
+  'figures',
+  'target',
+  'stock',
+  'chart',
+  'top',
+  'debtors',
+  'cheques',
+] as const;
+export type DashboardCardId = (typeof DASHBOARD_CARD_IDS)[number];
+
+export interface DashboardLayout {
+  /** Every known card, in the user's order. */
+  order: DashboardCardId[];
+  hidden: DashboardCardId[];
+}
+
+const isCard = (v: unknown): v is DashboardCardId =>
+  typeof v === 'string' && (DASHBOARD_CARD_IDS as readonly string[]).includes(v);
+
+/**
+ * Where each role starts: owner and manager with "À faire" then money; a seller with
+ * "À faire", his objectives, then his sales; a storekeeper with the stock.
+ */
+export function defaultDashboardLayout(role: Role): DashboardLayout {
+  const first: DashboardCardId[] =
+    role === Role.OWNER || role === Role.MANAGER
+      ? ['todo', 'figures', 'target', 'chart', 'cheques', 'debtors', 'top', 'stock']
+      : role === Role.SELLER || role === Role.SUPERVISOR
+        ? ['todo', 'objectives', 'figures', 'chart', 'top']
+        : role === Role.STOREKEEPER
+          ? ['stock', 'todo']
+          : ['todo'];
+  return {
+    order: [...first, ...DASHBOARD_CARD_IDS.filter((id) => !first.includes(id))],
+    hidden: [],
+  };
+}
+
+/**
+ * A saved layout read back (or null = the role's default): unknown ids are dropped, so
+ * removing a card later never breaks a layout; duplicates are dropped; cards the saved
+ * order does not know yet are appended in the role's default order.
+ */
+export function normalizeDashboardLayout(saved: unknown, role: Role): DashboardLayout {
+  const fallback = defaultDashboardLayout(role);
+  if (!saved || typeof saved !== 'object') return fallback;
+  const raw = saved as { order?: unknown; hidden?: unknown };
+  const order = [...new Set(Array.isArray(raw.order) ? raw.order.filter(isCard) : [])];
+  for (const id of fallback.order) if (!order.includes(id)) order.push(id);
+  const hidden = [...new Set(Array.isArray(raw.hidden) ? raw.hidden.filter(isCard) : [])];
+  return { order, hidden };
 }

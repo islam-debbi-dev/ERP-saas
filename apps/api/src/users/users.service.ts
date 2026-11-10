@@ -1,7 +1,10 @@
 import { randomBytes } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import {
+  type DashboardLayout,
+  type DashboardLayoutInput,
   effectivePermissions,
+  normalizeDashboardLayout,
   ErrorCode,
   type InviteResultDto,
   type InviteUserInput,
@@ -487,6 +490,35 @@ export class UsersService {
     return this.billing.assertCanAdd(tx, 'users', 1, () =>
       tx.user.count({ where: { deletedAt: null } }),
     );
+  }
+
+  /** His dashboard (phase 33.5): saved order and hidden cards, normalized for his role. */
+  async dashboardLayout(user: CurrentUserInfo): Promise<DashboardLayout> {
+    const row = await this.prisma.db.user.findUniqueOrThrow({
+      where: { id: user.id },
+      select: { dashboardLayout: true },
+    });
+    return normalizeDashboardLayout(row.dashboardLayout, user.role);
+  }
+
+  /** Saves his own layout only; audited without before/after (it is a preference). */
+  async saveDashboardLayout(
+    user: CurrentUserInfo,
+    input: DashboardLayoutInput,
+  ): Promise<DashboardLayout> {
+    const layout = normalizeDashboardLayout(input, user.role);
+    await this.prisma.db.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: user.id },
+        data: { dashboardLayout: { order: layout.order, hidden: layout.hidden } },
+      });
+      await this.audit.log(tx, {
+        action: 'USER_DASHBOARD_LAYOUT_CHANGED',
+        entity: 'User',
+        entityId: user.id,
+      });
+    });
+    return layout;
   }
 }
 

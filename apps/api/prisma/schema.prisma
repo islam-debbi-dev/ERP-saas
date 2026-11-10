@@ -278,6 +278,8 @@ model User {
   createdBy          String?   @db.Uuid
   /// The supervisor or manager this user reports to (phase 14). Never a cycle.
   managerId          String?   @db.Uuid
+  /// Phase 33.5: his dashboard cards, order and hidden ones; null = his role's default.
+  dashboardLayout    Json?
   /// Deactivated: sessions revoked, cannot log in. Never deleted (history keeps the name).
   deletedAt          DateTime? @db.Timestamptz(3)
   createdAt          DateTime  @default(now()) @db.Timestamptz(3)

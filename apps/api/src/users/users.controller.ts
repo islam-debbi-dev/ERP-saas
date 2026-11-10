@@ -6,10 +6,14 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Put,
 } from '@nestjs/common';
 import {
+  type DashboardLayout,
+  type DashboardLayoutInput,
+  dashboardLayoutInputSchema,
   Feature,
   type InviteResultDto,
   type InviteUserInput,
@@ -75,6 +79,20 @@ export class UsersController {
   @RequireFeature(Feature.SALES_FORCE)
   team(@CurrentUser() user: CurrentUserInfo): Promise<TeamNodeDto[]> {
     return this.users.team(user);
+  }
+
+  /** Phase 33.5: everyone arranges his own dashboard; declared before `:id`. */
+  @Get('me/dashboard-layout')
+  dashboardLayout(@CurrentUser() user: CurrentUserInfo): Promise<DashboardLayout> {
+    return this.users.dashboardLayout(user);
+  }
+
+  @Patch('me/dashboard-layout')
+  saveDashboardLayout(
+    @Body(new ZodValidationPipe(dashboardLayoutInputSchema)) body: DashboardLayoutInput,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<DashboardLayout> {
+    return this.users.saveDashboardLayout(user, body);
   }
 
   @Get(':id')

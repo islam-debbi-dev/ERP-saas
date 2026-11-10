@@ -4,6 +4,7 @@ import {
   addDays,
   type AuthResponse,
   type ClientDto,
+  type DashboardLayout,
   type DashboardTodoDto,
   type InviteResultDto,
   type OrderDto,
@@ -17,6 +18,7 @@ import {
   type UserDto,
 } from '@erp/shared';
 import {
+  asTenant,
   bearer,
   catalogOf,
   createProduct,
@@ -342,6 +344,45 @@ describe('dashboard todo', () => {
     const his = await todo(storekeeper);
     expect(his.items.map((i) => i.key)).toContain(`OUT_OF_STOCK_SOLD:${soldOut.id}`);
     expect(his.items.every((i) => ['OUT_OF_STOCK_SOLD', 'DRAFT_OLD'].includes(i.type))).toBe(true);
+  });
+
+  it('my dashboard: role defaults, unknown ids dropped, only the caller changes (33.5)', async () => {
+    const layout = async (who: Who) =>
+      (await as(who).get('/users/me/dashboard-layout').expect(200)).body as DashboardLayout;
+    const save = (who: Who, body: object) =>
+      t
+        .http()
+        .patch('/users/me/dashboard-layout')
+        .set(...bearer(who.auth.accessToken))
+        .send(body);
+
+    expect((await layout(d)).order.slice(0, 2)).toEqual(['todo', 'figures']);
+    expect((await layout(seller)).order.slice(0, 2)).toEqual(['todo', 'objectives']);
+    expect((await layout(storekeeper)).order[0]).toBe('stock');
+
+    const saved = (
+      await save(seller, {
+        order: ['chart', 'retired-card', 'todo'],
+        hidden: ['top', 'nope'],
+      }).expect(200)
+    ).body as DashboardLayout;
+    expect(saved.order.slice(0, 2)).toEqual(['chart', 'todo']);
+    expect(saved.order).not.toContain('retired-card');
+    expect(saved.hidden).toEqual(['top']);
+    expect(await layout(seller)).toEqual(saved);
+    // The owner's layout did not move.
+    expect((await layout(d)).order.slice(0, 2)).toEqual(['todo', 'figures']);
+    // Audited without before/after: a preference, not business data.
+    const rows = await asTenant(d.tenantId, () =>
+      t.prisma.db.auditLog.findMany({
+        where: { action: 'USER_DASHBOARD_LAYOUT_CHANGED', entityId: seller.user.id },
+        select: { before: true, after: true },
+      }),
+    );
+    expect(rows).toEqual([{ before: null, after: null }]);
+
+    await save(seller, { order: 'todo', hidden: [] }).expect(400);
+    await save(seller, { order: Array.from({ length: 60 }, () => 'todo'), hidden: [] }).expect(400);
   });
 
   it('tenant B never sees tenant A’s items', async () => {

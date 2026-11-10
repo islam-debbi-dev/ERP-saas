@@ -1,12 +1,20 @@
 'use client';
 
-import { ChevronRight, SlidersHorizontal, TrendingDown, TrendingUp } from 'lucide-react';
+import {
+  ChevronRight,
+  LayoutGrid,
+  SlidersHorizontal,
+  TrendingDown,
+  TrendingUp,
+} from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
-import { type ReactNode } from 'react';
+import { Fragment, type ReactNode, useState } from 'react';
 import { z } from 'zod';
 import {
+  DASHBOARD_CARD_IDS,
+  type DashboardCardId,
   DASHBOARD_PERIODS,
   type DashboardDto,
   type DashboardPeriod,
@@ -20,6 +28,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import { PageHeader } from '@/components/shared/page-header';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -33,6 +42,7 @@ import {
 import { useCanOpen } from '@/components/layout/use-visible-nav';
 import { useAuth, useFeature } from '@/lib/auth';
 import { drill } from '@/lib/dashboard-links';
+import { useDashboardLayout } from '@/lib/dashboard-layout';
 import { todoKeys } from '@/lib/todo';
 import { useCountUp } from '@/lib/use-count-up';
 import {
@@ -49,6 +59,7 @@ import { AttendanceTodayCard } from '@/components/hr/today-card';
 import { MyObjectivesCard } from '@/components/incentives/my-objectives-card';
 import { OnboardingCard } from './onboarding-card';
 import { PullToRefresh, UpdatedBar } from './live-bar';
+import { Organiser } from './organiser';
 import { PeriodSwitcher, usePeriodName } from './period-switcher';
 import { GreetingLine, TargetCard } from './target-card';
 import { QuickActionButtons, QuickActionFab } from './quick-actions';
@@ -59,6 +70,17 @@ import { Amount } from '@/components/shared/amount';
 
 /** A count shown while it counts up (decimal steps rounded for display). */
 const integer = (v: string) => money(v).toFixed(0);
+
+/** Cards drawn from the dashboard's figures (the period switcher sits above the first). */
+const DATA_CARDS: readonly DashboardCardId[] = [
+  'figures',
+  'target',
+  'stock',
+  'chart',
+  'top',
+  'debtors',
+  'cheques',
+];
 
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const DASHBOARD_URL_FILTERS = {
@@ -102,6 +124,12 @@ export function DashboardPage() {
     void queryClient.invalidateQueries({ queryKey: todoKeys.all });
   };
   const name = state.status === 'authenticated' ? state.user.fullName : '';
+  // Phase 33.5: his order and hidden cards; the period and filters sit above the first
+  // card that shows figures.
+  const layout = useDashboardLayout();
+  const [organising, setOrganising] = useState(false);
+  const visible = layout.order.filter((id) => !layout.hidden.includes(id));
+  const firstData = visible.find((id) => DATA_CARDS.includes(id)) ?? null;
 
   return (
     <>
@@ -119,27 +147,66 @@ export function DashboardPage() {
         onRefresh={refreshAll}
       />
       <PullToRefresh onRefresh={refreshAll} />
-      <TodoCard />
       <OnboardingCard />
-      <MyObjectivesCard />
-      <AttendanceTodayCard />
-      {dashboard.data?.sales !== null ? (
-        <PeriodSwitcher value={period} range={d?.sales?.period} onChange={setPeriod} />
+      <div className="flex justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          className="min-h-11"
+          aria-pressed={organising}
+          onClick={() => setOrganising((o) => !o)}
+        >
+          <LayoutGrid aria-hidden />
+          {t('organise')}
+        </Button>
+      </div>
+      {organising ? (
+        <Organiser
+          layout={layout}
+          available={availableCards(d)}
+          onClose={() => setOrganising(false)}
+        />
       ) : null}
-      <FigureFilterBar value={filters} onChange={setFilters} />
-      {dashboard.isError ? (
-        <p role="alert" className="text-sm text-destructive">
-          {errorMessage(dashboard.error)}
-        </p>
-      ) : !d ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-busy>
-          {Array.from({ length: 4 }, (_, i) => (
-            <Skeleton key={i} className="h-28 w-full" />
-          ))}
-        </div>
-      ) : (
-        <Sections d={d} filters={filters} />
-      )}
+      {layout.order
+        .filter((id) => !layout.hidden.includes(id))
+        .map((id) => {
+          const controls =
+            id === firstData ? (
+              <Fragment key="controls">
+                {d?.sales !== null ? (
+                  <PeriodSwitcher value={period} range={d?.sales?.period} onChange={setPeriod} />
+                ) : null}
+                <FigureFilterBar value={filters} onChange={setFilters} />
+              </Fragment>
+            ) : null;
+          let card: ReactNode;
+          if (id === 'todo') card = <TodoCard />;
+          else if (id === 'objectives') card = <MyObjectivesCard />;
+          else if (id === 'attendance') card = <AttendanceTodayCard />;
+          else if (dashboard.isError)
+            card =
+              id === firstData ? (
+                <p role="alert" className="text-sm text-destructive">
+                  {errorMessage(dashboard.error)}
+                </p>
+              ) : null;
+          else if (!d)
+            card =
+              id === firstData ? (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-busy>
+                  {Array.from({ length: 4 }, (_, i) => (
+                    <Skeleton key={i} className="h-28 w-full" />
+                  ))}
+                </div>
+              ) : null;
+          else card = <Sections d={d} filters={filters} only={id} />;
+          return (
+            <Fragment key={id}>
+              {controls}
+              {card}
+            </Fragment>
+          );
+        })}
       {/* Room for the phone's "+" button under the last card. */}
       <div className="h-16 md:hidden" aria-hidden />
       <QuickActionFab />
@@ -230,7 +297,16 @@ function FigureFilterBar({
   );
 }
 
-function Sections({ d, filters }: { d: DashboardDto; filters: FigureFilters }) {
+/** One card of the dashboard's data (phase 33.5: drawn in the user's order). */
+function Sections({
+  d,
+  filters,
+  only,
+}: {
+  d: DashboardDto;
+  filters: FigureFilters;
+  only: DashboardCardId;
+}) {
   const t = useTranslations('dashboard');
   const ts = useTranslations('sales');
   const canOpen = useCanOpen();
@@ -239,8 +315,8 @@ function Sections({ d, filters }: { d: DashboardDto; filters: FigureFilters }) {
   const periodName = usePeriodName();
   const range = d.sales?.period;
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
-      {d.sales || d.cash || d.credit ? (
+    <>
+      {only === 'figures' && (d.sales || d.cash || d.credit) ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {d.sales ? (
             <>
@@ -367,9 +443,9 @@ function Sections({ d, filters }: { d: DashboardDto; filters: FigureFilters }) {
         </div>
       ) : null}
 
-      {d.target ? <TargetCard target={d.target} /> : null}
+      {only === 'target' && d.target ? <TargetCard target={d.target} /> : null}
 
-      {d.stock ? (
+      {only === 'stock' && d.stock ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <Stat
             label={t('outOfStock')}
@@ -400,7 +476,7 @@ function Sections({ d, filters }: { d: DashboardDto; filters: FigureFilters }) {
         </div>
       ) : null}
 
-      {d.sales ? (
+      {only === 'chart' && d.sales ? (
         <Card className="gap-3 py-4">
           <CardHeader>
             <CardTitle role="heading" aria-level={2} className="text-base">
@@ -420,18 +496,35 @@ function Sections({ d, filters }: { d: DashboardDto; filters: FigureFilters }) {
         </Card>
       ) : null}
 
-      {d.top ? <TopLists top={d.top} /> : null}
+      {only === 'top' && d.top ? <TopLists top={d.top} /> : null}
 
-      {d.credit ? (
+      {only === 'debtors' && d.credit ? (
         <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
           <DebtorsCard title={t('topDebtors')} rows={d.credit.topDebtors} />
           <DebtorsCard title={t('overLimitList')} rows={d.credit.overLimit} />
         </div>
       ) : null}
 
-      {d.cheques ? <ChequesCard cheques={d.cheques} /> : null}
-    </div>
+      {only === 'cheques' && d.cheques ? <ChequesCard cheques={d.cheques} /> : null}
+    </>
   );
+}
+
+/** The cards this user can have with these figures (the organiser lists only these). */
+function availableCards(d: DashboardDto | undefined): DashboardCardId[] {
+  const has: Record<DashboardCardId, boolean> = {
+    todo: true,
+    objectives: true,
+    attendance: true,
+    figures: !d || Boolean(d.sales || d.cash || d.credit),
+    target: Boolean(d?.target),
+    stock: Boolean(d?.stock),
+    chart: Boolean(d?.sales),
+    top: Boolean(d?.top),
+    debtors: Boolean(d?.credit),
+    cheques: Boolean(d?.cheques),
+  };
+  return DASHBOARD_CARD_IDS.filter((id) => has[id]);
 }
 
 /** Chèques à échéance (phase 21): to cash from clients, to cover for suppliers. */

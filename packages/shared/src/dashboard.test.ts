@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { Role } from './enums';
 import {
   chartBuckets,
+  DASHBOARD_CARD_IDS,
+  defaultDashboardLayout,
+  normalizeDashboardLayout,
   pickGreetingFact,
   previousBucket,
   resolveDashboardPeriod,
@@ -154,5 +158,39 @@ describe('pickGreetingFact', () => {
       key: 'overLimit',
       params: { count: 2 },
     });
+  });
+});
+
+describe('dashboard layout', () => {
+  it('each role starts with its own order and every card', () => {
+    expect(defaultDashboardLayout(Role.OWNER).order.slice(0, 2)).toEqual(['todo', 'figures']);
+    expect(defaultDashboardLayout(Role.SELLER).order.slice(0, 3)).toEqual([
+      'todo',
+      'objectives',
+      'figures',
+    ]);
+    expect(defaultDashboardLayout(Role.STOREKEEPER).order[0]).toBe('stock');
+    for (const role of Object.values(Role)) {
+      expect([...defaultDashboardLayout(role).order].sort()).toEqual(
+        [...DASHBOARD_CARD_IDS].sort(),
+      );
+    }
+  });
+
+  it('a saved layout drops unknown ids and duplicates, and gets the cards it does not know', () => {
+    const read = normalizeDashboardLayout(
+      { order: ['chart', 'old-card', 'todo', 'chart'], hidden: ['stock', 'gone', 'stock'] },
+      Role.OWNER,
+    );
+    expect(read.order.slice(0, 2)).toEqual(['chart', 'todo']);
+    expect(read.order).not.toContain('old-card');
+    expect([...read.order].sort()).toEqual([...DASHBOARD_CARD_IDS].sort());
+    expect(read.hidden).toEqual(['stock']);
+    expect(normalizeDashboardLayout(null, Role.SELLER)).toEqual(
+      defaultDashboardLayout(Role.SELLER),
+    );
+    expect(normalizeDashboardLayout('junk', Role.OWNER)).toEqual(
+      defaultDashboardLayout(Role.OWNER),
+    );
   });
 });

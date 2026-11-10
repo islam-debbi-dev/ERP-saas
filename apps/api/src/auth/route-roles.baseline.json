@@ -234,6 +234,8 @@
   "POST /users/invite": ["OWNER"],
   "GET /users/sellers": ["OWNER", "MANAGER", "SUPERVISOR"],
   "GET /users/team": ["OWNER", "MANAGER", "SUPERVISOR"],
+  "GET /users/me/dashboard-layout": null,
+  "PATCH /users/me/dashboard-layout": null,
   "GET /users/:id": ["OWNER", "MANAGER"],
   "PUT /users/:id": ["OWNER"],
   "PUT /users/:id/permissions": ["OWNER"],
