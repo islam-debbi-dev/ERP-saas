@@ -103,6 +103,12 @@ Sidebar help links come from the web env (`NEXT_PUBLIC_SUPPORT_WHATSAPP`, `NEXT_
 - With `MULTI_UNIT`, a manager who sees more than one dépôt lands on **Vue d'ensemble** (`/vue-ensemble`, first item of the menu): one card per dépôt (CA, cash in / out, marge, charges, résultat net, créances, stock, top seller, daily CA) for Aujourd'hui / Cette semaine / Ce mois / Mois dernier / a custom period. Tapping a card opens the dashboard on that dépôt; "Comparer" shows the dépôts side by side, with an Excel export. Rules: `docs/domain.md`, "Vue d'ensemble".
 - The dashboard gains a "Résultat net du mois" card (every edition). A règlement fournisseur now records its dépôt (the header's, else the user's only one). One expand-only migration; nothing to run after deploying.
 
+## Carte des clients (phase 35)
+
+- With `GEO_CHECK`, **Clients > Carte** (`/clients/carte`) shows the live clients that have a GPS point, within the user's scope, with "Près de moi" / "Près de ce client" (straight-line distances). The route editor gets "Choisir sur la carte" and "Ordonner par proximité"; the seller's day gets a map view. The browser position is never stored nor logged.
+- Tiles: OpenStreetMap by default, light use only (OSM tile policy). To switch provider, set `NEXT_PUBLIC_MAP_TILE_URL` and `NEXT_PUBLIC_MAP_TILE_ATTRIBUTION` on the web project (`apps/web/.env.example`).
+- One additive migration (partial index `clients_tenant_geo_idx`): run `pnpm --filter @erp/api db:deploy` on Neon after deploying.
+
 ## Assistant IA (phase 30)
 
 An in-app help assistant: how-to answers from `apps/api/src/assistant/help/` and read-only questions on the user's own data. It never writes.
