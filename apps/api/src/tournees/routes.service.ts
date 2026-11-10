@@ -35,7 +35,11 @@ const routeInclude = {
 
 type RouteRow = Prisma.RouteGetPayload<{ include: typeof routeInclude }>;
 
-function toDto(r: RouteRow, stops: RouteDto['stops'] = []): RouteDto {
+function toDto(
+  r: RouteRow,
+  stops: RouteDto['stops'] = [],
+  start: RouteDto['start'] = null,
+): RouteDto {
   return {
     id: r.id,
     name: r.name,
@@ -44,6 +48,7 @@ function toDto(r: RouteRow, stops: RouteDto['stops'] = []): RouteDto {
     active: r.active,
     stopCount: r._count.stops,
     stops,
+    start,
   };
 }
 
@@ -85,7 +90,15 @@ export class RoutesService {
           orderBy: { position: 'asc' },
           include: {
             client: {
-              select: { id: true, code: true, name: true, commune: true, phone: true },
+              select: {
+                id: true,
+                code: true,
+                name: true,
+                commune: true,
+                phone: true,
+                lat: true,
+                lng: true,
+              },
             },
           },
         },
@@ -99,7 +112,15 @@ export class RoutesService {
     );
     return toDto(
       r,
-      r.stops.map((s) => ({ position: s.position, client: s.client })),
+      r.stops.map((s) => ({
+        position: s.position,
+        client: {
+          ...s.client,
+          lat: s.client.lat?.toNumber() ?? null,
+          lng: s.client.lng?.toNumber() ?? null,
+        },
+      })),
+      await this.scope.sellerDepotPoint(r.sellerId),
     );
   }
 
@@ -241,6 +262,8 @@ export class RoutesService {
                 phone: true,
                 address: true,
                 commune: true,
+                lat: true,
+                lng: true,
                 deletedAt: true,
               },
             },
@@ -257,8 +280,12 @@ export class RoutesService {
       for (const s of r.stops) {
         if (s.client.deletedAt || seen.has(s.clientId)) continue;
         seen.add(s.clientId);
-        const { deletedAt: _archived, ...client } = s.client;
-        stops.push({ routeId: r.id, position: s.position, client });
+        const { deletedAt: _archived, lat, lng, ...client } = s.client;
+        stops.push({
+          routeId: r.id,
+          position: s.position,
+          client: { ...client, lat: lat?.toNumber() ?? null, lng: lng?.toNumber() ?? null },
+        });
       }
     }
     const clientIds = [...seen];

@@ -69,12 +69,102 @@ export const clientListQuerySchema = z.object({
   assignedSellerId: id.optional(),
   /** Only clients without a sector / without a seller. */
   unassigned: z.enum(['sector', 'seller']).optional(),
+  /** Phase 35: only clients with (true) / without (false) a saved GPS point; omitted = all. */
+  hasLocation: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => (v === undefined ? undefined : v === 'true')),
   /** `balance_desc`: who owes the most first (the dashboard's crédit card, phase 33). Default by name. */
   sort: z.enum(['name', 'balance_desc']).default('name'),
   cursor: id.optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
 export type ClientListQuery = z.infer<typeof clientListQuerySchema>;
+
+// ---------------------------------------------------------------- client map (phase 35)
+
+/** Most points `/clients/map` returns at once; above it the web asks to zoom in or filter. */
+export const MAP_POINTS_MAX = 2000;
+
+const flag = z
+  .enum(['true', 'false'])
+  .optional()
+  .transform((v) => v === 'true');
+
+/** The client-list filters the map and the nearby list share. */
+const mapFilterFields = {
+  search: clientListQuerySchema.shape.search,
+  sectorId: id.optional(),
+  assignedSellerId: id.optional(),
+  hasDebt: flag,
+  overLimit: flag,
+  /** Inactive clients (`active = false`) are left out unless asked for. */
+  includeInactive: flag,
+};
+
+const latQ = z.coerce.number().min(-90).max(90);
+const lngQ = z.coerce.number().min(-180).max(180);
+
+export const clientMapQuerySchema = z
+  .object({
+    ...mapFilterFields,
+    /** Optional view box: all four or none. */
+    minLat: latQ.optional(),
+    minLng: lngQ.optional(),
+    maxLat: latQ.optional(),
+    maxLng: lngQ.optional(),
+  })
+  .superRefine((q, ctx) => {
+    const box = [q.minLat, q.minLng, q.maxLat, q.maxLng];
+    const given = box.filter((v) => v !== undefined).length;
+    if (given !== 0 && given !== 4) {
+      ctx.addIssue({ code: 'custom', message: 'incomplete_bounds', path: ['minLat'] });
+      return;
+    }
+    if (given === 4 && (q.minLat! >= q.maxLat! || q.minLng! >= q.maxLng!)) {
+      ctx.addIssue({ code: 'custom', message: 'invalid_bounds', path: ['maxLat'] });
+    }
+  });
+export type ClientMapQuery = z.infer<typeof clientMapQuerySchema>;
+
+export const clientNearbyQuerySchema = z.object({
+  ...mapFilterFields,
+  lat: latQ,
+  lng: lngQ,
+  radiusM: z.coerce.number().int().min(100).max(50_000).default(5000),
+  limit: z.coerce.number().int().min(1).max(100).default(30),
+});
+export type ClientNearbyQuery = z.infer<typeof clientNearbyQuerySchema>;
+
+/** A compact client for the map: no ledger, no address beyond the commune. */
+export interface ClientMapPointDto {
+  id: string;
+  code: string;
+  name: string;
+  commune: string | null;
+  phone: string | null;
+  lat: number;
+  lng: number;
+  active: boolean;
+  /** Decimal string, `"1234.50"`. */
+  balance: string;
+  overLimit: boolean;
+  sectorId: string | null;
+  assignedSellerId: string | null;
+}
+
+export interface ClientMapDto {
+  points: ClientMapPointDto[];
+  /** More clients matched than MAP_POINTS_MAX: zoom in or filter. */
+  truncated: boolean;
+  /** Clients matching the same filters that have no saved point yet. */
+  withoutLocation: number;
+}
+
+export interface ClientNearbyPointDto extends ClientMapPointDto {
+  /** Straight-line distance in whole metres. */
+  distanceM: number;
+}
 
 /** Can be negative (an avoir in the client's favour); zero has nothing to record. */
 export const openingBalanceSchema = z.object({

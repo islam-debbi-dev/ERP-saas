@@ -42,6 +42,7 @@ import { TreasuryModule } from './treasury/treasury.module';
 import { ReportsModule } from './reports/reports.module';
 import { StockModule } from './stock/stock.module';
 import { TenantsModule } from './tenants/tenants.module';
+import { scrubRequest } from './common/log-privacy';
 import { TourneesModule } from './tournees/tournees.module';
 import { UsersModule } from './users/users.module';
 
@@ -60,6 +61,8 @@ import { UsersModule } from './users/users.module';
             return id;
           },
           redact: ['req.headers.authorization', 'req.headers.cookie', 'res.headers["set-cookie"]'],
+          // Phase 35: the user's position on /clients/nearby is never logged.
+          serializers: { req: scrubRequest },
           transport:
             config.NODE_ENV === 'development'
               ? { target: 'pino-pretty', options: { singleLine: true } }

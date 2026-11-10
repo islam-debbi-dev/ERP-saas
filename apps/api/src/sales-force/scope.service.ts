@@ -141,6 +141,40 @@ export class ScopeService {
     };
   }
 
+  /**
+   * Where a seller's tournée starts (phase 35, "Ordonner par proximité"): the one dépôt he
+   * operates in when it has a point, else the dépôt principal when it has one, else null.
+   */
+  async sellerDepotPoint(
+    sellerId: string,
+    db: Db = this.prisma.db,
+  ): Promise<{ lat: number; lng: number } | null> {
+    const access = await db.userWarehouseAccess.findMany({
+      where: { userId: sellerId, level: WarehouseAccessLevel.OPERATE },
+      select: { warehouseId: true },
+    });
+    const depots = access.length
+      ? await db.warehouse.findMany({
+          where: {
+            id: { in: access.map((a) => a.warehouseId) },
+            type: { not: WarehouseType.VEHICLE },
+            deletedAt: null,
+          },
+          select: { lat: true, lng: true },
+        })
+      : [];
+    const own = depots.length === 1 ? depots[0]! : null;
+    const point =
+      own ??
+      (await db.warehouse.findFirst({
+        where: { isDefault: true, deletedAt: null },
+        select: { lat: true, lng: true },
+      }));
+    return point?.lat && point.lng
+      ? { lat: point.lat.toNumber(), lng: point.lng.toNumber() }
+      : null;
+  }
+
   /** The one dépôt (not a truck) a user works in, when he works in exactly one (phase 24). */
   async onlyWarehouse(user: CurrentUserInfo, db: Db = this.prisma.db): Promise<string | null> {
     const { warehouseIds } = await this.warehouses(user, db);

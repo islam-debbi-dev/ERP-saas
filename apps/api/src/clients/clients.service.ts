@@ -117,6 +117,9 @@ export class ClientsService {
       filters.push(Prisma.sql`c."assignedSellerId" = ${query.assignedSellerId}::uuid`);
     if (query.unassigned === 'sector') filters.push(Prisma.sql`c."sectorId" IS NULL`);
     if (query.unassigned === 'seller') filters.push(Prisma.sql`c."assignedSellerId" IS NULL`);
+    if (query.hasLocation === true)
+      filters.push(Prisma.sql`c.lat IS NOT NULL AND c.lng IS NOT NULL`);
+    if (query.hasLocation === false) filters.push(Prisma.sql`(c.lat IS NULL OR c.lng IS NULL)`);
     const search = query.search?.trim();
     if (search) {
       const like = `%${search.replace(/[%_\\]/g, (ch) => `\\${ch}`)}%`;

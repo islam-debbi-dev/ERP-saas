@@ -78,7 +78,16 @@ export type RouteListQuery = z.infer<typeof routeListQuerySchema>;
 
 export interface RouteStopDto {
   position: number;
-  client: { id: string; code: string; name: string; commune: string | null; phone: string | null };
+  client: {
+    id: string;
+    code: string;
+    name: string;
+    commune: string | null;
+    phone: string | null;
+    /** The client's saved point (phase 17), for the map picker (phase 35). */
+    lat: number | null;
+    lng: number | null;
+  };
 }
 
 export interface RouteDto {
@@ -90,6 +99,11 @@ export interface RouteDto {
   stopCount: number;
   /** Filled on the detail, empty in lists. */
   stops: RouteStopDto[];
+  /**
+   * Where "Ordonner par proximité" starts (phase 35): the dépôt of the route's seller when it
+   * has a point. Filled on the detail, null in lists.
+   */
+  start: { lat: number; lng: number } | null;
 }
 
 // ---------------------------------------------------------------- seller today
@@ -104,6 +118,9 @@ export interface TodayStopDto {
     phone: string | null;
     address: string | null;
     commune: string | null;
+    /** Saved point (phase 17), for the day's map (phase 35). */
+    lat: number | null;
+    lng: number | null;
   };
   balance: string;
   lastVisit: {
