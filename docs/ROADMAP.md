@@ -42,6 +42,7 @@ Each phase is one branch, one PR and one Claude Code session. Prompts live in [`
 | 31b | [DRH: paie](prompts/phase-31b-payroll.md) | Monthly payroll run from the pointage, CNAS + IRG as dated rate sets, bulletin de paie PDF, salary payments, CNAS / IRG / DAS exports | 31 | v2 |
 | 33 | [Tableau de bord interactif](prompts/phase-33-interactive-dashboard.md) | Every figure links to its filtered list, "À faire aujourd'hui" with one-tap actions, period switcher and tappable chart, top lists, auto refresh, monthly goal, per-user card layout | 21, 26 | v1.1 |
 | 34 | [Trésorerie](prompts/phase-34-treasury.md) | Caisses and bank accounts with balances, cash ledger, transfers, comptage, paid-at-reception RGFs, import costs paid now | 21, 22, 24, 25, 31b | v2 |
+| 35 | [Carte des clients](prompts/phase-35-client-map.md) | Map of the clients in the user's scope with filters, "près de moi" by straight-line distance, pick tournée stops on the map, order stops by proximity | 14, 16, 17 | v1.1 |
 
 **MVP = phases 1 to 12b.** Put the pilot grossiste on it after phase 12b (traders open it on their phones); phase 13 can follow during the free pilot month.
 
@@ -94,3 +95,6 @@ Every phase that adds a screen follows [`ui.md`](ui.md): phone first, RTL, Playw
 
 ## Phase 34 (plan of 2026-11-06)
 - Trésorerie: caisses and bank accounts with balances, paid-at-reception BRs become règlements, import costs paid at the port, transfers, cash count. Prompt: [`phase-34-treasury.md`](prompts/phase-34-treasury.md). Fixes the gaps listed in `docs/guide-workflow-ar.md` §10. Replaces "Multiple caisses" in the v1.1 backlog, except sessions de caisse.
+
+## Phase 35 (plan of 2026-11-10)
+- The owner wants to see on a map who is near, and to pick a tournée's clients on the map. Read-only map on top of the phase 17 points; stops still saved through `PUT /routes/:id/stops`. No routing API, no new dependency, one additive index (run `db:deploy` on Neon after merge). Prompt: [`phase-35-client-map.md`](prompts/phase-35-client-map.md).
