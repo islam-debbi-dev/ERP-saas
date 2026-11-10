@@ -59,7 +59,8 @@
     "hr": "HR",
     "myAttendance": "My attendance",
     "myPayslips": "My payslips",
-    "treasury": "Treasury"
+    "treasury": "Treasury",
+    "clientsMap": "Client map"
   },
   "roles": {
     "OWNER": "Owner",
@@ -1090,7 +1091,12 @@
     "sector": "Sector",
     "noSector": "No sector",
     "assignedSeller": "Assigned seller",
-    "noSeller": "No seller"
+    "noSeller": "No seller",
+    "map": "Map",
+    "withLocation": "With location",
+    "withoutLocation": "Without location",
+    "filterLocation": "GPS point",
+    "anyLocation": "All"
   },
   "clientLedgerTypes": {
     "OPENING": "Opening balance",
@@ -2444,7 +2450,15 @@
     "strikeRate": "Productive visits",
     "visits": "Visits",
     "ordersDelivered": "Orders delivered",
-    "shortLinesCount": "{count, plural, one {# line out of stock} other {# lines out of stock}}"
+    "shortLinesCount": "{count, plural, one {# line out of stock} other {# lines out of stock}}",
+    "pickOnMap": "Pick on the map",
+    "orderByNearest": "Order by distance",
+    "orderByNearestConfirm": "Reorder the clients nearest first, starting from the depot (or the first stop)? Straight-line distances, not roads. Nothing is saved until you press \"Save\".",
+    "orderedByNearest": "Stops reordered by distance. Remember to save.",
+    "pickOnMapHint": "Pick the clients on the map.",
+    "viewLabel": "View",
+    "viewList": "List",
+    "viewMap": "Map"
   },
   "orders": {
     "title": "Orders",
@@ -3868,5 +3882,60 @@
     "cancelTransfer": "Cancel the transfer",
     "cancelTransferTitle": "Cancel this transfer",
     "cancelTransferHelp": "Both movements are reversed. Nothing is deleted."
+  },
+  "clientMap": {
+    "title": "Client map",
+    "subtitle": "Where your clients are, and who is near you.",
+    "filters": "Filters",
+    "nearMe": "Near me",
+    "loading": "Loading",
+    "withoutLocation": "{count, plural, one {# client without location} other {# clients without location}}",
+    "positionDenied": "Location refused: allow location in the browser to see nearby clients. The map still works.",
+    "positionUnavailable": "Location not found right now (no GPS signal). The map still works.",
+    "truncated": "More than {max} clients: zoom in or filter to see them all.",
+    "nearThisClient": "Near this client",
+    "addToRoute": "Add to a route…",
+    "clearFilters": "Clear",
+    "showResults": "Show the map",
+    "includeInactive": "Include inactive",
+    "aroundMe": "you",
+    "state": {
+      "normal": "Normal",
+      "debt": "Owes money",
+      "over": "Over the limit",
+      "inactive": "Inactive"
+    },
+    "straightLine": "{distance} in a straight line",
+    "closeBubble": "Close",
+    "openClient": "Client file",
+    "call": "Call",
+    "directions": "Directions",
+    "callName": "Call {name}",
+    "directionsName": "Directions to {name}",
+    "nearbyTitle": "Nearby clients",
+    "nearbyHelp": "Around {around}, nearest first (straight line).",
+    "radius": "Radius",
+    "nearbyEmpty": "No client within this radius.",
+    "straightLineNote": "Straight-line distances, not by road. \"Directions\" opens the phone's maps app.",
+    "addToRouteTitle": "Add to a route",
+    "addToRouteHelp": "{name} will be added at the end of the route you pick.",
+    "noRouteForSeller": "No route for this client's seller.",
+    "stopCount": "{count, plural, =0 {No stops} one {# stop} other {# stops}}",
+    "tooManyStops": "A route has at most {max} stops.",
+    "openRoute": "Open the route",
+    "alreadyOnRoute": "{name} is already on \"{route}\".",
+    "addedToRoute": "{name} added to \"{route}\".",
+    "pickTitle": "Pick clients on the map",
+    "pickHelp": "Tap a client to add or remove them. The numbers give the order of the route.",
+    "allMyClients": "All my clients",
+    "addVisible": "{count, plural, =0 {Add the visible clients} other {Add the visible clients (#)}}",
+    "addVisibleConfirm": "{count, plural, one {Add # visible client at the end of the route?} other {Add # visible clients at the end of the route?}}",
+    "stop": "Stop",
+    "stopNumber": "Stop {n}",
+    "removeFromRoute": "Remove",
+    "addToThisRoute": "Add to the route",
+    "pathNote": "The line joins the stops in a straight line; it is not the road.",
+    "stopsWithoutPoint": "{count, plural, one {# stop without a location is not on the map.} other {# stops without a location are not on the map.}}",
+    "donePicking": "Done"
   }
 }

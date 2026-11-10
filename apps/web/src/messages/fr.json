@@ -59,7 +59,8 @@
     "hr": "DRH",
     "myAttendance": "Mon pointage",
     "myPayslips": "Mes bulletins",
-    "treasury": "Trésorerie"
+    "treasury": "Trésorerie",
+    "clientsMap": "Carte des clients"
   },
   "roles": {
     "OWNER": "Propriétaire",
@@ -1090,7 +1091,12 @@
     "sector": "Secteur",
     "noSector": "Aucun secteur",
     "assignedSeller": "Vendeur affecté",
-    "noSeller": "Aucun vendeur"
+    "noSeller": "Aucun vendeur",
+    "map": "Carte",
+    "withLocation": "Avec position",
+    "withoutLocation": "Sans position",
+    "filterLocation": "Position GPS",
+    "anyLocation": "Toutes"
   },
   "clientLedgerTypes": {
     "OPENING": "Solde d'ouverture",
@@ -2444,7 +2450,15 @@
     "strikeRate": "Visites productives",
     "visits": "Visites",
     "ordersDelivered": "Commandes livrées",
-    "shortLinesCount": "{count, plural, one {# ligne en rupture} other {# lignes en rupture}}"
+    "shortLinesCount": "{count, plural, one {# ligne en rupture} other {# lignes en rupture}}",
+    "pickOnMap": "Choisir sur la carte",
+    "orderByNearest": "Ordonner par proximité",
+    "orderByNearestConfirm": "Réordonner les clients du plus proche au plus proche, en partant du dépôt (ou du premier arrêt) ? Distances à vol d'oiseau, pas par la route. Rien n'est enregistré avant « Enregistrer ».",
+    "orderedByNearest": "Arrêts réordonnés par proximité. Pensez à enregistrer.",
+    "pickOnMapHint": "Choisissez les clients sur la carte.",
+    "viewLabel": "Affichage",
+    "viewList": "Liste",
+    "viewMap": "Carte"
   },
   "orders": {
     "title": "Bons de commande",
@@ -3868,5 +3882,60 @@
     "cancelTransfer": "Annuler le transfert",
     "cancelTransferTitle": "Annuler ce transfert",
     "cancelTransferHelp": "Les deux mouvements sont annulés. Rien n’est supprimé."
+  },
+  "clientMap": {
+    "title": "Carte des clients",
+    "subtitle": "Où sont vos clients, et qui est près de vous.",
+    "filters": "Filtres",
+    "nearMe": "Près de moi",
+    "loading": "Chargement",
+    "withoutLocation": "{count, plural, one {# client sans position} other {# clients sans position}}",
+    "positionDenied": "Position refusée : autorisez la localisation dans le navigateur pour voir les clients proches. La carte reste utilisable.",
+    "positionUnavailable": "Position introuvable pour l'instant (pas de signal GPS). La carte reste utilisable.",
+    "truncated": "Plus de {max} clients : zoomez ou filtrez pour tous les voir.",
+    "nearThisClient": "Près de ce client",
+    "addToRoute": "Ajouter à une tournée…",
+    "clearFilters": "Effacer",
+    "showResults": "Voir la carte",
+    "includeInactive": "Inclure inactifs",
+    "aroundMe": "vous",
+    "state": {
+      "normal": "Normal",
+      "debt": "Doit de l’argent",
+      "over": "Plafond dépassé",
+      "inactive": "Inactif"
+    },
+    "straightLine": "{distance} à vol d'oiseau",
+    "closeBubble": "Fermer",
+    "openClient": "Fiche client",
+    "call": "Appeler",
+    "directions": "Itinéraire",
+    "callName": "Appeler {name}",
+    "directionsName": "Itinéraire vers {name}",
+    "nearbyTitle": "Clients proches",
+    "nearbyHelp": "Autour de {around}, du plus proche au plus loin (à vol d'oiseau).",
+    "radius": "Rayon",
+    "nearbyEmpty": "Aucun client dans ce rayon.",
+    "straightLineNote": "Distances en ligne droite, pas par la route. « Itinéraire » ouvre l'application de cartes du téléphone.",
+    "addToRouteTitle": "Ajouter à une tournée",
+    "addToRouteHelp": "{name} sera ajouté à la fin de la tournée choisie.",
+    "noRouteForSeller": "Aucune tournée pour le vendeur de ce client.",
+    "stopCount": "{count, plural, =0 {Aucun arrêt} one {# arrêt} other {# arrêts}}",
+    "tooManyStops": "Une tournée a au plus {max} arrêts.",
+    "openRoute": "Ouvrir la tournée",
+    "alreadyOnRoute": "{name} est déjà sur « {route} ».",
+    "addedToRoute": "{name} ajouté à « {route} ».",
+    "pickTitle": "Choisir les clients sur la carte",
+    "pickHelp": "Touchez un client pour l'ajouter ou le retirer. Les numéros donnent l'ordre de la tournée.",
+    "allMyClients": "Tous mes clients",
+    "addVisible": "{count, plural, =0 {Ajouter les clients visibles} other {Ajouter les clients visibles (#)}}",
+    "addVisibleConfirm": "{count, plural, one {Ajouter # client visible à la fin de la tournée ?} other {Ajouter # clients visibles à la fin de la tournée ?}}",
+    "stop": "Arrêt",
+    "stopNumber": "Arrêt {n}",
+    "removeFromRoute": "Retirer",
+    "addToThisRoute": "Ajouter à la tournée",
+    "pathNote": "Le trait relie les arrêts en ligne droite, ce n'est pas la route.",
+    "stopsWithoutPoint": "{count, plural, one {# arrêt sans position n’est pas sur la carte.} other {# arrêts sans position ne sont pas sur la carte.}}",
+    "donePicking": "Terminé"
   }
 }

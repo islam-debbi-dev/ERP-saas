@@ -1,7 +1,7 @@
 'use client';
 
 import { type ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { BellRing, Loader2, MapPinned, Plus, UserCheck, Users } from 'lucide-react';
+import { BellRing, Loader2, Map as MapIcon, MapPinned, Plus, UserCheck, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -36,6 +36,8 @@ const CLIENT_URL_FILTERS = {
   sort: z.literal('balance_desc'),
   sectorId: clientListQuerySchema.shape.sectorId,
   sellerId: clientListQuerySchema.shape.assignedSellerId,
+  /** Phase 35: the map's "N clients sans position" link. */
+  hasLocation: z.enum(['true', 'false']),
 };
 
 export function ClientsList() {
@@ -58,10 +60,18 @@ export function ClientsList() {
     overLimit,
     sectorId,
     assignedSellerId: sellerId,
+    ...(url.hasLocation ? { hasLocation: url.hasLocation === 'true' } : {}),
     ...(url.sort === 'balance_desc' ? { sort: 'balance_desc' as const } : {}),
   });
   const items = useMemo(() => pages.data?.pages.flatMap((p) => p.items) ?? [], [pages.data]);
-  const filtered = debounced !== '' || hasDebt || overLimit || sectorId !== '' || sellerId !== '';
+  const filtered =
+    debounced !== '' ||
+    hasDebt ||
+    overLimit ||
+    sectorId !== '' ||
+    sellerId !== '' ||
+    url.hasLocation !== '';
+  const geo = useFeature(Feature.GEO_CHECK);
 
   // Sales force (phase 14): sector / seller columns and filters; managers assign in bulk.
   const salesForce = useFeature(Feature.SALES_FORCE);
@@ -77,6 +87,8 @@ export function ClientsList() {
   if (url.sort) chip('sort', td('chipSortBalance'));
   if (hasDebt) chip('hasBalance', t('filterDebt'));
   if (overLimit) chip('overLimit', t('filterOverLimit'));
+  if (url.hasLocation)
+    chip('hasLocation', url.hasLocation === 'true' ? t('withLocation') : t('withoutLocation'));
   if (sectorId)
     chip('sectorId', sectors.data?.find((x) => x.id === sectorId)?.name ?? t('filterSector'));
   if (sellerId)
@@ -218,17 +230,36 @@ export function ClientsList() {
           salesForce && { label: t('sectors'), icon: MapPinned, href: '/clients/secteurs' },
         ]}
         actions={
-          <Button asChild>
-            <Link href="/clients/nouveau">
-              <Plus aria-hidden />
-              {t('new')}
-            </Link>
-          </Button>
+          <>
+            {geo ? (
+              <Button asChild variant="outline">
+                <Link href="/clients/carte">
+                  <MapIcon aria-hidden />
+                  {t('map')}
+                </Link>
+              </Button>
+            ) : null}
+            <Button asChild>
+              <Link href="/clients/nouveau">
+                <Plus aria-hidden />
+                {t('new')}
+              </Link>
+            </Button>
+          </>
         }
       />
       <FilterChips
         chips={chips}
-        onClear={() => set({ sort: '', hasBalance: '', overLimit: '', sectorId: '', sellerId: '' })}
+        onClear={() =>
+          set({
+            sort: '',
+            hasBalance: '',
+            overLimit: '',
+            sectorId: '',
+            sellerId: '',
+            hasLocation: '',
+          })
+        }
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
         <Input
@@ -247,6 +278,22 @@ export function ClientsList() {
           <Switch id="f-over" checked={overLimit} onCheckedChange={flag('overLimit')} />
           <Label htmlFor="f-over">{t('filterOverLimit')}</Label>
         </div>
+        {geo ? (
+          <div className="flex items-center gap-2">
+            <Label htmlFor="f-location" className="shrink-0">
+              {t('filterLocation')}
+            </Label>
+            <NativeSelect
+              id="f-location"
+              value={url.hasLocation}
+              onChange={(e) => set({ hasLocation: e.target.value })}
+            >
+              <option value="">{t('anyLocation')}</option>
+              <option value="true">{t('withLocation')}</option>
+              <option value="false">{t('withoutLocation')}</option>
+            </NativeSelect>
+          </div>
+        ) : null}
       </div>
       {salesForce ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:max-w-2xl">

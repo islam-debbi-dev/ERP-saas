@@ -5,7 +5,9 @@ import {
   Banknote,
   CircleCheck,
   ClipboardList,
+  List,
   Loader2,
+  Map as MapIcon,
   MapPinned,
   Phone,
   ReceiptText,
@@ -48,11 +50,13 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/lib/api-client';
+import { useFeature } from '@/lib/auth';
 import { useClient } from '@/lib/clients';
 import { tourneeKeys, useToday } from '@/lib/tournees';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { useIdempotencyKey } from '@/lib/use-idempotency-key';
 import { cn } from '@/lib/utils';
+import { TodayMap } from './today-map';
 import { useWeekdayLabels } from './weekdays';
 
 /** Tournée du jour (phase 16): the seller's stops of today, on his phone. */
@@ -73,6 +77,10 @@ function Today() {
   const [visiting, setVisiting] = useState<TodayStopDto | null>(null);
   const [paying, setPaying] = useState<string | null>(null);
   const day = today.data;
+  // Phase 35: the day on a map (stops have points with GEO_CHECK).
+  const geo = useFeature(Feature.GEO_CHECK);
+  const [view, setView] = useState<'list' | 'map'>('list');
+  const showMap = geo && view === 'map';
 
   return (
     <>
@@ -82,6 +90,36 @@ function Today() {
           day
             ? `${dayName(day.weekday)} ${format.dateTime(new Date(`${day.day}T12:00:00Z`), { dateStyle: 'long' })}`
             : undefined
+        }
+        actions={
+          geo ? (
+            <div
+              role="radiogroup"
+              aria-label={t('viewLabel')}
+              className="flex rounded-md border p-0.5"
+            >
+              {(['list', 'map'] as const).map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  role="radio"
+                  aria-checked={view === v}
+                  onClick={() => setView(v)}
+                  className={cn(
+                    'inline-flex h-10 min-w-11 items-center gap-1.5 rounded px-3 text-sm font-medium',
+                    view === v ? 'bg-primary text-primary-foreground' : 'hover:bg-muted',
+                  )}
+                >
+                  {v === 'list' ? (
+                    <List className="size-4" aria-hidden />
+                  ) : (
+                    <MapIcon className="size-4" aria-hidden />
+                  )}
+                  {v === 'list' ? t('viewList') : t('viewMap')}
+                </button>
+              ))}
+            </div>
+          ) : undefined
         }
       />
 
@@ -128,6 +166,8 @@ function Today() {
             description={t('todayEmptyDescription')}
           />
         </Card>
+      ) : showMap ? (
+        <TodayMap stops={day.stops} onVisit={setVisiting} />
       ) : (
         <ol className="space-y-3">
           {day.stops.map((s, i) => (

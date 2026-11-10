@@ -10,6 +10,7 @@ type TitleKey =
   | 'nav.importFiles'
   | 'nav.sales'
   | 'nav.clients'
+  | 'nav.clientsMap'
   | 'nav.versements'
   | 'nav.stock'
   | 'nav.reports'

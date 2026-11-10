@@ -578,6 +578,7 @@ export const WEB_ROUTES: readonly string[] = [
   "/clients/[id]",
   "/clients/[id]/modifier",
   "/clients/a-relancer",
+  "/clients/carte",
   "/clients/nouveau",
   "/clients/secteurs",
   "/commandes",

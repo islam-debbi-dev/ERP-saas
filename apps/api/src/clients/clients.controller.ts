@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   Param,
@@ -20,6 +21,12 @@ import {
   type ClientDto,
   type ClientListQuery,
   clientListQuerySchema,
+  type ClientMapDto,
+  type ClientMapQuery,
+  clientMapQuerySchema,
+  type ClientNearbyPointDto,
+  type ClientNearbyQuery,
+  clientNearbyQuerySchema,
   type ClientPage,
   type ClientReconcileReport,
   type ClientStatementDto,
@@ -45,6 +52,7 @@ import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { AgingService } from '../credit/aging.service';
 import { Idempotent } from '../idempotency/idempotent.decorator';
 import { ScopeService } from '../sales-force/scope.service';
+import { ClientMapService } from './client-map.service';
 import { ClientsService } from './clients.service';
 
 const MANAGERS = [Role.OWNER, Role.MANAGER];
@@ -55,6 +63,7 @@ export class ClientsController {
     private readonly clients: ClientsService,
     private readonly aging: AgingService,
     private readonly scope: ScopeService,
+    private readonly clientMap: ClientMapService,
   ) {}
 
   @Get()
@@ -64,6 +73,29 @@ export class ClientsController {
     @CurrentUser() user: CurrentUserInfo,
   ): Promise<ClientPage> {
     return this.clients.list(query, user);
+  }
+
+  /** The client map (phase 35): live clients with a point, within the scope. Before ':id'. */
+  @Get('map')
+  @RequirePermission(Permission.CLIENTS_VIEW)
+  @RequireFeature(Feature.GEO_CHECK)
+  @Header('Cache-Control', 'private, max-age=30')
+  map(
+    @Query(new ZodValidationPipe(clientMapQuerySchema)) query: ClientMapQuery,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<ClientMapDto> {
+    return this.clientMap.map(query, user);
+  }
+
+  /** "Clients proches" (phase 35). The position is used once, never stored nor logged. */
+  @Get('nearby')
+  @RequirePermission(Permission.CLIENTS_VIEW)
+  @RequireFeature(Feature.GEO_CHECK)
+  nearby(
+    @Query(new ZodValidationPipe(clientNearbyQuerySchema)) query: ClientNearbyQuery,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<ClientNearbyPointDto[]> {
+    return this.clientMap.nearby(query, user);
   }
 
   // Declared before ':id'.

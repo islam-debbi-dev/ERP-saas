@@ -78,3 +78,87 @@ export function evaluateGeo(input: {
     noteRequired: status !== GeoStatus.OK && status !== GeoStatus.NO_CLIENT_GPS,
   };
 }
+
+// ---------------------------------------------------------------- client map (phase 35)
+
+export interface BoundingBox {
+  minLat: number;
+  minLng: number;
+  maxLat: number;
+  maxLng: number;
+}
+
+/**
+ * The lat/lng box that holds every point within `radiusM` of `center`, used by SQL as a
+ * cheap prefilter before the exact haversine. It may be a little larger than the circle,
+ * never smaller. Near ±180° the longitude range wraps: `minLng > maxLng` then means
+ * "from minLng east to 180, and from -180 to maxLng". Near a pole it spans every longitude.
+ */
+export function boundingBox(center: LatLng, radiusM: number): BoundingBox {
+  const dLat = (radiusM / EARTH_RADIUS_M) * (180 / Math.PI);
+  const minLat = Math.max(-90, center.lat - dLat);
+  const maxLat = Math.min(90, center.lat + dLat);
+  // The widest longitude span is at the latitude of the box farthest from the equator.
+  const farLat = Math.max(Math.abs(minLat), Math.abs(maxLat));
+  const cos = Math.cos(rad(farLat));
+  if (farLat >= 90 || cos <= 0 || radiusM / (EARTH_RADIUS_M * cos) >= Math.PI / 2) {
+    return { minLat, minLng: -180, maxLat, maxLng: 180 };
+  }
+  const dLng = Math.asin(Math.min(1, Math.sin(radiusM / EARTH_RADIUS_M) / cos)) * (180 / Math.PI);
+  const wrap = (lng: number) => (lng > 180 ? lng - 360 : lng < -180 ? lng + 360 : lng);
+  if (dLng >= 180) return { minLat, minLng: -180, maxLat, maxLng: 180 };
+  return { minLat, minLng: wrap(center.lng - dLng), maxLat, maxLng: wrap(center.lng + dLng) };
+}
+
+/**
+ * Greedy nearest-neighbour order (phase 35, "Ordonner par proximité"): from `start`, go to
+ * the closest point not visited yet, then the closest to that one, and so on. Straight
+ * lines, not roads, and not the optimal tour. Points without coordinates keep their
+ * relative order at the end. Ties keep the input order. Without a start, the first point
+ * with coordinates is the start (and stays first).
+ */
+export function orderByNearest<T extends { lat: number | null; lng: number | null }>(
+  start: LatLng | null,
+  points: readonly T[],
+): T[] {
+  const located = points.filter((p): p is T & LatLng => p.lat !== null && p.lng !== null);
+  const without = points.filter((p) => p.lat === null || p.lng === null);
+  const out: T[] = [];
+  const left = [...located];
+  let here: LatLng | null = start;
+  if (!here && left.length > 0) {
+    const first = left.shift()!;
+    out.push(first);
+    here = first;
+  }
+  while (left.length > 0 && here) {
+    let best = 0;
+    let bestM = Infinity;
+    for (let i = 0; i < left.length; i++) {
+      const d = haversineM(here, left[i]!);
+      if (d < bestM) {
+        best = i;
+        bestM = d;
+      }
+    }
+    const next = left.splice(best, 1)[0]!;
+    out.push(next);
+    here = next;
+  }
+  return [...out, ...without];
+}
+
+/** A straight-line distance for people: `950 m`, `1,2 km`, `5 km`, `124 km`. */
+export function formatDistanceM(metres: number): string {
+  const m = Math.max(0, Math.round(metres));
+  if (m < 1000) return `${m}\u00a0m`;
+  const km = m / 1000;
+  const shown =
+    km < 100 ? km.toFixed(1).replace(/\.0$/, '').replace('.', ',') : String(Math.round(km));
+  return `${shown}\u00a0km`;
+}
+
+/** A link that opens the phone's maps app (or the browser) on a point, for directions. */
+export function directionsUrl(p: LatLng): string {
+  return `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
+}

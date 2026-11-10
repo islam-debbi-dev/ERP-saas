@@ -5,6 +5,7 @@ import { StockModule } from '../stock/stock.module';
 import { ClientAccountService } from './client-account.service';
 import { ClientLocationController, LocationRequestsController } from './client-location.controller';
 import { ClientLocationService } from './client-location.service';
+import { ClientMapService } from './client-map.service';
 import { ClientsController } from './clients.controller';
 import { ClientsService } from './clients.service';
 
@@ -12,7 +13,7 @@ import { ClientsService } from './clients.service';
 @Module({
   imports: [CreditModule, SalesForceModule, StockModule],
   controllers: [ClientsController, ClientLocationController, LocationRequestsController],
-  providers: [ClientsService, ClientAccountService, ClientLocationService],
+  providers: [ClientsService, ClientAccountService, ClientLocationService, ClientMapService],
   exports: [ClientAccountService, ClientsService, ClientLocationService],
 })
 export class ClientsModule {}

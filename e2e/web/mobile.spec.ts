@@ -57,6 +57,23 @@ function pointageDaysBack(nth: number): number {
   }
 }
 
+/** Phase 35: the mocked phone position and two client points around it (Alger centre). */
+const HERE = { latitude: 36.7538, longitude: 3.0588 };
+const MAP_POINTS = [
+  { lat: 36.7552, lng: 3.0601 },
+  { lat: 36.7511, lng: 3.0562 },
+];
+/** A 1×1 transparent PNG served for every map tile: CI never hits the tile server. */
+const TILE_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+  'base64',
+);
+async function blockTiles(context: import('@playwright/test').BrowserContext): Promise<void> {
+  await context.route(/tile\.openstreetmap\.org/, (r) =>
+    r.fulfill({ contentType: 'image/png', body: TILE_PNG }),
+  );
+}
+
 /** Route groups whose pages need a session; the others are opened anonymous. */
 const AUTH_GROUP = '(auth)';
 /** The super-admin area: its own login, checked by its own test. */
@@ -309,6 +326,9 @@ async function prepareIds(f: Fixture): Promise<Ids> {
     token,
     body: { clientIds: [client.id, f.clientId] },
   });
+  // Phase 35: both clients get a point, near the mocked position of the map checks.
+  await call(`/clients/${client.id}/location`, { method: 'PATCH', token, body: MAP_POINTS[0] });
+  await call(`/clients/${f.clientId}/location`, { method: 'PATCH', token, body: MAP_POINTS[1] });
   const order = (
     await call<{ id: string }>('/orders', {
       method: 'POST',
@@ -702,6 +722,9 @@ for (const locale of LOCALES) {
     });
     try {
       await context.addCookies([{ name: 'NEXT_LOCALE', value: locale, url: WEB }]);
+      await blockTiles(context);
+      await context.grantPermissions(['geolocation'], { origin: WEB });
+      await context.setGeolocation({ ...HERE, accuracy: 20 });
       const page = await context.newPage();
       await signIn(page, fixture().session.email);
       for (const route of ROUTES.filter((r) => !r.anonymous && !r.admin)) {
@@ -733,6 +756,63 @@ for (const locale of LOCALES) {
         await page.waitForTimeout(400); // the sheet slides in
         await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
         await check(page, '/clients/[id]/versement', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+      });
+
+      await test.step('client map: Filtres and Près de moi on screen, sheets fit (35)', async () => {
+        const cm = (m['clientMap'] ?? {}) as Record<string, string>;
+        await page.evaluate((to) => {
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
+        }, '/clients/carte');
+        await page.waitForURL((url) => url.pathname === '/clients/carte');
+        await settle(page);
+        await page.locator('.leaflet-container').waitFor();
+        const filters = page.getByRole('button', { name: new RegExp(`^${cm['filters']}`) });
+        const nearMe = page.getByRole('button', { name: cm['nearMe'] });
+        for (const [name, b] of [
+          ['Filtres', filters],
+          ['Près de moi', nearMe],
+        ] as const) {
+          const box = await b.boundingBox();
+          const vp = page.viewportSize()!;
+          expect.soft(box, `${name} is rendered`).not.toBeNull();
+          if (box) {
+            expect.soft(box.x >= 0 && box.x + box.width <= vp.width, `${name} fits`).toBe(true);
+            expect.soft(box.y + box.height <= vp.height, `${name} above the fold`).toBe(true);
+          }
+        }
+        await check(page, '/clients/carte', locale, results, { fullPage: false });
+        await filters.click();
+        await page.locator('[role="dialog"]').waitFor();
+        await page.waitForTimeout(400); // the sheet slides in
+        await check(page, '/clients/carte/filtres', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+        await page.locator('[role="dialog"]').waitFor({ state: 'hidden' });
+        await nearMe.click();
+        await page.getByTestId('nearby-list').waitFor();
+        await page.waitForTimeout(400);
+        await expect.soft(page.getByTestId('nearby-list').locator('li')).not.toHaveCount(0);
+        await check(page, '/clients/carte/proches', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+      });
+
+      await test.step('route editor: the map sheet fits the phone (35)', async () => {
+        const path = resolve('/tournees/[id]', v);
+        await page.evaluate((to) => {
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push(to);
+        }, path);
+        await page.waitForURL((url) => url.pathname === path);
+        await settle(page);
+        await page.getByRole('button', { name: m['tournees']?.['pickOnMap'] }).first().click();
+        await page.locator('[role="dialog"] .leaflet-container').waitFor();
+        await page.waitForTimeout(500);
+        const done = (m['clientMap'] as Record<string, string> | undefined)?.['donePicking'] ?? '';
+        await expectOnScreen(page, `[role="dialog"] button:has-text("${done}")`);
+        await check(page, '/tournees/[id]/carte', locale, results, { fullPage: false });
         await page.keyboard.press('Escape');
       });
 

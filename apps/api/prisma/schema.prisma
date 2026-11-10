@@ -1083,6 +1083,8 @@ model Client {
   @@index([tenantId, phone])
   @@index([tenantId, sectorId])
   @@index([tenantId, assignedSellerId])
+  /// Phase 35: clients_tenant_geo_idx ("tenantId", lat, lng) WHERE live and with a point,
+  /// a partial index in the migration (Prisma cannot express it).
   @@map("clients")
 }
 

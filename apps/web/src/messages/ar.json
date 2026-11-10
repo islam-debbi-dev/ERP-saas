@@ -59,7 +59,8 @@
     "hr": "الموارد البشرية",
     "myAttendance": "حضوري",
     "myPayslips": "كشوف راتبي",
-    "treasury": "الخزينة"
+    "treasury": "الخزينة",
+    "clientsMap": "خريطة الزبائن"
   },
   "roles": {
     "OWNER": "المالك",
@@ -1090,7 +1091,12 @@
     "sector": "القطاع",
     "noSector": "بدون قطاع",
     "assignedSeller": "البائع المكلّف",
-    "noSeller": "بدون بائع"
+    "noSeller": "بدون بائع",
+    "map": "الخريطة",
+    "withLocation": "بموقع",
+    "withoutLocation": "بدون موقع",
+    "filterLocation": "موقع GPS",
+    "anyLocation": "الكل"
   },
   "clientLedgerTypes": {
     "OPENING": "رصيد افتتاحي",
@@ -2444,7 +2450,15 @@
     "strikeRate": "الزيارات المثمرة",
     "visits": "الزيارات",
     "ordersDelivered": "الطلبيات المسلّمة",
-    "shortLinesCount": "{count, plural, one {سطر واحد ناقص} two {سطران ناقصان} few {# أسطر ناقصة} many {# سطراً ناقصاً} other {# سطر ناقص}}"
+    "shortLinesCount": "{count, plural, one {سطر واحد ناقص} two {سطران ناقصان} few {# أسطر ناقصة} many {# سطراً ناقصاً} other {# سطر ناقص}}",
+    "pickOnMap": "الاختيار على الخريطة",
+    "orderByNearest": "الترتيب حسب القرب",
+    "orderByNearestConfirm": "إعادة ترتيب الزبائن من الأقرب إلى الأبعد انطلاقاً من المستودع (أو أول محطة)؟ المسافات بخط مستقيم وليست عبر الطريق. لا شيء يُحفظ قبل الضغط على «حفظ».",
+    "orderedByNearest": "أُعيد ترتيب المحطات حسب القرب. لا تنس الحفظ.",
+    "pickOnMapHint": "اختر الزبائن على الخريطة.",
+    "viewLabel": "العرض",
+    "viewList": "قائمة",
+    "viewMap": "خريطة"
   },
   "orders": {
     "title": "طلبيات الشراء",
@@ -3868,5 +3882,60 @@
     "cancelTransfer": "إلغاء التحويل",
     "cancelTransferTitle": "إلغاء هذا التحويل",
     "cancelTransferHelp": "تُلغى الحركتان معا. لا يُحذف شيء."
+  },
+  "clientMap": {
+    "title": "خريطة الزبائن",
+    "subtitle": "أين يوجد زبائنك ومن هو قريب منك.",
+    "filters": "الفلاتر",
+    "nearMe": "بالقرب مني",
+    "loading": "جارٍ التحميل",
+    "withoutLocation": "{count, plural, one {زبون واحد بدون موقع} two {زبونان بدون موقع} few {# زبائن بدون موقع} many {# زبوناً بدون موقع} other {# زبون بدون موقع}}",
+    "positionDenied": "تم رفض تحديد الموقع: اسمح به في المتصفح لرؤية الزبائن القريبين. الخريطة تبقى متاحة.",
+    "positionUnavailable": "تعذّر تحديد الموقع حالياً (لا توجد إشارة GPS). الخريطة تبقى متاحة.",
+    "truncated": "أكثر من {max} زبون: قرّب الخريطة أو استعمل الفلاتر لرؤيتهم جميعاً.",
+    "nearThisClient": "بالقرب من هذا الزبون",
+    "addToRoute": "إضافة إلى جولة…",
+    "clearFilters": "مسح",
+    "showResults": "عرض الخريطة",
+    "includeInactive": "إظهار غير النشطين",
+    "aroundMe": "موقعك",
+    "state": {
+      "normal": "عادي",
+      "debt": "عليه دين",
+      "over": "تجاوز السقف",
+      "inactive": "غير نشط"
+    },
+    "straightLine": "{distance} بخط مستقيم",
+    "closeBubble": "إغلاق",
+    "openClient": "بطاقة الزبون",
+    "call": "اتصال",
+    "directions": "الاتجاهات",
+    "callName": "الاتصال بـ {name}",
+    "directionsName": "الاتجاهات إلى {name}",
+    "nearbyTitle": "الزبائن القريبون",
+    "nearbyHelp": "حول {around}، من الأقرب إلى الأبعد (بخط مستقيم).",
+    "radius": "نصف القطر",
+    "nearbyEmpty": "لا يوجد زبون في هذا النطاق.",
+    "straightLineNote": "المسافات بخط مستقيم وليست عبر الطريق. «الاتجاهات» يفتح تطبيق الخرائط في الهاتف.",
+    "addToRouteTitle": "إضافة إلى جولة",
+    "addToRouteHelp": "سيُضاف {name} في آخر الجولة التي تختارها.",
+    "noRouteForSeller": "لا توجد جولة لبائع هذا الزبون.",
+    "stopCount": "{count, plural, =0 {لا محطات} one {محطة واحدة} two {محطتان} few {# محطات} many {# محطة} other {# محطة}}",
+    "tooManyStops": "الجولة تحتوي على {max} محطة كحد أقصى.",
+    "openRoute": "فتح الجولة",
+    "alreadyOnRoute": "{name} موجود مسبقاً في «{route}».",
+    "addedToRoute": "أُضيف {name} إلى «{route}».",
+    "pickTitle": "اختيار الزبائن على الخريطة",
+    "pickHelp": "المس زبوناً لإضافته أو حذفه. الأرقام تبيّن ترتيب الجولة.",
+    "allMyClients": "كل زبائني",
+    "addVisible": "{count, plural, =0 {إضافة الزبائن الظاهرين} other {إضافة الزبائن الظاهرين (#)}}",
+    "addVisibleConfirm": "{count, plural, one {إضافة زبون ظاهر واحد في آخر الجولة؟} two {إضافة زبونين ظاهرين في آخر الجولة؟} other {إضافة # زبون ظاهر في آخر الجولة؟}}",
+    "stop": "محطة",
+    "stopNumber": "المحطة {n}",
+    "removeFromRoute": "حذف",
+    "addToThisRoute": "إضافة إلى الجولة",
+    "pathNote": "الخط يربط المحطات بخط مستقيم، وليس هو الطريق.",
+    "stopsWithoutPoint": "{count, plural, one {محطة واحدة بدون موقع ليست على الخريطة.} two {محطتان بدون موقع ليستا على الخريطة.} other {# محطة بدون موقع ليست على الخريطة.}}",
+    "donePicking": "تم"
   }
 }
