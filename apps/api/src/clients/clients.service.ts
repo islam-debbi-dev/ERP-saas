@@ -129,13 +129,19 @@ export class ClientsService {
       filters.push(
         Prisma.sql`c."creditLimit" IS NOT NULL AND COALESCE(b.balance, 0) > c."creditLimit"`,
       );
-    const cursor = query.cursor
-      ? Prisma.sql`AND (c.name, c.id) > (SELECT x.name, x.id FROM clients x WHERE x.id = ${query.cursor}::uuid AND x."tenantId" = ${tenantId}::uuid)`
-      : Prisma.empty;
+    const byBalance = query.sort === 'balance_desc';
+    const cursor = !query.cursor
+      ? Prisma.empty
+      : byBalance
+        ? Prisma.sql`AND (COALESCE(b.balance, 0), c.id) < (SELECT COALESCE(xb.balance, 0), x.id FROM clients x LEFT JOIN client_balances xb ON xb."clientId" = x.id WHERE x.id = ${query.cursor}::uuid AND x."tenantId" = ${tenantId}::uuid)`
+        : Prisma.sql`AND (c.name, c.id) > (SELECT x.name, x.id FROM clients x WHERE x.id = ${query.cursor}::uuid AND x."tenantId" = ${tenantId}::uuid)`;
+    const order = byBalance
+      ? Prisma.sql`ORDER BY COALESCE(b.balance, 0) DESC, c.id DESC`
+      : Prisma.sql`ORDER BY c.name, c.id`;
     const ids = await this.prisma.db.$queryRaw<{ id: string }[]>`
       SELECT c.id FROM clients c LEFT JOIN client_balances b ON b."clientId" = c.id
       WHERE ${Prisma.join(filters, ' AND ')} ${cursor}
-      ORDER BY c.name, c.id
+      ${order}
       LIMIT ${query.limit + 1}`;
     const pageIds = ids.slice(0, query.limit).map((r) => r.id);
     const rows = await this.prisma.db.client.findMany({

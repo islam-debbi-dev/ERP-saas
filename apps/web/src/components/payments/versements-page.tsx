@@ -4,8 +4,14 @@ import { type ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-
 import { Banknote, Loader2, Plus } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-import { type PaymentDto } from '@erp/shared';
+import {
+  paymentListQuerySchema,
+  type PaymentDto,
+  type PaymentMode,
+  type PaymentStatus,
+} from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
+import { type FilterChip, FilterChips } from '@/components/shared/filter-chips';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
@@ -17,11 +23,21 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useClientPages } from '@/lib/clients';
 import { type PaymentFilters, useCashSummary, usePaymentPages } from '@/lib/payments';
 import { todayInAlgiers } from '@/lib/purchases';
+import { useUrlFilters } from '@/lib/url-filters';
 import { cn } from '@/lib/utils';
 import { PaymentDetailDialog } from './payment-detail-dialog';
 import { PaymentDialog } from './payment-dialog';
 import { PaymentStatusBadge } from './payment-status-badge';
 import { Amount } from '@/components/shared/amount';
+
+const pq = paymentListQuerySchema.shape;
+const PAYMENT_URL_FILTERS = {
+  clientId: pq.clientId,
+  mode: pq.mode,
+  status: pq.status,
+  from: pq.from,
+  to: pq.to,
+};
 
 type Tab = 'list' | 'cheques' | 'journal';
 const TABS: Tab[] = ['list', 'cheques', 'journal'];
@@ -105,21 +121,54 @@ function PaymentsTable({ cheques, onOpen }: { cheques: boolean; onOpen: (id: str
   const ts = useTranslations('sales');
   const format = useFormatter();
   const today = todayInAlgiers();
-  const [filters, setFilters] = useState<PaymentFilters>({
-    clientId: '',
-    mode: '',
-    status: '',
-    from: '',
-    to: '',
+  const td = useTranslations('dashboard');
+  // Phase 33: the filters live in the URL (the dashboard's "encaissé" lines link here).
+  const [url, set] = useUrlFilters(PAYMENT_URL_FILTERS);
+  const filters: PaymentFilters = {
+    ...url,
+    mode: url.mode as PaymentFilters['mode'],
+    status: url.status as PaymentFilters['status'],
     sort: 'receivedAt',
-  });
+  };
   const effective: PaymentFilters = cheques
     ? { ...filters, mode: 'CHEQUE', status: 'VALID', sort: 'dueDate' }
     : filters;
   const pages = usePaymentPages(effective);
   const clients = useClientPages({ search: '', hasDebt: false, overLimit: false });
   const items = useMemo(() => pages.data?.pages.flatMap((p) => p.items) ?? [], [pages.data]);
-  const set = (patch: Partial<PaymentFilters>) => setFilters((f) => ({ ...f, ...patch }));
+  const day = (iso: string) =>
+    format.dateTime(new Date(`${iso}T12:00:00Z`), { day: 'numeric', month: 'short' });
+  const chips: FilterChip[] = [];
+  if (url.clientId)
+    chips.push({
+      key: 'clientId',
+      label: clients.data?.pages[0]?.items.find((c) => c.id === url.clientId)?.name ?? ts('client'),
+      onRemove: () => set({ clientId: '' }),
+    });
+  if (url.mode && !cheques)
+    chips.push({
+      key: 'mode',
+      label: ts(`mode${url.mode as PaymentMode}`),
+      onRemove: () => set({ mode: '' }),
+    });
+  if (url.status && !cheques)
+    chips.push({
+      key: 'status',
+      label: ts(`payment${url.status as PaymentStatus}`),
+      onRemove: () => set({ status: '' }),
+    });
+  if (url.from || url.to)
+    chips.push({
+      key: 'period',
+      label:
+        url.from && url.from === url.to
+          ? day(url.from)
+          : td('chipPeriod', {
+              from: url.from ? day(url.from) : '…',
+              to: url.to ? day(url.to) : '…',
+            }),
+      onRemove: () => set({ from: '', to: '' }),
+    });
 
   const columns = useMemo<ColumnDef<PaymentDto>[]>(
     () => [
@@ -212,6 +261,12 @@ function PaymentsTable({ cheques, onOpen }: { cheques: boolean; onOpen: (id: str
 
   return (
     <>
+      {cheques ? null : (
+        <FilterChips
+          chips={chips}
+          onClear={() => set({ clientId: '', mode: '', status: '', from: '', to: '' })}
+        />
+      )}
       {cheques ? (
         <p className="text-sm text-muted-foreground">{t('chequesHelp')}</p>
       ) : (
@@ -236,7 +291,7 @@ function PaymentsTable({ cheques, onOpen }: { cheques: boolean; onOpen: (id: str
             <NativeSelect
               id="pf-mode"
               value={filters.mode}
-              onChange={(e) => set({ mode: e.target.value as PaymentFilters['mode'] })}
+              onChange={(e) => set({ mode: e.target.value })}
             >
               <option value="">{t('allModes')}</option>
               <option value="ESPECES">{ts('modeESPECES')}</option>
@@ -249,7 +304,7 @@ function PaymentsTable({ cheques, onOpen }: { cheques: boolean; onOpen: (id: str
             <NativeSelect
               id="pf-status"
               value={filters.status}
-              onChange={(e) => set({ status: e.target.value as PaymentFilters['status'] })}
+              onChange={(e) => set({ status: e.target.value })}
             >
               <option value="">{t('allStatuses')}</option>
               <option value="VALID">{ts('paymentVALID')}</option>

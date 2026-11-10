@@ -5,9 +5,10 @@ import { Loader2, Plus, Receipt, Truck } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
-import { type PurchaseSummaryDto } from '@erp/shared';
+import { useMemo } from 'react';
+import { purchaseListQuerySchema, type PurchaseStatus, type PurchaseSummaryDto } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
+import { type FilterChip, FilterChips } from '@/components/shared/filter-chips';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
@@ -15,23 +16,53 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import { type PurchaseFilters, usePurchasePages, useSuppliers } from '@/lib/purchases';
+import { useUrlFilters } from '@/lib/url-filters';
 import { PurchaseStatusBadge } from './purchase-status-badge';
 import { Amount } from '@/components/shared/amount';
+
+const pq = purchaseListQuerySchema.shape;
+const PURCHASE_URL_FILTERS = {
+  status: pq.status,
+  supplierId: pq.supplierId,
+  from: pq.from,
+  to: pq.to,
+};
 
 export function PurchasesList() {
   const t = useTranslations('purchases');
   const format = useFormatter();
   const router = useRouter();
-  const [filters, setFilters] = useState<PurchaseFilters>({
-    status: '',
-    supplierId: '',
-    from: '',
-    to: '',
-  });
+  const td = useTranslations('dashboard');
+  // Phase 33: the filters live in the URL, so the back button and a shared link keep them.
+  const [url, set] = useUrlFilters(PURCHASE_URL_FILTERS);
+  const filters: PurchaseFilters = { ...url, status: url.status as PurchaseFilters['status'] };
   const pages = usePurchasePages(filters);
   const suppliers = useSuppliers();
   const items = useMemo(() => pages.data?.pages.flatMap((p) => p.items) ?? [], [pages.data]);
-  const set = (patch: Partial<PurchaseFilters>) => setFilters((f) => ({ ...f, ...patch }));
+  const day = (iso: string) =>
+    format.dateTime(new Date(`${iso}T12:00:00Z`), { day: 'numeric', month: 'short' });
+  const chips: FilterChip[] = [];
+  if (url.status)
+    chips.push({
+      key: 'status',
+      label: t(`status${url.status as PurchaseStatus}`),
+      onRemove: () => set({ status: '' }),
+    });
+  if (url.supplierId)
+    chips.push({
+      key: 'supplierId',
+      label: suppliers.data?.items.find((x) => x.id === url.supplierId)?.name ?? t('colSupplier'),
+      onRemove: () => set({ supplierId: '' }),
+    });
+  if (url.from || url.to)
+    chips.push({
+      key: 'period',
+      label: td('chipPeriod', {
+        from: url.from ? day(url.from) : '…',
+        to: url.to ? day(url.to) : '…',
+      }),
+      onRemove: () => set({ from: '', to: '' }),
+    });
 
   const columns = useMemo<ColumnDef<PurchaseSummaryDto>[]>(
     () => [
@@ -112,13 +143,17 @@ export function PurchasesList() {
           </>
         }
       />
+      <FilterChips
+        chips={chips}
+        onClear={() => set({ status: '', supplierId: '', from: '', to: '' })}
+      />
       <div className="grid gap-3 sm:grid-cols-4">
         <div className="space-y-1">
           <Label htmlFor="f-status">{t('colStatus')}</Label>
           <NativeSelect
             id="f-status"
             value={filters.status}
-            onChange={(e) => set({ status: e.target.value as PurchaseFilters['status'] })}
+            onChange={(e) => set({ status: e.target.value })}
           >
             <option value="">{t('allStatuses')}</option>
             <option value="DRAFT">{t('statusDRAFT')}</option>

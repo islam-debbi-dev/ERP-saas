@@ -350,15 +350,17 @@ export class SalesService {
 
   async list(query: SaleListQuery, user: CurrentUserInfo): Promise<SalePage> {
     const scope = await this.scope.of(user);
+    // Sales before phase 14 have no sellerId: they belong to their creator.
+    const soldBy = (ids: string[]): Prisma.SaleWhereInput => ({
+      OR: [{ sellerId: { in: ids } }, { sellerId: null, createdBy: { in: ids } }],
+    });
+    const team = query.teamOf ? await this.scope.teamIds(query.teamOf) : null;
     const where: Prisma.SaleWhereInput = {
       AND: [
         this.scope.saleWhere(scope),
-        // Sales before phase 14 have no sellerId: they belong to their creator.
-        query.sellerId
-          ? {
-              OR: [{ sellerId: query.sellerId }, { sellerId: null, createdBy: query.sellerId }],
-            }
-          : {},
+        query.sellerId ? soldBy([query.sellerId]) : {},
+        team ? soldBy(team) : {},
+        query.brandId ? { lines: { some: { product: { brandId: query.brandId } } } } : {},
         query.warehouseId ? { warehouseId: query.warehouseId } : {},
       ],
       ...(query.type ? { type: query.type } : {}),

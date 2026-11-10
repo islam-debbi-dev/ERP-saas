@@ -1,6 +1,6 @@
 'use client';
 
-import { SlidersHorizontal, TrendingDown, TrendingUp } from 'lucide-react';
+import { ChevronRight, SlidersHorizontal, TrendingDown, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import { type ReactNode, useState } from 'react';
@@ -26,7 +26,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useCanOpen } from '@/components/layout/use-visible-nav';
 import { useAuth, useFeature } from '@/lib/auth';
+import { drill } from '@/lib/dashboard-links';
 import { type FigureFilters, NO_FIGURE_FILTERS, useDashboard } from '@/lib/reports';
 import { useBrands, useIsOffice, useSellers } from '@/lib/sales-force';
 import { useErrorMessage } from '@/lib/use-error-message';
@@ -70,7 +72,7 @@ export function DashboardPage() {
           ))}
         </div>
       ) : (
-        <Sections d={d} />
+        <Sections d={d} filters={filters} />
       )}
     </>
   );
@@ -159,9 +161,13 @@ function FigureFilterBar({
   );
 }
 
-function Sections({ d }: { d: DashboardDto }) {
+function Sections({ d, filters }: { d: DashboardDto; filters: FigureFilters }) {
   const t = useTranslations('dashboard');
   const ts = useTranslations('sales');
+  const canOpen = useCanOpen();
+  /** The href when the user may open that page, else no link (the card stays a figure). */
+  const door = (href: string) => (canOpen(href) ? href : undefined);
+  const monthFrom = `${d.date.slice(0, 7)}-01`;
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
       {d.sales || d.cash || d.credit ? (
@@ -172,10 +178,12 @@ function Sections({ d }: { d: DashboardDto }) {
                 label={t('salesToday')}
                 value={formatDA(d.sales.today.ttc)}
                 hint={t('documents', { count: d.sales.today.count })}
+                href={door(drill.sales(d.date, d.date, filters))}
               />
               <Stat
                 label={t('salesMonth')}
                 value={formatDA(d.sales.month.ttc)}
+                href={door(drill.sales(monthFrom, d.date, filters))}
                 hint={
                   <>
                     {t('documents', { count: d.sales.month.count })}
@@ -184,13 +192,18 @@ function Sections({ d }: { d: DashboardDto }) {
                 }
               />
               {d.sales.margin !== null ? (
-                <Stat label={t('marginMonth')} value={formatDA(d.sales.margin)} />
+                <Stat
+                  label={t('marginMonth')}
+                  value={formatDA(d.sales.margin)}
+                  href={door(drill.overview(monthFrom, d.date))}
+                />
               ) : null}
               {d.net ? (
                 <Stat
                   label={t('netMonth')}
                   value={formatDA(d.net.result)}
                   negative={money(d.net.result).isNegative()}
+                  href={door(drill.overview(monthFrom, d.date))}
                   hint={t('netHint', {
                     margin: isolateLtr(formatDA(d.net.margin)),
                     charges: isolateLtr(formatDA(d.net.charges)),
@@ -203,7 +216,7 @@ function Sections({ d }: { d: DashboardDto }) {
             <Stat
               label={t('inTill')}
               value={formatDA(d.treasury.caisses)}
-              href="/tresorerie"
+              href={door(drill.treasury())}
               hint={t('inBank', { amount: isolateLtr(formatDA(d.treasury.banques)) })}
             />
           ) : null}
@@ -211,19 +224,39 @@ function Sections({ d }: { d: DashboardDto }) {
             <Stat
               label={t('cashToday')}
               value={formatDA(d.cash.total)}
-              hint={
-                d.cash.byMode.length === 0 ? (
-                  t('cashNone')
-                ) : (
-                  <span className="flex flex-wrap gap-x-3">
-                    {d.cash.byMode.map((m) => (
-                      <span key={m.mode}>
-                        {ts(`mode${m.mode}`)}{' '}
-                        <span dir="ltr" className="num">
-                          <Amount value={m.total} />
+              href={door(drill.versements(d.date))}
+              hint={d.cash.byMode.length === 0 ? t('cashNone') : undefined}
+              footer={
+                d.cash.byMode.length === 0 ? undefined : (
+                  // One door per mode, above the card's own link.
+                  <span className="flex flex-wrap gap-x-1">
+                    {d.cash.byMode.map((m) => {
+                      const to = door(drill.versements(d.date, m.mode));
+                      const body = (
+                        <>
+                          {ts(`mode${m.mode}`)}{' '}
+                          <span dir="ltr" className="num">
+                            <Amount value={m.total} />
+                          </span>
+                        </>
+                      );
+                      return to ? (
+                        <Link
+                          key={m.mode}
+                          href={to}
+                          aria-label={t('drillLabel', {
+                            label: `${t('cashToday')} · ${ts(`mode${m.mode}`)}`,
+                          })}
+                          className="relative z-10 inline-flex min-h-11 items-center rounded-md px-1.5 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                        >
+                          {body}
+                        </Link>
+                      ) : (
+                        <span key={m.mode} className="inline-flex min-h-11 items-center px-1.5">
+                          {body}
                         </span>
-                      </span>
-                    ))}
+                      );
+                    })}
                   </span>
                 )
               }
@@ -234,7 +267,7 @@ function Sections({ d }: { d: DashboardDto }) {
               label={t('creditTotal')}
               value={formatDA(d.credit.total)}
               hint={t('debtors', { count: d.credit.debtorCount })}
-              href="/clients"
+              href={door(drill.credit())}
             />
           ) : null}
           {d.credit ? (
@@ -242,6 +275,7 @@ function Sections({ d }: { d: DashboardDto }) {
               label={t('overLimit')}
               value={String(d.credit.overLimitCount)}
               tone={d.credit.overLimitCount > 0 ? 'warn' : undefined}
+              href={door(drill.overLimit())}
             />
           ) : null}
         </div>
@@ -253,13 +287,13 @@ function Sections({ d }: { d: DashboardDto }) {
             label={t('outOfStock')}
             value={String(d.stock.outOfStock)}
             tone={d.stock.outOfStock > 0 ? 'warn' : undefined}
-            href="/stock?filtre=rupture"
+            href={door(drill.stock('out'))}
           />
           <Stat
             label={t('lowStock')}
             value={String(d.stock.lowStock)}
             tone={d.stock.lowStock > 0 ? 'warn' : undefined}
-            href="/stock?filtre=bas"
+            href={door(drill.stock('low'))}
           />
           {d.stock.value !== null ? (
             <div className="col-span-2 sm:col-span-1">
@@ -369,6 +403,7 @@ function Stat({
   label,
   value,
   hint,
+  footer,
   href,
   tone,
   negative,
@@ -376,21 +411,46 @@ function Stat({
   label: string;
   value: string;
   hint?: ReactNode;
+  /** Below the hint, above the card's link: may hold its own links (z-10). */
+  footer?: ReactNode;
+  /** Phase 33: the list behind the figure; the whole card opens it. */
   href?: string;
   tone?: 'warn';
   /** A loss: red, with its minus sign (never colour alone). */
   negative?: boolean;
 }) {
-  const body = (
+  const t = useTranslations('dashboard');
+  return (
     <Card
       className={cn(
-        'h-full gap-1 py-4',
-        href && 'transition-colors hover:bg-muted/50',
+        'relative h-full gap-1 py-4',
+        href &&
+          'transition-colors hover:bg-muted/50 has-[a[data-door]:active]:bg-muted has-[a[data-door]:focus-visible]:ring-[3px] has-[a[data-door]:focus-visible]:ring-ring/50',
         tone === 'warn' && 'border-amber-500/60',
       )}
     >
       <CardContent className="space-y-1">
-        <p className="text-sm text-muted-foreground">{label}</p>
+        <div className="flex items-start justify-between gap-2">
+          {href ? (
+            // The link covers the whole card (after:inset-0); the footer's links sit above it.
+            <Link
+              href={href}
+              data-door
+              aria-label={t('drillLabel', { label })}
+              className="text-sm text-muted-foreground outline-none after:absolute after:inset-0 after:rounded-xl after:content-['']"
+            >
+              {label}
+            </Link>
+          ) : (
+            <p className="text-sm text-muted-foreground">{label}</p>
+          )}
+          {href ? (
+            <ChevronRight
+              className="size-4 shrink-0 text-muted-foreground rtl:rotate-180"
+              aria-hidden
+            />
+          ) : null}
+        </div>
         <p
           dir="ltr"
           className={cn(
@@ -401,15 +461,9 @@ function Stat({
           {value}
         </p>
         {hint ? <div className="text-xs text-muted-foreground">{hint}</div> : null}
+        {footer ? <div className="-mx-1.5 text-xs text-muted-foreground">{footer}</div> : null}
       </CardContent>
     </Card>
-  );
-  return href ? (
-    <Link href={href} className="rounded-xl focus-visible:ring-[3px] focus-visible:ring-ring/50">
-      {body}
-    </Link>
-  ) : (
-    body
   );
 }
 

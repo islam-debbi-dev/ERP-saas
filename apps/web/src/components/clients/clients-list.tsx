@@ -6,8 +6,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-import { type ClientDto, Feature, Role } from '@erp/shared';
+import { z } from 'zod';
+import { clientListQuerySchema, type ClientDto, Feature, Role } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
+import { type FilterChip, FilterChips } from '@/components/shared/filter-chips';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/table/data-table';
 import { Badge } from '@/components/ui/badge';
@@ -22,19 +24,33 @@ import { useAuth, useFeature } from '@/lib/auth';
 import { useSectors, useSellers } from '@/lib/sales-force';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useCanManageCredit, useClientPages } from '@/lib/clients';
+import { useUrlFilters } from '@/lib/url-filters';
 import { BalanceAmount } from './balance-amount';
 import { Amount } from '@/components/shared/amount';
+
+const on = z.literal('1');
+/** URL names of the dashboard links (phase 33), mapped to the API's filters. */
+const CLIENT_URL_FILTERS = {
+  hasBalance: on,
+  overLimit: on,
+  sort: z.literal('balance_desc'),
+  sectorId: clientListQuerySchema.shape.sectorId,
+  sellerId: clientListQuerySchema.shape.assignedSellerId,
+};
 
 export function ClientsList() {
   const t = useTranslations('clients');
   const tr = useTranslations('reminders');
   const router = useRouter();
   const canManage = useCanManageCredit();
+  const td = useTranslations('dashboard');
   const [search, setSearch] = useState('');
-  const [hasDebt, setHasDebt] = useState(false);
-  const [overLimit, setOverLimit] = useState(false);
-  const [sectorId, setSectorId] = useState('');
-  const [sellerId, setSellerId] = useState('');
+  // Phase 33: the filters (not the typed search) live in the URL; the dashboard links here.
+  const [url, set] = useUrlFilters(CLIENT_URL_FILTERS);
+  const hasDebt = url.hasBalance === '1';
+  const overLimit = url.overLimit === '1';
+  const { sectorId, sellerId } = url;
+  const flag = (key: 'hasBalance' | 'overLimit') => (on: boolean) => set({ [key]: on ? '1' : '' });
   const debounced = useDebouncedValue(search.trim(), 300);
   const pages = useClientPages({
     search: debounced,
@@ -42,6 +58,7 @@ export function ClientsList() {
     overLimit,
     sectorId,
     assignedSellerId: sellerId,
+    ...(url.sort === 'balance_desc' ? { sort: 'balance_desc' as const } : {}),
   });
   const items = useMemo(() => pages.data?.pages.flatMap((p) => p.items) ?? [], [pages.data]);
   const filtered = debounced !== '' || hasDebt || overLimit || sectorId !== '' || sellerId !== '';
@@ -54,6 +71,19 @@ export function ClientsList() {
   const canFilterSeller = salesForce && role !== Role.SELLER;
   const sectors = useSectors();
   const sellers = useSellers();
+  const chips: FilterChip[] = [];
+  const chip = (key: keyof typeof url, label: string) =>
+    chips.push({ key, label, onRemove: () => set({ [key]: '' }) });
+  if (url.sort) chip('sort', td('chipSortBalance'));
+  if (hasDebt) chip('hasBalance', t('filterDebt'));
+  if (overLimit) chip('overLimit', t('filterOverLimit'));
+  if (sectorId)
+    chip('sectorId', sectors.data?.find((x) => x.id === sectorId)?.name ?? t('filterSector'));
+  if (sellerId)
+    chip(
+      'sellerId',
+      td('chipSeller', { name: sellers.data?.find((u) => u.id === sellerId)?.fullName ?? '…' }),
+    );
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [assigning, setAssigning] = useState(false);
   const toggle = (id: string, on: boolean) =>
@@ -196,6 +226,10 @@ export function ClientsList() {
           </Button>
         }
       />
+      <FilterChips
+        chips={chips}
+        onClear={() => set({ sort: '', hasBalance: '', overLimit: '', sectorId: '', sellerId: '' })}
+      />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
         <Input
           type="search"
@@ -206,11 +240,11 @@ export function ClientsList() {
           onChange={(e) => setSearch(e.target.value)}
         />
         <div className="flex items-center gap-2">
-          <Switch id="f-debt" checked={hasDebt} onCheckedChange={setHasDebt} />
+          <Switch id="f-debt" checked={hasDebt} onCheckedChange={flag('hasBalance')} />
           <Label htmlFor="f-debt">{t('filterDebt')}</Label>
         </div>
         <div className="flex items-center gap-2">
-          <Switch id="f-over" checked={overLimit} onCheckedChange={setOverLimit} />
+          <Switch id="f-over" checked={overLimit} onCheckedChange={flag('overLimit')} />
           <Label htmlFor="f-over">{t('filterOverLimit')}</Label>
         </div>
       </div>
@@ -221,7 +255,7 @@ export function ClientsList() {
             <NativeSelect
               id="f-sector"
               value={sectorId}
-              onChange={(e) => setSectorId(e.target.value)}
+              onChange={(e) => set({ sectorId: e.target.value })}
             >
               <option value="">{t('allSectors')}</option>
               {(sectors.data ?? []).map((s) => (
@@ -237,7 +271,7 @@ export function ClientsList() {
               <NativeSelect
                 id="f-seller"
                 value={sellerId}
-                onChange={(e) => setSellerId(e.target.value)}
+                onChange={(e) => set({ sellerId: e.target.value })}
               >
                 <option value="">{t('allSellers')}</option>
                 {(sellers.data ?? []).map((u) => (

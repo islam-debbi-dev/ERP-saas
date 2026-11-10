@@ -18,6 +18,10 @@ export interface SaleFilters {
   clientId: string;
   from: string;
   to: string;
+  /** The dashboard's figure filters (phase 33); '' = all. */
+  sellerId?: string;
+  teamOf?: string;
+  brandId?: string;
 }
 
 export const saleKeys = {
@@ -38,6 +42,9 @@ export function useSalePages(filters: SaleFilters) {
       if (filters.clientId) params.set('clientId', filters.clientId);
       if (filters.from) params.set('from', filters.from);
       if (filters.to) params.set('to', filters.to);
+      if (filters.sellerId) params.set('sellerId', filters.sellerId);
+      if (filters.teamOf) params.set('teamOf', filters.teamOf);
+      if (filters.brandId) params.set('brandId', filters.brandId);
       if (warehouseId) params.set('warehouseId', warehouseId);
       if (pageParam) params.set('cursor', pageParam);
       return api.request<SalePage>(`/sales?${params.toString()}`, { signal });

@@ -136,7 +136,16 @@
     "netMonth": "النتيجة الصافية للشهر",
     "netHint": "الهامش {margin} − الأعباء {charges}",
     "inTill": "في الصندوق",
-    "inBank": "في البنك: {amount}"
+    "inBank": "في البنك: {amount}",
+    "drillLabel": "شوف التفاصيل: {label}",
+    "chipsLabel": "الفلاتر المفعّلة",
+    "chipRemove": "نحّي الفلتر: {label}",
+    "chipsClear": "نحّي الكل",
+    "chipPeriod": "من {from} إلى {to}",
+    "chipSeller": "البائع: {name}",
+    "chipTeam": "فرقة: {name}",
+    "chipBrand": "الماركة: {name}",
+    "chipSortBalance": "اللي عليهم أكثر في اللول"
   },
   "reports": {
     "title": "التقارير",

@@ -136,7 +136,16 @@
     "netMonth": "Net result this month",
     "netHint": "Margin {margin} − expenses {charges}",
     "inTill": "In the till",
-    "inBank": "In the bank: {amount}"
+    "inBank": "In the bank: {amount}",
+    "drillLabel": "See the details: {label}",
+    "chipsLabel": "Active filters",
+    "chipRemove": "Remove the filter: {label}",
+    "chipsClear": "Clear all",
+    "chipPeriod": "{from} to {to}",
+    "chipSeller": "Seller: {name}",
+    "chipTeam": "{name}'s team",
+    "chipBrand": "Brand: {name}",
+    "chipSortBalance": "Largest balances first"
   },
   "reports": {
     "title": "Reports",

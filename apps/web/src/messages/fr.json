@@ -136,7 +136,16 @@
     "netMonth": "Résultat net du mois",
     "netHint": "Marge {margin} − charges {charges}",
     "inTill": "En caisse",
-    "inBank": "En banque : {amount}"
+    "inBank": "En banque : {amount}",
+    "drillLabel": "Voir le détail : {label}",
+    "chipsLabel": "Filtres actifs",
+    "chipRemove": "Retirer le filtre : {label}",
+    "chipsClear": "Tout retirer",
+    "chipPeriod": "Du {from} au {to}",
+    "chipSeller": "Vendeur : {name}",
+    "chipTeam": "Équipe de {name}",
+    "chipBrand": "Marque : {name}",
+    "chipSortBalance": "Plus gros soldes d’abord"
   },
   "reports": {
     "title": "Rapports",

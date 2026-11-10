@@ -69,6 +69,8 @@ export const clientListQuerySchema = z.object({
   assignedSellerId: id.optional(),
   /** Only clients without a sector / without a seller. */
   unassigned: z.enum(['sector', 'seller']).optional(),
+  /** `balance_desc`: who owes the most first (the dashboard's crédit card, phase 33). Default by name. */
+  sort: z.enum(['name', 'balance_desc']).default('name'),
   cursor: id.optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
