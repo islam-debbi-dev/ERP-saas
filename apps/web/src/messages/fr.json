@@ -210,7 +210,21 @@
     "dormantTitle": "Clients qui n’achètent plus",
     "dormantHint": "Achetaient avant, rien depuis 30 jours. Montant : leur moyenne par mois.",
     "dormantLast": "Dernier achat le {day}",
-    "topEmpty": "Rien sur la période"
+    "topEmpty": "Rien sur la période",
+    "updatedAgo": "Mis à jour {ago}",
+    "updatedNow": "Mis à jour à l’instant",
+    "refresh": "Actualiser les chiffres",
+    "pullToRefresh": "Relâchez pour actualiser",
+    "targetTitle": "Objectif du mois",
+    "targetValue": "{pct} % de l’objectif",
+    "targetLeft": "{days, plural, one {Il reste {amount} en # jour} other {Il reste {amount} en # jours}}",
+    "targetReached": "Objectif atteint",
+    "targetOf": "{achieved} sur {amount}",
+    "greeting_chequesToday": "{count, plural, one {# chèque à encaisser aujourd’hui} other {# chèques à encaisser aujourd’hui}}",
+    "greeting_bestDayYesterday": "Meilleure journée du mois hier : {amount}",
+    "greeting_salesUp": "Ventes +{pct} % par rapport au mois dernier",
+    "greeting_salesDown": "Ventes −{pct} % par rapport au mois dernier",
+    "greeting_overLimit": "{count, plural, one {# client au-delà de son plafond} other {# clients au-delà de leur plafond}}"
   },
   "reports": {
     "title": "Rapports",
@@ -373,7 +387,10 @@
     "assistantLinkHelp": "Fournisseur et clé API de l'assistant.",
     "treasurySection": "Trésorerie",
     "treasuryHelp": "Le comptage de caisse alerte le propriétaire à partir de cet écart.",
-    "cashCountAlertThreshold": "Seuil d’alerte d’écart (DA)"
+    "cashCountAlertThreshold": "Seuil d’alerte d’écart (DA)",
+    "targetSection": "Objectif du mois",
+    "targetHelp": "Les ventes TTC à atteindre chaque mois, suivies sur le tableau de bord. Laissez vide pour ne pas en avoir.",
+    "monthlySalesTarget": "Objectif de ventes (DA)"
   },
   "validation": {
     "required": "Ce champ est obligatoire.",

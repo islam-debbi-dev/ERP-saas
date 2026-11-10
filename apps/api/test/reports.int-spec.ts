@@ -77,7 +77,7 @@ describe('dashboard and reports', () => {
         .send(body),
   });
 
-  const loginAs = async (who: RegisteredTenant, role: 'SELLER' | 'STOREKEEPER') => {
+  const loginAs = async (who: RegisteredTenant, role: 'SELLER' | 'STOREKEEPER' | 'MANAGER') => {
     const email = uniqueEmail(role.toLowerCase());
     await asTenant(who.tenantId, async () =>
       t.prisma.db.user.create({
@@ -473,6 +473,55 @@ describe('dashboard and reports', () => {
       const sk = (await as(storekeeper).get(`/dashboard?date=${DATE}`).expect(200))
         .body as DashboardDto;
       expect(sk.top).toBeNull();
+    });
+
+    it('phase 33: the owner’s monthly goal, set by him only and audited; the greeting fact', async () => {
+      const patch = (who: RegisteredTenant, body: object) =>
+        t
+          .http()
+          .patch('/tenant/settings')
+          .set(...bearer(who.auth.accessToken))
+          .send(body);
+      const manager = await loginAs(a, 'MANAGER');
+      expect(
+        ((await as(a).get(`/dashboard?date=${DATE}`).expect(200)).body as DashboardDto).target,
+      ).toBeNull();
+
+      await patch(manager, { monthlySalesTarget: '30000' }).expect(403);
+      await patch(a, { monthlySalesTarget: '0' }).expect(400);
+      await patch(a, { monthlySalesTarget: '30 000,00' }).expect(200);
+      // The form sends every field: the same value from a manager is not a change.
+      await patch(manager, { monthlySalesTarget: '30000.00', reminderDays: 30 }).expect(200);
+      const audits = await asTenant(a.tenantId, () =>
+        t.prisma.db.auditLog.findMany({ where: { action: 'TENANT_SALES_TARGET_CHANGED' } }),
+      );
+      expect(audits).toHaveLength(1);
+      expect(audits[0]).toMatchObject({
+        before: { monthlySalesTarget: null },
+        after: { monthlySalesTarget: '30000.00' },
+      });
+
+      const d = (await as(a).get(`/dashboard?date=${DATE}`).expect(200)).body as DashboardDto;
+      // March so far 21 896 of 30 000; 31 March is the last day.
+      expect(d.target).toEqual({
+        amount: '30000.00',
+        achieved: '21896.00',
+        pct: '73.0',
+        remaining: '8104.00',
+        daysLeft: 1,
+      });
+      // Narrowed to one seller, or seen by a seller: not the company's goal.
+      const one = (
+        await as(a).get(`/dashboard?date=${DATE}&sellerId=${seller.auth.user.id}`).expect(200)
+      ).body as DashboardDto;
+      expect(one.target).toBeNull();
+      expect(
+        ((await as(seller).get(`/dashboard?date=${DATE}`).expect(200)).body as DashboardDto).target,
+      ).toBeNull();
+
+      // No cheque due today, 30 March was not the best day: March against February.
+      expect(d.greeting).toEqual({ key: 'salesUp', params: { pct: '167' } });
+      await patch(a, { monthlySalesTarget: null }).expect(200);
     });
 
     it('defaults to today and rejects a bad date', async () => {

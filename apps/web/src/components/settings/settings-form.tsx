@@ -32,7 +32,8 @@ import { cn } from '@/lib/utils';
 
 type FormInput = z.input<typeof tenantSettingsSchema>;
 type TextField = 'raisonSociale' | 'adresse' | 'telephone' | 'rc' | 'nif' | 'nis' | 'ai' | 'rib';
-type AmountField = 'timbreMin' | 'timbreMax' | 'timbreThreshold' | 'cashCountAlertThreshold';
+type AmountField =
+  'timbreMin' | 'timbreMax' | 'timbreThreshold' | 'cashCountAlertThreshold' | 'monthlySalesTarget';
 type ValidationKey =
   'tooShort' | 'range' | 'invalidAmount' | 'invalidRate' | 'invalidTranches' | 'required';
 
@@ -70,6 +71,7 @@ function toForm(s: TenantSettingsResponse): FormInput {
     timbreMax: amount(s.timbreMax),
     timbreThreshold: amount(s.timbreThreshold),
     cashCountAlertThreshold: formatDA(s.cashCountAlertThreshold, { currency: false }),
+    monthlySalesTarget: amount(s.monthlySalesTarget),
     defaultPrintFormat: s.defaultPrintFormat,
     documentFooter: s.documentFooter ?? '',
     tvaMention: s.tvaMention,
@@ -92,6 +94,7 @@ const ERROR_KEYS: Partial<Record<keyof FormInput, ValidationKey>> = {
   timbreMax: 'invalidAmount',
   timbreThreshold: 'invalidAmount',
   cashCountAlertThreshold: 'invalidAmount',
+  monthlySalesTarget: 'invalidAmount',
 };
 
 function Section({
@@ -220,6 +223,7 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
   const canEdit =
     state.status === 'authenticated' &&
     (state.user.role === Role.OWNER || state.user.role === Role.MANAGER);
+  const isOwner = state.status === 'authenticated' && state.user.role === Role.OWNER;
   const salesForce = useFeature(Feature.SALES_FORCE);
   const geoCheck = useFeature(Feature.GEO_CHECK);
   const treasuryOn = useFeature(Feature.TREASURY);
@@ -562,6 +566,13 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
         {treasuryOn ? (
           <Section title={t('settings.treasurySection')} description={t('settings.treasuryHelp')}>
             {amount('cashCountAlertThreshold')}
+          </Section>
+        ) : null}
+
+        {/* Phase 33: the owner's goal of the month, shown on the dashboard. */}
+        {isOwner ? (
+          <Section title={t('settings.targetSection')} description={t('settings.targetHelp')}>
+            {amount('monthlySalesTarget')}
           </Section>
         ) : null}
 

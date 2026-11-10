@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { chartBuckets, previousBucket, resolveDashboardPeriod } from './dashboard';
+import {
+  chartBuckets,
+  pickGreetingFact,
+  previousBucket,
+  resolveDashboardPeriod,
+  salesTargetProgress,
+} from './dashboard';
 
 describe('resolveDashboardPeriod (Algiers days)', () => {
   it('today, 7 days and this month stop today; previous is the same length just before', () => {
@@ -80,6 +86,73 @@ describe('chartBuckets', () => {
     expect(previousBucket(r, { from: '2026-11-04', to: '2026-11-04' })).toEqual({
       from: '2026-10-28',
       to: '2026-10-28',
+    });
+  });
+});
+
+describe('salesTargetProgress', () => {
+  it('percent, what is left and the days left, today included', () => {
+    expect(salesTargetProgress('1000000', '452300.50', '2026-11-10')).toEqual({
+      amount: '1000000.00',
+      achieved: '452300.50',
+      pct: '45.2',
+      remaining: '547699.50',
+      daysLeft: 21,
+    });
+    // Reached: nothing left, the percent passes 100.
+    expect(salesTargetProgress('100', '150', '2026-02-28')).toMatchObject({
+      pct: '150.0',
+      remaining: '0.00',
+      daysLeft: 1,
+    });
+  });
+});
+
+describe('pickGreetingFact', () => {
+  const days = (...ttc: string[]) =>
+    ttc.map((v, i) => ({ date: `2026-11-${String(i + 1).padStart(2, '0')}`, ttc: v }));
+  const base = { chequesDueToday: null, monthChangePct: null, overLimitCount: null };
+
+  it('cheques due today come first', () => {
+    expect(
+      pickGreetingFact({
+        ...base,
+        chequesDueToday: 3,
+        today: '2026-11-03',
+        monthDays: days('9', '99', '1'),
+      }),
+    ).toEqual({ key: 'chequesToday', params: { count: 3 } });
+  });
+
+  it('yesterday was the best day of the month (today, still running, does not count)', () => {
+    expect(
+      pickGreetingFact({
+        ...base,
+        today: '2026-11-03',
+        monthDays: days('100', '452300', '999999'),
+      }),
+    ).toEqual({ key: 'bestDayYesterday', params: { amount: '452300.00' } });
+    // Not the best, or the first day of the month: the trend instead.
+    expect(
+      pickGreetingFact({
+        ...base,
+        today: '2026-11-03',
+        monthDays: days('500', '100', '0'),
+        monthChangePct: '12.4',
+      }),
+    ).toEqual({ key: 'salesUp', params: { pct: '12' } });
+  });
+
+  it('a small trend says nothing; then the clients over their plafond; else nothing', () => {
+    const quiet = { ...base, today: '2026-11-01', monthDays: days('0'), monthChangePct: '-4.9' };
+    expect(pickGreetingFact(quiet)).toBeNull();
+    expect(pickGreetingFact({ ...quiet, monthChangePct: '-8.0' })).toEqual({
+      key: 'salesDown',
+      params: { pct: '8' },
+    });
+    expect(pickGreetingFact({ ...quiet, overLimitCount: 2 })).toEqual({
+      key: 'overLimit',
+      params: { count: 2 },
     });
   });
 });

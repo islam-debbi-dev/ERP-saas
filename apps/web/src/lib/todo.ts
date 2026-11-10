@@ -15,6 +15,9 @@ export function useTodo(enabled = true) {
     queryFn: ({ signal }) => api.request<DashboardTodoDto>('/dashboard/todo', { signal }),
     enabled,
     staleTime: 30_000,
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
   });
 }
 

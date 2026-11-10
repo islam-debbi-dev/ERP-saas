@@ -210,7 +210,21 @@
     "dormantTitle": "كليان حبسو الشرا",
     "dormantHint": "كانو يشريو، والو من 30 يوم. المبلغ: المعدل في الشهر.",
     "dormantLast": "آخر شرا {day}",
-    "topEmpty": "والو في هذي المدة"
+    "topEmpty": "والو في هذي المدة",
+    "updatedAgo": "تحدّث {ago}",
+    "updatedNow": "تحدّث دروك",
+    "refresh": "حدّث الأرقام",
+    "pullToRefresh": "سيّب باش تحدّث",
+    "targetTitle": "هدف الشهر",
+    "targetValue": "{pct} % من الهدف",
+    "targetLeft": "{days, plural, one {باقي {amount} في نهار واحد} other {باقي {amount} في # أيام}}",
+    "targetReached": "وصلت للهدف",
+    "targetOf": "{achieved} من {amount}",
+    "greeting_chequesToday": "{count, plural, one {شيك واحد لازم يتخلّص اليوم} other {# شيكات لازم يتخلّصو اليوم}}",
+    "greeting_bestDayYesterday": "البارح كان أحسن نهار في الشهر: {amount}",
+    "greeting_salesUp": "المبيعات طالعة بـ {pct} % على الشهر اللي فات",
+    "greeting_salesDown": "المبيعات هابطة بـ {pct} % على الشهر اللي فات",
+    "greeting_overLimit": "{count, plural, one {كليان واحد فات البلافون} other {# كليان فاتو البلافون}}"
   },
   "reports": {
     "title": "التقارير",
@@ -373,7 +387,10 @@
     "assistantLinkHelp": "مزوّد المساعد ومفتاح API.",
     "treasurySection": "الخزينة",
     "treasuryHelp": "ينبّه جرد الصندوق المالك ابتداء من هذا الفارق.",
-    "cashCountAlertThreshold": "حد التنبيه للفارق (دج)"
+    "cashCountAlertThreshold": "حد التنبيه للفارق (دج)",
+    "targetSection": "هدف الشهر",
+    "targetHelp": "المبيعات بالـ TTC اللي تحب توصلها كل شهر. تبان في لوحة القيادة. اتركها فارغة باش تنحّيها.",
+    "monthlySalesTarget": "هدف المبيعات (دج)"
   },
   "validation": {
     "required": "هذا الحقل إلزامي.",

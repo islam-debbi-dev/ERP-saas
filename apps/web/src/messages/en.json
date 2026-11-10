@@ -210,7 +210,21 @@
     "dormantTitle": "Clients who stopped buying",
     "dormantHint": "Bought before, nothing for 30 days. Amount: their monthly average.",
     "dormantLast": "Last bought on {day}",
-    "topEmpty": "Nothing in this period"
+    "topEmpty": "Nothing in this period",
+    "updatedAgo": "Updated {ago}",
+    "updatedNow": "Updated just now",
+    "refresh": "Refresh the figures",
+    "pullToRefresh": "Release to refresh",
+    "targetTitle": "Goal of the month",
+    "targetValue": "{pct}% of the goal",
+    "targetLeft": "{days, plural, one {{amount} left in # day} other {{amount} left in # days}}",
+    "targetReached": "Goal reached",
+    "targetOf": "{achieved} of {amount}",
+    "greeting_chequesToday": "{count, plural, one {# cheque to cash today} other {# cheques to cash today}}",
+    "greeting_bestDayYesterday": "Yesterday was the best day of the month: {amount}",
+    "greeting_salesUp": "Sales up {pct}% on last month",
+    "greeting_salesDown": "Sales down {pct}% on last month",
+    "greeting_overLimit": "{count, plural, one {# client over the credit limit} other {# clients over the credit limit}}"
   },
   "reports": {
     "title": "Reports",
@@ -373,7 +387,10 @@
     "assistantLinkHelp": "The assistant's provider and API key.",
     "treasurySection": "Treasury",
     "treasuryHelp": "A cash count alerts the owner from this difference up.",
-    "cashCountAlertThreshold": "Difference alert threshold (DA)"
+    "cashCountAlertThreshold": "Difference alert threshold (DA)",
+    "targetSection": "Monthly goal",
+    "targetHelp": "The sales (incl. tax) to reach each month, tracked on the dashboard. Leave empty for none.",
+    "monthlySalesTarget": "Sales goal (DA)"
   },
   "validation": {
     "required": "This field is required.",

@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { type PaymentMode, Role } from '../enums';
-import { DASHBOARD_PERIODS, type DashboardPeriodRange } from '../dashboard';
+import {
+  DASHBOARD_PERIODS,
+  type DashboardPeriodRange,
+  type GreetingFact,
+  type SalesTargetProgress,
+} from '../dashboard';
 import { rangeLength } from '../periods';
 import { type DebtorDto } from './clients';
 import { type DueChequesDto } from './credit';
@@ -254,6 +259,13 @@ export interface DashboardDto {
   net: { margin: string; charges: string; result: string } | null;
   /** null when the role does not see sales. */
   top: DashboardTopDto | null;
+  /**
+   * The owner's monthly target against the month so far (phase 33): managers, without a
+   * seller / team / brand filter, when a target is set. A seller has his own objectives.
+   */
+  target: SalesTargetProgress | null;
+  /** The line under "Bonjour" (phase 33), chosen by fixed rules; null when nothing to say. */
+  greeting: GreetingFact | null;
 }
 
 /**

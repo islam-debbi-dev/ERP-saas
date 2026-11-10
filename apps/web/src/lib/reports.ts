@@ -85,6 +85,10 @@ export function useDashboard(
     },
     // Keep the figures while another filter loads.
     placeholderData: keepPreviousData,
+    // Phase 33: alive, but only while the tab is seen.
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
   });
 }
 

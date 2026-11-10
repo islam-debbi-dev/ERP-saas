@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronRight, SlidersHorizontal, TrendingDown, TrendingUp } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import { type ReactNode } from 'react';
@@ -32,6 +33,8 @@ import {
 import { useCanOpen } from '@/components/layout/use-visible-nav';
 import { useAuth, useFeature } from '@/lib/auth';
 import { drill } from '@/lib/dashboard-links';
+import { todoKeys } from '@/lib/todo';
+import { useCountUp } from '@/lib/use-count-up';
 import {
   DEFAULT_PERIOD,
   type DashboardPeriodQuery,
@@ -45,12 +48,17 @@ import { cn, isolateLtr } from '@/lib/utils';
 import { AttendanceTodayCard } from '@/components/hr/today-card';
 import { MyObjectivesCard } from '@/components/incentives/my-objectives-card';
 import { OnboardingCard } from './onboarding-card';
+import { PullToRefresh, UpdatedBar } from './live-bar';
 import { PeriodSwitcher, usePeriodName } from './period-switcher';
+import { GreetingLine, TargetCard } from './target-card';
 import { QuickActionButtons, QuickActionFab } from './quick-actions';
 import { TopLists } from './top-lists';
 import { SalesChart } from './sales-chart';
 import { TodoCard } from './todo-card';
 import { Amount } from '@/components/shared/amount';
+
+/** A count shown while it counts up (decimal steps rounded for display). */
+const integer = (v: string) => money(v).toFixed(0);
 
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const DASHBOARD_URL_FILTERS = {
@@ -88,6 +96,11 @@ export function DashboardPage() {
     setUrl({ period: p.period === 'month' ? '' : p.period, from: p.from, to: p.to });
   const dashboard = useDashboard(filters, period);
   const d = dashboard.data;
+  const queryClient = useQueryClient();
+  const refreshAll = () => {
+    void dashboard.refetch();
+    void queryClient.invalidateQueries({ queryKey: todoKeys.all });
+  };
   const name = state.status === 'authenticated' ? state.user.fullName : '';
 
   return (
@@ -99,6 +112,13 @@ export function DashboardPage() {
         }
         actions={<QuickActionButtons />}
       />
+      <GreetingLine fact={d?.greeting ?? null} />
+      <UpdatedBar
+        updatedAt={dashboard.dataUpdatedAt}
+        fetching={dashboard.isFetching}
+        onRefresh={refreshAll}
+      />
+      <PullToRefresh onRefresh={refreshAll} />
       <TodoCard />
       <OnboardingCard />
       <MyObjectivesCard />
@@ -227,12 +247,16 @@ function Sections({ d, filters }: { d: DashboardDto; filters: FigureFilters }) {
               <Stat
                 label={t('salesToday')}
                 value={formatDA(d.sales.today.ttc)}
+                raw={d.sales.today.ttc}
+                render={formatDA}
                 hint={t('documents', { count: d.sales.today.count })}
                 href={door(drill.sales(d.date, d.date, filters))}
               />
               <Stat
                 label={t('salesPeriod', { period: periodName(d.sales.period) })}
                 value={formatDA(d.sales.current.ttc)}
+                raw={d.sales.current.ttc}
+                render={formatDA}
                 href={door(drill.sales(d.sales.period.from, d.sales.period.to, filters))}
                 hint={
                   <>
@@ -245,6 +269,8 @@ function Sections({ d, filters }: { d: DashboardDto; filters: FigureFilters }) {
                 <Stat
                   label={t('marginPeriod', { period: periodName(d.sales.period) })}
                   value={formatDA(d.sales.margin)}
+                  raw={d.sales.margin}
+                  render={formatDA}
                   href={door(drill.overview(d.sales.period.from, d.sales.period.to))}
                 />
               ) : null}
@@ -252,6 +278,8 @@ function Sections({ d, filters }: { d: DashboardDto; filters: FigureFilters }) {
                 <Stat
                   label={t('netPeriod', { period: periodName(d.sales.period) })}
                   value={formatDA(d.net.result)}
+                  raw={d.net.result}
+                  render={formatDA}
                   negative={money(d.net.result).isNegative()}
                   href={door(drill.overview(d.sales.period.from, d.sales.period.to))}
                   hint={t('netHint', {
@@ -266,6 +294,8 @@ function Sections({ d, filters }: { d: DashboardDto; filters: FigureFilters }) {
             <Stat
               label={t('inTill')}
               value={formatDA(d.treasury.caisses)}
+              raw={d.treasury.caisses}
+              render={formatDA}
               href={door(drill.treasury())}
               hint={t('inBank', { amount: isolateLtr(formatDA(d.treasury.banques)) })}
             />
@@ -274,6 +304,8 @@ function Sections({ d, filters }: { d: DashboardDto; filters: FigureFilters }) {
             <Stat
               label={t('cashToday')}
               value={formatDA(d.cash.total)}
+              raw={d.cash.total}
+              render={formatDA}
               href={door(drill.versements(d.date))}
               hint={d.cash.byMode.length === 0 ? t('cashNone') : undefined}
               footer={
@@ -316,6 +348,8 @@ function Sections({ d, filters }: { d: DashboardDto; filters: FigureFilters }) {
             <Stat
               label={t('creditTotal')}
               value={formatDA(d.credit.total)}
+              raw={d.credit.total}
+              render={formatDA}
               hint={t('debtors', { count: d.credit.debtorCount })}
               href={door(drill.credit())}
             />
@@ -324,6 +358,8 @@ function Sections({ d, filters }: { d: DashboardDto; filters: FigureFilters }) {
             <Stat
               label={t('overLimit')}
               value={String(d.credit.overLimitCount)}
+              raw={String(d.credit.overLimitCount)}
+              render={integer}
               tone={d.credit.overLimitCount > 0 ? 'warn' : undefined}
               href={door(drill.overLimit())}
             />
@@ -331,23 +367,34 @@ function Sections({ d, filters }: { d: DashboardDto; filters: FigureFilters }) {
         </div>
       ) : null}
 
+      {d.target ? <TargetCard target={d.target} /> : null}
+
       {d.stock ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <Stat
             label={t('outOfStock')}
             value={String(d.stock.outOfStock)}
+            raw={String(d.stock.outOfStock)}
+            render={integer}
             tone={d.stock.outOfStock > 0 ? 'warn' : undefined}
             href={door(drill.stock('out'))}
           />
           <Stat
             label={t('lowStock')}
             value={String(d.stock.lowStock)}
+            raw={String(d.stock.lowStock)}
+            render={integer}
             tone={d.stock.lowStock > 0 ? 'warn' : undefined}
             href={door(drill.stock('low'))}
           />
           {d.stock.value !== null ? (
             <div className="col-span-2 sm:col-span-1">
-              <Stat label={t('stockValue')} value={formatDA(d.stock.value)} />
+              <Stat
+                label={t('stockValue')}
+                value={formatDA(d.stock.value)}
+                raw={d.stock.value}
+                render={formatDA}
+              />
             </div>
           ) : null}
         </div>
@@ -466,6 +513,8 @@ function Stat({
   href,
   tone,
   negative,
+  raw,
+  render,
 }: {
   label: string;
   value: string;
@@ -477,12 +526,19 @@ function Stat({
   tone?: 'warn';
   /** A loss: red, with its minus sign (never colour alone). */
   negative?: boolean;
+  /** Phase 33: the raw figure, so a change after a refetch counts up to it. */
+  raw?: string;
+  render?: (raw: string) => string;
 }) {
   const t = useTranslations('dashboard');
+  const counted = useCountUp(raw ?? null);
+  const text =
+    raw !== undefined && render && counted.value !== null ? render(counted.value) : value;
   return (
     <Card
       className={cn(
-        'relative h-full gap-1 py-4',
+        'relative h-full gap-1 py-4 motion-safe:transition-colors motion-safe:duration-300',
+        counted.flash && 'border-primary',
         href &&
           'transition-colors hover:bg-muted/50 has-[a[data-door]:active]:bg-muted has-[a[data-door]:focus-visible]:ring-[3px] has-[a[data-door]:focus-visible]:ring-ring/50',
         tone === 'warn' && 'border-amber-500/60',
@@ -517,7 +573,7 @@ function Stat({
             negative && 'text-destructive',
           )}
         >
-          {value}
+          {text}
         </p>
         {hint ? <div className="text-xs text-muted-foreground">{hint}</div> : null}
         {footer ? <div className="-mx-1.5 text-xs text-muted-foreground">{footer}</div> : null}

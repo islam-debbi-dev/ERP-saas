@@ -8,6 +8,8 @@ import {
   type DashboardPeriod,
   type DashboardPeriodRange,
   type DashboardTopDto,
+  pickGreetingFact,
+  salesTargetProgress,
   monthToDate,
   money,
   type Money,
@@ -128,8 +130,29 @@ export class DashboardService {
     const treasury = (await this.scopes.treasuryOn(scope.tenantId))
       ? await this.treasury.balancesFor(user, warehouseIds, await this.mainId(units))
       : null;
+    const filtered = Boolean(filters.sellerId || filters.teamOf || filters.brandId);
+    const goal =
+      manager && sales && !filtered
+        ? (
+            await this.prisma.db.tenant.findUnique({
+              where: { id: scope.tenantId },
+              select: { monthlySalesTarget: true },
+            })
+          )?.monthlySalesTarget
+        : null;
+    const greeting = pickGreetingFact({
+      chequesDueToday: cheques
+        ? cheques.client.items.filter((c) => c.dueDate === date).length
+        : null,
+      monthDays: sales?.perDay ?? [],
+      today: date,
+      monthChangePct: sales ? changePercent(sales.month.ttc, sales.previousMonth.ttc) : null,
+      overLimitCount: credit?.overLimitCount ?? null,
+    });
     return {
       date,
+      target: goal && sales ? salesTargetProgress(goal.toString(), sales.month.ttc, date) : null,
+      greeting,
       sales,
       cash: cash ? { total: cash.total, byMode: cash.byMode } : null,
       treasury,

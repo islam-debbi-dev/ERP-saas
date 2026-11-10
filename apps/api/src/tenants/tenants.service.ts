@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import {
+  ErrorCode,
   normalizeDecimal,
+  Role,
   parseDA,
   type TenantSettingsResponse,
   toMoneyString,
   type UpdateTenantSettingsInput,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
+import type { CurrentUserInfo } from '../auth/auth.types';
+import { AppException } from '../common/app-exception';
 import { CatalogService } from '../catalog/catalog.service';
 import { tenantContext } from '../common/tenant-context';
 import { type Tenant } from '../generated/prisma/client';
@@ -42,6 +46,9 @@ function toResponse(t: Tenant): TenantSettingsResponse {
     timbreMax: t.timbreMax ? toMoneyString(t.timbreMax) : null,
     timbreThreshold: t.timbreThreshold ? toMoneyString(t.timbreThreshold) : null,
     cashCountAlertThreshold: toMoneyString(t.cashCountAlertThreshold.toString()),
+    monthlySalesTarget: t.monthlySalesTarget
+      ? toMoneyString(t.monthlySalesTarget.toString())
+      : null,
     defaultPrintFormat: t.defaultPrintFormat,
     documentFooter: t.documentFooter,
     tvaMention: t.tvaMention,
@@ -70,12 +77,26 @@ export class TenantsService {
     return toResponse(tenant);
   }
 
-  async updateSettings(input: UpdateTenantSettingsInput): Promise<TenantSettingsResponse> {
+  async updateSettings(
+    input: UpdateTenantSettingsInput,
+    user?: Pick<CurrentUserInfo, 'role'>,
+  ): Promise<TenantSettingsResponse> {
     const tenantId = tenantContext.requireTenantId();
+    const target = normalizeAmount(input.monthlySalesTarget);
     return this.prisma.db.$transaction(async (tx) => {
       // Lock the row so two concurrent edits produce a correct before/after audit trail.
       await tx.$queryRaw`SELECT id FROM tenants WHERE id = ${tenantId}::uuid FOR UPDATE`;
       const before = await tx.tenant.findUniqueOrThrow({ where: { id: tenantId } });
+      // Phase 33: the monthly target is the owner's. The form sends every field, so only a
+      // real change is refused to others.
+      const beforeTarget = before.monthlySalesTarget
+        ? toMoneyString(before.monthlySalesTarget.toString())
+        : null;
+      const canonical = target === undefined || target === null ? target : toMoneyString(target);
+      const targetChanged = canonical !== undefined && canonical !== beforeTarget;
+      if (targetChanged && user && user.role !== Role.OWNER) {
+        throw new AppException(ErrorCode.FORBIDDEN, 'Only the owner sets the monthly target');
+      }
       const after = await tx.tenant.update({
         where: { id: tenantId },
         data: {
@@ -90,8 +111,18 @@ export class TenantsService {
           timbreMax: normalizeAmount(input.timbreMax),
           timbreThreshold: normalizeAmount(input.timbreThreshold),
           cashCountAlertThreshold: normalizeAmount(input.cashCountAlertThreshold) ?? undefined,
+          monthlySalesTarget: target,
         },
       });
+      if (targetChanged) {
+        await this.audit.log(tx, {
+          action: 'TENANT_SALES_TARGET_CHANGED',
+          entity: 'Tenant',
+          entityId: tenantId,
+          before: { monthlySalesTarget: beforeTarget },
+          after: { monthlySalesTarget: canonical },
+        });
+      }
       if (after.priceLevelCount > before.priceLevelCount) {
         await this.catalog.ensurePriceLevels(tx, tenantId, after.priceLevelCount);
       }

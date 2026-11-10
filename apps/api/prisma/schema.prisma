@@ -106,6 +106,8 @@ model Tenant {
   timbreThreshold         Decimal? @db.Decimal(14, 2)
   /// A comptage with an écart from this amount up alerts the owner (phase 34).
   cashCountAlertThreshold Decimal  @default(5000) @db.Decimal(14, 2)
+  /// Objectif de ventes du mois, TTC (phase 33); null = none. Set by the OWNER.
+  monthlySalesTarget      Decimal? @db.Decimal(14, 2)
   /// [{ upTo: "30000.00" | null, rate: "1" }] in increasing order, see packages/shared/timbre.
   timbreTranches          Json     @default("[]")
 
