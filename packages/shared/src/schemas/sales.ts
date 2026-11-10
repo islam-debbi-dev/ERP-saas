@@ -127,6 +127,10 @@ export const saleListQuerySchema = z.object({
   status: z.enum(['DRAFT', 'VALIDATED', 'CANCELLED']).optional(),
   clientId: id.optional(),
   sellerId: id.optional(),
+  /** Only the sales of this user's team (himself and his subtree), as on the dashboard (phase 33). */
+  teamOf: id.optional(),
+  /** Only documents with a line of this brand (phase 33, the dashboard's brand filter). */
+  brandId: id.optional(),
   /** Only this dépôt (phase 24); one outside the user's reach gives nothing. */
   warehouseId: id.optional(),
   /** Only BLs not yet grouped in a facture. */

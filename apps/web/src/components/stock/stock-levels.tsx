@@ -14,8 +14,17 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-import { Feature, formatDA, Permission, qty, type StockLevelDto } from '@erp/shared';
+import { z } from 'zod';
+import {
+  Feature,
+  formatDA,
+  Permission,
+  qty,
+  type StockLevelDto,
+  stockListQuerySchema,
+} from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
+import { type FilterChip, FilterChips } from '@/components/shared/filter-chips';
 import { PageHeader } from '@/components/shared/page-header';
 import { Amount } from '@/components/shared/amount';
 import { DataTable } from '@/components/table/data-table';
@@ -37,6 +46,7 @@ import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { formatQty, usePackagingLabel, useStockPages, useWarehouses } from '@/lib/stock';
 import { useUnitLabel } from '@/lib/catalog';
 import { useFeature, usePermission } from '@/lib/auth';
+import { useUrlFilters } from '@/lib/url-filters';
 import { AdjustDialog, OpeningDialog } from './stock-dialogs';
 
 type DialogState = { kind: 'adjust' | 'opening'; level: StockLevelDto } | null;
@@ -53,21 +63,46 @@ function StatusBadge({ level }: { level: StockLevelDto }) {
   return <Badge variant="secondary">{t('ok')}</Badge>;
 }
 
+const STOCK_URL_FILTERS = {
+  level: z.enum(['low', 'out']),
+  warehouseId: stockListQuerySchema.shape.warehouseId,
+  /** Only read to be cleared: the pre-phase-33 links. */
+  filtre: z.enum(['bas', 'rupture']),
+};
+
 export function StockLevels() {
   const t = useTranslations('stock');
   const router = useRouter();
   const unitLabel = useUnitLabel();
   const packagingLabel = usePackagingLabel();
   const [search, setSearch] = useState('');
-  // The dashboard links here with ?filtre=bas or ?filtre=rupture.
-  const filtre = useSearchParams().get('filtre');
-  const [lowOnly, setLowOnly] = useState(filtre === 'bas');
-  const [outOnly, setOutOnly] = useState(filtre === 'rupture');
+  // Phase 33: ?level=low|out and the dépôt live in the URL (the dashboard links here). Old
+  // links with ?filtre=bas|rupture still open the same list.
+  const [url, set] = useUrlFilters(STOCK_URL_FILTERS);
+  const legacy = useSearchParams().get('filtre');
+  const level = url.level || (legacy === 'bas' ? 'low' : legacy === 'rupture' ? 'out' : '');
+  const lowOnly = level === 'low';
+  const outOnly = level === 'out';
+  const setLevel = (value: '' | 'low' | 'out') => set({ level: value, filtre: '' });
   const [dialog, setDialog] = useState<DialogState>(null);
   // Phase 15: one dépôt, or the company with one column per dépôt.
   const warehousesOn = useFeature(Feature.WAREHOUSES);
   const warehouses = useWarehouses();
-  const [warehouseId, setWarehouseId] = useState('');
+  const warehouseId = url.warehouseId;
+  const setWarehouseId = (id: string) => set({ warehouseId: id });
+  const chips: FilterChip[] = [];
+  if (level)
+    chips.push({
+      key: 'level',
+      label: t(lowOnly ? 'lowStockOnly' : 'outOfStockOnly'),
+      onRemove: () => setLevel(''),
+    });
+  if (warehouseId)
+    chips.push({
+      key: 'warehouseId',
+      label: warehouses.data?.find((w) => w.id === warehouseId)?.name ?? t('warehouseFilter'),
+      onRemove: () => setWarehouseId(''),
+    });
   const debounced = useDebouncedValue(search.trim(), 300);
   const pages = useStockPages(debounced, lowOnly, outOnly, warehouseId);
   const depots = useMemo(
@@ -279,6 +314,7 @@ export function StockLevels() {
         ))}
       </div>
 
+      <FilterChips chips={chips} onClear={() => set({ level: '', filtre: '', warehouseId: '' })} />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-md">
           <ScanBarcode
@@ -312,13 +348,21 @@ export function StockLevels() {
             </NativeSelect>
           ) : null}
           <div className="flex items-center gap-2">
-            <Switch id="low-only" checked={lowOnly} onCheckedChange={setLowOnly} />
+            <Switch
+              id="low-only"
+              checked={lowOnly}
+              onCheckedChange={(on) => setLevel(on ? 'low' : '')}
+            />
             <Label htmlFor="low-only" className="font-normal">
               {t('lowStockOnly')}
             </Label>
           </div>
           <div className="flex items-center gap-2">
-            <Switch id="out-only" checked={outOnly} onCheckedChange={setOutOnly} />
+            <Switch
+              id="out-only"
+              checked={outOnly}
+              onCheckedChange={(on) => setLevel(on ? 'out' : '')}
+            />
             <Label htmlFor="out-only" className="font-normal">
               {t('outOfStockOnly')}
             </Label>

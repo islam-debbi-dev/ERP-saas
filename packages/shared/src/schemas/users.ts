@@ -216,3 +216,13 @@ export interface AuditLogPage {
   items: AuditLogDto[];
   nextCursor: string | null;
 }
+
+/**
+ * PATCH /users/me/dashboard-layout (phase 33.5). Ids are strings here: unknown ones are
+ * dropped when the layout is read (normalizeDashboardLayout), never refused.
+ */
+export const dashboardLayoutInputSchema = z.object({
+  order: z.array(z.string().max(40)).max(50),
+  hidden: z.array(z.string().max(40)).max(50),
+});
+export type DashboardLayoutInput = z.infer<typeof dashboardLayoutInputSchema>;

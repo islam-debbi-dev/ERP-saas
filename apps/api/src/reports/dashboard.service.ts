@@ -2,13 +2,23 @@ import { Injectable } from '@nestjs/common';
 import {
   addDays,
   algiersDay,
+  changePercent,
+  chartBuckets,
   type DashboardDto,
+  type DashboardPeriod,
+  type DashboardPeriodRange,
+  type DashboardTopDto,
+  pickGreetingFact,
+  salesTargetProgress,
   monthToDate,
   money,
   type Money,
   netResult,
   Permission,
+  previousBucket,
   previousMonthToDate,
+  qty,
+  resolveDashboardPeriod,
   Role,
   type SalesFigure,
   toMoneyString,
@@ -29,6 +39,11 @@ import { TreasuryService } from '../treasury/treasury.service';
 import { algiersDayOf, saleDocumentFacts, saleLineFacts, type Scope } from './reports-sql';
 
 const TOP_DEBTORS = 10;
+/** Rows of each top list (phase 33). */
+const TOP_ROWS = 5;
+/** "Clients qui n'achètent plus": nothing in the last 30 days, something in the 90 before. */
+const DORMANT_RECENT_DAYS = 30;
+const DORMANT_BEFORE_DAYS = 90;
 
 const MANAGERS: readonly Role[] = [Role.OWNER, Role.MANAGER];
 
@@ -68,9 +83,18 @@ export class DashboardService {
       teamOf?: string;
       brandId?: string;
       warehouseId?: string;
+      period?: DashboardPeriod;
+      from?: string;
+      to?: string;
     } = {},
   ): Promise<DashboardDto> {
     const date = filters.date ?? algiersDay();
+    // Phase 33: the period of the figures and the chart (validated by the query schema).
+    const range = resolveDashboardPeriod(
+      filters.period ?? 'month',
+      date,
+      filters.from && filters.to ? { from: filters.from, to: filters.to } : undefined,
+    );
     const manager = MANAGERS.includes(user.role);
     const seesSales = seesSalesFigures(user);
     const seesStock = manager || user.role === Role.STOREKEEPER;
@@ -79,8 +103,9 @@ export class DashboardService {
     const byUnit = warehouseIds
       ? this.clients.creditInWarehouses(warehouseIds, units.defaultWarehouseId, TOP_DEBTORS)
       : null;
-    const [sales, cash, credit, debtors, stock, cheques] = await Promise.all([
-      seesSales ? this.sales(scope, date, seesCost) : null,
+    const cashFor = manager ? { user, warehouseIds } : null;
+    const [sales, cash, credit, debtors, stock, cheques, top] = await Promise.all([
+      seesSales ? this.sales(scope, date, seesCost, range, cashFor) : null,
       manager ? this.payments.summary(date, user, warehouseIds) : null,
       manager ? (byUnit ?? this.clients.creditSummary(TOP_DEBTORS)) : null,
       manager
@@ -90,13 +115,14 @@ export class DashboardService {
         : null,
       seesStock ? this.stock.dashboardSummary(seesCost, warehouseIds) : null,
       manager ? this.aging.dueCheques(date) : null,
+      seesSales ? this.top(scope, range, date) : null,
     ]);
-    // Phase 26: résultat net of the month = marge − charges (phase 25), same dépôts.
+    // Phase 26: résultat net of the period = marge − charges (phase 25), same dépôts.
     const margin = sales?.margin ?? null;
     const charges =
       manager && margin !== null && (await this.scopes.expensesOn(scope.tenantId))
         ? await this.charges.report(
-            { from: monthToDate(date).from, to: date, warehouseId: filters.warehouseId },
+            { from: range.from, to: range.to, warehouseId: filters.warehouseId },
             user,
           )
         : null;
@@ -104,8 +130,29 @@ export class DashboardService {
     const treasury = (await this.scopes.treasuryOn(scope.tenantId))
       ? await this.treasury.balancesFor(user, warehouseIds, await this.mainId(units))
       : null;
+    const filtered = Boolean(filters.sellerId || filters.teamOf || filters.brandId);
+    const goal =
+      manager && sales && !filtered
+        ? (
+            await this.prisma.db.tenant.findUnique({
+              where: { id: scope.tenantId },
+              select: { monthlySalesTarget: true },
+            })
+          )?.monthlySalesTarget
+        : null;
+    const greeting = pickGreetingFact({
+      chequesDueToday: cheques
+        ? cheques.client.items.filter((c) => c.dueDate === date).length
+        : null,
+      monthDays: sales?.perDay ?? [],
+      today: date,
+      monthChangePct: sales ? changePercent(sales.month.ttc, sales.previousMonth.ttc) : null,
+      overLimitCount: credit?.overLimitCount ?? null,
+    });
     return {
       date,
+      target: goal && sales ? salesTargetProgress(goal.toString(), sales.month.ttc, date) : null,
+      greeting,
       sales,
       cash: cash ? { total: cash.total, byMode: cash.byMode } : null,
       treasury,
@@ -125,6 +172,7 @@ export class DashboardService {
         charges && margin !== null && result !== null
           ? { margin, charges: charges.total, result }
           : null,
+      top,
     };
   }
 
@@ -191,11 +239,15 @@ export class DashboardService {
     scope: Scope,
     date: string,
     withMargin: boolean,
+    range: DashboardPeriodRange,
+    cashFor: { user: CurrentUserInfo; warehouseIds: string[] | null } | null,
   ): Promise<NonNullable<DashboardDto['sales']>> {
     const month = monthToDate(date);
-    const previous = previousMonthToDate(date);
-    // One pass from the 1st of last month to today; days are split in code.
-    const { start, end } = algiersRange(previous.from, date);
+    const previousMonth = previousMonthToDate(date);
+    // One pass over every day any figure needs; days are split in code.
+    const from = [previousMonth.from, range.previousFrom].sort()[0]!;
+    const to = [date, range.to].sort().at(-1)!;
+    const { start, end } = algiersRange(from, to);
     const rows = await this.prisma.db.$queryRaw<
       { day: string; ttc: Prisma.Decimal; count: bigint }[]
     >`
@@ -220,24 +272,136 @@ export class DashboardService {
     for (let day = month.from; day <= date; day = addDays(day, 1)) {
       perDay.push({ date: day, ttc: toMoneyString(byDay.get(day)?.ttc ?? 0) });
     }
+    const [marginByDay, cashByDay] = await Promise.all([
+      withMargin ? this.marginByDay(scope, range.from, range.to) : null,
+      cashFor
+        ? this.payments.collectedByDay(range.from, range.to, cashFor.user, cashFor.warehouseIds)
+        : null,
+    ]);
+    const sumIn = (m: Map<string, string>, from: string, to: string): string => {
+      let sum = money(0);
+      for (const [day, v] of m) if (day >= from && day <= to) sum = sum.plus(v);
+      return toMoneyString(sum);
+    };
+    const current = total(range.from, range.to);
+    const previous = total(range.previousFrom, range.previousTo);
     return {
       today: total(date, date),
       month: total(month.from, month.to),
-      previousMonth: total(previous.from, previous.to),
+      previousMonth: total(previousMonth.from, previousMonth.to),
       perDay,
-      margin: withMargin ? await this.margin(scope, month.from, date) : null,
+      margin: marginByDay ? sumIn(marginByDay, range.from, range.to) : null,
+      period: range,
+      current,
+      previous,
+      changePct: changePercent(current.ttc, previous.ttc),
+      series: chartBuckets(range).map((b) => {
+        const prev = previousBucket(range, b);
+        const figure = total(b.from, b.to);
+        return {
+          from: b.from,
+          to: b.to,
+          ttc: figure.ttc,
+          count: figure.count,
+          cash: cashByDay ? sumIn(cashByDay, b.from, b.to) : null,
+          margin: marginByDay ? sumIn(marginByDay, b.from, b.to) : null,
+          previousTtc: total(prev.from, prev.to).ttc,
+        };
+      }),
     };
   }
 
-  private async margin(scope: Scope, from: string, to: string): Promise<string> {
+  /** Marge (net HT − cost at sale) per Algiers day. */
+  private async marginByDay(scope: Scope, from: string, to: string): Promise<Map<string, string>> {
     const { start, end } = algiersRange(from, to);
-    const [row] = await this.prisma.db.$queryRaw<
-      { net: Prisma.Decimal | null; cost: Prisma.Decimal | null }[]
+    const rows = await this.prisma.db.$queryRaw<
+      { day: string; net: Prisma.Decimal; cost: Prisma.Decimal }[]
     >`
-      SELECT SUM(f.ht - f."retHt") AS net, SUM(f.cost) AS cost
-      FROM (${saleLineFacts(scope, start, end)}) f`;
-    const net = money(row?.net?.toString() ?? '0');
-    const cost = money(row?.cost?.toString() ?? '0');
-    return toMoneyString(net.minus(cost));
+      SELECT ${algiersDayOf('f.at')} AS day, SUM(f.ht - f."retHt") AS net, SUM(f.cost) AS cost
+      FROM (${saleLineFacts(scope, start, end)}) f
+      GROUP BY 1`;
+    return new Map(
+      rows.map((r) => [r.day, toMoneyString(money(r.net.toString()).minus(r.cost.toString()))]),
+    );
+  }
+
+  /**
+   * Top products and clients of the period, and the clients who stopped buying: a sale in
+   * the 90 days before the last 30, none in the last 30 (fixed windows, as of `date`).
+   */
+  private async top(
+    scope: Scope,
+    range: DashboardPeriodRange,
+    date: string,
+  ): Promise<DashboardTopDto> {
+    const { start, end } = algiersRange(range.from, range.to);
+    const dormantFrom = addDays(date, -(DORMANT_RECENT_DAYS + DORMANT_BEFORE_DAYS) + 1);
+    const recentFrom = addDays(date, -DORMANT_RECENT_DAYS + 1);
+    const span = algiersRange(dormantFrom, date);
+    const recentStart = algiersRange(recentFrom, recentFrom).start;
+    const [products, clients, dormant] = await Promise.all([
+      this.prisma.db.$queryRaw<
+        {
+          id: string;
+          designation: string;
+          unit: string;
+          qty: Prisma.Decimal;
+          ttc: Prisma.Decimal;
+        }[]
+      >`
+        SELECT p.id, p.designation, u.code AS unit, SUM(f.qty) AS qty, SUM(f.ttc - f."retTtc") AS ttc
+        FROM (${saleLineFacts(scope, start, end)}) f
+        JOIN products p ON p.id = f."productId"
+        JOIN units u ON u.id = p."baseUnitId"
+        GROUP BY p.id, p.designation, u.code
+        HAVING SUM(f.ttc - f."retTtc") > 0
+        ORDER BY 5 DESC, p.id
+        LIMIT ${TOP_ROWS}`,
+      this.prisma.db.$queryRaw<{ id: string; name: string; ttc: Prisma.Decimal; count: bigint }[]>`
+        SELECT c.id, c.name, SUM(f.ttc - f."retTtc") AS ttc, SUM(f.docs) AS count
+        FROM (${saleDocumentFacts(scope, start, end)}) f
+        JOIN clients c ON c.id = f."clientId"
+        GROUP BY c.id, c.name
+        HAVING SUM(f.ttc - f."retTtc") > 0
+        ORDER BY 3 DESC, c.id
+        LIMIT ${TOP_ROWS}`,
+      this.prisma.db.$queryRaw<
+        { id: string; name: string; before: Prisma.Decimal; last: string }[]
+      >`
+        SELECT c.id, c.name,
+               SUM(f.ttc - f."retTtc") FILTER (WHERE f.at < ${recentStart}) AS before,
+               ${algiersDayOf('MAX(f.at) FILTER (WHERE f.docs > 0)')} AS last
+        FROM (${saleDocumentFacts(scope, span.start, span.end)}) f
+        JOIN clients c ON c.id = f."clientId"
+        WHERE c."deletedAt" IS NULL
+        GROUP BY c.id, c.name
+        HAVING SUM(f.docs) FILTER (WHERE f.at < ${recentStart}) > 0
+           AND COALESCE(SUM(f.docs) FILTER (WHERE f.at >= ${recentStart}), 0) = 0
+           AND SUM(f.ttc - f."retTtc") FILTER (WHERE f.at < ${recentStart}) > 0
+        ORDER BY 3 DESC, c.id
+        LIMIT ${TOP_ROWS}`,
+    ]);
+    return {
+      products: products.map((r) => ({
+        id: r.id,
+        designation: r.designation,
+        unit: r.unit,
+        qty: qty(r.qty.toString()).toFixed(3),
+        ttc: toMoneyString(r.ttc.toString()),
+      })),
+      clients: clients.map((r) => ({
+        id: r.id,
+        name: r.name,
+        ttc: toMoneyString(r.ttc.toString()),
+        count: Number(r.count),
+      })),
+      dormant: dormant.map((r) => ({
+        id: r.id,
+        name: r.name,
+        // 90 days ≈ 3 months.
+        monthly: toMoneyString(money(r.before.toString()).div(DORMANT_BEFORE_DAYS / 30)),
+        lastSale: r.last,
+      })),
+    };
   }
 }

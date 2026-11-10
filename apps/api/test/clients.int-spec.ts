@@ -309,6 +309,28 @@ describe('clients', () => {
       ),
     ).toEqual([owes.id]);
 
+    // Phase 33: the dashboard's crédit card opens the list by balance, biggest first, and the
+    // cursor walks that order without repeating or skipping anyone.
+    expect(await list('&sort=balance_desc')).toEqual([owes.id, over.id, credit.id]);
+    const first = (
+      await as(a)
+        .get(`/clients?search=${encodeURIComponent(tag)}&sort=balance_desc&limit=1`)
+        .expect(200)
+    ).body as ClientPage;
+    const second = (
+      await as(a)
+        .get(
+          `/clients?search=${encodeURIComponent(tag)}&sort=balance_desc&limit=2&cursor=${first.nextCursor}`,
+        )
+        .expect(200)
+    ).body as ClientPage;
+    expect([...first.items, ...second.items].map((c) => c.id)).toEqual([
+      owes.id,
+      over.id,
+      credit.id,
+    ]);
+    await as(a).get('/clients?sort=oldest').expect(400);
+
     const debtors = (await as(a).get('/clients/debtors?limit=100').expect(200)).body as DebtorDto[];
     expect(debtors[0]?.id).toBe(owes.id);
     expect(debtors.map((d) => d.id)).not.toContain(credit.id);

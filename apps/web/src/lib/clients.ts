@@ -12,6 +12,8 @@ export interface ClientFilters {
   /** Sales force (phase 14): '' = any. */
   sectorId?: string;
   assignedSellerId?: string;
+  /** Who owes the most first (the dashboard's crédit card, phase 33). */
+  sort?: 'balance_desc';
 }
 
 export const clientKeys = {
@@ -33,6 +35,7 @@ export function useClientPages(filters: ClientFilters) {
       if (filters.overLimit) params.set('overLimit', 'true');
       if (filters.sectorId) params.set('sectorId', filters.sectorId);
       if (filters.assignedSellerId) params.set('assignedSellerId', filters.assignedSellerId);
+      if (filters.sort) params.set('sort', filters.sort);
       if (pageParam) params.set('cursor', pageParam);
       return api.request<ClientPage>(`/clients?${params.toString()}`, { signal });
     },

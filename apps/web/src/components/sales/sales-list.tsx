@@ -8,8 +8,14 @@ import { useRouter } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { type SaleResultDto, type SaleSummaryDto } from '@erp/shared';
+import {
+  type ClientDto,
+  saleListQuerySchema,
+  type SaleResultDto,
+  type SaleSummaryDto,
+} from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
+import { type FilterChip, FilterChips } from '@/components/shared/filter-chips';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/table/data-table';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +27,8 @@ import { api } from '@/lib/api-client';
 import { useClientPages } from '@/lib/clients';
 import { todayInAlgiers } from '@/lib/purchases';
 import { type SaleFilters, saleKeys, useSalePages } from '@/lib/sales';
+import { useBrands, useSellers } from '@/lib/sales-force';
+import { type UrlFilters, useUrlFilters } from '@/lib/url-filters';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { SaleStatusBadge } from './sale-status-badge';
 import { Amount } from '@/components/shared/amount';
@@ -29,24 +37,87 @@ import { Amount } from '@/components/shared/amount';
 const invoiceable = (s: SaleSummaryDto) =>
   s.type === 'BL' && s.status === 'VALIDATED' && !s.invoice && s.client !== null;
 
+const q = saleListQuerySchema.shape;
+const SALE_URL_FILTERS = {
+  type: q.type,
+  status: q.status,
+  clientId: q.clientId,
+  from: q.from,
+  to: q.to,
+  sellerId: q.sellerId,
+  teamOf: q.teamOf,
+  brandId: q.brandId,
+};
+type SaleUrlFilters = UrlFilters<typeof SALE_URL_FILTERS>;
+const NO_SALE_FILTERS: SaleUrlFilters = {
+  type: '',
+  status: '',
+  clientId: '',
+  from: '',
+  to: '',
+  sellerId: '',
+  teamOf: '',
+  brandId: '',
+};
+
+/** One removable chip per active filter; names come from lists already loaded. */
+function useSaleChips(
+  f: SaleUrlFilters,
+  set: (patch: Partial<SaleUrlFilters>) => void,
+  clients: ClientDto[],
+): FilterChip[] {
+  const t = useTranslations('sales');
+  const td = useTranslations('dashboard');
+  const format = useFormatter();
+  const sellers = useSellers();
+  const brands = useBrands();
+  const userName = (id: string) => sellers.data?.find((u) => u.id === id)?.fullName ?? '…';
+  const day = (iso: string) =>
+    format.dateTime(new Date(`${iso}T12:00:00Z`), { day: 'numeric', month: 'short' });
+  const chips: FilterChip[] = [];
+  const add = (key: keyof SaleUrlFilters, label: string) =>
+    chips.push({ key, label, onRemove: () => set({ [key]: '' }) });
+  if (f.type) add('type', t(`type${f.type as 'BL' | 'FACTURE'}`));
+  if (f.status) add('status', t(`status${f.status as 'DRAFT' | 'VALIDATED' | 'CANCELLED'}`));
+  if (f.clientId) add('clientId', clients.find((c) => c.id === f.clientId)?.name ?? t('client'));
+  if (f.from || f.to) {
+    chips.push({
+      key: 'period',
+      label:
+        f.from && f.to && f.from === f.to
+          ? day(f.from)
+          : td('chipPeriod', { from: f.from ? day(f.from) : '…', to: f.to ? day(f.to) : '…' }),
+      onRemove: () => set({ from: '', to: '' }),
+    });
+  }
+  if (f.sellerId) add('sellerId', td('chipSeller', { name: userName(f.sellerId) }));
+  if (f.teamOf) add('teamOf', td('chipTeam', { name: userName(f.teamOf) }));
+  if (f.brandId)
+    add(
+      'brandId',
+      td('chipBrand', { name: brands.data?.find((b) => b.id === f.brandId)?.name ?? '…' }),
+    );
+  return chips;
+}
+
 export function SalesList() {
   const t = useTranslations('sales');
   const format = useFormatter();
   const router = useRouter();
   const errorMessage = useErrorMessage();
   const queryClient = useQueryClient();
-  const [filters, setFilters] = useState<SaleFilters>({
-    type: '',
-    status: '',
-    clientId: '',
-    from: '',
-    to: '',
-  });
+  // Phase 33: the filters live in the URL (the dashboard links here already filtered).
+  const [url, set] = useUrlFilters(SALE_URL_FILTERS);
+  const filters: SaleFilters = {
+    ...url,
+    type: url.type as SaleFilters['type'],
+    status: url.status as SaleFilters['status'],
+  };
   const [selected, setSelected] = useState<Map<string, SaleSummaryDto>>(new Map());
   const pages = useSalePages(filters);
   const clients = useClientPages({ search: '', hasDebt: false, overLimit: false });
   const items = useMemo(() => pages.data?.pages.flatMap((p) => p.items) ?? [], [pages.data]);
-  const set = (patch: Partial<SaleFilters>) => setFilters((f) => ({ ...f, ...patch }));
+  const chips = useSaleChips(url, set, clients.data?.pages[0]?.items ?? []);
   const picked = [...selected.values()];
   const sameClient = new Set(picked.map((s) => s.client?.id)).size === 1;
 
@@ -198,6 +269,7 @@ export function SalesList() {
           </>
         }
       />
+      <FilterChips chips={chips} onClear={() => set(NO_SALE_FILTERS)} />
       {picked.length > 0 && !sameClient ? (
         <p role="status" className="text-sm text-destructive">
           {t('sameClientOnly')}
@@ -209,7 +281,7 @@ export function SalesList() {
           <NativeSelect
             id="f-type"
             value={filters.type}
-            onChange={(e) => set({ type: e.target.value as SaleFilters['type'] })}
+            onChange={(e) => set({ type: e.target.value })}
           >
             <option value="">{t('allTypes')}</option>
             <option value="BL">{t('typeBL')}</option>
@@ -221,7 +293,7 @@ export function SalesList() {
           <NativeSelect
             id="f-status"
             value={filters.status}
-            onChange={(e) => set({ status: e.target.value as SaleFilters['status'] })}
+            onChange={(e) => set({ status: e.target.value })}
           >
             <option value="">{t('allStatuses')}</option>
             <option value="DRAFT">{t('statusDRAFT')}</option>

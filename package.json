@@ -14,7 +14,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:migrate": "pnpm --filter @erp/api db:migrate",
-    "db:seed": "pnpm --filter @erp/api db:seed"
+    "db:seed": "pnpm --filter @erp/api db:seed",
+    "db:seed:activity": "pnpm --filter @erp/api db:seed:activity"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -26,6 +26,7 @@ const valid = {
   timbreMax: null,
   timbreThreshold: null,
   cashCountAlertThreshold: '5000.00',
+  monthlySalesTarget: null,
   defaultPrintFormat: 'A4',
   documentFooter: null,
   tvaMention: 'Non assujetti à la TVA',

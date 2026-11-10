@@ -23,15 +23,17 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { useAuth, useFeatures } from '@/lib/auth';
-import { useHasOverview } from '@/lib/overview';
+import { useAuth } from '@/lib/auth';
+import { useVisibleTodo } from '@/lib/todo';
 import { tutorials, whatsappLink } from '@/lib/support';
-import { isActive, type NavItem, visibleNavGroups } from './navigation';
+import { isActive, type NavItem } from './navigation';
+import { useVisibleNavGroups } from './use-visible-nav';
 
 /**
  * Alt + 1…9 jumps to a module, in the order of the visible menu. Uses `code` so it works
@@ -57,28 +59,7 @@ export function AppSidebar() {
   const t = useTranslations();
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
-  const features = useFeatures();
-  const user = useAuth().state.user;
-  const role = user?.role;
-  const permissions = user?.permissions;
-  // The Vue d'ensemble only for a user with more than one dépôt (phase 26).
-  const hasOverview = useHasOverview() === true;
-  // "Mon pointage" only for a user with an employee file (phase 31).
-  const hasEmployeeFile = Boolean(user?.employeeId);
-  const groups = useMemo(
-    () =>
-      visibleNavGroups(features, undefined, role, permissions)
-        .map((g) => ({
-          ...g,
-          items: g.items.filter(
-            (i) =>
-              (i.key !== 'overview' || hasOverview) &&
-              ((i.key !== 'myAttendance' && i.key !== 'myPayslips') || hasEmployeeFile),
-          ),
-        }))
-        .filter((g) => g.items.length > 0),
-    [features, role, permissions, hasOverview, hasEmployeeFile],
-  );
+  const groups = useVisibleNavGroups();
   const items = useMemo(() => groups.flatMap((g) => g.items), [groups]);
   useNavShortcuts(items);
 
@@ -127,6 +108,7 @@ export function AppSidebar() {
                           <span className="truncate">{label}</span>
                         </Link>
                       </SidebarMenuButton>
+                      {item.key === 'dashboard' ? <TodoBadge /> : null}
                     </SidebarMenuItem>
                   );
                 })}
@@ -143,6 +125,21 @@ export function AppSidebar() {
 
       <SidebarRail />
     </Sidebar>
+  );
+}
+
+/** How many "À faire" items are left today (phase 33), on the Tableau de bord item. */
+function TodoBadge() {
+  const t = useTranslations('dashboard');
+  const { count } = useVisibleTodo();
+  if (count === 0) return null;
+  return (
+    <SidebarMenuBadge className="bg-primary text-primary-foreground peer-hover/menu-button:text-primary-foreground peer-data-[active=true]/menu-button:text-primary-foreground">
+      <span aria-hidden className="num">
+        {count > 9 ? '9+' : count}
+      </span>
+      <span className="sr-only">{t('todoBadge', { count })}</span>
+    </SidebarMenuBadge>
   );
 }
 

@@ -5,7 +5,8 @@ import {
   type UpdateTenantSettingsInput,
   updateTenantSettingsSchema,
 } from '@erp/shared';
-import { RequirePermission } from '../auth/decorators';
+import type { CurrentUserInfo } from '../auth/auth.types';
+import { CurrentUser, RequirePermission } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { TenantsService } from './tenants.service';
 
@@ -22,7 +23,8 @@ export class TenantsController {
   @RequirePermission(Permission.SETTINGS_EDIT)
   update(
     @Body(new ZodValidationPipe(updateTenantSettingsSchema)) body: UpdateTenantSettingsInput,
+    @CurrentUser() user: CurrentUserInfo,
   ): Promise<TenantSettingsResponse> {
-    return this.tenants.updateSettings(body);
+    return this.tenants.updateSettings(body, user);
   }
 }

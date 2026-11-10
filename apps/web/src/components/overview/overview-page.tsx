@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowDownUp, ChevronRight, Download, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { type ReactNode, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -12,6 +12,7 @@ import {
   type OverviewFigures,
   type OverviewPeriod,
   OVERVIEW_PERIODS,
+  overviewQuerySchema,
   type OverviewWarehouse,
   periodRange,
   Permission,
@@ -48,14 +49,25 @@ export function OverviewPage() {
   );
 }
 
+/** A valid ?from=&to= range (at most a year), or null: a bad link opens the month. */
+function linkedRange(from: string | null, to: string | null): DayRange | null {
+  const parsed = overviewQuerySchema.safeParse({ from, to });
+  return parsed.success ? parsed.data : null;
+}
+
 function Overview() {
   const t = useTranslations('overview');
   const format = useFormatter();
   const errorMessage = useErrorMessage();
   const allowed = usePermission(Permission.REPORTS_FINANCE);
   const canExport = usePermission(Permission.EXPORT_DATA);
-  const [period, setPeriod] = useState<OverviewPeriod>('month');
-  const [custom, setCustom] = useState<DayRange>(() => periodRange('month', todayInAlgiers()));
+  // Phase 33: the dashboard opens this page on its period with ?from=&to= (read once).
+  const params = useSearchParams();
+  const linked = linkedRange(params.get('from'), params.get('to'));
+  const [period, setPeriod] = useState<OverviewPeriod>(linked ? 'custom' : 'month');
+  const [custom, setCustom] = useState<DayRange>(
+    () => linked ?? periodRange('month', todayInAlgiers()),
+  );
   const [view, setView] = useState<View>('cards');
   const [exporting, setExporting] = useState(false);
   const range = period === 'custom' ? custom : periodRange(period, todayInAlgiers());

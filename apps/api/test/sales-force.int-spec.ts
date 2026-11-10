@@ -647,6 +647,13 @@ describe('sales force: sellers, teams, brands, sectors (phase 14)', () => {
       );
       const team = await reportRows(d, 'seller', `&teamOf=${sup.user.id}`);
       expect(team.map((r) => r.key).sort()).toEqual([s1.user.id, s2.user.id].sort());
+      // Phase 33: the dashboard's team filter carries over to the sales list.
+      const listed = (await as(d).get(`/sales?teamOf=${sup.user.id}&limit=100`).expect(200))
+        .body as SalePage;
+      expect(listed.items.map((s) => s.id)).toContain(sale2.id);
+      expect(listed.items.every((s) => [s1.user.id, s2.user.id].includes(s.seller?.id ?? ''))).toBe(
+        true,
+      );
     });
 
     it('a seller cannot move his client to another seller', async () => {
@@ -773,6 +780,15 @@ describe('sales force: sellers, teams, brands, sectors (phase 14)', () => {
       sales: { today: { ttc: string; count: number } };
     };
     expect(dash.sales.today).toEqual({ ttc: '238.00', count: 1 });
+    // Phase 33: the sales list keeps the documents with a line of that brand only.
+    const onlyPlain = (await quick(d, plain).expect(201)).body as SaleResultDto;
+    const listed = (await as(d).get(`/sales?brandId=${brand.id}&limit=100`).expect(200))
+      .body as SalePage;
+    expect(listed.items).toHaveLength(1);
+    expect(listed.items[0]!.id).not.toBe(onlyPlain.sale.id);
+    // Another tenant's brand id finds nothing.
+    const other = (await as(e).get(`/sales?brandId=${brand.id}`).expect(200)).body as SalePage;
+    expect(other.items).toEqual([]);
   });
 
   // ---------------------------------------------------------------- import

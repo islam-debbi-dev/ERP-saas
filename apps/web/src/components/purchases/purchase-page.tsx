@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { z } from 'zod';
 import { type ProductDto, type PurchaseDto, qty, type TenantSettingsResponse } from '@erp/shared';
 import { PageHeader } from '@/components/shared/page-header';
 import { PrintButton } from '@/components/shared/print-button';
@@ -35,12 +36,27 @@ function useDraftProducts(purchase: PurchaseDto | undefined) {
   });
 }
 
+const uuid = z.uuid();
+function linkedIds(params: { get(key: string): string | null }) {
+  const valid = (v: string | null) => (v && uuid.safeParse(v).success ? v : '');
+  return { supplierId: valid(params.get('supplierId')), productId: valid(params.get('productId')) };
+}
+
 export function PurchasePage({ id }: { id: string | null }) {
   const t = useTranslations('purchases');
   const errorMessage = useErrorMessage();
   const purchase = usePurchase(id ?? '');
+  const params = useSearchParams();
   // A new BR opened from a dossier d'importation joins it (phase 22).
-  const fromFile = useSearchParams().get('dossier') ?? '';
+  const fromFile = params.get('dossier') ?? '';
+  // Phase 33: "Commander" on the dashboard opens a new BR with the product and its usual
+  // supplier (read once; the user still confirms). An invalid id is ignored.
+  const prefill = id === null ? linkedIds(params) : { supplierId: '', productId: '' };
+  const prefillProduct = useQuery({
+    queryKey: ['products', prefill.productId],
+    queryFn: () => api.request<ProductDto>(`/products/${prefill.productId}`),
+    enabled: prefill.productId !== '',
+  });
   const settings = useQuery({
     queryKey: ['tenant-settings'],
     queryFn: () => api.request<TenantSettingsResponse>('/tenant/settings'),
@@ -78,7 +94,11 @@ export function PurchasePage({ id }: { id: string | null }) {
       </>
     );
   }
-  const loading = !settings.data || !levels.data || (id !== null && (!p || !products.data));
+  const loading =
+    !settings.data ||
+    !levels.data ||
+    (id !== null && (!p || !products.data)) ||
+    (prefill.productId !== '' && prefillProduct.isPending);
   if (loading) {
     return (
       <>
@@ -98,6 +118,19 @@ export function PurchasePage({ id }: { id: string | null }) {
       </>
     );
   }
+  const linked = prefillProduct.data;
+  const prefilled: EditorLine[] =
+    !p && linked
+      ? [
+          {
+            key: `prefill:${linked.id}`,
+            product: linked,
+            unitId: linked.units.find((u) => u.isDefaultPurchase)?.unitId ?? linked.baseUnitId,
+            qty: '1',
+            unitCost: '',
+          },
+        ]
+      : [];
   const initialLines: EditorLine[] = (p?.lines ?? []).flatMap((l) => {
     const product = products.data?.get(l.productId);
     return product
@@ -119,9 +152,9 @@ export function PurchasePage({ id }: { id: string | null }) {
       <PurchaseEditor
         key={p ? `${p.id}:${p.version}` : 'new'}
         purchase={p ?? null}
-        initialLines={initialLines}
+        initialLines={p ? initialLines : prefilled}
         initialHeader={{
-          supplierId: p?.supplier.id ?? '',
+          supplierId: p?.supplier.id ?? prefill.supplierId,
           documentDate: p?.documentDate ?? todayInAlgiers(),
           supplierRef: p?.supplierRef ?? '',
           warehouseId: p?.warehouse?.id ?? '',

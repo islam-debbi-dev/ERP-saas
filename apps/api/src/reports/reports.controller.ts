@@ -18,6 +18,7 @@ import {
   type DashboardDto,
   type DashboardQuery,
   dashboardQuerySchema,
+  type DashboardTodoDto,
   Feature,
   type OnboardingStatus,
   type OverviewDto,
@@ -41,6 +42,7 @@ import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { AgingService } from '../credit/aging.service';
 import { TenantsService } from '../tenants/tenants.service';
 import { DashboardService } from './dashboard.service';
+import { TodoService } from './todo.service';
 import { OnboardingService } from './onboarding.service';
 import { ChargesService } from '../expenses/charges.service';
 import { agingFileName, buildAgingXlsx } from './aging-xlsx';
@@ -74,6 +76,7 @@ export class DashboardController {
     private readonly dashboard: DashboardService,
     private readonly onboarding: OnboardingService,
     private readonly tenants: TenantsService,
+    private readonly todos: TodoService,
   ) {}
 
   @Get()
@@ -82,6 +85,12 @@ export class DashboardController {
     @CurrentUser() user: CurrentUserInfo,
   ): Promise<DashboardDto> {
     return this.dashboard.get(user, query);
+  }
+
+  /** "À faire aujourd'hui" (phase 33): same roles as the dashboard, ranked, capped. */
+  @Get('todo')
+  todo(@CurrentUser() user: CurrentUserInfo): Promise<DashboardTodoDto> {
+    return this.todos.get(user);
   }
 
   /** The first-week checklist, for the people who set the company up. */

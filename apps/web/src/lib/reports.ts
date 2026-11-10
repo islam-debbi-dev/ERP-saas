@@ -1,7 +1,13 @@
 'use client';
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import type { DashboardDto, ReportDto, ReportGroupBy, ReportName } from '@erp/shared';
+import type {
+  DashboardDto,
+  DashboardPeriod,
+  ReportDto,
+  ReportGroupBy,
+  ReportName,
+} from '@erp/shared';
 import { api } from './api-client';
 import { useWarehouseFilter } from './warehouse-scope';
 
@@ -26,8 +32,18 @@ export interface FigureFilters {
 
 export const NO_FIGURE_FILTERS: FigureFilters = { sellerId: '', teamOf: '', brandId: '' };
 
+/** The dashboard's period (phase 33); `from` / `to` only for `custom`. */
+export interface DashboardPeriodQuery {
+  period: DashboardPeriod;
+  from: string;
+  to: string;
+}
+
+export const DEFAULT_PERIOD: DashboardPeriodQuery = { period: 'month', from: '', to: '' };
+
 export const reportKeys = {
-  dashboard: (f: FigureFilters) => ['dashboard', f] as const,
+  dashboard: (f: FigureFilters, p: DashboardPeriodQuery = DEFAULT_PERIOD) =>
+    ['dashboard', f, p] as const,
   report: (p: ReportParams) => ['reports', p] as const,
 };
 
@@ -50,16 +66,29 @@ function reportQuery(p: ReportParams): string {
 }
 
 /** What the user's role sees today (sections the role does not see are null). */
-export function useDashboard(filters: FigureFilters = NO_FIGURE_FILTERS) {
+export function useDashboard(
+  filters: FigureFilters = NO_FIGURE_FILTERS,
+  period: DashboardPeriodQuery = DEFAULT_PERIOD,
+) {
   const warehouseId = useWarehouseFilter();
   return useQuery({
-    queryKey: [...reportKeys.dashboard(filters), warehouseId],
+    queryKey: [...reportKeys.dashboard(filters, period), warehouseId],
     queryFn: ({ signal }) => {
-      const qs = filterParams(new URLSearchParams(), { ...filters, warehouseId }).toString();
+      const params = filterParams(new URLSearchParams(), { ...filters, warehouseId });
+      if (period.period !== 'month') params.set('period', period.period);
+      if (period.period === 'custom') {
+        params.set('from', period.from);
+        params.set('to', period.to);
+      }
+      const qs = params.toString();
       return api.request<DashboardDto>(`/dashboard${qs ? `?${qs}` : ''}`, { signal });
     },
     // Keep the figures while another filter loads.
     placeholderData: keepPreviousData,
+    // Phase 33: alive, but only while the tab is seen.
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
   });
 }
 

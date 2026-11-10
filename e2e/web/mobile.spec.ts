@@ -1361,6 +1361,101 @@ for (const locale of LOCALES) {
     }
   });
 
+  // Phase 33: the morning round with one thumb: look, open the "+" sheet, arrange the
+  // cards with the phone buttons, tap a todo and land on the filled form.
+  test(`the dashboard morning round fits the phone (${locale})`, async ({ browser }, info) => {
+    test.setTimeout(3 * 60_000);
+    const v = ids;
+    if (!v) throw new Error('ids not prepared');
+    const results: Result[] = [];
+    const d = messages(locale)['dashboard'] as Record<string, string>;
+    const context = await browser.newContext({
+      ...info.project.use,
+      storageState: { cookies: [], origins: [] },
+    });
+    try {
+      await context.addCookies([{ name: 'NEXT_LOCALE', value: locale, url: WEB }]);
+      const page = await context.newPage();
+      // One known item, whatever the fixture holds: a client late with his payments.
+      await page.route('**/dashboard/todo', (route) =>
+        route.fulfill({
+          json: {
+            date: today(),
+            total: 1,
+            items: [
+              {
+                key: `CLIENT_LATE:${v.clientId}`,
+                type: 'CLIENT_LATE',
+                id: v.clientId,
+                label: 'Superette El Amel',
+                amount: '1234567.89',
+                limit: null,
+                count: null,
+                date: today(),
+                days: 45,
+                clientId: v.clientId,
+                supplierId: null,
+                productId: null,
+                phone: null,
+                document: null,
+              },
+            ],
+          },
+        }),
+      );
+      await signIn(page, fixture().session.email);
+      if (!page.url().includes('/tableau-de-bord')) {
+        await page.evaluate(() => {
+          (
+            window as unknown as { next: { router: { push(href: string): void } } }
+          ).next.router.push('/tableau-de-bord');
+        });
+        await page.waitForURL((url) => url.pathname === '/tableau-de-bord');
+      }
+      await settle(page);
+      await page.getByRole('heading', { name: d['todoTitle'] }).waitFor();
+      await check(page, '/tableau-de-bord/matin', locale, results);
+
+      await test.step('the "+" opens the quick actions sheet', async () => {
+        await page.getByRole('button', { name: d['quickOpen'] }).click();
+        const sheet = page.getByRole('dialog');
+        await sheet.waitFor();
+        // The sheet slides up: measure it once it is in place.
+        await sheet.evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
+        await expectOnScreen(page, `[role="dialog"] a:has-text("${d['quickNewSale']}")`);
+        await check(page, '/tableau-de-bord/actions', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+        await sheet.waitFor({ state: 'detached' });
+      });
+
+      await test.step('Organiser reorders with the phone buttons', async () => {
+        await page.getByRole('button', { name: d['organise'] }).click();
+        const rows = page.locator('[data-testid="organiser"] li');
+        await expect(rows.first()).toContainText(d['card_todo']!);
+        await page
+          .getByRole('button', { name: d['organiseDown']!.replace('{name}', d['card_todo']!) })
+          .click();
+        await expect(rows.first()).not.toContainText(d['card_todo']!);
+        await check(page, '/tableau-de-bord/organiser', locale, results);
+        // Not saved: the next run starts from the default again.
+        await page.getByRole('button', { name: d['periodCancel'], exact: true }).click();
+      });
+
+      await test.step('a todo button lands on the filled form', async () => {
+        await page.getByRole('link', { name: d['todoAction_versement'], exact: true }).click();
+        await page.waitForURL((url) => url.pathname === '/versements');
+        expect(new URL(page.url()).searchParams.get('clientId')).toBe(v.clientId);
+        const dialog = page.getByRole('dialog');
+        await dialog.waitFor();
+        await dialog.evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
+        await check(page, '/versements/depuis-a-faire', locale, results, { fullPage: false });
+      });
+    } finally {
+      saveResults(info.project.name, `dashboard-${locale}`, results);
+      await context.close();
+    }
+  });
+
   test(`every public screen fits the phone (${locale})`, async ({ browser }, info) => {
     const v = ids;
     if (!v) throw new Error('ids not prepared');

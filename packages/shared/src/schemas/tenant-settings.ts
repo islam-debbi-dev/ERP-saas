@@ -82,6 +82,10 @@ export const tenantSettingsSchema = z.object({
   timbreThreshold: amountString.nullable(),
   /** A comptage de caisse with an écart from this amount up alerts the owner (phase 34). */
   cashCountAlertThreshold: amountString,
+  /** Objectif de ventes TTC du mois (phase 33), shown on the dashboard; null = none. OWNER only. */
+  monthlySalesTarget: amountString
+    .refine((v) => parseDA(v)?.isZero() === false, 'invalid_amount')
+    .nullable(),
   // Printed documents
   defaultPrintFormat: z.enum([PrintFormat.A4, PrintFormat.A5]),
   documentFooter: optionalText(500),
