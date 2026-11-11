@@ -43,6 +43,9 @@ Each phase is one branch, one PR and one Claude Code session. Prompts live in [`
 | 33 | [Tableau de bord interactif](prompts/phase-33-interactive-dashboard.md) | Every figure links to its filtered list, "À faire aujourd'hui" with one-tap actions, period switcher and tappable chart, top lists, auto refresh, monthly goal, per-user card layout | 21, 26 | v1.1 |
 | 34 | [Trésorerie](prompts/phase-34-treasury.md) | Caisses and bank accounts with balances, cash ledger, transfers, comptage, paid-at-reception RGFs, import costs paid now | 21, 22, 24, 25, 31b | v2 |
 | 35 | [Carte des clients](prompts/phase-35-client-map.md) | Map of the clients in the user's scope with filters, "près de moi" by straight-line distance, pick tournée stops on the map, order stops by proximity | 14, 16, 17 | v1.1 |
+| 36 | [Distribution par véhicule](prompts/phase-36-vehicle-first-distribution.md) | Tenant-defined vehicle types and codes, truck identity (wilaya, plate, capacity), driver history, tournées planned per truck, truck frozen on visits and orders | 15, 16, 24 | v2 |
+| 37 | [Statistiques distribution](prompts/phase-37-distribution-statistics.md) | `/statistiques`: one measure / dimension engine, per truck / type / dépôt / wilaya / family / segment, visits funnel, delivery rate, loads, avaries, targets per truck, récap journée véhicule, shadcn charts | 36 | v2 |
+| 38 | [Offres sur mesure](prompts/phase-38-platform-packages.md) | Super-admin package templates (plan + edition + modules + limit overrides + custom price), usage per company, platform overview (MRR), announcements | 13b | v2 |
 
 **MVP = phases 1 to 12b.** Put the pilot grossiste on it after phase 12b (traders open it on their phones); phase 13 can follow during the free pilot month.
 
@@ -98,3 +101,6 @@ Every phase that adds a screen follows [`ui.md`](ui.md): phone first, RTL, Playw
 
 ## Phase 35 (plan of 2026-11-10)
 - The owner wants to see on a map who is near, and to pick a tournée's clients on the map. Read-only map on top of the phase 17 points; stops still saved through `PUT /routes/:id/stops`. No routing API, no new dependency, one additive index (run `db:deploy` on Neon after merge). Prompt: [`phase-35-client-map.md`](prompts/phase-35-client-map.md).
+
+## Phases 36–38 (plan of 2026-11-12)
+- Big distributors follow the **truck**, not the worker (staff turnover). Phase 36 makes the vehicle the unit of distribution (codes and types typed by the company, one responsible driver, history kept), phase 37 builds statistics a director can trust on top of it (one definition per figure, totals that add up, sober shadcn charts, no decorative animation, no paid UI kit), phase 38 gives the super-admin a package per client. Order: 36 → 37 → 38 (structure first, selling later). Each adds an additive migration: run `db:deploy` on Neon after merge.
