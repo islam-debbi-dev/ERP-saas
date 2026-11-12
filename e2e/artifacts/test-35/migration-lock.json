@@ -1,0 +1,44 @@
+{
+  "totals": {
+    "total": 5,
+    "passed": 3,
+    "failed": 0,
+    "blocked": 0,
+    "info": 2
+  },
+  "results": [
+    {
+      "area": "E1 the index migration on a live clients table",
+      "durationMs": 0,
+      "name": "the plain CREATE INDEX takes a SHARE lock: writes wait for the whole build, reads do not",
+      "status": "PASS"
+    },
+    {
+      "area": "E1 the index migration on a live clients table",
+      "durationMs": 0,
+      "name": "on 50 000 rows the writes are blocked for less than one second",
+      "status": "PASS",
+      "actual": "build 45 ms, worst write 45 ms (medians of 3)"
+    },
+    {
+      "area": "E1 the index migration on a live clients table",
+      "durationMs": 0,
+      "name": "on 145000 rows",
+      "status": "INFO",
+      "actual": "build 126 ms, worst write 120 ms"
+    },
+    {
+      "area": "E1 the index migration on a live clients table",
+      "durationMs": 0,
+      "name": "with CONCURRENTLY, for comparison",
+      "status": "INFO",
+      "actual": "build 152 ms, worst write 28 ms, lock modes AccessShareLock, RowExclusiveLock, ShareUpdateExclusiveLock"
+    },
+    {
+      "area": "E1 the index migration on a live clients table",
+      "durationMs": 0,
+      "name": "the index is back exactly as the migration made it",
+      "status": "PASS"
+    }
+  ]
+}

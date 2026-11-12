@@ -14,7 +14,7 @@
 | B. Privacy of the position | done | `test(e2e): phase 35 position privacy checks (part B)` |
 | C. Performance | done | `test(e2e): phase 35 performance measurements (part C)` |
 | D. Web and phone | not started | |
-| E. Upgrade path on Neon | not started | |
+| E. Upgrade path on Neon | done | `test(e2e): phase 35 migration lock check (part E)` |
 | Final report, go / no-go, fix plan | not started | |
 
 To resume: read this table and `git log --oneline origin/main..HEAD`, start the stack (section 2), go on
@@ -31,6 +31,7 @@ tokens are older than 12 h, run `pnpm test:map:seed` again (it makes new tenants
 | B | `e2e/api/map-privacy.ts`, `e2e/sql/map-privacy.sql` | Its own API (pino at `info` into a file, Sentry to a local sink) and a local copy of the Vercel rewrite: the position in the log, in the Sentry payloads, in every column of the database. |
 | C | `e2e/api/map-perf.ts`, `e2e/sql/map-perf-seed.sql` | A second database (`erp_t35_perf`): 20 tenants, 145 000 clients, one tenant with 50 000. The SQL the API really runs, read from the Postgres log, `EXPLAIN (ANALYZE, BUFFERS)` as the API's role and as the owner, statements per request, times, payload. |
 | C | `e2e/web/map-perf.spec.ts` | 360 px, CPU slowed ×4 (and ×8): navigation → 2 000 points drawn, pan, zoom, heap after 20 pans, requests for ten quick pans. |
+| E | `e2e/api/map-index-lock.ts` | The migration's `CREATE INDEX` on a live table: how long client writes wait, on 50 000 and 145 000 rows, with and without `CONCURRENTLY`. Read-only check of the deploy step in the README and the runbook. |
 | B | `e2e/web/position-privacy.spec.ts` | The browser after a "Près de moi" session: storage, URL, cookies, third-party requests, browser Sentry, database. |
 
 Everything runs against the **real** built API and the **real** PostgreSQL, on a local database made
@@ -59,6 +60,8 @@ pnpm test:map:seed     # 4 tenants, 5 000 clients in tenant A
 pnpm test:map:api      # part A
 pnpm test:map:privacy  # part B (starts its own API on :3013; the web must be built with a Sentry DSN, see below)
 DB=postgresql://erp:erp@localhost:5432/erp_t35_perf pnpm test:map:perf   # part C (own database, own API on :3023)
+pnpm test:map:web      # part D (five projects: 360 and 393 px in ar and fr, 1280 px in fr)
+DB=postgresql://erp:erp@localhost:5432/erp_t35_perf pnpm test:map:lock   # part E
 ```
 
 Part C needs `erp_t35_perf`, made like `erp_t35` (createdb, `prisma migrate deploy`, `app-role.sql`). The
@@ -108,6 +111,7 @@ The repository is green before the pass. The findings below are not caught by th
 | B | `web/position-privacy.spec.ts` (m393-fr) | 9 assertions | 8 | **1** | 0 |
 | C | `api/map-perf.ts` | 18 | 10 | **5** | 3 |
 | C | `web/map-perf.spec.ts` (m360-fr) | 7 assertions | 7 | 0 | 0 |
+| E | `api/map-index-lock.ts` | 5 | 3 | 0 | 2 |
 
 The 7 failures of part A are the proofs of findings A-1 (3 checks), A-2, A-4, A-5 and A-6; nothing else fails. A-3 is proven by a proof file, not by a failing check.
 The 9 failures of part B are the proofs of B-1 (6 API checks and the browser assertion) and B-2 (2 checks).
@@ -246,6 +250,40 @@ Local Postgres 16 on the same machine as the API: no network, warm cache. **Thes
 - **Browser, 360 × 640, CPU ×4** (`artifacts/test-35/perf-browser.json`, screenshot `perf-360-2000-points.png`): navigation → 2 000 points drawn **527 ms** (median of 3; 198 ms from the answer to the drawing); pan: worst frame 100 ms, 3 frames over 50 ms; zoom: worst frame 33 to 83 ms; JS heap 23.4 → 31.8 MB after 20 pans with their refetches (no runaway growth; one sample, not a leak hunt). **CPU ×8** (`perf-browser-x8.json`): 1 008 ms to the points, worst pan frame 200 ms. Under the 2 s line of the prompt in both.
 - **Debounce:** ten pans in 2.0 s sent **2** `/clients/map` requests, each with the rounded box.
 
+### Part E
+
+#### E-1 — The deploy step in the README does not say which database it migrates (low)
+
+- **What the README says** (`README.md:110`): "run `pnpm --filter @erp/api db:deploy` on Neon after deploying." The step is there, and the command is the right one (`prisma migrate deploy`, which only applies pending migrations).
+- **What is missing:** `apps/api/prisma.config.ts` reads `DATABASE_URL_MIGRATE ?? DATABASE_URL` from the environment, then from `apps/api/.env`. Typed as written on a developer machine, the command migrates the **local** database of `.env` and prints "All migrations have been successfully applied". Nothing in the README or in `docs/runbook.md` (which covers the VPS, not Neon) says to set `DATABASE_URL_MIGRATE` to Neon's **owner, direct (non-pooler)** string for that one command.
+- **Fix proposal:** write the full line in the README, `DATABASE_URL_MIGRATE='postgresql://<owner>@<neon-direct-host>/<db>?sslmode=require' pnpm --filter @erp/api db:deploy`, and a two-line "Neon" paragraph in the runbook with the check below.
+
+#### Does the migration lock `clients`, and does it matter?
+
+`artifacts/test-35/migration-lock.md`, `pnpm test:map:lock`. A writer updates one client every 3 ms while the exact statement of the migration runs; three runs each.
+
+| Case | Index build | Worst client write during it | Worst read | Lock on the table |
+|---|---|---|---|---|
+| `CREATE INDEX`, 50 000 rows | 44 to 53 ms | 41 to 50 ms | 1 to 9 ms | `ShareLock` |
+| `CREATE INDEX`, 145 000 rows | 109 to 144 ms | 103 to 137 ms | 1 to 18 ms | `ShareLock` |
+| `CREATE INDEX CONCURRENTLY`, 145 000 rows | 146 to 200 ms | 19 to 36 ms | 10 to 13 ms | `ShareUpdateExclusiveLock` |
+
+- **Yes, it locks writes:** the plain `CREATE INDEX` takes a `SHARE` lock; every insert or update of a client waits for the whole build, reads go through.
+- **For how long:** about **50 ms on 50 000 rows** locally. On Neon count a few times that (smaller instance, cold storage): well under a second.
+- **Does it matter for the pilot?** No. A pilot grossiste has a few thousand clients; a write that waits 50 ms is not seen, and no request times out. It would start to matter in the millions of rows; `CONCURRENTLY` is not needed here (and Prisma runs a migration in a transaction, where it is not allowed).
+- **Additive and safe:** one `CREATE INDEX`, no column, no rewrite; the deployed version keeps working without it (and, after C-1, with it).
+
+#### Is `db:deploy` still owed on Neon?
+
+I cannot tell without touching production, which this pass does not do. The route `/clients/map` works without the index, so its behaviour proves nothing either way. **Owner, one read-only check** in the Neon SQL editor:
+
+```sql
+SELECT migration_name, finished_at FROM _prisma_migrations WHERE migration_name = '20261110140000_clients_geo_index';
+SELECT indexname FROM pg_indexes WHERE indexname = 'clients_tenant_geo_idx';
+```
+
+No row = the step is still owed. Given C-1, running it late costs nothing: the API does not use this index.
+
 ## 6. What holds up well
 
 ### Part A
@@ -273,10 +311,14 @@ Local Postgres 16 on the same machine as the API: no network, warm cache. **Thes
 - The 400 ms budget, the 2 s line on a slowed phone, the debounce and the absence of N+1: all met (numbers in section 5, part C).
 - Canvas rendering does its job: 2 000 points cost about 200 ms of main thread at CPU ×4.
 
+### Part E
+
+- The migration is additive, short, and harmless to a live pilot database.
+
 ## 7. Not tested, and why
 
-- Parts D and E: not started yet (see the status table).
 - C: Neon itself. The times are local; the plans are not (same PostgreSQL major version, same role, same RLS policies), so C-1 holds there, but the milliseconds must be read again on Neon by the owner (`EXPLAIN` **as the app role**, not from the console's default role).
 - C: a real cheap Android. CPU ×4 and ×8 on a fast laptop stand in for it; GPU, memory pressure and a real touch screen do not come with the throttle.
+- E: whether the migration has been applied on Neon (see the two queries in part E).
 - B: whether production has a Sentry DSN set, and what its Vercel logs really hold: both need the owner's accounts. The public URL of the **web** project is not in the repo, so the 401 through `/api/…` on production was not checked (the API project was).
 - B: the SSR side of the web (`instrumentation.ts`) never sees the position (the map is client-only), so it was read, not tested.
