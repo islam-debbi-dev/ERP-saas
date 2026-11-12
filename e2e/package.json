@@ -9,7 +9,8 @@
     "test:web": "playwright test --config web/playwright.config.ts",
     "install:browsers": "playwright install chromium",
     "test:map:seed": "tsx api/map-seed.ts",
-    "test:map:api": "tsx api/map-props.ts && tsx api/map.ts"
+    "test:map:api": "tsx api/map-props.ts && tsx api/map.ts",
+    "test:map:privacy": "tsx api/map-privacy.ts; T35_MATCH=position-privacy playwright test --config web/map.playwright.config.ts --project m393-fr"
   },
   "dependencies": {
     "decimal.js": "^10.6.0",

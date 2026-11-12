@@ -11,7 +11,7 @@
 |---|---|---|
 | 0. Baseline and seed | done | `test(e2e): phase 35 baseline and map seed` |
 | A. API correctness | done | `test(e2e): phase 35 map API checks (part A)` |
-| B. Privacy of the position | not started | |
+| B. Privacy of the position | done | `test(e2e): phase 35 position privacy checks (part B)` |
 | C. Performance | not started | |
 | D. Web and phone | not started | |
 | E. Upgrade path on Neon | not started | |
@@ -28,6 +28,8 @@ tokens are older than 12 h, run `pnpm test:map:seed` again (it makes new tenants
 |---|---|---|
 | A | `e2e/api/map.ts` | `/clients/map`, `/clients/nearby`, `GET /clients?hasLocation=`, `PUT /routes/:id/stops`, `RouteDto.start`: scope per role, tenant isolation, filters, cap, hostile input, radius edges, feature gates, concurrency. |
 | A | `e2e/api/map-props.ts` | Property tests of `orderByNearest` and `boundingBox` (`packages/shared/src/geo.ts`). |
+| B | `e2e/api/map-privacy.ts`, `e2e/sql/map-privacy.sql` | Its own API (pino at `info` into a file, Sentry to a local sink) and a local copy of the Vercel rewrite: the position in the log, in the Sentry payloads, in every column of the database. |
+| B | `e2e/web/position-privacy.spec.ts` | The browser after a "Près de moi" session: storage, URL, cookies, third-party requests, browser Sentry, database. |
 
 Everything runs against the **real** built API and the **real** PostgreSQL, on a local database made
 for this pass. No mock, no stub. Expected values come from the spec or from SQL / TypeScript written
@@ -53,7 +55,12 @@ cd e2e && pnpm install
 export API=http://localhost:3003 WEB=http://localhost:3005 DB=postgresql://erp:erp@localhost:5432/erp_t35
 pnpm test:map:seed     # 4 tenants, 5 000 clients in tenant A
 pnpm test:map:api      # part A
+pnpm test:map:privacy  # part B (starts its own API on :3013; the web must be built with a Sentry DSN, see below)
 ```
+
+Part B, browser side: the browser Sentry SDK is on only when the web is **built** with a DSN, as in
+production. Build with `NEXT_PUBLIC_API_URL=http://localhost:3003 NEXT_PUBLIC_SENTRY_DSN=http://t35@localhost:3099/2 pnpm --filter @erp/web build`
+and restart `e2e/map-stack.sh web`. The spec runs the sink on :3099 itself. Parts C and D ran on that same build.
 
 `e2e/map-stack.sh` changes only environment variables: the two rate limits are raised (the suites send
 thousands of requests from one address) and the access token lives 12 h (the login limiter allows ten
@@ -90,8 +97,11 @@ The repository is green before the pass. The findings below are not caught by th
 |---|---|---|---|---|---|
 | A | `api/map-props.ts` | 6 | 6 | 0 | 0 |
 | A | `api/map.ts` | 75 | 64 | **7** | 4 |
+| B | `api/map-privacy.ts` | 26 | 12 | **8** | 6 |
+| B | `web/position-privacy.spec.ts` (m393-fr) | 9 assertions | 8 | **1** | 0 |
 
 The 7 failures of part A are the proofs of findings A-1 (3 checks), A-2, A-4, A-5 and A-6; nothing else fails. A-3 is proven by a proof file, not by a failing check.
+The 9 failures of part B are the proofs of B-1 (6 API checks and the browser assertion) and B-2 (2 checks).
 
 ## 5. Findings
 
@@ -163,6 +173,42 @@ Severity as defined by the prompt. Each proof reruns with the command of its par
 - **An inactive client as a stop:** accepted (200). The spec says "live" only; the map hides inactive clients by default, so the picker cannot add one unless the toggle is on.
 - **Livreur:** see A-1.
 
+### Part B
+
+#### B-1 — The position goes to Sentry, from the API and from the browser (critical)
+
+- **Rule:** spec: the position "is **not stored, not audited, not logged**". Prompt: critical = "the user's position is stored or logged".
+- **What happens**, with Sentry on (`SENTRY_DSN` for the API, `NEXT_PUBLIC_SENTRY_DSN` at web build time), each proven with a fake DSN and a local sink:
+  1. **API traces:** one request in ten (`tracesSampleRate: 0.1`) is sent as a transaction whose attribute `url.full` is `/clients/nearby?lat=36.710137&lng=3.020151&radiusM=5000&limit=30`. Also for the 400 and the 401 answers.
+  2. **API errors:** every 5xx on the route is sent as an event with `request.url` and `request.query_string` = `lat=36.710685&lng=3.020755&…`. Finding A-2 gives such a 500 on demand.
+  3. **Browser:** the SDK keeps each `fetch` as a breadcrumb with its full URL; the next browser error of the session, whatever it is, is sent with `{"category":"fetch","data":{"url":"…/clients/nearby?lat=36.732366&lng=3.088926&radiusM=5000&limit=50"}}`.
+- **Proof:** `pnpm test:map:privacy`: the six failing checks of area B2 and the failing assertion of the browser spec; `artifacts/test-35/privacy-log-and-sentry.md` (table and payload samples), `artifacts/test-35/privacy-browser.json`.
+- **Cause:** `apps/api/src/instrument.ts:6-11` and `apps/web/src/instrumentation-client.ts:13-18` (and `instrumentation.ts` for SSR): `Sentry.init` without `beforeSend`, `beforeSendTransaction` or `beforeBreadcrumb`. The pino scrub (`log-privacy.ts`) covers the log only.
+- **Scope of the damage:** Sentry is a third party, keeps events for weeks, and every member of the Sentry project reads them with the user's id next to them. I could not check whether production has a DSN set (that is a look at the Vercel settings, the owner's to do): if both are empty today, nothing has leaked yet and this is a trap set for the day Sentry is turned on.
+- **Fix proposal:** use `stripPosition` in three hooks: `beforeSendTransaction` and `beforeSend` in the API (scrub `request.url`, `request.query_string`, `url.full`, `http.query`, span data), `beforeBreadcrumb` + `beforeSendTransaction` in the web. Better at the root: send the position in a **POST body** (`POST /clients/nearby`, still read-only), which also answers B-3; the API error events must then drop `request.data` for that route. Tests: a unit test of the scrubber on recorded payloads (take them from the proof file), and `pnpm test:map:privacy` going green.
+
+#### B-2 — The log scrub misses `/clients/nearby/` and `/Clients/Nearby` (medium)
+
+- **Request:** `GET /clients/nearby/?lat=36.710959&lng=3.021057` and `GET /Clients/Nearby?lat=36.711096&lng=3.021208`: Express serves both (200, same handler), and pino logs `"url":"/clients/nearby/?lat=36.710959&lng=3.021057","query":{"lat":"36.710959",…}` at `info`.
+- **Proof:** `pnpm test:map:privacy`, the two failing checks of area B1; samples in `artifacts/test-35/privacy-log-and-sentry.md`.
+- **Cause:** `apps/api/src/common/log-privacy.ts:5`: `/^\/clients\/nearby(?:\?|$)/`, case-sensitive, no optional slash, while Express routing is case-insensitive and not strict.
+- **Why only medium:** the web never spells the route that way (it is logged clean for the real spelling, through the rewrite too, and on 400 / 401 / 500). It bites the day another client does: the Flutter app (phase 19), a proxy that adds a slash, a hand-written request.
+- **Fix proposal:** match what the router matches (`/^\/clients\/nearby\/?(?:\?|$)/i`), or simpler and safer, strip `lat` / `lng` from the logged URL of **every** route. Test: three more cases in `log-privacy.spec.ts` (trailing slash, upper case, `PUBLIC_PATH_PREFIX`).
+
+#### B-3 — Outside the app: the Vercel request logs keep the query string (owner decides)
+
+Not tested on production, read from Vercel's documentation (`vercel.com/docs/logs/runtime`, `vercel.com/docs/drains/reference/logs`, read on 2026-11-12):
+
+- The Logs dashboard has, for every request, a **"Request Path"** field and a **"Search Params"** field ("Search parameters of the request path"). A log drain gets **`proxy.path`: "Request path with query parameters"**.
+- The browser calls the **web** project at `/api/clients/nearby?lat=…&lng=…` (`apps/web/vercel.json`), which Vercel records as an external rewrite (log source `external`, with its `destination`); the **API** project then records the function call `/clients/nearby?lat=…&lng=…`. So the position is written twice, once per project, with the IP and the time. The local copy of the rewrite shows the request line the web project receives (`pnpm test:map:privacy`, area B4).
+- Retention: 1 hour on Hobby, 1 day on Pro, 3 days on Enterprise, 30 days with Observability Plus; for ever in whatever a log drain feeds.
+- **Fix, if the owner wants the position out of there:** the POST body of B-1 (bodies are not in Vercel's request logs), or round the position in the browser to 3 decimals (about 100 m) before sending, which keeps the GET and its cache-free simplicity but only blurs. I would do the POST.
+
+Two more things leave the app by design and are worth knowing, neither a bug:
+
+- **The tile server** sees which tiles the phone loads. After "Près de moi" the map goes to zoom 14 on the user: nine tiles around `14/8332/6392` in the test, a square of about 2.4 km, with the IP. With OpenStreetMap's public tiles that is a third party; a self-hosted `NEXT_PUBLIC_MAP_TILE_URL` ends it.
+- **`/clients/map` logs its view box**, and the view is centred on the user after "Près de moi" (only above 2 000 clients, when the map queries by box).
+
 ## 6. What holds up well
 
 ### Part A
@@ -178,6 +224,15 @@ Severity as defined by the prompt. Each proof reruns with the command of its par
 - **`RouteDto.start`:** right in every case tried but one (A-5); never a deleted dépôt, never another tenant's.
 - **`orderByNearest`:** 800 random sets of 0 to 300 points: always a permutation, unlocated stops last in their order, deterministic, greedy at every step, ties in input order; 300 stops in well under 50 ms. `boundingBox` never left out a point within the radius on 20 000 random draws.
 
+### Part B
+
+- **The pino log is clean for every request the web sends:** direct, with filters, through the `/api` rewrite, and on the 400, the 401 and the 500 answers (the error line of the exception filter is scrubbed too). 1 077 log lines read. The access token never appears (`authorization` is redacted).
+- **Nothing is stored:** after the sessions, no text, numeric or json column of any table holds the coordinates, whole or cut to four decimals (`e2e/sql/map-privacy.sql`); no audit row is written.
+- **The browser keeps nothing:** not in the URL, `localStorage` (one key, `erp_session_hint`), `sessionStorage`, cookies, IndexedDB or Cache Storage; no service worker; no analytics script; the TanStack Query cache is in memory only. The only hosts called besides the app are the tile server and Sentry.
+- **Production** answers 401 to an anonymous `GET /clients/map` and `GET /clients/nearby` on the API project (`erp-saas-pi.vercel.app`). These two requests are the only ones sent to production in this pass.
+
 ## 7. Not tested, and why
 
-- Parts B to E: not started yet (see the status table).
+- Parts C to E: not started yet (see the status table).
+- B: whether production has a Sentry DSN set, and what its Vercel logs really hold: both need the owner's accounts. The public URL of the **web** project is not in the repo, so the 401 through `/api/…` on production was not checked (the API project was).
+- B: the SSR side of the web (`instrumentation.ts`) never sees the position (the map is client-only), so it was read, not tested.

@@ -1,0 +1,42 @@
+{
+  "position": {
+    "latitude": 36.732366,
+    "longitude": 3.088926
+  },
+  "nearby request (allowed by the spec)": "http://localhost:3003/clients/nearby?lat=36.732366&lng=3.088926&radiusM=5000&limit=50",
+  "page URL while on the map": "http://localhost:3005/clients/carte",
+  "localStorage keys": [
+    "erp_session_hint"
+  ],
+  "sessionStorage keys": [],
+  "position in localStorage": false,
+  "position in sessionStorage": false,
+  "IndexedDB databases": [],
+  "Cache Storage": [],
+  "position in a cached URL": false,
+  "service workers": 0,
+  "position in a cookie": false,
+  "third-party hosts called": [
+    "tile.openstreetmap.org",
+    "localhost:3099"
+  ],
+  "third-party requests holding the position": [
+    "localhost:3099"
+  ],
+  "Sentry envelopes received": 3,
+  "position in a Sentry envelope": true,
+  "Sentry sample": "cus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive.bg-primary.text-primary-foreground.shadow-xs.hover:bg-primary/90.px-4.py-2.has-[>svg]:px-3.md:h-10.h-11\"},{\"timestamp\":1794450396.791,\"category\":\"fetch\",\"data\":{\"method\":\"GET\",\"url\":\"http://localhost:3003/clients/nearby?lat=36.732366&lng=3.088926&radiusM=5000&limit=50\",\"__span\":\"8e3febeb051de561\",\"status_code\":200},\"type\":\"http\"},{\"timestamp\":1794450397.173,\"category\":\"ui",
+  "tiles asked after \"Près de moi\" (z/x/y)": [
+    "/0/0/0.png",
+    "/14/8332/6392.png",
+    "/14/8332/6391.png",
+    "/14/8331/6392.png",
+    "/14/8333/6392.png",
+    "/14/8332/6393.png",
+    "/14/8331/6391.png",
+    "/14/8333/6391.png",
+    "/14/8331/6393.png",
+    "/14/8333/6393.png"
+  ],
+  "database hits": []
+}
