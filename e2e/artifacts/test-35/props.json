@@ -1,0 +1,47 @@
+{
+  "totals": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "blocked": 0,
+    "info": 0
+  },
+  "results": [
+    {
+      "area": "orderByNearest — properties",
+      "durationMs": 788,
+      "name": "400 random sets of 0 to 300 points, with a start",
+      "status": "PASS"
+    },
+    {
+      "area": "orderByNearest — properties",
+      "durationMs": 765,
+      "name": "400 random sets of 0 to 300 points, without a start",
+      "status": "PASS"
+    },
+    {
+      "area": "orderByNearest — properties",
+      "durationMs": 0,
+      "name": "the input array is not mutated",
+      "status": "PASS"
+    },
+    {
+      "area": "orderByNearest — properties",
+      "durationMs": 21,
+      "name": "300 stops are ordered in under 50 ms",
+      "status": "PASS"
+    },
+    {
+      "area": "orderByNearest — properties",
+      "durationMs": 0,
+      "name": "a NaN coordinate does not lose or duplicate a stop",
+      "status": "PASS"
+    },
+    {
+      "area": "boundingBox — never smaller than the circle",
+      "durationMs": 22,
+      "name": "20 000 random points within the radius are inside the box",
+      "status": "PASS"
+    }
+  ]
+}

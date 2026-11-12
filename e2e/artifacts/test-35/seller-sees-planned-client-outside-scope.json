@@ -1,0 +1,40 @@
+{
+  "setup": "owner puts T35-00036 (assigned to the seller outside the team) on a route of seller1; sellerScope = ASSIGNED_ONLY",
+  "GET /clients/map?search=code as seller1": 0,
+  "GET /clients/:id as seller1": 404,
+  "GET /routes/:id as seller1": {
+    "position": 2,
+    "client": {
+      "id": "506de6e7-c41c-49dd-b47a-0e6b7594198e",
+      "code": "T35-00036",
+      "name": "Alimentation Alger Centre 0036",
+      "commune": "Alger Centre",
+      "phone": "0556100036",
+      "lat": 36.89816,
+      "lng": 3.184443
+    }
+  },
+  "GET /me/today as seller1": {
+    "routeId": "3aca4467-914d-4491-9bd1-671acb731442",
+    "position": 2,
+    "client": {
+      "id": "506de6e7-c41c-49dd-b47a-0e6b7594198e",
+      "code": "T35-00036",
+      "name": "Alimentation Alger Centre 0036",
+      "phone": "0556100036",
+      "address": null,
+      "commune": "Alger Centre",
+      "lat": 36.89816,
+      "lng": 3.184443
+    },
+    "balance": "1500.00",
+    "lastVisit": null,
+    "lastSale": null,
+    "visitedToday": false,
+    "today": {
+      "saleId": null,
+      "orderId": null,
+      "paymentId": null
+    }
+  }
+}
