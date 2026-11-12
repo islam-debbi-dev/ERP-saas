@@ -1,0 +1,232 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/26.10.0_2/bin/node",
+      "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "web/map.playwright.config.ts",
+      "--project",
+      "m360-fr"
+    ],
+    "configFile": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.playwright.config.ts",
+    "rootDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "ar"
+        },
+        "id": "m360-ar",
+        "name": "m360-ar",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/map-perf\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "id": "m360-fr",
+        "name": "m360-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/map-perf\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "ar"
+        },
+        "id": "m393-ar",
+        "name": "m393-ar",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/map-perf\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "id": "m393-fr",
+        "name": "m393-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/map-perf\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "id": "d1280-fr",
+        "name": "d1280-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/map-perf\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "name": "m360-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "snapshotDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": {},
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://localhost:3005",
+          "actionTimeout": 20000,
+          "navigationTimeout": 30000,
+          "trace": "off",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 360,
+            "height": 640
+          },
+          "screen": {
+            "width": 360,
+            "height": 640
+          },
+          "deviceScaleFactor": 2.75,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium",
+          "locale": "fr"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "m360-fr"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../artifacts/test-35/web-map-perf.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "map-perf.spec.ts",
+      "file": "map-perf.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "2 000 points on a 360 px phone with the CPU slowed four times",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 37100,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "{\n  \"setup\": \"360 × 640, CPU ×4, tenant A owner, 2 000 points (canvas), tiles answered locally by a 1×1 PNG\",\n  \"first load without throttling (cold cache)\": {\n    \"navToDrawnMs\": 313,\n    \"responseToDrawnMs\": 77,\n    \"apiMs\": 67,\n    \"points\": 2000\n  },\n  \"navigation → points drawn, median of 3 (ms)\": 527,\n  \"/clients/map response → points drawn, median of 3 (ms)\": 198,\n  \"pan 120 px: worst frame / frames over 50 ms / over 100 ms / busy ms\": {\n    \"worstMs\": 100,\n    \"over50\": 3,\n    \"over100\": 1,\n    \"busyMs\": 217\n  },\n  \"zoom in\": {\n    \"worstMs\": 33,\n    \"over50\": 0,\n    \"over100\": 0,\n    \"busyMs\": 0\n  },\n  \"zoom out\": {\n    \"worstMs\": 83,\n    \"over50\": 1,\n    \"over100\": 0,\n    \"busyMs\": 83\n  },\n  \"ten pans\": {\n    \"tookMs\": 2010,\n    \"mapRequests\": 2\n  },\n  \"JS heap before / after 20 pans (MB)\": [\n    23.4,\n    31.8\n  ]\n}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:36:35.903Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0aaf46f8b9536a3f366d-1af7aa5da2cc1ad7cac7",
+          "file": "map-perf.spec.ts",
+          "line": 69,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-12T02:36:35.582Z",
+    "duration": 37754.608,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

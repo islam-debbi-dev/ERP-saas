@@ -12,7 +12,7 @@
 | 0. Baseline and seed | done | `test(e2e): phase 35 baseline and map seed` |
 | A. API correctness | done | `test(e2e): phase 35 map API checks (part A)` |
 | B. Privacy of the position | done | `test(e2e): phase 35 position privacy checks (part B)` |
-| C. Performance | not started | |
+| C. Performance | done | `test(e2e): phase 35 performance measurements (part C)` |
 | D. Web and phone | not started | |
 | E. Upgrade path on Neon | not started | |
 | Final report, go / no-go, fix plan | not started | |
@@ -29,6 +29,8 @@ tokens are older than 12 h, run `pnpm test:map:seed` again (it makes new tenants
 | A | `e2e/api/map.ts` | `/clients/map`, `/clients/nearby`, `GET /clients?hasLocation=`, `PUT /routes/:id/stops`, `RouteDto.start`: scope per role, tenant isolation, filters, cap, hostile input, radius edges, feature gates, concurrency. |
 | A | `e2e/api/map-props.ts` | Property tests of `orderByNearest` and `boundingBox` (`packages/shared/src/geo.ts`). |
 | B | `e2e/api/map-privacy.ts`, `e2e/sql/map-privacy.sql` | Its own API (pino at `info` into a file, Sentry to a local sink) and a local copy of the Vercel rewrite: the position in the log, in the Sentry payloads, in every column of the database. |
+| C | `e2e/api/map-perf.ts`, `e2e/sql/map-perf-seed.sql` | A second database (`erp_t35_perf`): 20 tenants, 145 000 clients, one tenant with 50 000. The SQL the API really runs, read from the Postgres log, `EXPLAIN (ANALYZE, BUFFERS)` as the API's role and as the owner, statements per request, times, payload. |
+| C | `e2e/web/map-perf.spec.ts` | 360 px, CPU slowed ×4 (and ×8): navigation → 2 000 points drawn, pan, zoom, heap after 20 pans, requests for ten quick pans. |
 | B | `e2e/web/position-privacy.spec.ts` | The browser after a "Près de moi" session: storage, URL, cookies, third-party requests, browser Sentry, database. |
 
 Everything runs against the **real** built API and the **real** PostgreSQL, on a local database made
@@ -56,7 +58,12 @@ export API=http://localhost:3003 WEB=http://localhost:3005 DB=postgresql://erp:e
 pnpm test:map:seed     # 4 tenants, 5 000 clients in tenant A
 pnpm test:map:api      # part A
 pnpm test:map:privacy  # part B (starts its own API on :3013; the web must be built with a Sentry DSN, see below)
+DB=postgresql://erp:erp@localhost:5432/erp_t35_perf pnpm test:map:perf   # part C (own database, own API on :3023)
 ```
+
+Part C needs `erp_t35_perf`, made like `erp_t35` (createdb, `prisma migrate deploy`, `app-role.sql`). The
+first run seeds it (about a minute) and keeps `e2e/.auth/map-perf-fixture.json`; `T35_CPU=8` reruns the
+browser half eight times slower.
 
 Part B, browser side: the browser Sentry SDK is on only when the web is **built** with a DSN, as in
 production. Build with `NEXT_PUBLIC_API_URL=http://localhost:3003 NEXT_PUBLIC_SENTRY_DSN=http://t35@localhost:3099/2 pnpm --filter @erp/web build`
@@ -99,9 +106,12 @@ The repository is green before the pass. The findings below are not caught by th
 | A | `api/map.ts` | 75 | 64 | **7** | 4 |
 | B | `api/map-privacy.ts` | 26 | 12 | **8** | 6 |
 | B | `web/position-privacy.spec.ts` (m393-fr) | 9 assertions | 8 | **1** | 0 |
+| C | `api/map-perf.ts` | 18 | 10 | **5** | 3 |
+| C | `web/map-perf.spec.ts` (m360-fr) | 7 assertions | 7 | 0 | 0 |
 
 The 7 failures of part A are the proofs of findings A-1 (3 checks), A-2, A-4, A-5 and A-6; nothing else fails. A-3 is proven by a proof file, not by a failing check.
 The 9 failures of part B are the proofs of B-1 (6 API checks and the browser assertion) and B-2 (2 checks).
+The 5 failures of part C are the proof of C-1.
 
 ## 5. Findings
 
@@ -209,6 +219,33 @@ Two more things leave the app by design and are worth knowing, neither a bug:
 - **The tile server** sees which tiles the phone loads. After "Près de moi" the map goes to zoom 14 on the user: nine tiles around `14/8332/6392` in the test, a square of about 2.4 km, with the IP. With OpenStreetMap's public tiles that is a third party; a self-hosted `NEXT_PUBLIC_MAP_TILE_URL` ends it.
 - **`/clients/map` logs its view box**, and the view is centred on the user after "Près de moi" (only above 2 000 clients, when the map queries by box).
 
+### Part C
+
+#### C-1 — In production the new index `clients_tenant_geo_idx` is never used: row-level security hides it from the planner (medium)
+
+- **Rule:** spec: nearby "prefilters with a bounding box computed from the radius (**uses the new index**)"; the migration exists for that.
+- **What happens:** the API connects as `erp_app`, which row-level security binds (runbook, "Database roles"). Postgres then refuses to use a condition as an index condition unless its operator is *leakproof*, and the comparison operators of `numeric` (`numeric_ge`, `numeric_le`: `proleakproof = f` on PostgreSQL 16) are not. `lat` and `lng` are `numeric(9,6)`. So the lat / lng box is applied as a **filter after reading every client of the tenant**, through whatever index starts with `tenantId` (the planner takes `clients_tenantId_sectorId_idx`).
+- **Proof:** `pnpm test:map:perf`, the five failing checks of area C1; `artifacts/test-35/perf-explain.md` has every statement twice, as `erp_app` and as the owner. The 1 km box in the 50 000-client tenant:
+  - as `erp_app`: `Bitmap Index Scan on "clients_tenantId_sectorId_idx"` → 50 000 rows read, `Rows Removed by Filter: 16664` per worker, **1 312 buffers, 10.4 ms**;
+  - the same statement as `erp` (owner, no RLS): `Index Scan using clients_tenant_geo_idx`, `Index Cond: (tenantId = … AND lat >= 36.75 AND lat <= 36.76 AND lng >= 3.05 AND lng <= 3.06)` → **38 buffers, 0.09 ms**.
+- **Why nobody saw it:** an `EXPLAIN` typed in `psql` or in the Neon console runs as the owner and shows the index in use. The local dev stack connects as the owner too (`apps/api/.env`).
+- **Why only medium:** it is cost, not correctness, and the budget holds (below): at 5 000 clients the whole tenant is read in 3 ms. The cost grows with the tenant, not with the box: 13 ms at 50 000 for a nearby call that should cost 1. And the index is paid for on every client write for nothing.
+- **Fix proposal, tried in a rolled-back transaction on the perf database:** the `float8` comparison operators are leakproof. Two generated columns `lat_f` / `lng_f double precision GENERATED ALWAYS AS (lat::float8) STORED`, the partial index on `("tenantId", lat_f, lng_f)`, and the box written on those columns: as `erp_app` the plan becomes `Index Scan … Index Cond: (tenantId = … AND lat_f >= 36.75 …)`, 0.1 ms. (A cast inside the query, `lat::float8 >= …`, would not do: the cast is not leakproof.) Then drop `clients_tenant_geo_idx` in a later release. Test that locks it: an integration test that runs `EXPLAIN` of the nearby SQL **through the app connection** and expects the index name; the int suite already connects as `erp_app`.
+
+#### The budget of the spec, and the numbers the prompt asked for
+
+Local Postgres 16 on the same machine as the API: no network, warm cache. **These times are a floor**, not what Neon behind Vercel will give (add the round trip to Neon for each of the 4 to 8 statements, and the cold start).
+
+| Case | As the API role (RLS on) | As the table owner (no RLS) | HTTP p50 / p95 (ms) | Body / gzip |
+|---|---|---|---|---|
+
+- **Budget (`/clients/map`, 2 000 points, under 400 ms):** met with a wide margin locally: p95 18 ms on 50 000 clients, 30 ms on 5 000; the worst filter (`hasDebt` on 50 000) 66 ms. Even ten times slower on Neon it holds.
+- **Is `clients_tenant_geo_idx` used?** Not by the API (C-1). The first load of the map (no box) could not use it anyway: it reads the tenant's clients in name order.
+- **Statements per request:** 3 to 8 whatever the number of points (transaction, `set_config` of the tenant, features and scope lookups, then **two** statements on `clients` for the map, **one** for nearby). No N+1. `artifacts/test-35/perf-statements-per-request.txt`.
+- **Size of `/clients/map` with 2 000 points:** 514 kB raw, **99 kB gzip** (257 bytes a point). The API does not compress by itself; Vercel does at the edge. On a 3G phone 99 kB is about a second; the 30 s `Cache-Control` helps on the way back.
+- **Browser, 360 × 640, CPU ×4** (`artifacts/test-35/perf-browser.json`, screenshot `perf-360-2000-points.png`): navigation → 2 000 points drawn **527 ms** (median of 3; 198 ms from the answer to the drawing); pan: worst frame 100 ms, 3 frames over 50 ms; zoom: worst frame 33 to 83 ms; JS heap 23.4 → 31.8 MB after 20 pans with their refetches (no runaway growth; one sample, not a leak hunt). **CPU ×8** (`perf-browser-x8.json`): 1 008 ms to the points, worst pan frame 200 ms. Under the 2 s line of the prompt in both.
+- **Debounce:** ten pans in 2.0 s sent **2** `/clients/map` requests, each with the rounded box.
+
 ## 6. What holds up well
 
 ### Part A
@@ -231,8 +268,15 @@ Two more things leave the app by design and are worth knowing, neither a bug:
 - **The browser keeps nothing:** not in the URL, `localStorage` (one key, `erp_session_hint`), `sessionStorage`, cookies, IndexedDB or Cache Storage; no service worker; no analytics script; the TanStack Query cache is in memory only. The only hosts called besides the app are the tile server and Sentry.
 - **Production** answers 401 to an anonymous `GET /clients/map` and `GET /clients/nearby` on the API project (`erp-saas-pi.vercel.app`). These two requests are the only ones sent to production in this pass.
 
+### Part C
+
+- The 400 ms budget, the 2 s line on a slowed phone, the debounce and the absence of N+1: all met (numbers in section 5, part C).
+- Canvas rendering does its job: 2 000 points cost about 200 ms of main thread at CPU ×4.
+
 ## 7. Not tested, and why
 
-- Parts C to E: not started yet (see the status table).
+- Parts D and E: not started yet (see the status table).
+- C: Neon itself. The times are local; the plans are not (same PostgreSQL major version, same role, same RLS policies), so C-1 holds there, but the milliseconds must be read again on Neon by the owner (`EXPLAIN` **as the app role**, not from the console's default role).
+- C: a real cheap Android. CPU ×4 and ×8 on a fast laptop stand in for it; GPU, memory pressure and a real touch screen do not come with the throttle.
 - B: whether production has a Sentry DSN set, and what its Vercel logs really hold: both need the owner's accounts. The public URL of the **web** project is not in the repo, so the 401 through `/api/…` on production was not checked (the API project was).
 - B: the SSR side of the web (`instrumentation.ts`) never sees the position (the map is client-only), so it was read, not tested.

@@ -678,6 +678,10 @@ async function main(): Promise<void> {
     }
   });
 
+  // The edge clients sit on the pole and the antimeridian: left live, they would stretch
+  // the map of tenant A to the whole world for the browser checks (parts C and D).
+  await query(`UPDATE clients SET "deletedAt" = now() WHERE "tenantId" = $1 AND code LIKE 'EDGE-%'`, [A.tenantId]);
+
   // ------------------------------------------------------------------ feature gates
   area('A7 feature gates');
   await check('Essentiel (no GEO_CHECK): map and nearby refused with FEATURE_NOT_IN_PLAN', async () => {

@@ -1,0 +1,80 @@
+{
+  "setup": "360 × 640, CPU ×8, tenant A owner, 2 000 points (canvas), tiles answered locally by a 1×1 PNG",
+  "first load without throttling (cold cache)": {
+    "navToDrawnMs": 306,
+    "responseToDrawnMs": 75,
+    "apiMs": 83,
+    "points": 2000
+  },
+  "runs": [
+    {
+      "navToDrawnMs": 1037,
+      "responseToDrawnMs": 438,
+      "apiMs": 76,
+      "points": 2000
+    },
+    {
+      "navToDrawnMs": 1008,
+      "responseToDrawnMs": 480,
+      "apiMs": 73,
+      "points": 2000
+    },
+    {
+      "navToDrawnMs": 938,
+      "responseToDrawnMs": 425,
+      "apiMs": 55,
+      "points": 2000
+    }
+  ],
+  "navigation → points drawn, median of 3 (ms)": 1008,
+  "/clients/map response → points drawn, median of 3 (ms)": 438,
+  "pan 120 px: worst frame / frames over 50 ms / over 100 ms / busy ms": {
+    "worstMs": 200,
+    "over50": 3,
+    "over100": 3,
+    "busyMs": 483
+  },
+  "zoom in": {
+    "worstMs": 83,
+    "over50": 1,
+    "over100": 0,
+    "busyMs": 83
+  },
+  "zoom out": {
+    "worstMs": 183,
+    "over50": 2,
+    "over100": 1,
+    "busyMs": 250
+  },
+  "ten pans": {
+    "tookMs": 2188,
+    "mapRequests": 2,
+    "urls": [
+      "minLat=31.95&minLng=-9.431&maxLat=45.521&maxLng=4.896",
+      "minLat=31.914&minLng=-9.361&maxLat=45.491&maxLng=4.966",
+      "minLat=33.488&minLng=-12.167&maxLat=46.787&maxLng=2.161",
+      "minLat=35.779&minLng=-16.328&maxLat=48.66&maxLng=-2.001",
+      "minLat=32.702&minLng=-10.747&maxLat=46.141&maxLng=3.58",
+      "minLat=35.184&minLng=-15.264&maxLat=48.175&maxLng=-0.937",
+      "minLat=32.017&minLng=-9.549&maxLat=45.577&maxLng=4.778",
+      "minLat=33.63&minLng=-12.418&maxLat=46.904&maxLng=1.909",
+      "minLat=30.618&minLng=-7.074&maxLat=44.418&maxLng=7.253",
+      "minLat=31.888&minLng=-9.287&maxLat=45.47&maxLng=5.04",
+      "minLat=29.16&minLng=-4.541&maxLat=43.204&maxLng=9.786",
+      "minLat=31.09&minLng=-7.875&maxLat=44.809&maxLng=6.453",
+      "minLat=28.199&minLng=-2.875&maxLat=42.401&maxLng=11.452",
+      "minLat=31.401&minLng=-8.399&maxLat=45.067&maxLng=5.928",
+      "minLat=28.437&minLng=-3.244&maxLat=42.601&maxLng=11.083",
+      "minLat=31.468&minLng=-8.477&maxLat=45.122&maxLng=5.85",
+      "minLat=29.125&minLng=-4.393&maxLat=43.175&maxLng=9.934",
+      "minLat=32.13&minLng=-9.649&maxLat=45.67&maxLng=4.678",
+      "minLat=29.706&minLng=-5.409&maxLat=43.66&maxLng=8.918",
+      "minLat=31.195&minLng=-7.985&maxLat=44.896&maxLng=6.343",
+      "minLat=29.414&minLng=-4.876&maxLat=43.416&maxLng=9.452"
+    ]
+  },
+  "JS heap before / after 20 pans (MB)": [
+    23.3,
+    33.1
+  ]
+}

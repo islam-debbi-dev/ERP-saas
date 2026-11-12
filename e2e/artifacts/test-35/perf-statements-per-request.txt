@@ -1,0 +1,41 @@
+-- 1
+SELECT set_config('app.tenant_id', $1, false), set_config('app.rls_bypass', $2, false)
+-- parameters: '1fd13c47-0ec6-4501-bf59-a3fb5d71e724', 'off'
+
+-- 2
+SELECT "public"."sessions"."id", "public"."sessions"."tenantId", "public"."sessions"."userId", "public"."sessions"."refreshTokenHash", "public"."sessions"."previousRefreshTokenHash", "public"."sessions"."rotatedAt", "public"."sessions"."deviceName", "public"."sessions"."userAgent", "public"."sessions"."ip", "public"."sessions"."createdAt", "public"."sessions"."lastUsedAt", "public"."sessions"."expiresAt", "public"."sessions"."revokedAt", "public"."sessions"."revokedReason" FROM "public"."sessions" WHERE ("public"."sessions"."id" = $1 AND "public"."sessions"."tenantId" = $2) LIMIT $3 OFFSET $4
+-- parameters: 'f6e040d4-1d9c-494f-9b47-414b962b23af', '1fd13c47-0ec6-4501-bf59-a3fb5d71e724', '1', '0'
+
+-- 3
+SELECT "public"."users"."id", "public"."users"."tenantId", "public"."users"."email", "public"."users"."phone", "public"."users"."passwordHash", "public"."users"."fullName", "public"."users"."role"::text, "public"."users"."permissionGrants", "public"."users"."permissionRevokes", "public"."users"."mustChangePassword", "public"."users"."passwordChangedAt", "public"."users"."failedLoginCount", "public"."users"."lockedUntil", "public"."users"."createdBy", "public"."users"."managerId", "public"."users"."dashboardLayout", "public"."users"."deletedAt", "public"."users"."createdAt", "public"."users"."updatedAt" FROM "public"."users" WHERE "public"."users"."id" = $1 OFFSET $2
+-- parameters: '7d6c6806-20c5-4673-8f8a-96bd6c829b1c', '0'
+
+-- 4
+SELECT set_config('app.tenant_id', $1, false), set_config('app.rls_bypass', $2, false)
+-- parameters: '1fd13c47-0ec6-4501-bf59-a3fb5d71e724', 'off'
+
+-- 5
+SELECT "public"."subscriptions"."id", "public"."subscriptions"."edition"::text FROM "public"."subscriptions" WHERE ("public"."subscriptions"."tenantId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+-- parameters: '1fd13c47-0ec6-4501-bf59-a3fb5d71e724', '1', '0'
+
+-- 6
+SELECT "public"."tenants"."id", "public"."tenants"."featureGrants", "public"."tenants"."featureRevokes" FROM "public"."tenants" WHERE ("public"."tenants"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+-- parameters: '1fd13c47-0ec6-4501-bf59-a3fb5d71e724', '1', '0'
+
+-- 7
+SELECT COUNT(*) AS n
+        FROM clients c LEFT JOIN client_balances b ON b."clientId" = c.id
+        WHERE c."tenantId" = $1::uuid AND c."deletedAt" IS NULL AND TRUE AND c.active AND (c.lat IS NULL OR c.lng IS NULL)
+-- parameters: '1fd13c47-0ec6-4501-bf59-a3fb5d71e724'
+
+-- 8
+SELECT 
+  c.id, c.code, c.name, c.commune, c.phone, c.lat, c.lng, c.active,
+  COALESCE(b.balance, 0) AS balance,
+  (c."creditLimit" IS NOT NULL AND COALESCE(b.balance, 0) > c."creditLimit") AS "overLimit",
+  c."sectorId", c."assignedSellerId"
+        FROM clients c LEFT JOIN client_balances b ON b."clientId" = c.id
+        WHERE c."tenantId" = $1::uuid AND c."deletedAt" IS NULL AND TRUE AND c.active AND c.lat IS NOT NULL AND c.lng IS NOT NULL 
+        ORDER BY c.name, c.id
+        LIMIT $2
+-- parameters: '1fd13c47-0ec6-4501-bf59-a3fb5d71e724', '2001'

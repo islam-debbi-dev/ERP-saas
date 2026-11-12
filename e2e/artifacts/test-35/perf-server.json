@@ -1,0 +1,136 @@
+{
+  "totals": {
+    "total": 18,
+    "passed": 10,
+    "failed": 5,
+    "blocked": 0,
+    "info": 3
+  },
+  "results": [
+    {
+      "area": "general",
+      "durationMs": 0,
+      "name": "does the API compress its answers itself?",
+      "status": "INFO",
+      "actual": "Content-Encoding without asking for one: none (Vercel compresses at the edge)"
+    },
+    {
+      "area": "C1 the SQL of /clients/map and /clients/nearby",
+      "durationMs": 0,
+      "name": "no N+1: a request runs a fixed, small number of statements whatever the number of points",
+      "status": "PASS"
+    },
+    {
+      "area": "C1 the SQL of /clients/map and /clients/nearby",
+      "durationMs": 0,
+      "name": "map-50k-box: the lat/lng box is served by clients_tenant_geo_idx for the API's role",
+      "status": "FAIL",
+      "evidence": "not used as erp_app: 11.436 ms and 4787 buffers; as the owner it is used: 6.581 ms and 1323 buffers (artifacts/test-35/perf-explain.md, \"map-50k-box\")"
+    },
+    {
+      "area": "C1 the SQL of /clients/map and /clients/nearby",
+      "durationMs": 0,
+      "name": "map-50k-box-small: the lat/lng box is served by clients_tenant_geo_idx for the API's role",
+      "status": "FAIL",
+      "evidence": "not used as erp_app: 10.368 ms and 1312 buffers; as the owner it is used: 0.092 ms and 38 buffers (artifacts/test-35/perf-explain.md, \"map-50k-box-small\")"
+    },
+    {
+      "area": "C1 the SQL of /clients/map and /clients/nearby",
+      "durationMs": 0,
+      "name": "nearby-5k: the lat/lng box is served by clients_tenant_geo_idx for the API's role",
+      "status": "FAIL",
+      "evidence": "not used as erp_app: 3.054 ms and 347 buffers; as the owner it is used: 0.767 ms and 363 buffers (artifacts/test-35/perf-explain.md, \"nearby-5k\")"
+    },
+    {
+      "area": "C1 the SQL of /clients/map and /clients/nearby",
+      "durationMs": 0,
+      "name": "nearby-50k: the lat/lng box is served by clients_tenant_geo_idx for the API's role",
+      "status": "FAIL",
+      "evidence": "not used as erp_app: 12.85 ms and 3616 buffers; as the owner it is used: 7.133 ms and 3233 buffers (artifacts/test-35/perf-explain.md, \"nearby-50k\")"
+    },
+    {
+      "area": "C1 the SQL of /clients/map and /clients/nearby",
+      "durationMs": 0,
+      "name": "nearby-50k-wide: the lat/lng box is served by clients_tenant_geo_idx for the API's role",
+      "status": "FAIL",
+      "evidence": "not used as erp_app: 51.442 ms and 31624 buffers; as the owner it is used: 78.251 ms and 1731 buffers (artifacts/test-35/perf-explain.md, \"nearby-50k-wide\")"
+    },
+    {
+      "area": "C1 the SQL of /clients/map and /clients/nearby",
+      "durationMs": 0,
+      "name": "the unboxed map (first load) cannot use the geo index: it reads the tenant's clients by name",
+      "status": "INFO",
+      "actual": "map-5k: slowest statement 10.001 ms; map-50k: 9.362 ms"
+    },
+    {
+      "area": "C2 the budget of the spec: /clients/map with 2 000 points under 400 ms",
+      "durationMs": 0,
+      "name": "map-5k: p95 under 400 ms (local floor)",
+      "status": "PASS",
+      "actual": "p50 20.1 ms, p95 29.9 ms, 2000 points"
+    },
+    {
+      "area": "C2 the budget of the spec: /clients/map with 2 000 points under 400 ms",
+      "durationMs": 0,
+      "name": "map-50k: p95 under 400 ms (local floor)",
+      "status": "PASS",
+      "actual": "p50 15.4 ms, p95 18.4 ms, 2000 points"
+    },
+    {
+      "area": "C2 the budget of the spec: /clients/map with 2 000 points under 400 ms",
+      "durationMs": 0,
+      "name": "map-50k-seller: p95 under 400 ms (local floor)",
+      "status": "PASS",
+      "actual": "p50 36.8 ms, p95 41.4 ms, 2000 points"
+    },
+    {
+      "area": "C2 the budget of the spec: /clients/map with 2 000 points under 400 ms",
+      "durationMs": 1,
+      "name": "map-50k-debt: p95 under 400 ms (local floor)",
+      "status": "PASS",
+      "actual": "p50 61.2 ms, p95 66.1 ms, 2000 points"
+    },
+    {
+      "area": "C2 the budget of the spec: /clients/map with 2 000 points under 400 ms",
+      "durationMs": 0,
+      "name": "map-50k-search: p95 under 400 ms (local floor)",
+      "status": "PASS",
+      "actual": "p50 37.7 ms, p95 41.2 ms, 2000 points"
+    },
+    {
+      "area": "C2 the budget of the spec: /clients/map with 2 000 points under 400 ms",
+      "durationMs": 0,
+      "name": "map-50k-box: p95 under 400 ms (local floor)",
+      "status": "PASS",
+      "actual": "p50 20.6 ms, p95 25.2 ms, 1549 points"
+    },
+    {
+      "area": "C2 the budget of the spec: /clients/map with 2 000 points under 400 ms",
+      "durationMs": 0,
+      "name": "nearby-5k: p95 under 400 ms",
+      "status": "PASS",
+      "actual": "p50 6.8 ms, p95 10.9 ms"
+    },
+    {
+      "area": "C2 the budget of the spec: /clients/map with 2 000 points under 400 ms",
+      "durationMs": 0,
+      "name": "nearby-50k: p95 under 400 ms",
+      "status": "PASS",
+      "actual": "p50 21.9 ms, p95 22.7 ms"
+    },
+    {
+      "area": "C2 the budget of the spec: /clients/map with 2 000 points under 400 ms",
+      "durationMs": 0,
+      "name": "nearby-50k-wide: p95 under 400 ms",
+      "status": "PASS",
+      "actual": "p50 59.2 ms, p95 62.8 ms"
+    },
+    {
+      "area": "C2 the budget of the spec: /clients/map with 2 000 points under 400 ms",
+      "durationMs": 0,
+      "name": "size of /clients/map with 2 000 points",
+      "status": "INFO",
+      "actual": "514 kB raw, 99 kB gzip (263 bytes a point)"
+    }
+  ]
+}
