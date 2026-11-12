@@ -7,7 +7,9 @@
     "test:db": "tsx sql/run-invariants.ts",
     "test:api": "tsx api/scenario.ts && tsx api/attacks.ts",
     "test:web": "playwright test --config web/playwright.config.ts",
-    "install:browsers": "playwright install chromium"
+    "install:browsers": "playwright install chromium",
+    "test:map:seed": "tsx api/map-seed.ts",
+    "test:map:api": "tsx api/map-props.ts && tsx api/map.ts"
   },
   "dependencies": {
     "decimal.js": "^10.6.0",
