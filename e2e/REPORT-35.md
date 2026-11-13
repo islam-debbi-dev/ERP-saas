@@ -1,7 +1,7 @@
 # Test report — phase 35, client map and route picking
 
 **Target:** `ee2df3d` (`origin/main`; phase 35 is PR #62: `803ad15` API, `d6f2192` web, `d74e67f` docs).
-**Branch:** `test/phase-35-client-map`. **Date:** 2026-11-12.
+**Branch:** `test/phase-35-client-map`. **Date:** 2026-11-12 (measurements), finished 2026-11-13.
 **Prompt:** [`docs/prompts/test-35-client-map.md`](../docs/prompts/test-35-client-map.md). **Spec:** [`phase-35-client-map.md`](../docs/prompts/phase-35-client-map.md).
 **Rule of the pass:** find and prove, do not fix. Nothing under `apps/` or `packages/` is changed.
 
@@ -10,12 +10,12 @@
 | Part | State | Commit |
 |---|---|---|
 | 0. Baseline and seed | done | `test(e2e): phase 35 baseline and map seed` |
-| A. API correctness | done | `test(e2e): phase 35 map API checks (part A)` |
+| A. API correctness | done | `test(e2e): phase 35 map API checks (part A)`, then `test(e2e): phase 35 lost-update check on add-to-route (part A)` |
 | B. Privacy of the position | done | `test(e2e): phase 35 position privacy checks (part B)` |
 | C. Performance | done | `test(e2e): phase 35 performance measurements (part C)` |
-| D. Web and phone | not started | |
+| D. Web and phone | done | `test(e2e): phase 35 web and phone checks (part D)` |
 | E. Upgrade path on Neon | done | `test(e2e): phase 35 migration lock check (part E)` |
-| Final report, go / no-go, fix plan | not started | |
+| Final report, go / no-go, fix plan | done | `docs(e2e): phase 35 test report` |
 
 To resume: read this table and `git log --oneline origin/main..HEAD`, start the stack (section 2), go on
 with the first part that is not done. The seeded data stays in the local database `erp_t35`; the
@@ -31,6 +31,7 @@ tokens are older than 12 h, run `pnpm test:map:seed` again (it makes new tenants
 | B | `e2e/api/map-privacy.ts`, `e2e/sql/map-privacy.sql` | Its own API (pino at `info` into a file, Sentry to a local sink) and a local copy of the Vercel rewrite: the position in the log, in the Sentry payloads, in every column of the database. |
 | C | `e2e/api/map-perf.ts`, `e2e/sql/map-perf-seed.sql` | A second database (`erp_t35_perf`): 20 tenants, 145 000 clients, one tenant with 50 000. The SQL the API really runs, read from the Postgres log, `EXPLAIN (ANALYZE, BUFFERS)` as the API's role and as the owner, statements per request, times, payload. |
 | C | `e2e/web/map-perf.spec.ts` | 360 px, CPU slowed ×4 (and ×8): navigation → 2 000 points drawn, pan, zoom, heap after 20 pans, requests for ten quick pans. |
+| D | `e2e/web/map.spec.ts` (+ `map-data.ts`, `map-helpers.ts`, `map.playwright.config.ts`) | Nine browser tests in five projects (360 and 393 px in `ar` and `fr`, 1280 px in `fr`): `/clients/carte`, filters, the three bad-position cases, "Près de moi", the bubble and "Ajouter à une tournée…", the route editor's map picker, "Ajouter les clients visibles", the seller's day, raw message keys in three languages. 120 screenshots in `artifacts/test-35/` (named `<project>-<state>.png`). |
 | E | `e2e/api/map-index-lock.ts` | The migration's `CREATE INDEX` on a live table: how long client writes wait, on 50 000 and 145 000 rows, with and without `CONCURRENTLY`. Read-only check of the deploy step in the README and the runbook. |
 | B | `e2e/web/position-privacy.spec.ts` | The browser after a "Près de moi" session: storage, URL, cookies, third-party requests, browser Sentry, database. |
 
@@ -106,21 +107,53 @@ The repository is green before the pass. The findings below are not caught by th
 | Part | Suite | Checks | Pass | Fail | Info |
 |---|---|---|---|---|---|
 | A | `api/map-props.ts` | 6 | 6 | 0 | 0 |
-| A | `api/map.ts` | 75 | 64 | **7** | 4 |
+| A | `api/map.ts` | 76 | 64 | **8** | 4 |
 | B | `api/map-privacy.ts` | 26 | 12 | **8** | 6 |
 | B | `web/position-privacy.spec.ts` (m393-fr) | 9 assertions | 8 | **1** | 0 |
 | C | `api/map-perf.ts` | 18 | 10 | **5** | 3 |
 | C | `web/map-perf.spec.ts` (m360-fr) | 7 assertions | 7 | 0 | 0 |
+| D | `web/map.spec.ts`, 9 tests × 5 projects | 45 tests | 21 | **24** | 0 |
 | E | `api/map-index-lock.ts` | 5 | 3 | 0 | 2 |
 
-The 7 failures of part A are the proofs of findings A-1 (3 checks), A-2, A-4, A-5 and A-6; nothing else fails. A-3 is proven by a proof file, not by a failing check.
+The 8 failures of part A are the proofs of findings A-1 (3 checks), A-2, A-4, A-5, A-6 and A-7; nothing else fails. A-3 is proven by a proof file, not by a failing check.
 The 9 failures of part B are the proofs of B-1 (6 API checks and the browser assertion) and B-2 (2 checks).
 The 5 failures of part C are the proof of C-1.
+The 24 failed tests of part D are five of the nine tests: four fail in all five projects (D-2 with D-6, D-3, D-4, D-5) and one in the four phone projects only (D-1). Each fails on soft assertions that are D-1 to D-6 and on nothing else (`artifacts/test-35/web-map.json`); the other four tests pass everywhere.
 
 ## 5. Findings
 
 Severity as defined by the prompt. Each proof reruns with the command of its part; the files are in
-`e2e/artifacts/test-35/`.
+`e2e/artifacts/test-35/`. **18 findings: 3 critical, 1 high, 7 medium, 6 low, 1 for the owner to decide.**
+
+| # | Severity | Finding | Part |
+|---|---|---|---|
+| B-1 | **critical** | The user's position is sent to Sentry by the API (traces, errors) and by the browser (breadcrumbs) | B |
+| A-1 | **critical** (by the rule; the owner must say which of spec and code is right) | A livreur sees every client of the company on the map and nearby | A |
+| A-7 | **critical** (by the rule; planners only, nothing corrupted) | "Ajouter à une tournée…" silently drops a stop another planner just added | A |
+| A-2 | **high** | `search` with a NUL byte answers 500 on map, nearby and list | A |
+| A-3 | medium | A seller sees a client outside his scope once the owner planned it on his route, now with its point | A |
+| B-2 | medium | The log scrub misses `/clients/nearby/` and `/Clients/Nearby` | B |
+| C-1 | medium | The new geo index is never used by the API: row-level security and `numeric` | C |
+| D-1 | medium | At 360 px the map starts at 59 % of the screen and runs off it | D |
+| D-2 | medium | A failed "Clients proches" is shown as "no client in this radius" | D |
+| D-3 | medium | Picker with "Tous mes clients" above 2 000: "zoomez" loads nothing | D |
+| D-4 | medium | The back button drops unsaved picks without asking | D |
+| A-4 | low, decision | Without `GEO_CHECK` the coordinates still come out of the route DTO (and of the older client DTO) | A |
+| A-5 | low | `RouteDto.start` null when the seller's only dépôt has no point | A |
+| A-6 | low | An empty `lat=&lng=` is read as 0, 0 | A |
+| D-5 | low | A position known to ± 5 km is used as if exact | D |
+| D-6 | low | 76 px for the client's name in the nearby list at 360 px | D |
+| E-1 | low | The README's `db:deploy` step does not say which database it migrates | E |
+| B-3 | owner decides | Vercel request logs keep the query string, so the position, in both projects | B |
+
+Two more observations, not findings, are in part B (the tile server sees where the user is; `/clients/map` logs its view box).
+
+### Suspected, not proven
+
+- A STOREKEEPER gets the same whole-company map as the livreur (same line of `ScopeService`, same `VIEW_ALL` permissions): not run.
+- One client saved with a far-off point (latitude and longitude swapped, or 0, 0) makes `/clients/carte` open zoomed out on the whole world, because the first view fits every point. Seen by accident when my own edge-case clients (pole, antimeridian) were still live in tenant A; I did not write a check for it.
+- The browser Sentry SDK also traces `fetch` calls (`tracesSampleRate: 0.1`): the nearby URL is probably in those spans too. Only the breadcrumb was caught in the sink (B-1).
+- During one early run of the browser suite, a seller's session showed the owner's landing page after several worker restarts under the login limiter. It did not happen again in three full runs and I could not reproduce it by hand; noted so that it is not forgotten, not counted.
 
 ### Part A
 
@@ -179,6 +212,17 @@ Severity as defined by the prompt. Each proof reruns with the command of its par
 - **Proof:** `pnpm test:map:api`, check "an empty `lat=&lng=` is not read as the position 0, 0", and the `no-500 | 200` lines of `artifacts/test-35/hostile-inputs.md`.
 - **Cause:** `packages/shared/src/schemas/clients.ts:105-106` (`Number('') === 0`).
 - **Effect:** a web bug that sends an empty position gets an empty list instead of an error. Harmless today, wrong by contract.
+
+#### A-7 — "Ajouter à une tournée…" drops a stop another planner has just added, and tells both it worked (critical by the prompt's rule)
+
+- **Rule:** prompt: critical = "a route save loses or corrupts stops".
+- **Path:** the owner and the manager each open "Ajouter à une tournée…" on the map for the same tournée (3 stops) and each pick a different client. What the dialog does (`apps/web/src/components/geo/add-to-route-dialog.tsx:49-60`) is `GET /routes/:id`, then `PUT /routes/:id/stops` with that list plus the client. No race is needed, only that the second dialog read the route before the first one saved.
+- **Expected:** 5 stops, or the second save refused because its list is stale.
+- **Actual:** both `PUT` answer 200, both users get the toast "… ajouté à « … »", and the route has **4 stops: the owner's client is gone**. The same happens to a planner who has the route editor open while someone adds a stop from the map, then presses "Enregistrer".
+- **Proof:** `pnpm test:map:api`, area A8, check "Ajouter à une tournée… by two planners…"; `artifacts/test-35/add-to-route-lost-update.json`.
+- **Cause:** `PUT /routes/:id/stops` replaces the whole list and has no way to say "from which list" (`routes.service.ts:191-244`, `setRouteStopsSchema`): the row lock makes two saves happen one after the other, it cannot make the second one know about the first. That was already true in phase 16 for two open editors; phase 35 adds a one-tap "append" on top of a "replace" route, which is where a lost update stops being rare.
+- **What limits it:** nothing is corrupted (the list is always one somebody sent, the 25-round race of the same area proves it) and the audit log has both lists (`ROUTE_STOPS_SET`, before / after), so the lost stop can be found again. But nobody is told to look.
+- **Fix proposal** (no new write route, as the spec wants): `setRouteStopsSchema` gets an optional `baseClientIds` (or the route gets a `version`, as clients have); the service compares it under the row lock it already takes and answers 409 `CONFLICT` when the route changed; the dialog reads again and retries once, the editor says "la tournée a changé, rechargez". Test: this check, plus an integration test "two saves from the same read: the second is refused".
 
 #### Answers the prompt asked for (no finding)
 
@@ -240,15 +284,84 @@ Two more things leave the app by design and are worth knowing, neither a bug:
 
 Local Postgres 16 on the same machine as the API: no network, warm cache. **These times are a floor**, not what Neon behind Vercel will give (add the round trip to Neon for each of the 4 to 8 statements, and the cold start).
 
-| Case | As the API role (RLS on) | As the table owner (no RLS) | HTTP p50 / p95 (ms) | Body / gzip |
+| Case (`artifacts/test-35/perf-server.md`) | SQL as the API role (RLS on) | SQL as the table owner (no RLS) | HTTP p50 / p95 (ms) | Points |
 |---|---|---|---|---|
+| map, 5 000 clients, no box | no box, the geo index does not apply | same | 20.1 / 29.9 | 2 000 |
+| map, 50 000 clients, no box | no box, the geo index does not apply | same | 15.4 / 18.4 | 2 000 |
+| map, 50 000, one seller | | | 36.8 / 41.4 | 2 000 |
+| map, 50 000, `hasDebt` | | | 61.2 / 66.1 | 2 000 |
+| map, 50 000, `search` | | | 37.7 / 41.2 | 2 000 |
+| map, 50 000, city box | 11.4 ms, 4 787 buffers, geo index not used | 6.6 ms, 1 323 buffers, geo index | 20.6 / 25.2 | 1 549 |
+| map, 50 000, 1 km box | 10.4 ms, 1 312 buffers, geo index not used | 0.09 ms, 38 buffers, geo index | not timed over HTTP | |
+| nearby, 5 000, 5 km | 3.1 ms, 347 buffers, geo index not used | 0.8 ms, 363 buffers, geo index | 6.8 / 10.9 | |
+| nearby, 50 000, 5 km | 12.9 ms, 3 616 buffers, geo index not used | 7.1 ms, 3 233 buffers, geo index | 21.9 / 22.7 | |
+| nearby, 50 000, 50 km | 51.4 ms, 31 624 buffers, geo index not used | 78.3 ms, 1 731 buffers, geo index | 59.2 / 62.8 | |
+
+The body of `/clients/map` with 2 000 points is 514 kB raw and 99 kB gzip. On the widest radius the owner's plan through the index is the slower one in time (78 ms against 51 ms) although it reads 18 times fewer buffers: the index pays off on small boxes, which is the case "Près de moi" is for.
 
 - **Budget (`/clients/map`, 2 000 points, under 400 ms):** met with a wide margin locally: p95 18 ms on 50 000 clients, 30 ms on 5 000; the worst filter (`hasDebt` on 50 000) 66 ms. Even ten times slower on Neon it holds.
 - **Is `clients_tenant_geo_idx` used?** Not by the API (C-1). The first load of the map (no box) could not use it anyway: it reads the tenant's clients in name order.
 - **Statements per request:** 3 to 8 whatever the number of points (transaction, `set_config` of the tenant, features and scope lookups, then **two** statements on `clients` for the map, **one** for nearby). No N+1. `artifacts/test-35/perf-statements-per-request.txt`.
-- **Size of `/clients/map` with 2 000 points:** 514 kB raw, **99 kB gzip** (257 bytes a point). The API does not compress by itself; Vercel does at the edge. On a 3G phone 99 kB is about a second; the 30 s `Cache-Control` helps on the way back.
+- **Size of `/clients/map` with 2 000 points:** 514 kB raw, **99 kB gzip** (about 260 bytes a point). The API does not compress by itself; Vercel does at the edge. On a 3G phone 99 kB is about a second; the 30 s `Cache-Control` helps on the way back.
 - **Browser, 360 × 640, CPU ×4** (`artifacts/test-35/perf-browser.json`, screenshot `perf-360-2000-points.png`): navigation → 2 000 points drawn **527 ms** (median of 3; 198 ms from the answer to the drawing); pan: worst frame 100 ms, 3 frames over 50 ms; zoom: worst frame 33 to 83 ms; JS heap 23.4 → 31.8 MB after 20 pans with their refetches (no runaway growth; one sample, not a leak hunt). **CPU ×8** (`perf-browser-x8.json`): 1 008 ms to the points, worst pan frame 200 ms. Under the 2 s line of the prompt in both.
 - **Debounce:** ten pans in 2.0 s sent **2** `/clients/map` requests, each with the rounded box.
+
+### Part D
+
+#### D-1 — On a 360 px phone the map starts at 59 % of the screen and runs off it (medium)
+
+- **Rule:** spec: "map takes the screen height minus the header on phone"; `docs/ui.md` phone first.
+- **Path:** owner, `/clients/carte`, 360 × 640, more than 2 000 clients (the banner shows) and at least one client without a point (the link shows).
+- **Actual:** header, title, subtitle, the two buttons, the "N clients sans position" link on its own line and the banner come first: the map's top edge is at **376 px of 640** and its bottom at 774 px. The first screen shows **41 %** map. In Arabic the link fits on the buttons' row, so the map starts at 324 px, gets 49 % and ends at 722 px. At 393 × 851 the map gets at least half of the first screen (that assertion passes) but still runs off it: its bottom is at 985 px in French and 933 px in Arabic. The bubble of a tapped client is drawn over the bottom of the map: its fifth button, "Ajouter à une tournée…", is below the fold, and the bubble covers what is left of the map, the tapped point included.
+- **Why it hurts:** the map takes one-finger drags for itself, so the only places left to scroll the page are the strips above it.
+- **Proof:** `pnpm test:map:web`, test "/clients/carte: fits the phone…", two soft assertions, in the four phone projects; screenshots `m360-fr-carte.png`, `m360-ar-carte.png`, `m360-fr-bulle.png`.
+- **Cause:** `apps/web/src/components/geo/clients-map-screen.tsx:202`: `h-[calc(100svh-15rem)] min-h-80`: the 15 rem assume one row above the map; the title block, the link row and the banner add about 9 rem, and `min-h-80` (320 px) wins on a 640 px screen anyway.
+- **Fix proposal:** on phones drop the title block (the top bar already says "Carte des clients"), put the link and the banner inside the map box as overlays, and size the map with a flex column (`flex-1 min-h-0`) instead of a guessed `calc`. Lock: the two assertions of this test.
+
+#### D-2 — A failed "Clients proches" request is shown as "Aucun client dans ce rayon" (medium)
+
+- **Path:** `/clients/carte` → "Près de moi" → the API answers 500 (or the phone has no network): after the retries the sheet shows the empty state "Aucun client dans ce rayon."
+- **Expected:** an error message with a way to retry (AGENTS.md / `docs/ui.md`: every list has loading, empty and error states).
+- **Why it matters:** a seller without signal is told that he has no client around him. With finding A-2 any search containing a NUL byte gives the same lie; a 403 (permission revoked) too.
+- **Proof:** `pnpm test:map:web`, test "Près de moi…", soft assertion "a failed nearby request is shown as…"; screenshot `m360-fr-proches-erreur.png`.
+- **Cause:** `apps/web/src/components/geo/nearby-sheet.tsx:80-86`: `isPending` then `!near.data || near.data.length === 0` → `EmptyState`; `near.isError` is never read.
+- **Fix proposal:** an `Alert` with `useErrorMessage()` and a "Réessayer" button when `near.isError`; test: route `/clients/nearby` to a 500 in `mobile.spec.ts` and expect the alert.
+
+#### D-3 — In the picker, "Tous mes clients" above 2 000 clients: the banner says "zoomez", zooming loads nothing (medium)
+
+- **Path:** owner (4 050 clients on the map) → a tournée → "Choisir sur la carte" → "Tous mes clients". The banner "Plus de 2 000 clients : zoomez ou filtrez pour tous les voir" appears. Zoom in four times.
+- **Expected:** the picker asks for the current view, as `/clients/carte` does (spec: "the map then sends the current bounds with the next query").
+- **Actual:** no request with `minLat…` is ever sent from the sheet. The picker keeps the first 2 000 clients **by name**; a client whose name comes after them cannot be picked on the map at any zoom, and the sheet has no filter. "Ajouter les clients visibles (N)" counts among those 2 000 only.
+- **Proof:** `pnpm test:map:web`, test "Ajouter les clients visibles (N)…", soft assertion "requests for the zoomed view in the picker"; screenshot `m360-fr-tous-mes-clients-tronque.png`.
+- **Cause:** `apps/web/src/components/tournees/route-map-sheet.tsx:48`: `useClientMap(filters, null, open)`: the bounds the sheet tracks (`:51`) are used for the "visible" count, never sent.
+- **Who meets it:** an owner or supervisor with more than 2 000 located clients in his scope who turns the toggle on. The default view (the route's seller) is fine below 2 000 clients per seller.
+- **Fix proposal:** the same `byView` logic as `clients-map-screen.tsx:95-99` (pass the rounded bounds once `truncated`); test: this assertion.
+
+#### D-4 — The browser's back button leaves the route editor and drops the unsaved picks without asking (medium)
+
+- **Rule:** spec: "the existing sticky Enregistrer and the `beforeunload` guard still apply"; prompt: "a route save loses … stops" is critical, this is the unsaved case, hence medium.
+- **Path:** route editor → "Choisir sur la carte" → add two clients → "Terminé" → press the phone's back button (or tap a menu link).
+- **Actual:** the app goes back to the list of tournées, no prompt, the picks are gone. A full reload or closing the tab does prompt (`beforeunload` fires; the same test checks it).
+- **Proof:** `pnpm test:map:web`, test "route editor…", soft assertion "the back button leaves the editor and drops the unsaved stops without asking".
+- **Cause:** `apps/web/src/components/tournees/route-editor.tsx:124-130`: only `window.beforeunload`, which a client-side navigation of Next.js never fires. Older than phase 35, but phase 35 makes the unsaved list long (a tap per client, "Ajouter les clients visibles") and the back button is how a phone user closes a full-screen sheet.
+- **Fix proposal:** a navigation guard for in-app routes (intercept `popstate` and link clicks while `stopsDirty`, confirm with the same sentence), or autosave of the draft in memory per route id; test: this assertion.
+
+#### D-5 — A position known to ± 5 km is used as if it were exact (low)
+
+- **Path:** the phone has no GPS fix (indoors, cell towers only: accuracy 5 000 m). "Près de moi" opens "Clients proches" with distances to the metre from a point that may be 5 km off; nothing on the screen says so. The accuracy circle is drawn, but under the sheet.
+- **Expected by the prompt:** "the map still loads and the explanation shows". The map loads; there is no explanation, and no message key for one.
+- **Proof:** `pnpm test:map:web`, test "position refused, never answered, vague…", soft assertion "the screen says the position is imprecise"; screenshot `m360-fr-position-imprecise.png`.
+- **Cause:** `apps/web/src/lib/client-map.ts:128-137` keeps `accuracyM`; `nearby-sheet.tsx` never shows it. Phase 17 already has the notion (`geoMaxAccuracyM`, LOW_ACCURACY).
+- **Fix proposal:** one line in the sheet when `accuracyM` is above the tenant's `geoMaxAccuracyM`: "Position approximative (± 5 km)"; three message keys.
+
+Refused and never-answered positions are handled: the explanation shows, the button comes back, the map stays (the wait is the 10 s the app asks the browser for).
+
+#### D-6 — At 360 px the nearby list leaves 76 px to the client's name (low)
+
+- **Path:** "Clients proches" at 360 px with a balance of seven digits (`1 234 567,89 DA`): the row is name, balance, call button, directions button; the name gets **76 px** ("Épiceri…"), 109 px at 393. Three clients of the same street look the same.
+- **Proof:** `pnpm test:map:web`, test "Près de moi…", soft assertion "width left to the client name" (fails at 360, passes at 393); screenshot `m360-ar-proches.png`.
+- **Cause:** `nearby-sheet.tsx:93-125`: one row, the amount and two 44 px buttons never shrink.
+- **Fix proposal:** two lines per row below `sm` (name on the first, distance and balance on the second), as the card lists of `docs/ui.md` do.
 
 ### Part E
 
@@ -311,6 +424,19 @@ No row = the step is still owed. Given C-1, running it late costs nothing: the A
 - The 400 ms budget, the 2 s line on a slowed phone, the debounce and the absence of N+1: all met (numbers in section 5, part C).
 - Canvas rendering does its job: 2 000 points cost about 200 ms of main thread at CPU ×4.
 
+### Part D
+
+Checked at 360 and 393 px in Arabic and French and at 1280 px in French, with the same result everywhere:
+
+- **No sideways scroll** on any of the screens, sheets and bubbles, in either direction of writing; no raw message key in `ar`, `fr` or `en`.
+- "Filtres" and "Près de moi" are on the first screen; the badge counts the filters right (3, then 4 with a search, then none after "Effacer") and sits at the end of the button in both directions; the legend writes the four states; the truncated banner shows; "N clients sans position" opens `/clients?hasLocation=false` with its chip; a deep link `/clients?hasDebt=true&hasLocation=true&sort=balance_desc` still works (phase 33 has no `?filtre=` link to the client list; that parameter only exists on the stock page).
+- **Refused position:** the explanation shows, the map stays, the button comes back. **Never answered:** the spinner ends at the 10 s the app asks for, with "Position introuvable".
+- **Bubble:** "Fiche client" → `/clients/:id`, `tel:` with the phone, "Itinéraire" → `…/maps/dir/?api=1&destination=<lat>,<lng>` in the right order and in a new tab, balance `1 234 567,89 DA`, the state written ("Plafond dépassé"). "Ajouter à une tournée…" offers only the routes of the client's seller, adds at the end without touching the other stops, and the toast's "Ouvrir la tournée" opens that route. A seller's bubble has no such button.
+- **Route editor:** a new tournée shows the hint; the picker is full height on a phone; three taps give markers 1, 2, 3 on the right clients; "Retirer" renumbers; "Terminé" hands the two stops to the list in order; a reload with unsaved stops raises the `beforeunload` prompt; "Enregistrer" then a reload shows them; the API has them in that order. **The map inside the sheet has no grey hole** after the slide-in and after turning the phone.
+- **"Ajouter les clients visibles (N)":** N is right (8), and above the room left it refuses with "Une tournée a au plus 300 arrêts" without asking to confirm; 296 numbered markers stay usable.
+- **Seller's day:** the "Carte" toggle shows one numbered marker per located stop, a check mark on the visited one and "Visité aujourd'hui" in its bubble; "Près de moi" returns only his own clients although other sellers have dozens within 5 km.
+- **Keyboard and screen reader basics:** every control of the filters sheet, the nearby sheet, the picker and the bubble has a name; Tab stays inside each of the three sheets; Escape closes the filters sheet and the nearby sheet (not tried on the picker).
+
 ### Part E
 
 - The migration is additive, short, and harmless to a live pilot database.
@@ -319,6 +445,54 @@ No row = the step is still owed. Given C-1, running it late costs nothing: the A
 
 - C: Neon itself. The times are local; the plans are not (same PostgreSQL major version, same role, same RLS policies), so C-1 holds there, but the milliseconds must be read again on Neon by the owner (`EXPLAIN` **as the app role**, not from the console's default role).
 - C: a real cheap Android. CPU ×4 and ×8 on a fast laptop stand in for it; GPU, memory pressure and a real touch screen do not come with the throttle.
+- D: a real phone. Touch gestures were mouse events on a phone-sized Chromium; pinch zoom, the on-screen keyboard over the search field, and a real GPS were not tried. A screen reader was not run: names, focus and Escape were checked, not the reading order.
+- D: 1280 px in Arabic, and Safari / Firefox: not in the prompt's list, not run.
+- A: with row-level security **off** (API connected as the owner): planned as a second look at tenant isolation, not done for lack of time; with RLS on, as in production, isolation holds.
+- A: a STOREKEEPER on the map (suspected same as the livreur, A-1).
 - E: whether the migration has been applied on Neon (see the two queries in part E).
 - B: whether production has a Sentry DSN set, and what its Vercel logs really hold: both need the owner's accounts. The public URL of the **web** project is not in the repo, so the 401 through `/api/…` on production was not checked (the API project was).
 - B: the SSR side of the web (`instrumentation.ts`) never sees the position (the map is client-only), so it was read, not tested.
+
+## 8. Go / no-go: show the map to the pilot sellers?
+
+**No-go as it stands. Go after three small fixes and two answers from the owner.** None of them is long.
+
+What a seller touches is sound: he sees his own clients and nobody else's, on the map, in "Clients proches" and on his day; another company's clients never show up, even on the same coordinates; distances are right to the metre; the map is fast on a slowed 360 px phone; nothing about his position is kept in the database, in the API log or in his browser.
+
+What stops me from saying go today:
+
+1. **B-1, the seller's position goes to Sentry** as soon as a DSN is set (API traces, API errors, browser errors). The feature was sold to the sellers as "your position is never kept". Owner: look at the two Vercel projects. If `SENTRY_DSN` and `NEXT_PUBLIC_SENTRY_DSN` are both empty in production, nothing has leaked and this is not blocking for the first demo, but it must be fixed before Sentry is turned on. If either is set, fix first.
+2. **A-1, a livreur's phone shows every client of the company with its debt.** Not a seller, but the same pilot, the same week. The owner must say which sentence is right, the spec's or the code's. If the pilot company has no livreur account, this does not block the sellers.
+3. **A-2, a 500 on a search with a NUL byte**, and **D-2, a failed "Clients proches" shown as "no client around you"**: the second one is what a seller will meet in the field the first time he has no signal, and it tells him something false.
+4. **A-7, the lost stop**: "Ajouter à une tournée…" on the map silently undoes another planner's addition made a moment before. Critical by the rule, but sellers do not plan, so it does not block showing **them** the map. It does mean: until PR 4, one planner at a time on a tournée, and tell them so.
+
+With PR 1 and PR 2 below merged (PR 1 can wait if both DSNs are empty), and the owner's answer on the livreur: **go for the sellers.** The rest can follow during the pilot.
+
+## 9. Fix plan (small PRs, in this order; none is opened by this pass)
+
+| # | PR | Findings | The test that locks it |
+|---|---|---|---|
+| 1 | **Position out of Sentry and out of every log spelling.** `beforeSend` / `beforeSendTransaction` in `instrument.ts`, `beforeBreadcrumb` / `beforeSendTransaction` in `instrumentation-client.ts`, all through `stripPosition`; the regex of `log-privacy.ts` follows the router (case, trailing slash). | B-1, B-2 | Unit tests of the scrubber on the payloads kept in `artifacts/test-35/privacy-log-and-sentry.md`; three cases in `log-privacy.spec.ts`; `pnpm test:map:privacy` green. |
+| 2 | **Input and error states.** Refuse control characters in the shared `search`; Postgres `22021` → 400 in the exception filter; `lat` / `lng` / box parsed from a strict decimal string instead of `z.coerce.number()`; the nearby sheet shows its error with "Réessayer". | A-2, A-6, D-2 | `schemas/clients.test.ts` (`\0`, empty, hex, space); one line per route in `client-map.int-spec.ts`; a Playwright step that answers 500 to `/clients/nearby`. |
+| 3 | **The livreur rule** (after the owner's answer): in `ScopeService.of`, so the list and the map stay equal. Write the rule for a planned stop outside the seller's scope in `docs/domain.md` at the same time. | A-1, A-3 | `client-map.int-spec.ts`: a livreur's map, nearby and list hold only what the rule says; the set comparison "map = list" of `e2e/api/map.ts`. |
+| 4 | **No lost stop.** `PUT /routes/:id/stops` takes the list the client started from (or a route `version`) and answers 409 when the route changed since; the dialog retries on 409 by reading again; the editor shows "la tournée a changé". An in-app navigation guard on the editor while stops are unsaved. | A-7, D-4 | Integration: two saves from the same read, the second is refused. `e2e/api/map.ts` check "both clients end on the route"; the back-button assertion of `map.spec.ts`. |
+| 5 | **Phone layout and the picker.** The map takes the screen under the header at 360 px (link and banner as overlays); the picker queries by view once truncated; "Position approximative (± x km)" in the nearby sheet; more room for the client name in the nearby list. | D-1, D-3, D-5, D-6 | The soft assertions of `map.spec.ts` that fail today, in the four phone projects. |
+| 6 | **The index the API can use.** Generated `double precision` columns for lat / lng, the partial index on them, the box and the nearby prefilter written on them; drop `clients_tenant_geo_idx` one release later. `sellerDepotPoint` falls back to the dépôt principal when the own dépôt has no point. The README line for Neon. | C-1, A-5, E-1 | An integration test that runs `EXPLAIN` through the app connection and expects the index; the A9 check of `e2e/api/map.ts`; `pnpm test:map:perf` area C1 green. |
+| 7 | **Owner's decisions, no code until he answers.** The position in a POST body instead of the query string (Vercel request logs, B-3); a self-hosted or paid tile server before real use (OSM policy, and the tile host sees where the user is); whether `GEO_CHECK` must hide stored coordinates (A-4). | B-3, A-4 | For the POST: `pnpm test:map:privacy`, area B4, expects no position in the request line. |
+
+## 10. Definition of done of the prompt
+
+| Line | State |
+|---|---|
+| Parts A to E in the report | done |
+| Every finding reruns with one command | done: the command is named in each finding (section 2 has the five commands) |
+| `git diff --stat origin/main -- apps packages` empty | done: empty on 2026-11-13 against `origin/main` = `ee2df3d` (fetched; main has not moved since the pass began) |
+| The new suites fail only on the findings they prove | done: every failing check is named in section 4 with its finding; `pnpm lint && pnpm typecheck && pnpm test` pass again at the end, run without Turbo's cache (`turbo run lint typecheck test --force`, 10/10 tasks, 5 min): API 64 suites / 846 tests, shared 34 test files, web 12 test files, lint 0 errors. Run on Node 26, the only Node on this machine; `.nvmrc` and CI say 22. |
+| No request to production but an anonymous `GET` | done: two requests, `GET /clients/map` and `GET /clients/nearby` on `erp-saas-pi.vercel.app`, no header, both 401 |
+| PR `test/phase-35-client-map` | the branch is pushed together with this commit; `gh` is not installed on this machine, so the PR text is in `e2e/artifacts/test-35/PR.md` for the owner to open it. No fix PR is opened. |
+
+## 11. What this pass left on the machine
+
+- Two local databases in the `erp-saas-db-1` container, `erp_t35` and `erp_t35_perf`, kept so every finding can be rerun (`dropdb -U erp erp_t35 erp_t35_perf` removes them), and the role `erp_app`, created as the runbook says for an existing database. The dev database `erp` was not written to.
+- `apps/web/.next` and `apps/api/dist` are the audit builds (API URL `localhost:3003`, a fake Sentry DSN): run `pnpm build` again before using the dev stack from built output.
+- Git-ignored: `e2e/.auth/map-*.json` (fixtures and sessions), `e2e/test-results/`.
