@@ -2,6 +2,7 @@
  * Shared pieces of the phase 35 browser checks: sign-in with a seeded user, the tile
  * block, geolocation mocks.
  */
+import { existsSync } from 'node:fs';
 import { type Browser, type BrowserContext, type Page, type TestInfo } from '@playwright/test';
 import { loadFixture, type SeedUser, PASSWORD } from '../lib/map-fixture.ts';
 
@@ -43,9 +44,32 @@ export async function signedIn(
   browser: Browser,
   info: TestInfo,
   user: SeedUser,
-  opts: { position?: Position | null; lang?: 'ar' | 'fr' | 'en' } = {},
+  opts: { position?: Position | null; lang?: 'ar' | 'fr' | 'en'; stateFile?: string } = {},
 ): Promise<{ context: BrowserContext; page: Page }> {
   const u = info.project.use;
+  // A session saved when the previous worker of this project ended (Playwright starts a new
+  // worker after every failed test): reuse it instead of logging in again, which would run
+  // into the login limiter (ten logins a minute per address).
+  if (opts.stateFile && existsSync(opts.stateFile)) {
+    const context = await browser.newContext({
+      viewport: u.viewport,
+      screen: u.screen,
+      userAgent: u.userAgent,
+      deviceScaleFactor: u.deviceScaleFactor,
+      isMobile: u.isMobile,
+      hasTouch: u.hasTouch,
+      baseURL: WEB,
+      storageState: opts.stateFile,
+      ...(opts.position ? { geolocation: opts.position, permissions: ['geolocation'] } : {}),
+    });
+    await blockTiles(context);
+    await context.addCookies([{ name: 'NEXT_LOCALE', value: opts.lang ?? langOf(info), url: WEB }]);
+    const page = await context.newPage();
+    await page.goto(`${WEB}/clients`);
+    await page.waitForLoadState('networkidle');
+    if (!page.url().includes('/login')) return { context, page };
+    await context.close(); // the saved session is dead: sign in below
+  }
   const context = await browser.newContext({
     viewport: u.viewport,
     screen: u.screen,

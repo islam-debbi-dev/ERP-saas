@@ -1,0 +1,2671 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/26.10.0_2/bin/node",
+      "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "web/map.playwright.config.ts"
+    ],
+    "configFile": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.playwright.config.ts",
+    "rootDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "ar"
+        },
+        "id": "m360-ar",
+        "name": "m360-ar",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/web\\/map\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "id": "m360-fr",
+        "name": "m360-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/web\\/map\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "ar"
+        },
+        "id": "m393-ar",
+        "name": "m393-ar",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/web\\/map\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "id": "m393-fr",
+        "name": "m393-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/web\\/map\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "id": "d1280-fr",
+        "name": "d1280-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/web\\/map\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "ar"
+        },
+        "name": "m360-ar",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "snapshotDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": {},
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://localhost:3005",
+          "actionTimeout": 20000,
+          "navigationTimeout": 30000,
+          "trace": "off",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 360,
+            "height": 640
+          },
+          "screen": {
+            "width": 360,
+            "height": 640
+          },
+          "deviceScaleFactor": 2.75,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium",
+          "locale": "ar"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "m360-ar"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "name": "m360-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "snapshotDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": {},
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://localhost:3005",
+          "actionTimeout": 20000,
+          "navigationTimeout": 30000,
+          "trace": "off",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 360,
+            "height": 640
+          },
+          "screen": {
+            "width": 360,
+            "height": 640
+          },
+          "deviceScaleFactor": 2.75,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium",
+          "locale": "fr"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "m360-fr"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "ar"
+        },
+        "name": "m393-ar",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "snapshotDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": {},
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://localhost:3005",
+          "actionTimeout": 20000,
+          "navigationTimeout": 30000,
+          "trace": "off",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 393,
+            "height": 851
+          },
+          "screen": {
+            "width": 393,
+            "height": 851
+          },
+          "deviceScaleFactor": 2.75,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium",
+          "locale": "ar"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "m393-ar"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "name": "m393-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "snapshotDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": {},
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://localhost:3005",
+          "actionTimeout": 20000,
+          "navigationTimeout": 30000,
+          "trace": "off",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 393,
+            "height": 851
+          },
+          "screen": {
+            "width": 393,
+            "height": 851
+          },
+          "deviceScaleFactor": 2.75,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium",
+          "locale": "fr"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "m393-fr"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "name": "d1280-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "snapshotDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": {},
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://localhost:3005",
+          "actionTimeout": 20000,
+          "navigationTimeout": 30000,
+          "trace": "off",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "locale": "fr"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "d1280-fr"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../artifacts/test-35/web-map.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "map.spec.ts",
+      "file": "map.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "/clients/carte: fits the phone, the two buttons are on the first screen, legend, banner, \"sans position\" link",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "map box",
+                  "description": "top 324, height 398, viewport 640"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2465,
+                  "error": {
+                    "message": "Error: share of the first screen the map gets, in % (map top 324 px of 640)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m50\u001b[39m\nReceived:    \u001b[31m49\u001b[39m",
+                    "stack": "Error: share of the first screen the map gets, in % (map top 324 px of 640)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m50\u001b[39m\nReceived:    \u001b[31m49\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:163:156",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 156,
+                      "line": 163
+                    },
+                    "snippet": "  161 |   if (isPhone(page)) {\n  162 |     const visible = Math.max(0, Math.min(vp.height, box.y + box.height) - box.y);\n> 163 |     expect.soft(Math.round((visible / vp.height) * 100), `share of the first screen the map gets, in % (map top ${Math.round(box.y)} px of ${vp.height})`).toBeGreaterThanOrEqual(50);\n      |                                                                                                                                                            ^\n  164 |     expect.soft(box.y + box.height, 'the whole map fits the first screen (else one finger pans the map and cannot scroll the page)').toBeLessThanOrEqual(vp.height + 1);\n  165 |   }\n  166 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 156,
+                        "line": 163
+                      },
+                      "message": "Error: share of the first screen the map gets, in % (map top 324 px of 640)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m50\u001b[39m\nReceived:    \u001b[31m49\u001b[39m\n\n  161 |   if (isPhone(page)) {\n  162 |     const visible = Math.max(0, Math.min(vp.height, box.y + box.height) - box.y);\n> 163 |     expect.soft(Math.round((visible / vp.height) * 100), `share of the first screen the map gets, in % (map top ${Math.round(box.y)} px of ${vp.height})`).toBeGreaterThanOrEqual(50);\n      |                                                                                                                                                            ^\n  164 |     expect.soft(box.y + box.height, 'the whole map fits the first screen (else one finger pans the map and cannot scroll the page)').toBeLessThanOrEqual(vp.height + 1);\n  165 |   }\n  166 |\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:163:156"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 134,
+                        "line": 164
+                      },
+                      "message": "Error: the whole map fits the first screen (else one finger pans the map and cannot scroll the page)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m641\u001b[39m\nReceived:    \u001b[31m722\u001b[39m\n\n  162 |     const visible = Math.max(0, Math.min(vp.height, box.y + box.height) - box.y);\n  163 |     expect.soft(Math.round((visible / vp.height) * 100), `share of the first screen the map gets, in % (map top ${Math.round(box.y)} px of ${vp.height})`).toBeGreaterThanOrEqual(50);\n> 164 |     expect.soft(box.y + box.height, 'the whole map fits the first screen (else one finger pans the map and cannot scroll the page)').toBeLessThanOrEqual(vp.height + 1);\n      |                                                                                                                                      ^\n  165 |   }\n  166 |\n  167 |   // \"N clients sans position →\" opens the list filtered on them.\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:164:134"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:56:54.769Z",
+                  "annotations": [
+                    {
+                      "type": "map box",
+                      "description": "top 324, height 398, viewport 640"
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map--clients-carte-fits-th-f44bb-d-banner-sans-position-link-m360-ar/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 156,
+                    "line": 163
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-3825741925c77291b715",
+          "file": "map.spec.ts",
+          "line": 128,
+          "column": 1
+        },
+        {
+          "title": "filters sheet: the badge counts the active filters; the sheet traps focus, Escape closes it, controls are named",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2753,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:57:00.729Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-af31019c829e39833202",
+          "file": "map.spec.ts",
+          "line": 182,
+          "column": 1
+        },
+        {
+          "title": "position refused, never answered, vague (5 km): the map stays, the screen explains, no endless spinner",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 13498,
+                  "error": {
+                    "message": "Error: the screen says the position is imprecise (± 5 km)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: the screen says the position is imprecise (± 5 km)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:274:122",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 122,
+                      "line": 274
+                    },
+                    "snippet": "  272 |   // Something on screen must tell the seller the position is rough: the distances listed\n  273 |   // to the metre are meaningless at ± 5 km.\n> 274 |   expect.soft(/précis|approximati|environ|±|دق|تقريب/i.test(text), 'the screen says the position is imprecise (± 5 km)').toBe(true);\n      |                                                                                                                          ^\n  275 |   await vague.close();\n  276 |   // Back to a precise position for the tests that follow (the init script stays on the\n  277 |   // context, so it is replaced, not removed)."
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 122,
+                        "line": 274
+                      },
+                      "message": "Error: the screen says the position is imprecise (± 5 km)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  272 |   // Something on screen must tell the seller the position is rough: the distances listed\n  273 |   // to the metre are meaningless at ± 5 km.\n> 274 |   expect.soft(/précis|approximati|environ|±|دق|تقريب/i.test(text), 'the screen says the position is imprecise (± 5 km)').toBe(true);\n      |                                                                                                                          ^\n  275 |   await vague.close();\n  276 |   // Back to a precise position for the tests that follow (the init script stays on the\n  277 |   // context, so it is replaced, not removed).\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:274:122"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:57:05.342Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map-position-refused-never-b8c01-explains-no-endless-spinner-m360-ar/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 122,
+                    "line": 274
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-c4686cc289f014bea31f",
+          "file": "map.spec.ts",
+          "line": 229,
+          "column": 1
+        },
+        {
+          "title": "\"Près de moi\": the list is sorted by distance, has call and directions links, radius chips; an API error is not shown as \"no client\"",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 8996,
+                  "error": {
+                    "message": "Error: width left to the client name in the nearby list (px)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m90\u001b[39m\nReceived:    \u001b[31m76\u001b[39m",
+                    "stack": "Error: width left to the client name in the nearby list (px)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m90\u001b[39m\nReceived:    \u001b[31m76\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:295:83",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 83,
+                      "line": 295
+                    },
+                    "snippet": "  293 |   // The name must stay readable next to the balance and the two buttons.\n  294 |   const nameWidth = await sheet.getByTestId('nearby-list').locator('li button span').first().evaluate((e) => Math.round(e.getBoundingClientRect().width));\n> 295 |   expect.soft(nameWidth, 'width left to the client name in the nearby list (px)').toBeGreaterThanOrEqual(90);\n      |                                                                                   ^\n  296 |   await expectNoHorizontalOverflow(page, { soft: true });\n  297 |   expect.soft(await rawKeys(page), 'raw message keys').toEqual([]);\n  298 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 83,
+                        "line": 295
+                      },
+                      "message": "Error: width left to the client name in the nearby list (px)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m90\u001b[39m\nReceived:    \u001b[31m76\u001b[39m\n\n  293 |   // The name must stay readable next to the balance and the two buttons.\n  294 |   const nameWidth = await sheet.getByTestId('nearby-list').locator('li button span').first().evaluate((e) => Math.round(e.getBoundingClientRect().width));\n> 295 |   expect.soft(nameWidth, 'width left to the client name in the nearby list (px)').toBeGreaterThanOrEqual(90);\n      |                                                                                   ^\n  296 |   await expectNoHorizontalOverflow(page, { soft: true });\n  297 |   expect.soft(await rawKeys(page), 'raw message keys').toEqual([]);\n  298 |\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:295:83"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 95,
+                        "line": 326
+                      },
+                      "message": "Error: a failed nearby request is shown as \"Aucun client dans ce rayon\"\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  324 |   await shot(page, 'proches-erreur');\n  325 |   const emptyShown = await sheet.getByText(cm['nearbyEmpty']!).isVisible();\n> 326 |   expect.soft(emptyShown, 'a failed nearby request is shown as \"Aucun client dans ce rayon\"').toBe(false);\n      |                                                                                               ^\n  327 |   await page.unroute(/\\/clients\\/nearby/);\n  328 |   await page.keyboard.press('Escape');\n  329 |   await expect(sheet).toBeHidden();\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:326:95"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:57:19.230Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map--Près-de-moi-the-list--47c90--is-not-shown-as-no-client--m360-ar/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 83,
+                    "line": 295
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-f67c4f6db9d98ef8bf59",
+          "file": "map.spec.ts",
+          "line": 281,
+          "column": 1
+        },
+        {
+          "title": "bubble of a client: fiche, tel, itinéraire (lat,lng), balance 1 234 567,89 DA, \"Ajouter à une tournée…\" adds at the end and the toast opens the route",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2984,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:57:30.432Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-6322f2356bcfbfbda000",
+          "file": "map.spec.ts",
+          "line": 332,
+          "column": 1
+        },
+        {
+          "title": "route editor: new tournée → \"Choisir sur la carte\" → tap 3 → numbered in tap order → retirer → close → 2 in the list → guard → save → reload",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 11335,
+                  "error": {
+                    "message": "Error: the back button leaves the editor and drops the unsaved stops without asking\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: the back button leaves the editor and drops the unsaved stops without asking\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:486:125",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 125,
+                      "line": 486
+                    },
+                    "snippet": "  484 |   await page.waitForTimeout(1200);\n  485 |   const left = !page.url().endsWith(routeId);\n> 486 |   expect.soft(left && dialogs.length === 0, 'the back button leaves the editor and drops the unsaved stops without asking').toBe(false);\n      |                                                                                                                             ^\n  487 |   await open(page, `/tournees/${routeId}`);\n  488 |\n  489 |   // Pick again and save for good."
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 125,
+                        "line": 486
+                      },
+                      "message": "Error: the back button leaves the editor and drops the unsaved stops without asking\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  484 |   await page.waitForTimeout(1200);\n  485 |   const left = !page.url().endsWith(routeId);\n> 486 |   expect.soft(left && dialogs.length === 0, 'the back button leaves the editor and drops the unsaved stops without asking').toBe(false);\n      |                                                                                                                             ^\n  487 |   await open(page, `/tournees/${routeId}`);\n  488 |\n  489 |   // Pick again and save for good.\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:486:125"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:57:35.288Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map-route-editor-new-tourn-909c0-ist-→-guard-→-save-→-reload-m360-ar/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 125,
+                    "line": 486
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-be9fc707a77b32b65619",
+          "file": "map.spec.ts",
+          "line": 379,
+          "column": 1
+        },
+        {
+          "title": "\"Ajouter les clients visibles (N)\": refused above the 300 limit with the API's message, confirmed with N below it; the picker above 2 000 clients",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 7710,
+                  "error": {
+                    "message": "Error: requests for the zoomed view in the picker (the banner tells the user to zoom)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: requests for the zoomed view in the picker (the banner tells the user to zoom)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:551:151",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 151,
+                      "line": 551
+                    },
+                    "snippet": "  549 |   await page.waitForTimeout(1200);\n  550 |   // The banner says \"zoomez ou filtrez pour tous les voir\": zooming must then load the view.\n> 551 |   expect.soft(requests.filter((u) => u.includes('minLat=')).length, 'requests for the zoomed view in the picker (the banner tells the user to zoom)').toBeGreaterThan(0);\n      |                                                                                                                                                       ^\n  552 |   await sheet.locator('#pick-all').click();\n  553 |   await sheet.getByRole('button', { name: new RegExp(`^${cm['donePicking']}`) }).click();\n  554 |   page.off('dialog', onDialog);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 151,
+                        "line": 551
+                      },
+                      "message": "Error: requests for the zoomed view in the picker (the banner tells the user to zoom)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  549 |   await page.waitForTimeout(1200);\n  550 |   // The banner says \"zoomez ou filtrez pour tous les voir\": zooming must then load the view.\n> 551 |   expect.soft(requests.filter((u) => u.includes('minLat=')).length, 'requests for the zoomed view in the picker (the banner tells the user to zoom)').toBeGreaterThan(0);\n      |                                                                                                                                                       ^\n  552 |   await sheet.locator('#pick-all').click();\n  553 |   await sheet.getByRole('button', { name: new RegExp(`^${cm['donePicking']}`) }).click();\n  554 |   page.off('dialog', onDialog);\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:551:151"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:57:47.055Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map--Ajouter-les-clients-v-fc7e5--picker-above-2-000-clients-m360-ar/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 151,
+                    "line": 551
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-84aa8ec042016fe03aba",
+          "file": "map.spec.ts",
+          "line": 510,
+          "column": 1
+        },
+        {
+          "title": "/tournees/aujourdhui: \"Carte\" shows numbered stops, the visited one checked; \"Près de moi\" lists only the seller's own clients",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3535,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:57:57.290Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-41fc3ed7a956065c4fff",
+          "file": "map.spec.ts",
+          "line": 557,
+          "column": 1
+        },
+        {
+          "title": "English: no raw message key on the three screens",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2265,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:58:02.796Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-2a1f1eeaa5ca4325096a",
+          "file": "map.spec.ts",
+          "line": 610,
+          "column": 1
+        },
+        {
+          "title": "/clients/carte: fits the phone, the two buttons are on the first screen, legend, banner, \"sans position\" link",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "map box",
+                  "description": "top 376, height 398, viewport 640"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2288,
+                  "error": {
+                    "message": "Error: share of the first screen the map gets, in % (map top 376 px of 640)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m50\u001b[39m\nReceived:    \u001b[31m41\u001b[39m",
+                    "stack": "Error: share of the first screen the map gets, in % (map top 376 px of 640)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m50\u001b[39m\nReceived:    \u001b[31m41\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:163:156",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 156,
+                      "line": 163
+                    },
+                    "snippet": "  161 |   if (isPhone(page)) {\n  162 |     const visible = Math.max(0, Math.min(vp.height, box.y + box.height) - box.y);\n> 163 |     expect.soft(Math.round((visible / vp.height) * 100), `share of the first screen the map gets, in % (map top ${Math.round(box.y)} px of ${vp.height})`).toBeGreaterThanOrEqual(50);\n      |                                                                                                                                                            ^\n  164 |     expect.soft(box.y + box.height, 'the whole map fits the first screen (else one finger pans the map and cannot scroll the page)').toBeLessThanOrEqual(vp.height + 1);\n  165 |   }\n  166 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 156,
+                        "line": 163
+                      },
+                      "message": "Error: share of the first screen the map gets, in % (map top 376 px of 640)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m50\u001b[39m\nReceived:    \u001b[31m41\u001b[39m\n\n  161 |   if (isPhone(page)) {\n  162 |     const visible = Math.max(0, Math.min(vp.height, box.y + box.height) - box.y);\n> 163 |     expect.soft(Math.round((visible / vp.height) * 100), `share of the first screen the map gets, in % (map top ${Math.round(box.y)} px of ${vp.height})`).toBeGreaterThanOrEqual(50);\n      |                                                                                                                                                            ^\n  164 |     expect.soft(box.y + box.height, 'the whole map fits the first screen (else one finger pans the map and cannot scroll the page)').toBeLessThanOrEqual(vp.height + 1);\n  165 |   }\n  166 |\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:163:156"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 134,
+                        "line": 164
+                      },
+                      "message": "Error: the whole map fits the first screen (else one finger pans the map and cannot scroll the page)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m641\u001b[39m\nReceived:    \u001b[31m774\u001b[39m\n\n  162 |     const visible = Math.max(0, Math.min(vp.height, box.y + box.height) - box.y);\n  163 |     expect.soft(Math.round((visible / vp.height) * 100), `share of the first screen the map gets, in % (map top ${Math.round(box.y)} px of ${vp.height})`).toBeGreaterThanOrEqual(50);\n> 164 |     expect.soft(box.y + box.height, 'the whole map fits the first screen (else one finger pans the map and cannot scroll the page)').toBeLessThanOrEqual(vp.height + 1);\n      |                                                                                                                                      ^\n  165 |   }\n  166 |\n  167 |   // \"N clients sans position →\" opens the list filtered on them.\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:164:134"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:58:05.466Z",
+                  "annotations": [
+                    {
+                      "type": "map box",
+                      "description": "top 376, height 398, viewport 640"
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map--clients-carte-fits-th-f44bb-d-banner-sans-position-link-m360-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 156,
+                    "line": 163
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-4d27020f6784c64f936c",
+          "file": "map.spec.ts",
+          "line": 128,
+          "column": 1
+        },
+        {
+          "title": "filters sheet: the badge counts the active filters; the sheet traps focus, Escape closes it, controls are named",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2646,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:58:09.962Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-0850145bd77f15caaea2",
+          "file": "map.spec.ts",
+          "line": 182,
+          "column": 1
+        },
+        {
+          "title": "position refused, never answered, vague (5 km): the map stays, the screen explains, no endless spinner",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 13542,
+                  "error": {
+                    "message": "Error: the screen says the position is imprecise (± 5 km)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: the screen says the position is imprecise (± 5 km)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:274:122",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 122,
+                      "line": 274
+                    },
+                    "snippet": "  272 |   // Something on screen must tell the seller the position is rough: the distances listed\n  273 |   // to the metre are meaningless at ± 5 km.\n> 274 |   expect.soft(/précis|approximati|environ|±|دق|تقريب/i.test(text), 'the screen says the position is imprecise (± 5 km)').toBe(true);\n      |                                                                                                                          ^\n  275 |   await vague.close();\n  276 |   // Back to a precise position for the tests that follow (the init script stays on the\n  277 |   // context, so it is replaced, not removed)."
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 122,
+                        "line": 274
+                      },
+                      "message": "Error: the screen says the position is imprecise (± 5 km)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  272 |   // Something on screen must tell the seller the position is rough: the distances listed\n  273 |   // to the metre are meaningless at ± 5 km.\n> 274 |   expect.soft(/précis|approximati|environ|±|دق|تقريب/i.test(text), 'the screen says the position is imprecise (± 5 km)').toBe(true);\n      |                                                                                                                          ^\n  275 |   await vague.close();\n  276 |   // Back to a precise position for the tests that follow (the init script stays on the\n  277 |   // context, so it is replaced, not removed).\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:274:122"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:58:14.419Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map-position-refused-never-b8c01-explains-no-endless-spinner-m360-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 122,
+                    "line": 274
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-79b1bb1a86c70adc255a",
+          "file": "map.spec.ts",
+          "line": 229,
+          "column": 1
+        },
+        {
+          "title": "\"Près de moi\": the list is sorted by distance, has call and directions links, radius chips; an API error is not shown as \"no client\"",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 9048,
+                  "error": {
+                    "message": "Error: width left to the client name in the nearby list (px)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m90\u001b[39m\nReceived:    \u001b[31m76\u001b[39m",
+                    "stack": "Error: width left to the client name in the nearby list (px)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m90\u001b[39m\nReceived:    \u001b[31m76\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:295:83",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 83,
+                      "line": 295
+                    },
+                    "snippet": "  293 |   // The name must stay readable next to the balance and the two buttons.\n  294 |   const nameWidth = await sheet.getByTestId('nearby-list').locator('li button span').first().evaluate((e) => Math.round(e.getBoundingClientRect().width));\n> 295 |   expect.soft(nameWidth, 'width left to the client name in the nearby list (px)').toBeGreaterThanOrEqual(90);\n      |                                                                                   ^\n  296 |   await expectNoHorizontalOverflow(page, { soft: true });\n  297 |   expect.soft(await rawKeys(page), 'raw message keys').toEqual([]);\n  298 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 83,
+                        "line": 295
+                      },
+                      "message": "Error: width left to the client name in the nearby list (px)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m90\u001b[39m\nReceived:    \u001b[31m76\u001b[39m\n\n  293 |   // The name must stay readable next to the balance and the two buttons.\n  294 |   const nameWidth = await sheet.getByTestId('nearby-list').locator('li button span').first().evaluate((e) => Math.round(e.getBoundingClientRect().width));\n> 295 |   expect.soft(nameWidth, 'width left to the client name in the nearby list (px)').toBeGreaterThanOrEqual(90);\n      |                                                                                   ^\n  296 |   await expectNoHorizontalOverflow(page, { soft: true });\n  297 |   expect.soft(await rawKeys(page), 'raw message keys').toEqual([]);\n  298 |\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:295:83"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 95,
+                        "line": 326
+                      },
+                      "message": "Error: a failed nearby request is shown as \"Aucun client dans ce rayon\"\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  324 |   await shot(page, 'proches-erreur');\n  325 |   const emptyShown = await sheet.getByText(cm['nearbyEmpty']!).isVisible();\n> 326 |   expect.soft(emptyShown, 'a failed nearby request is shown as \"Aucun client dans ce rayon\"').toBe(false);\n      |                                                                                               ^\n  327 |   await page.unroute(/\\/clients\\/nearby/);\n  328 |   await page.keyboard.press('Escape');\n  329 |   await expect(sheet).toBeHidden();\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:326:95"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:58:28.362Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map--Près-de-moi-the-list--47c90--is-not-shown-as-no-client--m360-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 83,
+                    "line": 295
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-2d11bbc27e384b5b8ed6",
+          "file": "map.spec.ts",
+          "line": 281,
+          "column": 1
+        },
+        {
+          "title": "bubble of a client: fiche, tel, itinéraire (lat,lng), balance 1 234 567,89 DA, \"Ajouter à une tournée…\" adds at the end and the toast opens the route",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2975,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:58:39.665Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-e56fe0c1a89fc7acc085",
+          "file": "map.spec.ts",
+          "line": 332,
+          "column": 1
+        },
+        {
+          "title": "route editor: new tournée → \"Choisir sur la carte\" → tap 3 → numbered in tap order → retirer → close → 2 in the list → guard → save → reload",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 11896,
+                  "error": {
+                    "message": "Error: the back button leaves the editor and drops the unsaved stops without asking\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: the back button leaves the editor and drops the unsaved stops without asking\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:486:125",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 125,
+                      "line": 486
+                    },
+                    "snippet": "  484 |   await page.waitForTimeout(1200);\n  485 |   const left = !page.url().endsWith(routeId);\n> 486 |   expect.soft(left && dialogs.length === 0, 'the back button leaves the editor and drops the unsaved stops without asking').toBe(false);\n      |                                                                                                                             ^\n  487 |   await open(page, `/tournees/${routeId}`);\n  488 |\n  489 |   // Pick again and save for good."
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 125,
+                        "line": 486
+                      },
+                      "message": "Error: the back button leaves the editor and drops the unsaved stops without asking\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  484 |   await page.waitForTimeout(1200);\n  485 |   const left = !page.url().endsWith(routeId);\n> 486 |   expect.soft(left && dialogs.length === 0, 'the back button leaves the editor and drops the unsaved stops without asking').toBe(false);\n      |                                                                                                                             ^\n  487 |   await open(page, `/tournees/${routeId}`);\n  488 |\n  489 |   // Pick again and save for good.\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:486:125"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:58:44.528Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map-route-editor-new-tourn-909c0-ist-→-guard-→-save-→-reload-m360-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 125,
+                    "line": 486
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-c1ebbf4dd5eba9fd23f5",
+          "file": "map.spec.ts",
+          "line": 379,
+          "column": 1
+        },
+        {
+          "title": "\"Ajouter les clients visibles (N)\": refused above the 300 limit with the API's message, confirmed with N below it; the picker above 2 000 clients",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 7674,
+                  "error": {
+                    "message": "Error: requests for the zoomed view in the picker (the banner tells the user to zoom)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: requests for the zoomed view in the picker (the banner tells the user to zoom)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:551:151",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 151,
+                      "line": 551
+                    },
+                    "snippet": "  549 |   await page.waitForTimeout(1200);\n  550 |   // The banner says \"zoomez ou filtrez pour tous les voir\": zooming must then load the view.\n> 551 |   expect.soft(requests.filter((u) => u.includes('minLat=')).length, 'requests for the zoomed view in the picker (the banner tells the user to zoom)').toBeGreaterThan(0);\n      |                                                                                                                                                       ^\n  552 |   await sheet.locator('#pick-all').click();\n  553 |   await sheet.getByRole('button', { name: new RegExp(`^${cm['donePicking']}`) }).click();\n  554 |   page.off('dialog', onDialog);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 151,
+                        "line": 551
+                      },
+                      "message": "Error: requests for the zoomed view in the picker (the banner tells the user to zoom)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  549 |   await page.waitForTimeout(1200);\n  550 |   // The banner says \"zoomez ou filtrez pour tous les voir\": zooming must then load the view.\n> 551 |   expect.soft(requests.filter((u) => u.includes('minLat=')).length, 'requests for the zoomed view in the picker (the banner tells the user to zoom)').toBeGreaterThan(0);\n      |                                                                                                                                                       ^\n  552 |   await sheet.locator('#pick-all').click();\n  553 |   await sheet.getByRole('button', { name: new RegExp(`^${cm['donePicking']}`) }).click();\n  554 |   page.off('dialog', onDialog);\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:551:151"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:58:56.868Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map--Ajouter-les-clients-v-fc7e5--picker-above-2-000-clients-m360-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 151,
+                    "line": 551
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-db10dd3a10a0c6061a85",
+          "file": "map.spec.ts",
+          "line": 510,
+          "column": 1
+        },
+        {
+          "title": "/tournees/aujourdhui: \"Carte\" shows numbered stops, the visited one checked; \"Près de moi\" lists only the seller's own clients",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 11,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3498,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:59:06.928Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-61ff5d555b47f25f7f40",
+          "file": "map.spec.ts",
+          "line": 557,
+          "column": 1
+        },
+        {
+          "title": "English: no raw message key on the three screens",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 11,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2254,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:59:12.270Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-0adb7f620c9fa557e092",
+          "file": "map.spec.ts",
+          "line": 610,
+          "column": 1
+        },
+        {
+          "title": "/clients/carte: fits the phone, the two buttons are on the first screen, legend, banner, \"sans position\" link",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "map box",
+                  "description": "top 324, height 609, viewport 851"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 12,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2365,
+                  "error": {
+                    "message": "Error: the whole map fits the first screen (else one finger pans the map and cannot scroll the page)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m852\u001b[39m\nReceived:    \u001b[31m933\u001b[39m",
+                    "stack": "Error: the whole map fits the first screen (else one finger pans the map and cannot scroll the page)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m852\u001b[39m\nReceived:    \u001b[31m933\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:164:134",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 134,
+                      "line": 164
+                    },
+                    "snippet": "  162 |     const visible = Math.max(0, Math.min(vp.height, box.y + box.height) - box.y);\n  163 |     expect.soft(Math.round((visible / vp.height) * 100), `share of the first screen the map gets, in % (map top ${Math.round(box.y)} px of ${vp.height})`).toBeGreaterThanOrEqual(50);\n> 164 |     expect.soft(box.y + box.height, 'the whole map fits the first screen (else one finger pans the map and cannot scroll the page)').toBeLessThanOrEqual(vp.height + 1);\n      |                                                                                                                                      ^\n  165 |   }\n  166 |\n  167 |   // \"N clients sans position →\" opens the list filtered on them."
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 134,
+                        "line": 164
+                      },
+                      "message": "Error: the whole map fits the first screen (else one finger pans the map and cannot scroll the page)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m852\u001b[39m\nReceived:    \u001b[31m933\u001b[39m\n\n  162 |     const visible = Math.max(0, Math.min(vp.height, box.y + box.height) - box.y);\n  163 |     expect.soft(Math.round((visible / vp.height) * 100), `share of the first screen the map gets, in % (map top ${Math.round(box.y)} px of ${vp.height})`).toBeGreaterThanOrEqual(50);\n> 164 |     expect.soft(box.y + box.height, 'the whole map fits the first screen (else one finger pans the map and cannot scroll the page)').toBeLessThanOrEqual(vp.height + 1);\n      |                                                                                                                                      ^\n  165 |   }\n  166 |\n  167 |   // \"N clients sans position →\" opens the list filtered on them.\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:164:134"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:59:14.914Z",
+                  "annotations": [
+                    {
+                      "type": "map box",
+                      "description": "top 324, height 609, viewport 851"
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map--clients-carte-fits-th-f44bb-d-banner-sans-position-link-m393-ar/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 134,
+                    "line": 164
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-1afd453ffe2c6f041cef",
+          "file": "map.spec.ts",
+          "line": 128,
+          "column": 1
+        },
+        {
+          "title": "filters sheet: the badge counts the active filters; the sheet traps focus, Escape closes it, controls are named",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 13,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2729,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:59:19.458Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-6a126bcc4f44fab81a52",
+          "file": "map.spec.ts",
+          "line": 182,
+          "column": 1
+        },
+        {
+          "title": "position refused, never answered, vague (5 km): the map stays, the screen explains, no endless spinner",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 13,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 13650,
+                  "error": {
+                    "message": "Error: the screen says the position is imprecise (± 5 km)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: the screen says the position is imprecise (± 5 km)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:274:122",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 122,
+                      "line": 274
+                    },
+                    "snippet": "  272 |   // Something on screen must tell the seller the position is rough: the distances listed\n  273 |   // to the metre are meaningless at ± 5 km.\n> 274 |   expect.soft(/précis|approximati|environ|±|دق|تقريب/i.test(text), 'the screen says the position is imprecise (± 5 km)').toBe(true);\n      |                                                                                                                          ^\n  275 |   await vague.close();\n  276 |   // Back to a precise position for the tests that follow (the init script stays on the\n  277 |   // context, so it is replaced, not removed)."
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 122,
+                        "line": 274
+                      },
+                      "message": "Error: the screen says the position is imprecise (± 5 km)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  272 |   // Something on screen must tell the seller the position is rough: the distances listed\n  273 |   // to the metre are meaningless at ± 5 km.\n> 274 |   expect.soft(/précis|approximati|environ|±|دق|تقريب/i.test(text), 'the screen says the position is imprecise (± 5 km)').toBe(true);\n      |                                                                                                                          ^\n  275 |   await vague.close();\n  276 |   // Back to a precise position for the tests that follow (the init script stays on the\n  277 |   // context, so it is replaced, not removed).\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:274:122"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:59:24.041Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map-position-refused-never-b8c01-explains-no-endless-spinner-m393-ar/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 122,
+                    "line": 274
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-4bfe03938133a3206b90",
+          "file": "map.spec.ts",
+          "line": 229,
+          "column": 1
+        },
+        {
+          "title": "\"Près de moi\": the list is sorted by distance, has call and directions links, radius chips; an API error is not shown as \"no client\"",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 14,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 9125,
+                  "error": {
+                    "message": "Error: a failed nearby request is shown as \"Aucun client dans ce rayon\"\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: a failed nearby request is shown as \"Aucun client dans ce rayon\"\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:326:95",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 95,
+                      "line": 326
+                    },
+                    "snippet": "  324 |   await shot(page, 'proches-erreur');\n  325 |   const emptyShown = await sheet.getByText(cm['nearbyEmpty']!).isVisible();\n> 326 |   expect.soft(emptyShown, 'a failed nearby request is shown as \"Aucun client dans ce rayon\"').toBe(false);\n      |                                                                                               ^\n  327 |   await page.unroute(/\\/clients\\/nearby/);\n  328 |   await page.keyboard.press('Escape');\n  329 |   await expect(sheet).toBeHidden();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 95,
+                        "line": 326
+                      },
+                      "message": "Error: a failed nearby request is shown as \"Aucun client dans ce rayon\"\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  324 |   await shot(page, 'proches-erreur');\n  325 |   const emptyShown = await sheet.getByText(cm['nearbyEmpty']!).isVisible();\n> 326 |   expect.soft(emptyShown, 'a failed nearby request is shown as \"Aucun client dans ce rayon\"').toBe(false);\n      |                                                                                               ^\n  327 |   await page.unroute(/\\/clients\\/nearby/);\n  328 |   await page.keyboard.press('Escape');\n  329 |   await expect(sheet).toBeHidden();\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:326:95"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:59:38.105Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map--Près-de-moi-the-list--47c90--is-not-shown-as-no-client--m393-ar/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 95,
+                    "line": 326
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-42f5a86785e8378efb3d",
+          "file": "map.spec.ts",
+          "line": 281,
+          "column": 1
+        },
+        {
+          "title": "bubble of a client: fiche, tel, itinéraire (lat,lng), balance 1 234 567,89 DA, \"Ajouter à une tournée…\" adds at the end and the toast opens the route",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 15,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3083,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:59:49.430Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-d960621d4bc395283003",
+          "file": "map.spec.ts",
+          "line": 332,
+          "column": 1
+        },
+        {
+          "title": "route editor: new tournée → \"Choisir sur la carte\" → tap 3 → numbered in tap order → retirer → close → 2 in the list → guard → save → reload",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 15,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 11427,
+                  "error": {
+                    "message": "Error: the back button leaves the editor and drops the unsaved stops without asking\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: the back button leaves the editor and drops the unsaved stops without asking\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:486:125",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 125,
+                      "line": 486
+                    },
+                    "snippet": "  484 |   await page.waitForTimeout(1200);\n  485 |   const left = !page.url().endsWith(routeId);\n> 486 |   expect.soft(left && dialogs.length === 0, 'the back button leaves the editor and drops the unsaved stops without asking').toBe(false);\n      |                                                                                                                             ^\n  487 |   await open(page, `/tournees/${routeId}`);\n  488 |\n  489 |   // Pick again and save for good."
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 125,
+                        "line": 486
+                      },
+                      "message": "Error: the back button leaves the editor and drops the unsaved stops without asking\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  484 |   await page.waitForTimeout(1200);\n  485 |   const left = !page.url().endsWith(routeId);\n> 486 |   expect.soft(left && dialogs.length === 0, 'the back button leaves the editor and drops the unsaved stops without asking').toBe(false);\n      |                                                                                                                             ^\n  487 |   await open(page, `/tournees/${routeId}`);\n  488 |\n  489 |   // Pick again and save for good.\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:486:125"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:59:54.366Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map-route-editor-new-tourn-909c0-ist-→-guard-→-save-→-reload-m393-ar/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 125,
+                    "line": 486
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-8877c95e89caae7161d3",
+          "file": "map.spec.ts",
+          "line": 379,
+          "column": 1
+        },
+        {
+          "title": "\"Ajouter les clients visibles (N)\": refused above the 300 limit with the API's message, confirmed with N below it; the picker above 2 000 clients",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 7833,
+                  "error": {
+                    "message": "Error: requests for the zoomed view in the picker (the banner tells the user to zoom)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: requests for the zoomed view in the picker (the banner tells the user to zoom)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:551:151",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 151,
+                      "line": 551
+                    },
+                    "snippet": "  549 |   await page.waitForTimeout(1200);\n  550 |   // The banner says \"zoomez ou filtrez pour tous les voir\": zooming must then load the view.\n> 551 |   expect.soft(requests.filter((u) => u.includes('minLat=')).length, 'requests for the zoomed view in the picker (the banner tells the user to zoom)').toBeGreaterThan(0);\n      |                                                                                                                                                       ^\n  552 |   await sheet.locator('#pick-all').click();\n  553 |   await sheet.getByRole('button', { name: new RegExp(`^${cm['donePicking']}`) }).click();\n  554 |   page.off('dialog', onDialog);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 151,
+                        "line": 551
+                      },
+                      "message": "Error: requests for the zoomed view in the picker (the banner tells the user to zoom)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  549 |   await page.waitForTimeout(1200);\n  550 |   // The banner says \"zoomez ou filtrez pour tous les voir\": zooming must then load the view.\n> 551 |   expect.soft(requests.filter((u) => u.includes('minLat=')).length, 'requests for the zoomed view in the picker (the banner tells the user to zoom)').toBeGreaterThan(0);\n      |                                                                                                                                                       ^\n  552 |   await sheet.locator('#pick-all').click();\n  553 |   await sheet.getByRole('button', { name: new RegExp(`^${cm['donePicking']}`) }).click();\n  554 |   page.off('dialog', onDialog);\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:551:151"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:00:06.201Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map--Ajouter-les-clients-v-fc7e5--picker-above-2-000-clients-m393-ar/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 151,
+                    "line": 551
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-df30a86f2f53202d8d68",
+          "file": "map.spec.ts",
+          "line": 510,
+          "column": 1
+        },
+        {
+          "title": "/tournees/aujourdhui: \"Carte\" shows numbered stops, the visited one checked; \"Près de moi\" lists only the seller's own clients",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 17,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3579,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:00:16.348Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-546db3a866d1a8606466",
+          "file": "map.spec.ts",
+          "line": 557,
+          "column": 1
+        },
+        {
+          "title": "English: no raw message key on the three screens",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 17,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2220,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:00:21.755Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-07a95ba1099b4ed95317",
+          "file": "map.spec.ts",
+          "line": 610,
+          "column": 1
+        },
+        {
+          "title": "/clients/carte: fits the phone, the two buttons are on the first screen, legend, banner, \"sans position\" link",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "map box",
+                  "description": "top 376, height 609, viewport 851"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 18,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2328,
+                  "error": {
+                    "message": "Error: the whole map fits the first screen (else one finger pans the map and cannot scroll the page)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m852\u001b[39m\nReceived:    \u001b[31m985\u001b[39m",
+                    "stack": "Error: the whole map fits the first screen (else one finger pans the map and cannot scroll the page)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m852\u001b[39m\nReceived:    \u001b[31m985\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:164:134",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 134,
+                      "line": 164
+                    },
+                    "snippet": "  162 |     const visible = Math.max(0, Math.min(vp.height, box.y + box.height) - box.y);\n  163 |     expect.soft(Math.round((visible / vp.height) * 100), `share of the first screen the map gets, in % (map top ${Math.round(box.y)} px of ${vp.height})`).toBeGreaterThanOrEqual(50);\n> 164 |     expect.soft(box.y + box.height, 'the whole map fits the first screen (else one finger pans the map and cannot scroll the page)').toBeLessThanOrEqual(vp.height + 1);\n      |                                                                                                                                      ^\n  165 |   }\n  166 |\n  167 |   // \"N clients sans position →\" opens the list filtered on them."
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 134,
+                        "line": 164
+                      },
+                      "message": "Error: the whole map fits the first screen (else one finger pans the map and cannot scroll the page)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m852\u001b[39m\nReceived:    \u001b[31m985\u001b[39m\n\n  162 |     const visible = Math.max(0, Math.min(vp.height, box.y + box.height) - box.y);\n  163 |     expect.soft(Math.round((visible / vp.height) * 100), `share of the first screen the map gets, in % (map top ${Math.round(box.y)} px of ${vp.height})`).toBeGreaterThanOrEqual(50);\n> 164 |     expect.soft(box.y + box.height, 'the whole map fits the first screen (else one finger pans the map and cannot scroll the page)').toBeLessThanOrEqual(vp.height + 1);\n      |                                                                                                                                      ^\n  165 |   }\n  166 |\n  167 |   // \"N clients sans position →\" opens the list filtered on them.\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:164:134"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:00:24.362Z",
+                  "annotations": [
+                    {
+                      "type": "map box",
+                      "description": "top 376, height 609, viewport 851"
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map--clients-carte-fits-th-f44bb-d-banner-sans-position-link-m393-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 134,
+                    "line": 164
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-5dbadb6f9d4256463e3f",
+          "file": "map.spec.ts",
+          "line": 128,
+          "column": 1
+        },
+        {
+          "title": "filters sheet: the badge counts the active filters; the sheet traps focus, Escape closes it, controls are named",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 19,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2767,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:00:28.876Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-c87ab291b00d8cbce9db",
+          "file": "map.spec.ts",
+          "line": 182,
+          "column": 1
+        },
+        {
+          "title": "position refused, never answered, vague (5 km): the map stays, the screen explains, no endless spinner",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 19,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 13611,
+                  "error": {
+                    "message": "Error: the screen says the position is imprecise (± 5 km)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: the screen says the position is imprecise (± 5 km)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:274:122",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 122,
+                      "line": 274
+                    },
+                    "snippet": "  272 |   // Something on screen must tell the seller the position is rough: the distances listed\n  273 |   // to the metre are meaningless at ± 5 km.\n> 274 |   expect.soft(/précis|approximati|environ|±|دق|تقريب/i.test(text), 'the screen says the position is imprecise (± 5 km)').toBe(true);\n      |                                                                                                                          ^\n  275 |   await vague.close();\n  276 |   // Back to a precise position for the tests that follow (the init script stays on the\n  277 |   // context, so it is replaced, not removed)."
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 122,
+                        "line": 274
+                      },
+                      "message": "Error: the screen says the position is imprecise (± 5 km)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  272 |   // Something on screen must tell the seller the position is rough: the distances listed\n  273 |   // to the metre are meaningless at ± 5 km.\n> 274 |   expect.soft(/précis|approximati|environ|±|دق|تقريب/i.test(text), 'the screen says the position is imprecise (± 5 km)').toBe(true);\n      |                                                                                                                          ^\n  275 |   await vague.close();\n  276 |   // Back to a precise position for the tests that follow (the init script stays on the\n  277 |   // context, so it is replaced, not removed).\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:274:122"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:00:33.443Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map-position-refused-never-b8c01-explains-no-endless-spinner-m393-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 122,
+                    "line": 274
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-d65529077d793e21e488",
+          "file": "map.spec.ts",
+          "line": 229,
+          "column": 1
+        },
+        {
+          "title": "\"Près de moi\": the list is sorted by distance, has call and directions links, radius chips; an API error is not shown as \"no client\"",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 20,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 9122,
+                  "error": {
+                    "message": "Error: a failed nearby request is shown as \"Aucun client dans ce rayon\"\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: a failed nearby request is shown as \"Aucun client dans ce rayon\"\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:326:95",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 95,
+                      "line": 326
+                    },
+                    "snippet": "  324 |   await shot(page, 'proches-erreur');\n  325 |   const emptyShown = await sheet.getByText(cm['nearbyEmpty']!).isVisible();\n> 326 |   expect.soft(emptyShown, 'a failed nearby request is shown as \"Aucun client dans ce rayon\"').toBe(false);\n      |                                                                                               ^\n  327 |   await page.unroute(/\\/clients\\/nearby/);\n  328 |   await page.keyboard.press('Escape');\n  329 |   await expect(sheet).toBeHidden();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 95,
+                        "line": 326
+                      },
+                      "message": "Error: a failed nearby request is shown as \"Aucun client dans ce rayon\"\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  324 |   await shot(page, 'proches-erreur');\n  325 |   const emptyShown = await sheet.getByText(cm['nearbyEmpty']!).isVisible();\n> 326 |   expect.soft(emptyShown, 'a failed nearby request is shown as \"Aucun client dans ce rayon\"').toBe(false);\n      |                                                                                               ^\n  327 |   await page.unroute(/\\/clients\\/nearby/);\n  328 |   await page.keyboard.press('Escape');\n  329 |   await expect(sheet).toBeHidden();\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:326:95"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:00:47.462Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map--Près-de-moi-the-list--47c90--is-not-shown-as-no-client--m393-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 95,
+                    "line": 326
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-993eccc46dad6a42adf7",
+          "file": "map.spec.ts",
+          "line": 281,
+          "column": 1
+        },
+        {
+          "title": "bubble of a client: fiche, tel, itinéraire (lat,lng), balance 1 234 567,89 DA, \"Ajouter à une tournée…\" adds at the end and the toast opens the route",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 21,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3059,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:00:58.836Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-1f84083130a0feff4ea9",
+          "file": "map.spec.ts",
+          "line": 332,
+          "column": 1
+        },
+        {
+          "title": "route editor: new tournée → \"Choisir sur la carte\" → tap 3 → numbered in tap order → retirer → close → 2 in the list → guard → save → reload",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 21,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 11144,
+                  "error": {
+                    "message": "Error: the back button leaves the editor and drops the unsaved stops without asking\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: the back button leaves the editor and drops the unsaved stops without asking\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:486:125",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 125,
+                      "line": 486
+                    },
+                    "snippet": "  484 |   await page.waitForTimeout(1200);\n  485 |   const left = !page.url().endsWith(routeId);\n> 486 |   expect.soft(left && dialogs.length === 0, 'the back button leaves the editor and drops the unsaved stops without asking').toBe(false);\n      |                                                                                                                             ^\n  487 |   await open(page, `/tournees/${routeId}`);\n  488 |\n  489 |   // Pick again and save for good."
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 125,
+                        "line": 486
+                      },
+                      "message": "Error: the back button leaves the editor and drops the unsaved stops without asking\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  484 |   await page.waitForTimeout(1200);\n  485 |   const left = !page.url().endsWith(routeId);\n> 486 |   expect.soft(left && dialogs.length === 0, 'the back button leaves the editor and drops the unsaved stops without asking').toBe(false);\n      |                                                                                                                             ^\n  487 |   await open(page, `/tournees/${routeId}`);\n  488 |\n  489 |   // Pick again and save for good.\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:486:125"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:01:03.812Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map-route-editor-new-tourn-909c0-ist-→-guard-→-save-→-reload-m393-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 125,
+                    "line": 486
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-4c054f585d31ddb56de6",
+          "file": "map.spec.ts",
+          "line": 379,
+          "column": 1
+        },
+        {
+          "title": "\"Ajouter les clients visibles (N)\": refused above the 300 limit with the API's message, confirmed with N below it; the picker above 2 000 clients",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 22,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 7754,
+                  "error": {
+                    "message": "Error: requests for the zoomed view in the picker (the banner tells the user to zoom)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: requests for the zoomed view in the picker (the banner tells the user to zoom)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:551:151",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 151,
+                      "line": 551
+                    },
+                    "snippet": "  549 |   await page.waitForTimeout(1200);\n  550 |   // The banner says \"zoomez ou filtrez pour tous les voir\": zooming must then load the view.\n> 551 |   expect.soft(requests.filter((u) => u.includes('minLat=')).length, 'requests for the zoomed view in the picker (the banner tells the user to zoom)').toBeGreaterThan(0);\n      |                                                                                                                                                       ^\n  552 |   await sheet.locator('#pick-all').click();\n  553 |   await sheet.getByRole('button', { name: new RegExp(`^${cm['donePicking']}`) }).click();\n  554 |   page.off('dialog', onDialog);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 151,
+                        "line": 551
+                      },
+                      "message": "Error: requests for the zoomed view in the picker (the banner tells the user to zoom)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  549 |   await page.waitForTimeout(1200);\n  550 |   // The banner says \"zoomez ou filtrez pour tous les voir\": zooming must then load the view.\n> 551 |   expect.soft(requests.filter((u) => u.includes('minLat=')).length, 'requests for the zoomed view in the picker (the banner tells the user to zoom)').toBeGreaterThan(0);\n      |                                                                                                                                                       ^\n  552 |   await sheet.locator('#pick-all').click();\n  553 |   await sheet.getByRole('button', { name: new RegExp(`^${cm['donePicking']}`) }).click();\n  554 |   page.off('dialog', onDialog);\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:551:151"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:01:15.366Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map--Ajouter-les-clients-v-fc7e5--picker-above-2-000-clients-m393-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 151,
+                    "line": 551
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-b9b85ca32ae418a42f21",
+          "file": "map.spec.ts",
+          "line": 510,
+          "column": 1
+        },
+        {
+          "title": "/tournees/aujourdhui: \"Carte\" shows numbered stops, the visited one checked; \"Près de moi\" lists only the seller's own clients",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 23,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3614,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:01:25.419Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-92e6c9ea003b9fe92dbf",
+          "file": "map.spec.ts",
+          "line": 557,
+          "column": 1
+        },
+        {
+          "title": "English: no raw message key on the three screens",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 23,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2236,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:01:30.866Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-7ca2ba4e29e133fc14c3",
+          "file": "map.spec.ts",
+          "line": 610,
+          "column": 1
+        },
+        {
+          "title": "/clients/carte: fits the phone, the two buttons are on the first screen, legend, banner, \"sans position\" link",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "map box",
+                  "description": "top 316, height 606, viewport 800"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 24,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3029,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:01:33.487Z",
+                  "annotations": [
+                    {
+                      "type": "map box",
+                      "description": "top 316, height 606, viewport 800"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-d66f0fb9a951c834e1d7",
+          "file": "map.spec.ts",
+          "line": 128,
+          "column": 1
+        },
+        {
+          "title": "filters sheet: the badge counts the active filters; the sheet traps focus, Escape closes it, controls are named",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 24,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1714,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:01:38.450Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-1f4cb651c517379bb82a",
+          "file": "map.spec.ts",
+          "line": 182,
+          "column": 1
+        },
+        {
+          "title": "position refused, never answered, vague (5 km): the map stays, the screen explains, no endless spinner",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 24,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 15646,
+                  "error": {
+                    "message": "Error: the screen says the position is imprecise (± 5 km)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: the screen says the position is imprecise (± 5 km)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:274:122",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 122,
+                      "line": 274
+                    },
+                    "snippet": "  272 |   // Something on screen must tell the seller the position is rough: the distances listed\n  273 |   // to the metre are meaningless at ± 5 km.\n> 274 |   expect.soft(/précis|approximati|environ|±|دق|تقريب/i.test(text), 'the screen says the position is imprecise (± 5 km)').toBe(true);\n      |                                                                                                                          ^\n  275 |   await vague.close();\n  276 |   // Back to a precise position for the tests that follow (the init script stays on the\n  277 |   // context, so it is replaced, not removed)."
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 122,
+                        "line": 274
+                      },
+                      "message": "Error: the screen says the position is imprecise (± 5 km)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  272 |   // Something on screen must tell the seller the position is rough: the distances listed\n  273 |   // to the metre are meaningless at ± 5 km.\n> 274 |   expect.soft(/précis|approximati|environ|±|دق|تقريب/i.test(text), 'the screen says the position is imprecise (± 5 km)').toBe(true);\n      |                                                                                                                          ^\n  275 |   await vague.close();\n  276 |   // Back to a precise position for the tests that follow (the init script stays on the\n  277 |   // context, so it is replaced, not removed).\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:274:122"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:01:40.169Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map-position-refused-never-b8c01-explains-no-endless-spinner-d1280-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 122,
+                    "line": 274
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-cdec124b9f9bf6677567",
+          "file": "map.spec.ts",
+          "line": 229,
+          "column": 1
+        },
+        {
+          "title": "\"Près de moi\": the list is sorted by distance, has call and directions links, radius chips; an API error is not shown as \"no client\"",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 25,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 9140,
+                  "error": {
+                    "message": "Error: a failed nearby request is shown as \"Aucun client dans ce rayon\"\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: a failed nearby request is shown as \"Aucun client dans ce rayon\"\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:326:95",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 95,
+                      "line": 326
+                    },
+                    "snippet": "  324 |   await shot(page, 'proches-erreur');\n  325 |   const emptyShown = await sheet.getByText(cm['nearbyEmpty']!).isVisible();\n> 326 |   expect.soft(emptyShown, 'a failed nearby request is shown as \"Aucun client dans ce rayon\"').toBe(false);\n      |                                                                                               ^\n  327 |   await page.unroute(/\\/clients\\/nearby/);\n  328 |   await page.keyboard.press('Escape');\n  329 |   await expect(sheet).toBeHidden();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 95,
+                        "line": 326
+                      },
+                      "message": "Error: a failed nearby request is shown as \"Aucun client dans ce rayon\"\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  324 |   await shot(page, 'proches-erreur');\n  325 |   const emptyShown = await sheet.getByText(cm['nearbyEmpty']!).isVisible();\n> 326 |   expect.soft(emptyShown, 'a failed nearby request is shown as \"Aucun client dans ce rayon\"').toBe(false);\n      |                                                                                               ^\n  327 |   await page.unroute(/\\/clients\\/nearby/);\n  328 |   await page.keyboard.press('Escape');\n  329 |   await expect(sheet).toBeHidden();\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:326:95"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:01:56.238Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map--Près-de-moi-the-list--47c90--is-not-shown-as-no-client--d1280-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 95,
+                    "line": 326
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-e1bd546c1ce99f61865c",
+          "file": "map.spec.ts",
+          "line": 281,
+          "column": 1
+        },
+        {
+          "title": "bubble of a client: fiche, tel, itinéraire (lat,lng), balance 1 234 567,89 DA, \"Ajouter à une tournée…\" adds at the end and the toast opens the route",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 26,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3219,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:02:07.796Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-5c6461ff815c8624a03e",
+          "file": "map.spec.ts",
+          "line": 332,
+          "column": 1
+        },
+        {
+          "title": "route editor: new tournée → \"Choisir sur la carte\" → tap 3 → numbered in tap order → retirer → close → 2 in the list → guard → save → reload",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 26,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 8382,
+                  "error": {
+                    "message": "Error: the back button leaves the editor and drops the unsaved stops without asking\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: the back button leaves the editor and drops the unsaved stops without asking\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:486:125",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 125,
+                      "line": 486
+                    },
+                    "snippet": "  484 |   await page.waitForTimeout(1200);\n  485 |   const left = !page.url().endsWith(routeId);\n> 486 |   expect.soft(left && dialogs.length === 0, 'the back button leaves the editor and drops the unsaved stops without asking').toBe(false);\n      |                                                                                                                             ^\n  487 |   await open(page, `/tournees/${routeId}`);\n  488 |\n  489 |   // Pick again and save for good."
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 125,
+                        "line": 486
+                      },
+                      "message": "Error: the back button leaves the editor and drops the unsaved stops without asking\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  484 |   await page.waitForTimeout(1200);\n  485 |   const left = !page.url().endsWith(routeId);\n> 486 |   expect.soft(left && dialogs.length === 0, 'the back button leaves the editor and drops the unsaved stops without asking').toBe(false);\n      |                                                                                                                             ^\n  487 |   await open(page, `/tournees/${routeId}`);\n  488 |\n  489 |   // Pick again and save for good.\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:486:125"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:02:12.970Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map-route-editor-new-tourn-909c0-ist-→-guard-→-save-→-reload-d1280-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 125,
+                    "line": 486
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-4ce49884c1a3ea664169",
+          "file": "map.spec.ts",
+          "line": 379,
+          "column": 1
+        },
+        {
+          "title": "\"Ajouter les clients visibles (N)\": refused above the 300 limit with the API's message, confirmed with N below it; the picker above 2 000 clients",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 27,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 7554,
+                  "error": {
+                    "message": "Error: requests for the zoomed view in the picker (the banner tells the user to zoom)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: requests for the zoomed view in the picker (the banner tells the user to zoom)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:551:151",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                      "column": 151,
+                      "line": 551
+                    },
+                    "snippet": "  549 |   await page.waitForTimeout(1200);\n  550 |   // The banner says \"zoomez ou filtrez pour tous les voir\": zooming must then load the view.\n> 551 |   expect.soft(requests.filter((u) => u.includes('minLat=')).length, 'requests for the zoomed view in the picker (the banner tells the user to zoom)').toBeGreaterThan(0);\n      |                                                                                                                                                       ^\n  552 |   await sheet.locator('#pick-all').click();\n  553 |   await sheet.getByRole('button', { name: new RegExp(`^${cm['donePicking']}`) }).click();\n  554 |   page.off('dialog', onDialog);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                        "column": 151,
+                        "line": 551
+                      },
+                      "message": "Error: requests for the zoomed view in the picker (the banner tells the user to zoom)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  549 |   await page.waitForTimeout(1200);\n  550 |   // The banner says \"zoomez ou filtrez pour tous les voir\": zooming must then load the view.\n> 551 |   expect.soft(requests.filter((u) => u.includes('minLat=')).length, 'requests for the zoomed view in the picker (the banner tells the user to zoom)').toBeGreaterThan(0);\n      |                                                                                                                                                       ^\n  552 |   await sheet.locator('#pick-all').click();\n  553 |   await sheet.getByRole('button', { name: new RegExp(`^${cm['donePicking']}`) }).click();\n  554 |   page.off('dialog', onDialog);\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts:551:151"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:02:21.774Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/map--Ajouter-les-clients-v-fc7e5--picker-above-2-000-clients-d1280-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.spec.ts",
+                    "column": 151,
+                    "line": 551
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-3f054cc8d543741107ec",
+          "file": "map.spec.ts",
+          "line": 510,
+          "column": 1
+        },
+        {
+          "title": "/tournees/aujourdhui: \"Carte\" shows numbered stops, the visited one checked; \"Près de moi\" lists only the seller's own clients",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 28,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3350,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:02:31.788Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-fff68a1c27bd30df490f",
+          "file": "map.spec.ts",
+          "line": 557,
+          "column": 1
+        },
+        {
+          "title": "English: no raw message key on the three screens",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 28,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3080,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T03:02:37.139Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d8799038d2916f69765-8d2f8e402c131c75cb7b",
+          "file": "map.spec.ts",
+          "line": 610,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-12T02:56:54.311Z",
+    "duration": 345994.108,
+    "expected": 21,
+    "skipped": 0,
+    "unexpected": 24,
+    "flaky": 0
+  }
+}

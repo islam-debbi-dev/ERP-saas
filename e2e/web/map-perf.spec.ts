@@ -110,7 +110,7 @@ test('2 000 points on a 360 px phone with the CPU slowed four times', async ({ b
   const responseToDrawn = median(runs.map((r) => r.responseToDrawnMs));
   expect(runs[0]!.points, 'the cap is reached: 2 000 points').toBe(2000);
   await expect(page.getByText(/Plus de 2\s000 clients/)).toBeVisible();
-  if (CPU === 4) await page.screenshot({ path: `${info.config.rootDir}/../artifacts/test-35/perf-360-2000-points.png` });
+  if (CPU === 4) await page.screenshot({ path: `${info.config.rootDir}/../artifacts/test-35/perf-360-2000-points.png`, scale: 'css' });
 
   // A pan and a zoom, with 2 000 points on screen.
   await page.waitForTimeout(1500);
@@ -141,7 +141,7 @@ test('2 000 points on a 360 px phone with the CPU slowed four times', async ({ b
     await page.waitForTimeout(900);
   }
   const heapAfter = await heap();
-  if (CPU === 4) await page.screenshot({ path: `${info.config.rootDir}/../artifacts/test-35/perf-360-after-pans.png` });
+  if (CPU === 4) await page.screenshot({ path: `${info.config.rootDir}/../artifacts/test-35/perf-360-after-pans.png`, scale: 'css' });
 
   const facts = {
     setup: `360 × 640, CPU ×${CPU}, tenant A owner, 2 000 points (canvas), tiles answered locally by a 1×1 PNG`,
