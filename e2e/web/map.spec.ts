@@ -363,6 +363,8 @@ test('bubble of a client: fiche, tel, itinéraire (lat,lng), balance 1 234 567,8
   await expect(dialog).toBeVisible();
   await shot(page, 'ajouter-a-une-tournee');
   // Only the routes of the client's seller are offered.
+  // The list loads after the dialog opens (a skeleton first): wait for it before reading.
+  await expect(dialog.locator('ul li').first()).toBeVisible();
   const offered = await dialog.locator('ul li').allTextContents();
   const sellerLabel = w.data.seller.email.replace('t35-', '').replace('@audit.local', '');
   expect(offered.length, `routes offered: ${offered.join(' | ')}`).toBeGreaterThanOrEqual(2);

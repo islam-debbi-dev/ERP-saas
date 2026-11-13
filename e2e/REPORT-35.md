@@ -5,6 +5,44 @@
 **Prompt:** [`docs/prompts/test-35-client-map.md`](../docs/prompts/test-35-client-map.md). **Spec:** [`phase-35-client-map.md`](../docs/prompts/phase-35-client-map.md).
 **Rule of the pass:** find and prove, do not fix. Nothing under `apps/` or `packages/` is changed.
 
+## Fix status (2026-11-13, branch `fix/phase-35-map-findings`)
+
+The findings below were proven on `ee2df3d` and the text of this report is left as written. Fourteen of the
+eighteen are fixed on the branch `fix/phase-35-map-findings`; four wait for the owner. The suites of this
+pass were run again on the fixed build (same commands, section 2).
+
+| Finding | State | How |
+|---|---|---|
+| B-1, B-2 | fixed | One scrubber in `@erp/shared` (`position-privacy.ts`) drops `lat` / `lng` and the map's view box from any URL, whatever the route or its spelling. Used by the pino serializer and by `beforeSend` / `beforeSendSpan` / `beforeBreadcrumb` of the API, browser and SSR Sentry clients. |
+| A-2, A-6 | fixed | Every list `search` refuses control characters; SQLSTATE 22021 is a 400 in the exception filter; `lat` / `lng` are parsed from a decimal string, not `z.coerce.number()`. |
+| A-7 | fixed | `PUT /routes/:id/stops` takes `baseClientIds` and answers 409 `ROUTE_STOPS_CHANGED` under its row lock when the route changed; the dialog reads again and retries, the editor tells the planner. |
+| D-4 | fixed | `useLeaveGuard`: asks before leaving the editor with unsaved changes by a link or the back button. |
+| D-1 | fixed | The map measures what is left of the screen and fills it; title left to the top bar on phones; banner and "sans position" link over the map. |
+| D-2, D-5, D-6 | fixed | "Clients proches": error state with "Réessayer", a note when the position is rougher than 100 m, two lines per row. |
+| D-3 | fixed | The picker queries by view once truncated (`useClientMapByView`, shared with the map screen). |
+| C-1 | fixed | Migration `20261113120000_clients_geo_float_index`: generated `lat_f` / `lng_f` (float8) and a partial index on them; the boxes are written on those columns. **Run it before deploying the API.** `clients_tenant_geo_idx` is to be dropped in a later release. |
+| A-5 | fixed | `sellerDepotPoint` falls back to the dépôt principal when the seller's only dépôt has no point. |
+| E-1 | fixed | README and runbook ("Migrations on Neon", "Reading a query plan"). |
+| A-1 | **owner decides** | Livreur (and probably STOREKEEPER) sees every client: which is right, the spec or `ScopeService`? |
+| A-3 | **owner decides** | A planned stop outside the seller's scope: allowed and written down, or refused by `setStops`? |
+| A-4 | **owner decides** | Must a tenant without `GEO_CHECK` stop receiving stored coordinates? |
+| B-3 | **owner decides** | Position in Vercel's request logs: move it to a POST body? No scrub in the app can reach those logs. |
+
+Rerun on the fixed build:
+
+| Part | Before | After |
+|---|---|---|
+| A `api/map.ts` (76 checks) | 64 pass, 8 fail | 68 pass, **4 fail**: the three A-1 checks and the A-4 check, nothing else |
+| B `api/map-privacy.ts` (26 checks) + browser spec | 12 pass, 8 fail; browser 1 fail | 24 pass, **0 fail**; browser spec passes |
+| C `api/map-perf.ts` (18 checks) | 10 pass, 5 fail | 15 pass, **0 fail**: the API's role uses `clients_tenant_geo_f_idx` |
+| D `web/map.spec.ts` (45 tests) | 21 pass, 24 fail | **45 pass** |
+| Repository | API 64 suites / 846 tests | lint, typecheck, test green: API 65 suites / 865 tests, shared 35 files, web 12 files (Node 26; CI is 22) |
+
+- C, in numbers (`artifacts/test-35-fix/perf-server.md`): nearby 5 km in the 50 000-client tenant, slowest statement 12.9 → 7.4 ms; in the 5 000-client tenant 3.1 → 0.8 ms. The widest search (50 km, 100 rows) is slower through the index, as section C already showed for the owner's plan: HTTP p95 63 → 101 ms, under the 400 ms budget.
+- Two checks of the suites were changed to follow the product: the lost-update check of `api/map.ts` now sends `baseClientIds` and retries like the dialog; `web/map.spec.ts` reads the distance by test id and waits for the route list before counting it (it raced the skeleton).
+- Seen by eye, not by a test: the banner drawn over the map showed through the "Clients proches" sheet; the map box is now its own stacking context. After-fix screenshots: `artifacts/test-35-fix/`. The files under `artifacts/test-35/` are still the proofs of the original pass.
+- Not verified: Sentry's hosted service (a local sink received the payloads), Neon, a real phone, and the back-button guard on iOS Safari.
+
 ## Status (read this first when resuming)
 
 | Part | State | Commit |

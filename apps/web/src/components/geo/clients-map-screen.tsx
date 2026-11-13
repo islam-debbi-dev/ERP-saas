@@ -189,7 +189,9 @@ function Screen() {
         <div className="space-y-2">
           <div
             ref={mapBoxRef}
-            className="relative"
+            // `isolate`: what is drawn over the map (z-1000, above Leaflet's panes) must
+            // stay under the sheets and dialogs of the page.
+            className="relative isolate"
             style={mapHeight ? ({ '--map-h': `${mapHeight}px` } as CSSProperties) : undefined}
           >
             {/* Over the map, not above it: each row above costs the map its height on a

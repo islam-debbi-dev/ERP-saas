@@ -92,6 +92,7 @@
 - A seller's figures (dashboard, reports) are always his own, whatever the setting; a superviseur's are his team's.
 - Brand figures are computed per line: a document with several brands counts once in each, and line TTC can differ by a centime from the document total.
 - **Tournée**: the ordered list of clients a seller visits on given weekdays. **Visite**: one stop, with an outcome (sale, order, payment only, no sale + reason).
+- **Saving the stops of a tournée** replaces the whole ordered list. The save says which list it started from (`baseClientIds`); if another planner changed the tournée in between, it is refused (`ROUTE_STOPS_CHANGED`) instead of silently undoing his change. "Ajouter à une tournée…" on the map reads again and retries by itself; the editor asks the planner to reload.
 - **Vente directe**: the seller sells from his truck and prints the BL on the spot. **Pré-vente**: he takes a bon de commande; a livreur delivers it later and the BL is created at delivery.
 - **Camion = dépôt** (`Warehouse` type VEHICLE). Chargement / déchargement are stock transfers. CUMP stays per product for the whole company.
 
