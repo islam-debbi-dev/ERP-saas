@@ -1,27 +1,23 @@
+import { isPositionParam, stripPositionParams } from '@erp/shared';
+
 /**
  * Phase 35: "Clients proches" sends the user's position as query parameters. It is used
- * for one query and never kept: the request log gets the URL without `lat` / `lng`.
+ * for one query and never kept: the request log gets the URL without it.
+ *
+ * On every route and for every spelling: Express routes `/clients/nearby/` and
+ * `/Clients/Nearby` to the same handler, so a list of paths here would always be behind
+ * the router. The names and the rule live in `@erp/shared` (Sentry uses the same).
  */
-const POSITION_ROUTES = /^\/clients\/nearby(?:\?|$)/;
-const POSITION_PARAMS = ['lat', 'lng'];
-
-/** The URL with the position parameters removed, for routes that carry one. */
-export function stripPosition(url: string): string {
-  if (!POSITION_ROUTES.test(url)) return url;
-  const q = url.indexOf('?');
-  if (q < 0) return url;
-  const params = new URLSearchParams(url.slice(q + 1));
-  for (const p of POSITION_PARAMS) params.delete(p);
-  const rest = params.toString();
-  return rest ? `${url.slice(0, q)}?${rest}` : url.slice(0, q);
-}
+export const stripPosition = stripPositionParams;
 
 /** pino-http `req` serializer: receives the already serialized request. */
 export function scrubRequest<T extends { url?: string; query?: Record<string, unknown> }>(
   req: T,
 ): T {
-  if (!req.url || !POSITION_ROUTES.test(req.url)) return req;
-  const query = req.query ? { ...req.query } : undefined;
-  if (query) for (const p of POSITION_PARAMS) delete query[p];
-  return { ...req, url: stripPosition(req.url), ...(query ? { query } : {}) };
+  const url = req.url === undefined ? undefined : stripPosition(req.url);
+  const names = req.query ? Object.keys(req.query).filter(isPositionParam) : [];
+  if (url === req.url && names.length === 0) return req;
+  const query = { ...req.query };
+  for (const name of names) delete query[name];
+  return { ...req, ...(url === undefined ? {} : { url }), ...(req.query ? { query } : {}) };
 }
