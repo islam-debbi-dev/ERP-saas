@@ -327,6 +327,34 @@ describe('client map (phase 35)', () => {
     });
   });
 
+  // REPORT-35, A-2 and A-6: hostile values are a 400 with a code, never a 500 or a guess.
+  describe('hostile input', () => {
+    const refused = async (url: string) => {
+      const res = await as(d).get(url).expect(400);
+      expect((res.body as ApiError).code).toBe(ErrorCode.VALIDATION_FAILED);
+    };
+
+    it('refuses a NUL byte in search on the map, nearby and the list', async () => {
+      await refused('/clients/map?search=%00');
+      await refused('/clients/map?search=abc%00def');
+      await refused('/clients/nearby?lat=36.75&lng=3.06&search=%00');
+      await refused('/clients?search=%00');
+    });
+
+    it('does not read an empty position as 0, 0', async () => {
+      await refused('/clients/nearby?lat=&lng=');
+      await refused('/clients/nearby?lat=%20&lng=3');
+      await refused('/clients/nearby?lat=0x24&lng=3');
+      await refused('/clients/map?minLat=&minLng=2&maxLat=37&maxLng=4');
+    });
+
+    it('answers 400 when a NUL byte reaches the database through another field', async () => {
+      const res = await as(d).post('/clients', { name: `${tag} nul\u0000name` });
+      expect(res.status).toBe(400);
+      expect((res.body as ApiError).code).toBe(ErrorCode.VALIDATION_FAILED);
+    });
+  });
+
   describe('GET /clients?hasLocation', () => {
     it('lists clients with or without a point', async () => {
       const page = async (v: string) =>

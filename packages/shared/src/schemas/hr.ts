@@ -20,7 +20,7 @@ import {
 } from '../enums';
 import { type MonthCounts } from '../attendance';
 import { parseDA } from '../money';
-import { normalizeDecimal } from './common';
+import { normalizeDecimal, searchText } from './common';
 import { geoInputSchema } from './geo';
 
 const id = z.uuid();
@@ -110,7 +110,7 @@ export const updateEmployeeSchema = z
 export type UpdateEmployeeInput = z.infer<typeof updateEmployeeSchema>;
 
 export const employeeListQuerySchema = z.object({
-  search: z.string().trim().max(120).optional(),
+  search: searchText(120).optional(),
   warehouseId: id.optional(),
   archived: z
     .enum(['true', 'false'])

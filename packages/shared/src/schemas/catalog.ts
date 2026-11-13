@@ -1,7 +1,13 @@
 import { z } from 'zod';
 import { parseDA } from '../money';
 import { qty } from '../quantity';
-import { amountString, normalizeDecimal, percentString, quantityString } from './common';
+import {
+  amountString,
+  normalizeDecimal,
+  percentString,
+  quantityString,
+  searchText,
+} from './common';
 
 const name = (max: number) => z.string().trim().min(1).max(max);
 const id = z.uuid();
@@ -172,7 +178,7 @@ export const updateProductSchema = z
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 
 export const productListQuerySchema = z.object({
-  search: z.string().trim().max(100).optional(),
+  search: searchText().optional(),
   categoryId: id.optional(),
   brandId: id.optional(),
   /** Only what this dépôt sells (its brands and categories), phase 24. */

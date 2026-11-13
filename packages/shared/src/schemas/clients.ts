@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ClientType, type ClientLedgerType } from '../enums';
 import { parseDA } from '../money';
-import { amountString, normalizeDecimal } from './common';
+import { amountString, decimalQuery, normalizeDecimal, searchText } from './common';
 import { type ClientLocationDto } from './geo';
 
 const id = z.uuid();
@@ -56,7 +56,7 @@ export const updateClientSchema = z.object({ ...clientFields, version: z.number(
 export type UpdateClientInput = z.infer<typeof updateClientSchema>;
 
 export const clientListQuerySchema = z.object({
-  search: z.string().trim().max(100).optional(),
+  search: searchText().optional(),
   hasDebt: z
     .enum(['true', 'false'])
     .optional()
@@ -102,8 +102,8 @@ const mapFilterFields = {
   includeInactive: flag,
 };
 
-const latQ = z.coerce.number().min(-90).max(90);
-const lngQ = z.coerce.number().min(-180).max(180);
+const latQ = decimalQuery.pipe(z.number().min(-90).max(90));
+const lngQ = decimalQuery.pipe(z.number().min(-180).max(180));
 
 export const clientMapQuerySchema = z
   .object({
