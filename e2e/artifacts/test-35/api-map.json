@@ -1,0 +1,494 @@
+{
+  "totals": {
+    "total": 76,
+    "passed": 64,
+    "failed": 8,
+    "blocked": 0,
+    "info": 4
+  },
+  "results": [
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 121,
+      "name": "owner: /clients/map (all slices, inactive included) = the spec's scope, as a set",
+      "status": "PASS",
+      "expected": "4363 clients"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 435,
+      "name": "owner: /clients/map = GET /clients?hasLocation=true for the same user, as a set",
+      "status": "PASS"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 29,
+      "name": "owner: /clients/nearby (50 km around Alger, 100 nearest) stays in the same set",
+      "status": "PASS"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 88,
+      "name": "manager: /clients/map (all slices, inactive included) = the spec's scope, as a set",
+      "status": "PASS",
+      "expected": "4363 clients"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 487,
+      "name": "manager: /clients/map = GET /clients?hasLocation=true for the same user, as a set",
+      "status": "PASS"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 28,
+      "name": "manager: /clients/nearby (50 km around Alger, 100 nearest) stays in the same set",
+      "status": "PASS"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 60,
+      "name": "supervisor: /clients/map (all slices, inactive included) = the spec's scope, as a set",
+      "status": "PASS",
+      "expected": "2625 clients"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 345,
+      "name": "supervisor: /clients/map = GET /clients?hasLocation=true for the same user, as a set",
+      "status": "PASS"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 21,
+      "name": "supervisor: /clients/nearby (50 km around Alger, 100 nearest) stays in the same set",
+      "status": "PASS"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 42,
+      "name": "seller1 (in the team): /clients/map (all slices, inactive included) = the spec's scope, as a set",
+      "status": "PASS",
+      "expected": "1075 clients"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 107,
+      "name": "seller1 (in the team): /clients/map = GET /clients?hasLocation=true for the same user, as a set",
+      "status": "PASS"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 9,
+      "name": "seller1 (in the team): /clients/nearby (50 km around Alger, 100 nearest) stays in the same set",
+      "status": "PASS"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 25,
+      "name": "seller outside the team: /clients/map (all slices, inactive included) = the spec's scope, as a set",
+      "status": "PASS",
+      "expected": "600 clients"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 57,
+      "name": "seller outside the team: /clients/map = GET /clients?hasLocation=true for the same user, as a set",
+      "status": "PASS"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 8,
+      "name": "seller outside the team: /clients/nearby (50 km around Alger, 100 nearest) stays in the same set",
+      "status": "PASS"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 183,
+      "name": "livreur: /clients/map (all slices, inactive included) = the spec's scope, as a set",
+      "status": "FAIL",
+      "evidence": "4363 points for 0 expected: 4363 outside the scope, 0 missing",
+      "expected": "0 clients"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 382,
+      "name": "livreur: /clients/map = GET /clients?hasLocation=true for the same user, as a set",
+      "status": "PASS"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 21,
+      "name": "livreur: /clients/nearby (50 km around Alger, 100 nearest) stays in the same set",
+      "status": "FAIL",
+      "evidence": "100 of 100 nearby clients are outside the spec's scope, e.g. T35-00015 assigned to null"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 60,
+      "name": "supervisor: no client of the seller outside his team, on the map or nearby",
+      "status": "PASS"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 17,
+      "name": "seller1: asking for another seller's clients (filter, search by exact code, centre on it) gives nothing",
+      "status": "PASS"
+    },
+    {
+      "area": "A1 scope — the map and the nearby list against the client list and the tables",
+      "durationMs": 131,
+      "name": "`withoutLocation` counts only the user's own clients, for each role",
+      "status": "FAIL",
+      "evidence": "livreur: withoutLocation 507, expected 0"
+    },
+    {
+      "area": "A2 tenant isolation — tenant B sits on the very same coordinates",
+      "durationMs": 244,
+      "name": "A's whole map holds no client of B, for every role",
+      "status": "PASS"
+    },
+    {
+      "area": "A2 tenant isolation — tenant B sits on the very same coordinates",
+      "durationMs": 1580,
+      "name": "nearby centred on 60 coordinates of B (100 m and 50 km) never returns a client of B",
+      "status": "PASS"
+    },
+    {
+      "area": "A2 tenant isolation — tenant B sits on the very same coordinates",
+      "durationMs": 211,
+      "name": "B's sector id, seller id and client id as filters or search give nothing and no 500",
+      "status": "PASS"
+    },
+    {
+      "area": "A2 tenant isolation — tenant B sits on the very same coordinates",
+      "durationMs": 49,
+      "name": "B's owner sees his 300 clients and none of A's; B's seller only his own",
+      "status": "PASS"
+    },
+    {
+      "area": "A2 tenant isolation — tenant B sits on the very same coordinates",
+      "durationMs": 74,
+      "name": "a route of B is not found by A; a client of B is refused as a stop of A's route",
+      "status": "PASS"
+    },
+    {
+      "area": "A3 filters — every combination against the tables",
+      "durationMs": 505,
+      "name": "/clients/map: the 64 combinations of the six filters (ids in order, truncated, withoutLocation)",
+      "status": "PASS"
+    },
+    {
+      "area": "A3 filters — every combination against the tables",
+      "durationMs": 636,
+      "name": "/clients/map: the same 64 combinations for the supervisor (scope and filters together)",
+      "status": "PASS"
+    },
+    {
+      "area": "A3 filters — every combination against the tables",
+      "durationMs": 607,
+      "name": "/clients/nearby: the 64 combinations, 50 km around Alger, the 100 nearest",
+      "status": "PASS"
+    },
+    {
+      "area": "A3 filters — every combination against the tables",
+      "durationMs": 292,
+      "name": "search treats %, _ and \\ as plain characters (map, nearby, list)",
+      "status": "PASS"
+    },
+    {
+      "area": "A3 filters — every combination against the tables",
+      "durationMs": 1745,
+      "name": "GET /clients?hasLocation=true|false splits the list exactly, alone and with the other filters",
+      "status": "PASS"
+    },
+    {
+      "area": "A4 cap — 2 000 points, the edge at 1 999 / 2 000 / 2 001",
+      "durationMs": 25,
+      "name": "4106 clients match: 2 000 points, truncated, ordered by name then id",
+      "status": "PASS"
+    },
+    {
+      "area": "A4 cap — 2 000 points, the edge at 1 999 / 2 000 / 2 001",
+      "durationMs": 63,
+      "name": "a box holding exactly 1 999, 2 000 and 2 001 clients",
+      "status": "PASS"
+    },
+    {
+      "area": "A4 cap — 2 000 points, the edge at 1 999 / 2 000 / 2 001",
+      "durationMs": 10,
+      "name": "the box is inclusive on its four edges",
+      "status": "PASS"
+    },
+    {
+      "area": "A4 cap — 2 000 points, the edge at 1 999 / 2 000 / 2 001",
+      "durationMs": 17,
+      "name": "the point DTO is the compact one of the spec, nothing more",
+      "status": "PASS"
+    },
+    {
+      "area": "A5 hostile input — 400 with a code, never 500",
+      "durationMs": 0,
+      "name": "85 hostile requests: none answers 500",
+      "status": "FAIL",
+      "evidence": "search with a NUL byte: HTTP 500 INTERNAL_ERROR (/clients/map?search=%00) | search with a NUL byte inside: HTTP 500 INTERNAL_ERROR (/clients/map?search=abc%00def) | nearby search with a NUL byte: HTTP 500 INTERNAL_ERROR (/clients/nearby?lat=36.75&lng=3.06&search=%00) | list search with a NUL byte (older route, for comparison): HTTP 500 INTERNAL_ERROR (/clients?hasLocation=true&search=%00) — table in artifacts/test-35/hostile-inputs.md",
+      "expected": "400 VALIDATION_FAILED (AGENTS.md §4: every input validated)"
+    },
+    {
+      "area": "A5 hostile input — 400 with a code, never 500",
+      "durationMs": 0,
+      "name": "every input the spec forbids answers 400 with a `code`; every edge value it allows answers 200",
+      "status": "PASS"
+    },
+    {
+      "area": "A5 hostile input — 400 with a code, never 500",
+      "durationMs": 0,
+      "name": "inputs the schema lets through although they are not plain decimal numbers",
+      "status": "INFO",
+      "actual": "exponent notation inside the range; hexadecimal (0x24 = 36); empty value; a space; 10 000 decimals; broken percent-encoding in search; search as an array; a tenantId parameter; empty lat and lng; exponent notation inside the range"
+    },
+    {
+      "area": "A5 hostile input — 400 with a code, never 500",
+      "durationMs": 5,
+      "name": "an empty `lat=&lng=` is not read as the position 0, 0",
+      "status": "FAIL",
+      "evidence": "HTTP 200: the empty strings were coerced to 0 (z.coerce.number, packages/shared/src/schemas/clients.ts:105-106), so the route searched around 0°N 0°E",
+      "expected": "400 VALIDATION_FAILED"
+    },
+    {
+      "area": "A5 hostile input — 400 with a code, never 500",
+      "durationMs": 2,
+      "name": "no token → 401 on both routes",
+      "status": "PASS"
+    },
+    {
+      "area": "A6 nearby — the radius edge, the poles, the equator, the antimeridian",
+      "durationMs": 6,
+      "name": "Sahara (30°N): r=5000 m returns exactly the edge clients within the radius",
+      "status": "PASS"
+    },
+    {
+      "area": "A6 nearby — the radius edge, the poles, the equator, the antimeridian",
+      "durationMs": 5,
+      "name": "Sahara (30°N): r=5010 m returns exactly the edge clients within the radius",
+      "status": "PASS"
+    },
+    {
+      "area": "A6 nearby — the radius edge, the poles, the equator, the antimeridian",
+      "durationMs": 5,
+      "name": "Sahara (30°N): r=4989 m returns exactly the edge clients within the radius",
+      "status": "PASS"
+    },
+    {
+      "area": "A6 nearby — the radius edge, the poles, the equator, the antimeridian",
+      "durationMs": 6,
+      "name": "equator: r=5000 m returns exactly the edge clients within the radius",
+      "status": "PASS"
+    },
+    {
+      "area": "A6 nearby — the radius edge, the poles, the equator, the antimeridian",
+      "durationMs": 5,
+      "name": "near the north pole (89.95°N): r=20000 m returns exactly the edge clients within the radius",
+      "status": "PASS"
+    },
+    {
+      "area": "A6 nearby — the radius edge, the poles, the equator, the antimeridian",
+      "durationMs": 5,
+      "name": "near the north pole (89.95°N): r=5000 m returns exactly the edge clients within the radius",
+      "status": "PASS"
+    },
+    {
+      "area": "A6 nearby — the radius edge, the poles, the equator, the antimeridian",
+      "durationMs": 5,
+      "name": "on the pole: r=6000 m returns exactly the edge clients within the radius",
+      "status": "PASS"
+    },
+    {
+      "area": "A6 nearby — the radius edge, the poles, the equator, the antimeridian",
+      "durationMs": 5,
+      "name": "next to the antimeridian (179.99°E): r=5000 m returns exactly the edge clients within the radius",
+      "status": "PASS"
+    },
+    {
+      "area": "A6 nearby — the radius edge, the poles, the equator, the antimeridian",
+      "durationMs": 5,
+      "name": "next to the antimeridian (179.99°E): r=50000 m returns exactly the edge clients within the radius",
+      "status": "PASS"
+    },
+    {
+      "area": "A6 nearby — the radius edge, the poles, the equator, the antimeridian",
+      "durationMs": 5,
+      "name": "from the other side (-179.99°): r=5000 m returns exactly the edge clients within the radius",
+      "status": "PASS"
+    },
+    {
+      "area": "A6 nearby — the radius edge, the poles, the equator, the antimeridian",
+      "durationMs": 135,
+      "name": "distanceM is sorted ascending; `limit` keeps the nearest",
+      "status": "PASS"
+    },
+    {
+      "area": "A6 nearby — the radius edge, the poles, the equator, the antimeridian",
+      "durationMs": 100,
+      "name": "five clients on one point: the tie is ordered by name then id, the same on 10 calls",
+      "status": "PASS"
+    },
+    {
+      "area": "A7 feature gates",
+      "durationMs": 15,
+      "name": "Essentiel (no GEO_CHECK): map and nearby refused with FEATURE_NOT_IN_PLAN",
+      "status": "PASS"
+    },
+    {
+      "area": "A7 feature gates",
+      "durationMs": 33,
+      "name": "Distribution with GEO_CHECK revoked and TOURNEES kept: map and nearby refused",
+      "status": "PASS"
+    },
+    {
+      "area": "A7 feature gates",
+      "durationMs": 0,
+      "name": "without GEO_CHECK: do GET /routes/:id and GET /me/today still hand out client lat/lng and the dépôt start point?",
+      "status": "INFO",
+      "actual": "routes/:id YES, me/today YES; the phase 17 client DTO (GET /clients) also carries `location` there",
+      "evidence": "artifacts/test-35/geo-check-off-coordinates.json"
+    },
+    {
+      "area": "A7 feature gates",
+      "durationMs": 0,
+      "name": "without GEO_CHECK the route DTO carries no coordinates (stops lat/lng null, start null)",
+      "status": "FAIL",
+      "evidence": "routes/:id leaks: true, me/today leaks: true (see geo-check-off-coordinates.json)",
+      "expected": "no coordinates without GEO_CHECK (spec: \"the map needs Feature.GEO_CHECK\")"
+    },
+    {
+      "area": "A7 feature gates",
+      "durationMs": 189,
+      "name": "permission CLIENTS_VIEW revoked from a user → map and nearby refused, given back → allowed",
+      "status": "PASS"
+    },
+    {
+      "area": "A8 route stops picked from the map — PUT /routes/:id/stops",
+      "durationMs": 27,
+      "name": "clients picked on the map are saved in the picked order, positions 1..n, with their points",
+      "status": "PASS"
+    },
+    {
+      "area": "A8 route stops picked from the map — PUT /routes/:id/stops",
+      "durationMs": 60,
+      "name": "300 stops accepted and kept in order; 301 refused and nothing changed",
+      "status": "PASS"
+    },
+    {
+      "area": "A8 route stops picked from the map — PUT /routes/:id/stops",
+      "durationMs": 20,
+      "name": "a client twice in the list is refused and nothing changed",
+      "status": "PASS"
+    },
+    {
+      "area": "A8 route stops picked from the map — PUT /routes/:id/stops",
+      "durationMs": 13,
+      "name": "an archived client is refused; an unknown id is refused; a malformed id is refused",
+      "status": "PASS"
+    },
+    {
+      "area": "A8 route stops picked from the map — PUT /routes/:id/stops",
+      "durationMs": 0,
+      "name": "a client without a point as a stop",
+      "status": "PASS",
+      "expected": "accepted: the spec keeps \"stops without a point … at the end\" of \"Ordonner par proximité\", so they are valid stops",
+      "actual": "HTTP 200; the stop comes back with lat null"
+    },
+    {
+      "area": "A8 route stops picked from the map — PUT /routes/:id/stops",
+      "durationMs": 0,
+      "name": "an inactive client (active = false) as a stop",
+      "status": "INFO",
+      "actual": "HTTP 200. The spec only says clients \"must be live\"; the map hides inactive clients by default but the API takes them."
+    },
+    {
+      "area": "A8 route stops picked from the map — PUT /routes/:id/stops",
+      "durationMs": 43,
+      "name": "the supervisor cannot add a client of the seller outside his team; the owner can",
+      "status": "PASS"
+    },
+    {
+      "area": "A8 route stops picked from the map — PUT /routes/:id/stops",
+      "durationMs": 25,
+      "name": "the supervisor cannot read or write a route of the seller outside his team",
+      "status": "PASS"
+    },
+    {
+      "area": "A8 route stops picked from the map — PUT /routes/:id/stops",
+      "durationMs": 5,
+      "name": "a SELLER and a LIVREUR cannot call PUT /routes/:id/stops, even on the seller's own route",
+      "status": "PASS"
+    },
+    {
+      "area": "A8 route stops picked from the map — PUT /routes/:id/stops",
+      "durationMs": 0,
+      "name": "a client outside the seller's scope, planned on his route by the owner: what the seller sees",
+      "status": "INFO",
+      "actual": "map 0 point, client page HTTP 404, but GET /routes/:id shows it with lat 36.89816 and GET /me/today shows it with name, phone, point and balance 1500.00",
+      "evidence": "artifacts/test-35/seller-sees-planned-client-outside-scope.json"
+    },
+    {
+      "area": "A8 route stops picked from the map — PUT /routes/:id/stops",
+      "durationMs": 1385,
+      "name": "two planners save the same route at the same time, 25 rounds: the list is one of the two, never a mix; two audit rows each round",
+      "status": "PASS"
+    },
+    {
+      "area": "A8 route stops picked from the map — PUT /routes/:id/stops",
+      "durationMs": 1081,
+      "name": "five planners racing on one route with 300 stops each, 5 rounds: no 500, no deadlock, no lost position",
+      "status": "PASS"
+    },
+    {
+      "area": "A8 route stops picked from the map — PUT /routes/:id/stops",
+      "durationMs": 52,
+      "name": "\"Ajouter à une tournée…\" from the map by two planners (each: GET the route, PUT the list plus one client): both clients end on the route",
+      "status": "FAIL",
+      "evidence": "the route has 4 stops: the owner's client was dropped by the manager's save, and both were told it worked",
+      "expected": "both clients on the route, or the second save refused (stale list)"
+    },
+    {
+      "area": "A8 route stops picked from the map — PUT /routes/:id/stops",
+      "durationMs": 25,
+      "name": "PUT stops writes no client row and no position anywhere else (only route_stops and audit_logs change)",
+      "status": "PASS"
+    },
+    {
+      "area": "A9 RouteDto.start — the dépôt of the route's seller (sellerDepotPoint)",
+      "durationMs": 25,
+      "name": "dépôt principal without a point: one OPERATE dépôt with a point → that point; every other case → null",
+      "status": "PASS"
+    },
+    {
+      "area": "A9 RouteDto.start — the dépôt of the route's seller (sellerDepotPoint)",
+      "durationMs": 22,
+      "name": "dépôt principal with a point: two dépôts, a truck only, no access, VIEW_STATS only → the dépôt principal",
+      "status": "PASS"
+    },
+    {
+      "area": "A9 RouteDto.start — the dépôt of the route's seller (sellerDepotPoint)",
+      "durationMs": 4,
+      "name": "one OPERATE dépôt WITHOUT a point and a dépôt principal with one → the dépôt principal",
+      "status": "FAIL",
+      "evidence": "start: expected {\"lat\":36.7701,\"lng\":3.0552}, got null",
+      "expected": "scope.service.ts:146 doc: \"the one dépôt he operates in when it has a point, else the dépôt principal when it has one, else null\""
+    },
+    {
+      "area": "A9 RouteDto.start — the dépôt of the route's seller (sellerDepotPoint)",
+      "durationMs": 60,
+      "name": "a deleted dépôt is never the start; another tenant's dépôt principal is never the start",
+      "status": "PASS"
+    },
+    {
+      "area": "A9 RouteDto.start — the dépôt of the route's seller (sellerDepotPoint)",
+      "durationMs": 17,
+      "name": "a seller reads `start` of his own route; GET /routes (the list) carries no start and no stops",
+      "status": "PASS"
+    }
+  ]
+}

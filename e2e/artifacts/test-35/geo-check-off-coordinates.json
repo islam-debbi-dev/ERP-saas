@@ -1,0 +1,19 @@
+{
+  "tenant": "D: edition DISTRIBUTION, featureRevokes [GEO_CHECK], TOURNEES on",
+  "GET /clients/map": 403,
+  "GET /routes/:id → stops[].client.lat/lng": 5,
+  "GET /routes/:id → start": {
+    "lat": 36.7701,
+    "lng": 3.0552
+  },
+  "GET /me/today → stops[].client.lat/lng": 5,
+  "GET /clients → items[].location (phase 17 DTO)": 5,
+  "GET /clients/:id → location (phase 17 DTO)": {
+    "lat": 36.606036,
+    "lng": 3.060762,
+    "accuracyM": 12,
+    "setAt": "2026-11-11T23:58:55.479Z",
+    "setById": "3c9af435-4eec-4624-8dc9-a8c077460c9c"
+  },
+  "GET /warehouses → a dépôt with lat/lng or location": 1
+}

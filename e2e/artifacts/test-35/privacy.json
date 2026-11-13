@@ -1,0 +1,195 @@
+{
+  "totals": {
+    "total": 26,
+    "passed": 12,
+    "failed": 8,
+    "blocked": 0,
+    "info": 6
+  },
+  "results": [
+    {
+      "area": "B1 the pino request log (LOG_LEVEL=info)",
+      "durationMs": 1,
+      "name": "the log was written and holds the nearby requests (1077 lines)",
+      "status": "PASS"
+    },
+    {
+      "area": "B1 the pino request log (LOG_LEVEL=info)",
+      "durationMs": 2,
+      "name": "direct: the route as the web calls it (HTTP 200) → no coordinate in any log line",
+      "status": "PASS"
+    },
+    {
+      "area": "B1 the pino request log (LOG_LEVEL=info)",
+      "durationMs": 2,
+      "name": "filters: with filters, position last (HTTP 200) → no coordinate in any log line",
+      "status": "PASS"
+    },
+    {
+      "area": "B1 the pino request log (LOG_LEVEL=info)",
+      "durationMs": 3,
+      "name": "proxy: through the /api rewrite (apps/web/vercel.json) (HTTP 200) → no coordinate in any log line",
+      "status": "PASS"
+    },
+    {
+      "area": "B1 the pino request log (LOG_LEVEL=info)",
+      "durationMs": 2,
+      "name": "invalid: a valid position with an invalid radius (400) (HTTP 400) → no coordinate in any log line",
+      "status": "PASS"
+    },
+    {
+      "area": "B1 the pino request log (LOG_LEVEL=info)",
+      "durationMs": 3,
+      "name": "error500: a valid position on a request that answers 500 (finding A-2) (HTTP 500) → no coordinate in any log line",
+      "status": "PASS"
+    },
+    {
+      "area": "B1 the pino request log (LOG_LEVEL=info)",
+      "durationMs": 2,
+      "name": "no-token: the position without a token (401) (HTTP 401) → no coordinate in any log line",
+      "status": "PASS"
+    },
+    {
+      "area": "B1 the pino request log (LOG_LEVEL=info)",
+      "durationMs": 1,
+      "name": "the full \"près de moi\" session (six calls) left no coordinate in the log",
+      "status": "PASS"
+    },
+    {
+      "area": "B1 the pino request log (LOG_LEVEL=info)",
+      "durationMs": 0,
+      "name": "spelling the web never sends — slash: a trailing slash (HTTP 200)",
+      "status": "FAIL",
+      "expected": "no coordinate in the log",
+      "actual": "40 log lines hold the coordinates; the route answered 200",
+      "evidence": "log-privacy.ts:5 matches /^\\/clients\\/nearby(?:\\?|$)/ only: …\":1794442131045,\"pid\":32965,\"hostname\":\"Islams-MacBook-Air.local\",\"req\":{\"id\":\"cb22f918-5464-4d74-9365-06007c963a3d\",\"method\":\"GET\",\"url\":\"/clients/nearby/?lat=36.710959&lng=3.021057\",\"query\":{\"lat\":\"…"
+    },
+    {
+      "area": "B1 the pino request log (LOG_LEVEL=info)",
+      "durationMs": 0,
+      "name": "spelling the web never sends — upper: an upper-case path (HTTP 200)",
+      "status": "FAIL",
+      "expected": "no coordinate in the log",
+      "actual": "40 log lines hold the coordinates; the route answered 200",
+      "evidence": "log-privacy.ts:5 matches /^\\/clients\\/nearby(?:\\?|$)/ only: …e\":1794442131380,\"pid\":32965,\"hostname\":\"Islams-MacBook-Air.local\",\"req\":{\"id\":\"668c73cc-d648-4469-9d8f-0530772d1645\",\"method\":\"GET\",\"url\":\"/Clients/Nearby?lat=36.711096&lng=3.021208\",\"query\":{\"lat\":\"…"
+    },
+    {
+      "area": "B1 the pino request log (LOG_LEVEL=info)",
+      "durationMs": 0,
+      "name": "spelling the web never sends — double: a doubled slash (HTTP 404)",
+      "status": "INFO",
+      "expected": "no coordinate in the log",
+      "actual": "40 log lines hold the coordinates; the route answered 404",
+      "evidence": "log-privacy.ts:5 matches /^\\/clients\\/nearby(?:\\?|$)/ only: …\":1794442131709,\"pid\":32965,\"hostname\":\"Islams-MacBook-Air.local\",\"req\":{\"id\":\"de766d29-6733-4a2a-8674-2a1e02a13c23\",\"method\":\"GET\",\"url\":\"//clients/nearby?lat=36.711233&lng=3.021359\",\"query\":{\"lat\":\"…"
+    },
+    {
+      "area": "B1 the pino request log (LOG_LEVEL=info)",
+      "durationMs": 0,
+      "name": "spelling the web never sends — encoded: an encoded slash (HTTP 404)",
+      "status": "INFO",
+      "expected": "no coordinate in the log",
+      "actual": "40 log lines hold the coordinates; the route answered 404",
+      "evidence": "log-privacy.ts:5 matches /^\\/clients\\/nearby(?:\\?|$)/ only: …:1794442131743,\"pid\":32965,\"hostname\":\"Islams-MacBook-Air.local\",\"req\":{\"id\":\"7d346562-a444-4069-98e1-afce3098d9cf\",\"method\":\"GET\",\"url\":\"/clients%2Fnearby?lat=36.711370&lng=3.021510\",\"query\":{\"lat\":\"…"
+    },
+    {
+      "area": "B1 the pino request log (LOG_LEVEL=info)",
+      "durationMs": 0,
+      "name": "spelling the web never sends — twice: lat sent twice (HTTP 400)",
+      "status": "PASS",
+      "expected": "no coordinate in the log",
+      "actual": "no coordinate in the log"
+    },
+    {
+      "area": "B1 the pino request log (LOG_LEVEL=info)",
+      "durationMs": 0,
+      "name": "spelling the web never sends — case-param: upper-case parameter names next to a real position (unknown parameters are logged like on any route) (HTTP 200)",
+      "status": "INFO",
+      "expected": "no coordinate in the log",
+      "actual": "40 log lines hold the coordinates; the route answered 200",
+      "evidence": "log-privacy.ts:5 matches /^\\/clients\\/nearby(?:\\?|$)/ only: …e\":1794442131881,\"pid\":32965,\"hostname\":\"Islams-MacBook-Air.local\",\"req\":{\"id\":\"19b1b1a5-6f39-4cbb-9938-66a5e7c8b35d\",\"method\":\"GET\",\"url\":\"/clients/nearby?Lat=36.711644&Lng=3.021812\",\"query\":{\"Lat\":\"…"
+    },
+    {
+      "area": "B1 the pino request log (LOG_LEVEL=info)",
+      "durationMs": 0,
+      "name": "spelling the web never sends — fragment: a semicolon path parameter (HTTP 400)",
+      "status": "INFO",
+      "expected": "no coordinate in the log",
+      "actual": "40 log lines hold the coordinates; the route answered 400",
+      "evidence": "log-privacy.ts:5 matches /^\\/clients\\/nearby(?:\\?|$)/ only: …794442132143,\"pid\":32965,\"hostname\":\"Islams-MacBook-Air.local\",\"req\":{\"id\":\"7c758fcd-d1da-440f-afcf-09fc1a0238cf\",\"method\":\"GET\",\"url\":\"/clients/nearby;x=1?lat=36.711781&lng=3.021963\",\"query\":{\"lat\":\"…"
+    },
+    {
+      "area": "B1 the pino request log (LOG_LEVEL=info)",
+      "durationMs": 0,
+      "name": "for comparison — the view box of /clients/map is logged (the map is centred on the user after \"Près de moi\")",
+      "status": "INFO",
+      "actual": "40 log lines hold the box corner 36.711918, 3.022114"
+    },
+    {
+      "area": "B2 the Sentry payloads (fake DSN, local sink)",
+      "durationMs": 0,
+      "name": "the sink received envelopes (51)",
+      "status": "PASS"
+    },
+    {
+      "area": "B2 the Sentry payloads (fake DSN, local sink)",
+      "durationMs": 1,
+      "name": "direct: the route as the web calls it → no coordinate in a Sentry payload",
+      "status": "FAIL",
+      "evidence": "the payload holds the position: …alue\":\"ClientsController\",\"type\":\"string\"},\"nestjs.callback\":{\"value\":\"nearby\",\"type\":\"string\"},\"nestjs.version\":{\"value\":\"11.2.7\",\"type\":\"string\"},\"http.route\":{\"value\":\"/clients/nearby\",\"type\":\"string\"},\"http.request.method\":{\"value\":\"GET\",\"type\":\"string\"},\"url.full\":{\"value\":\"/clients/nearby?lat=36.710137&lng=3.020151&radiusM=5000&limit=30\",\"type\":\"string\"},\"sentry.trace_lifecycle\":{\"value\":\"st…"
+    },
+    {
+      "area": "B2 the Sentry payloads (fake DSN, local sink)",
+      "durationMs": 0,
+      "name": "filters: with filters, position last → no coordinate in a Sentry payload",
+      "status": "FAIL",
+      "evidence": "the payload holds the position: …nestjs.callback\":{\"value\":\"nearby\",\"type\":\"string\"},\"nestjs.version\":{\"value\":\"11.2.7\",\"type\":\"string\"},\"http.route\":{\"value\":\"/clients/nearby\",\"type\":\"string\"},\"http.request.method\":{\"value\":\"GET\",\"type\":\"string\"},\"url.full\":{\"value\":\"/clients/nearby?hasDebt=true&search=caf%C3%A9&radiusM=10000&lat=36.710274&lng=3.020302\",\"type\":\"string\"},\"sentry.trace_lifecycle\":{\"value\":\"stream\",\"type\":\"string\"}…"
+    },
+    {
+      "area": "B2 the Sentry payloads (fake DSN, local sink)",
+      "durationMs": 0,
+      "name": "proxy: through the /api rewrite (apps/web/vercel.json) → no coordinate in a Sentry payload",
+      "status": "FAIL",
+      "evidence": "the payload holds the position: …alue\":\"ClientsController\",\"type\":\"string\"},\"nestjs.callback\":{\"value\":\"nearby\",\"type\":\"string\"},\"nestjs.version\":{\"value\":\"11.2.7\",\"type\":\"string\"},\"http.route\":{\"value\":\"/clients/nearby\",\"type\":\"string\"},\"http.request.method\":{\"value\":\"GET\",\"type\":\"string\"},\"url.full\":{\"value\":\"/clients/nearby?lat=36.710411&lng=3.020453&radiusM=5000\",\"type\":\"string\"},\"sentry.trace_lifecycle\":{\"value\":\"stream\",\"ty…"
+    },
+    {
+      "area": "B2 the Sentry payloads (fake DSN, local sink)",
+      "durationMs": 1,
+      "name": "invalid: a valid position with an invalid radius (400) → no coordinate in a Sentry payload",
+      "status": "FAIL",
+      "evidence": "the payload holds the position: …alue\":\"ClientsController\",\"type\":\"string\"},\"nestjs.callback\":{\"value\":\"nearby\",\"type\":\"string\"},\"nestjs.version\":{\"value\":\"11.2.7\",\"type\":\"string\"},\"http.route\":{\"value\":\"/clients/nearby\",\"type\":\"string\"},\"http.request.method\":{\"value\":\"GET\",\"type\":\"string\"},\"url.full\":{\"value\":\"/clients/nearby?lat=36.710548&lng=3.020604&radiusM=abc\",\"type\":\"string\"},\"sentry.trace_lifecycle\":{\"value\":\"stream\",\"typ…"
+    },
+    {
+      "area": "B2 the Sentry payloads (fake DSN, local sink)",
+      "durationMs": 1,
+      "name": "error500: a valid position on a request that answers 500 (finding A-2) → no coordinate in a Sentry payload",
+      "status": "FAIL",
+      "evidence": "the payload holds the position: …ET /clients/nearby\",\"request\":{\"headers\":{\"host\":\"localhost:3013\",\"connection\":\"keep-alive\",\"authorization\":\"[Filtered]\",\"accept\":\"*/*\",\"accept-language\":\"*\",\"sec-fetch-mode\":\"cors\",\"user-agent\":\"node\",\"accept-encoding\":\"gzip, deflate\"},\"method\":\"GET\",\"url\":\"http://localhost:3013/clients/nearby?lat=36.710685&lng=3.020755&search=%00\",\"cookies\":{},\"query_string\":\"lat=36.710685&lng=3.020755&search=%0…"
+    },
+    {
+      "area": "B2 the Sentry payloads (fake DSN, local sink)",
+      "durationMs": 1,
+      "name": "no-token: the position without a token (401) → no coordinate in a Sentry payload",
+      "status": "FAIL",
+      "evidence": "the payload holds the position: …alue\":\"ClientsController\",\"type\":\"string\"},\"nestjs.callback\":{\"value\":\"nearby\",\"type\":\"string\"},\"nestjs.version\":{\"value\":\"11.2.7\",\"type\":\"string\"},\"http.route\":{\"value\":\"/clients/nearby\",\"type\":\"string\"},\"http.request.method\":{\"value\":\"GET\",\"type\":\"string\"},\"url.full\":{\"value\":\"/clients/nearby?lat=36.710822&lng=3.020906\",\"type\":\"string\"},\"sentry.trace_lifecycle\":{\"value\":\"stream\",\"type\":\"string\"}…"
+    },
+    {
+      "area": "B3 the database after the session",
+      "durationMs": 1408,
+      "name": "no table holds the coordinates that were sent (every text, numeric and json column)",
+      "status": "PASS"
+    },
+    {
+      "area": "B3 the database after the session",
+      "durationMs": 2,
+      "name": "the nearby calls wrote no audit row and no geo check",
+      "status": "PASS"
+    },
+    {
+      "area": "B4 outside the app — what the proxy in front sees",
+      "durationMs": 0,
+      "name": "the web project receives the position in the request line (Vercel request logs: see the report)",
+      "status": "INFO",
+      "actual": "GET /api/clients/nearby?lat=36.710411&lng=3.020453&radiusM=5000"
+    }
+  ]
+}

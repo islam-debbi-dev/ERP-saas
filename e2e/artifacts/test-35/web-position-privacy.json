@@ -1,0 +1,258 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/26.10.0_2/bin/node",
+      "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "web/map.playwright.config.ts",
+      "--project",
+      "m393-fr"
+    ],
+    "configFile": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/map.playwright.config.ts",
+    "rootDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "ar"
+        },
+        "id": "m360-ar",
+        "name": "m360-ar",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/position-privacy\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "id": "m360-fr",
+        "name": "m360-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/position-privacy\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "ar"
+        },
+        "id": "m393-ar",
+        "name": "m393-ar",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/position-privacy\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "id": "m393-fr",
+        "name": "m393-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/position-privacy\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "id": "d1280-fr",
+        "name": "d1280-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/position-privacy\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "name": "m393-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "snapshotDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": {},
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://localhost:3005",
+          "actionTimeout": 20000,
+          "navigationTimeout": 30000,
+          "trace": "off",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 393,
+            "height": 851
+          },
+          "screen": {
+            "width": 393,
+            "height": 851
+          },
+          "deviceScaleFactor": 2.75,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium",
+          "locale": "fr"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "m393-fr"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../artifacts/test-35/web-position-privacy.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "position-privacy.spec.ts",
+      "file": "position-privacy.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "the position after a \"Près de moi\" session: storage, URL, third parties, Sentry, database",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 9989,
+                  "error": {
+                    "message": "Error: the position was sent to a third party (Sentry envelope: see privacy-browser.json)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"localhost:3099\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: the position was sent to a third party (Sentry envelope: see privacy-browser.json)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"localhost:3099\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/position-privacy.spec.ts:121:153",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/position-privacy.spec.ts",
+                      "column": 153,
+                      "line": 121
+                    },
+                    "snippet": "  119 |   expect.soft(dbHits, 'the position is in the database').toEqual([]);\n  120 |   expect.soft(sink.bodies.length, 'Sentry was on in the browser (else nothing was tested)').toBeGreaterThan(0);\n> 121 |   expect.soft(facts['third-party requests holding the position'], 'the position was sent to a third party (Sentry envelope: see privacy-browser.json)').toEqual([]);\n      |                                                                                                                                                         ^\n  122 |   await context.close();\n  123 | });\n  124 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/position-privacy.spec.ts",
+                        "column": 153,
+                        "line": 121
+                      },
+                      "message": "Error: the position was sent to a third party (Sentry envelope: see privacy-browser.json)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"localhost:3099\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  119 |   expect.soft(dbHits, 'the position is in the database').toEqual([]);\n  120 |   expect.soft(sink.bodies.length, 'Sentry was on in the browser (else nothing was tested)').toBeGreaterThan(0);\n> 121 |   expect.soft(facts['third-party requests holding the position'], 'the position was sent to a third party (Sentry envelope: see privacy-browser.json)').toEqual([]);\n      |                                                                                                                                                         ^\n  122 |   await context.close();\n  123 | });\n  124 |\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/position-privacy.spec.ts:121:153"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T02:26:34.179Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/map/position-privacy-the-posit-0d247-ird-parties-Sentry-database-m393-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/position-privacy.spec.ts",
+                    "column": 153,
+                    "line": 121
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "c0715377739bcc79726c-a301b6529411d8905493",
+          "file": "position-privacy.spec.ts",
+          "line": 17,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-12T02:26:33.778Z",
+    "duration": 10681.773000000001,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

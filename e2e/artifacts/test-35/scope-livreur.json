@@ -1,0 +1,82 @@
+{
+  "user": "t35-livreur-mwcs5o2u@audit.local",
+  "role": "LIVREUR",
+  "rule": "phase-35 spec, \"Who sees which clients\": owner and manager all, supervisor his team's clients, seller and livreur only the clients assigned to them",
+  "request": "GET /clients/map?includeInactive=true (three boxes that cover everything)",
+  "expected": 0,
+  "actual": 4363,
+  "outsideScope": 4363,
+  "missing": 0,
+  "sampleOutsideScope": [
+    {
+      "id": "3da8fd0f-c491-4d88-9ab7-a677130fba9b",
+      "code": "T35-00010",
+      "name": "%",
+      "commune": "Oran",
+      "phone": "0560100010",
+      "lat": 35.551409,
+      "lng": -0.706158,
+      "active": true,
+      "balance": "-2000.00",
+      "overLimit": false,
+      "sectorId": "44f53ebf-1d2b-4758-a679-c623c77a336f",
+      "assignedSellerId": "bd398e94-f0b7-4d3e-9b36-22784795655d"
+    },
+    {
+      "id": "148a9c89-05ce-4936-956e-eac766c94ee7",
+      "code": "T35-00001",
+      "name": "A_B Market",
+      "commune": "Oran",
+      "phone": "0551100001",
+      "lat": 35.763694,
+      "lng": -0.493468,
+      "active": true,
+      "balance": "3000.00",
+      "overLimit": false,
+      "sectorId": "44f53ebf-1d2b-4758-a679-c623c77a336f",
+      "assignedSellerId": "a28f2cbf-2fe1-436f-aec1-0cb65080aa01"
+    },
+    {
+      "id": "a849df6b-cdc8-4529-89e0-0ca364384be7",
+      "code": "T35-00022",
+      "name": "Bazar Oran 0022",
+      "commune": "Oran",
+      "phone": null,
+      "lat": 35.580873,
+      "lng": -0.612343,
+      "active": true,
+      "balance": "0.00",
+      "overLimit": false,
+      "sectorId": "44f53ebf-1d2b-4758-a679-c623c77a336f",
+      "assignedSellerId": null
+    },
+    {
+      "id": "cc283b2d-6b41-4773-b8d2-bf25673df5f0",
+      "code": "T35-00040",
+      "name": "Bazar Oran 0040",
+      "commune": "Oran",
+      "phone": "0560100040",
+      "lat": 35.817159,
+      "lng": -0.479791,
+      "active": true,
+      "balance": "0.00",
+      "overLimit": false,
+      "sectorId": "44f53ebf-1d2b-4758-a679-c623c77a336f",
+      "assignedSellerId": "a28f2cbf-2fe1-436f-aec1-0cb65080aa01"
+    },
+    {
+      "id": "e5e5c333-783b-4219-b2a7-028b6e50ee5a",
+      "code": "T35-00058",
+      "name": "Bazar Oran 0058",
+      "commune": "Oran",
+      "phone": "0578100058",
+      "lat": 35.59381,
+      "lng": -0.790412,
+      "active": true,
+      "balance": "0.00",
+      "overLimit": false,
+      "sectorId": "44f53ebf-1d2b-4758-a679-c623c77a336f",
+      "assignedSellerId": "bd398e94-f0b7-4d3e-9b36-22784795655d"
+    }
+  ]
+}
