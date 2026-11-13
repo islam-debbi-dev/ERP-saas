@@ -1,7 +1,7 @@
 'use client';
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   type ClientMapDto,
   type ClientMapPointDto,
@@ -75,6 +75,23 @@ export function useClientMap(filters: ClientMapFilters, bounds: MapBounds | null
     placeholderData: keepPreviousData,
     staleTime: 30_000,
   });
+}
+
+/**
+ * The map's data for a screen that pans and zooms: the whole scope first; when more clients
+ * match than the cap, the current view only (the bounds of the last pan / zoom, which the
+ * map debounces), so that "zoomez" really brings the missing clients in.
+ * Used by `/clients/carte` and by the route editor's picker: both show the same banner.
+ */
+export function useClientMapByView(filters: ClientMapFilters, enabled = true) {
+  /** The view as the map reports it; the query rounds it so that small pans share a key. */
+  const [bounds, setBounds] = useState<MapBounds | null>(null);
+  const rounded = useMemo(() => (bounds ? roundBounds(bounds) : null), [bounds]);
+  const whole = useClientMap(filters, null, enabled);
+  const byView = (whole.data?.truncated ?? false) && rounded !== null;
+  const inView = useClientMap(filters, rounded, enabled && byView);
+  const onBoundsChange = useCallback((b: MapBounds) => setBounds(b), []);
+  return { map: byView ? inView : whole, bounds, onBoundsChange };
 }
 
 /** The position is sent only as query parameters of this one request, never stored. */

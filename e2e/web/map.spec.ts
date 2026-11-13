@@ -299,7 +299,7 @@ test('"Près de moi": the list is sorted by distance, has call and directions li
 
   const rows = sheet.getByTestId('nearby-list').locator('li');
   expect(await rows.count()).toBe(body.length);
-  const shown = (await rows.locator('button span.num').allTextContents()).map(nbsp);
+  const shown = (await rows.getByTestId('nearby-distance').allTextContents()).map(nbsp);
   const metres = shown.map((s) => (s.includes('km') ? Number(s.replace(' km', '').replace(',', '.')) * 1000 : Number(s.replace(' m', ''))));
   expect(metres.every((v, i) => i === 0 || metres[i - 1]! <= v), `distances ascending: ${shown.slice(0, 8).join(', ')}`).toBe(true);
   // First row: its links.

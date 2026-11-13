@@ -140,6 +140,7 @@ export function TodayMap({
         open={nearOpen}
         onOpenChange={setNearOpen}
         center={me.position}
+        accuracyM={me.position?.accuracyM}
         around={t('aroundMe')}
         filters={{}}
         radiusM={radiusM}
