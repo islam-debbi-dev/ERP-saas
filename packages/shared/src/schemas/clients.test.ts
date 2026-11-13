@@ -3,6 +3,7 @@ import {
   clientAdjustmentSchema,
   clientListQuerySchema,
   clientMapQuerySchema,
+  clientNearbyBodySchema,
   clientNearbyQuerySchema,
   createClientSchema,
   openingBalanceSchema,
@@ -99,6 +100,29 @@ describe('clientNearbyQuerySchema (phase 35)', () => {
       false,
     );
     expect(clientNearbyQuerySchema.safeParse({ lng: '3' }).success).toBe(false);
+  });
+});
+
+describe('clientNearbyBodySchema (REPORT-35, B-3)', () => {
+  it('parses to the same request as the query string', () => {
+    const fromBody = clientNearbyBodySchema.parse({ lat: 36.7, lng: 3, hasDebt: true, limit: 50 });
+    const fromQuery = clientNearbyQuerySchema.parse({
+      lat: '36.7',
+      lng: '3',
+      hasDebt: 'true',
+      limit: '50',
+    });
+    expect(fromBody).toEqual(fromQuery);
+  });
+
+  it('wants numbers, in range, and a clean search', () => {
+    const ok = { lat: 36.7, lng: 3 };
+    expect(clientNearbyBodySchema.safeParse({ ...ok, lat: '36.7' }).success).toBe(false);
+    expect(clientNearbyBodySchema.safeParse({ lng: 3 }).success).toBe(false);
+    expect(clientNearbyBodySchema.safeParse({ ...ok, lat: 91 }).success).toBe(false);
+    expect(clientNearbyBodySchema.safeParse({ ...ok, radiusM: 99 }).success).toBe(false);
+    expect(clientNearbyBodySchema.safeParse({ ...ok, limit: 101 }).success).toBe(false);
+    expect(clientNearbyBodySchema.safeParse({ ...ok, search: 'a\u0000b' }).success).toBe(false);
   });
 });
 

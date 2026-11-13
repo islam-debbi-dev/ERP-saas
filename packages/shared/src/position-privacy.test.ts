@@ -128,6 +128,22 @@ describe('scrubPosition', () => {
     );
   });
 
+  it('request body of POST /clients/nearby, as an object or as JSON text', () => {
+    const asObject = {
+      request: { data: { lat: 36.71, lng: 3.02, radiusM: 5000, hasDebt: false } },
+    };
+    expect(scrubPosition(asObject).request.data).toEqual({ radiusM: 5000, hasDebt: false });
+    for (const text of [
+      '{"lat":36.710685,"lng":3.020755,"radiusM":5000}',
+      '{"radiusM":5000,"lat":36.710685,"lng":3.020755}',
+      '{ "radiusM": 5000, "lat": 36.710685, "limit": 50, "lng": -3.020755e0 }',
+    ]) {
+      const out = scrubPosition({ request: { data: text } }).request.data;
+      expect(out).not.toMatch(/36\.71|3\.02/);
+      expect(JSON.parse(out)).toMatchObject({ radiusM: 5000 });
+    }
+  });
+
   it('survives cycles, class instances and non-objects', () => {
     const cyclic: Record<string, unknown> = { url: '/x?lat=1&lng=2' };
     cyclic['self'] = cyclic;

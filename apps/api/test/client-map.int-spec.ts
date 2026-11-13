@@ -355,6 +355,31 @@ describe('client map (phase 35)', () => {
     });
   });
 
+  // REPORT-35, B-3: the web sends the position in a body, which no request log keeps.
+  describe('POST /clients/nearby', () => {
+    const post = (who: Who, body: object) => as(who).post('/clients/nearby', body, null);
+
+    it('answers what the GET answers, with 200 and without an Idempotency-Key', async () => {
+      const viaGet = await nearby(d, ALGER, '&radiusM=1000&hasDebt=true&limit=5');
+      const viaPost = (
+        await post(d, { ...ALGER, search: tag, radiusM: 1000, hasDebt: true, limit: 5 }).expect(200)
+      ).body as ClientNearbyPointDto[];
+      expect(viaPost).toEqual(viaGet);
+      expect(viaPost.length).toBeGreaterThan(0);
+    });
+
+    it('keeps the scope, the feature gate and the validation', async () => {
+      const mine = (await post(supervisor2, { ...ALGER, search: tag }).expect(200))
+        .body as ClientNearbyPointDto[];
+      expect(mine.map((p) => p.id)).toEqual([ofSeller2.id]);
+      await post(essentiel, ALGER).expect(403);
+      await post(d, { lat: '36.7', lng: 3 }).expect(400);
+      await post(d, { lng: 3 }).expect(400);
+      await post(d, { ...ALGER, search: 'a\u0000b' }).expect(400);
+      await t.http().post('/clients/nearby').send(ALGER).expect(401);
+    });
+  });
+
   describe('GET /clients?hasLocation', () => {
     it('lists clients with or without a point', async () => {
       const page = async (v: string) =>

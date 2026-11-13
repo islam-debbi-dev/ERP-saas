@@ -312,7 +312,7 @@ test('"Près de moi": the list is sorted by distance, has call and directions li
   const chips = sheet.getByRole('radio');
   expect((await chips.allTextContents()).map(nbsp)).toEqual(['1 km', '5 km', '10 km', '25 km']);
   await expect(chips.nth(1)).toHaveAttribute('aria-checked', 'true');
-  const wider = page.waitForRequest((r) => r.url().includes('/clients/nearby') && r.url().includes('radiusM=1000&'));
+  const wider = page.waitForRequest((r) => r.url().includes('/clients/nearby') && (r.postData() ?? '').includes('"radiusM":1000,'));
   await chips.first().click();
   await wider;
   expect.soft(await unnamedControls(sheet), 'controls without a name in the nearby sheet').toEqual([]);

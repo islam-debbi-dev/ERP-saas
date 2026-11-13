@@ -725,9 +725,13 @@ async function main(): Promise<void> {
       actual: `routes/:id ${routeLeaks ? 'YES' : 'no'}, me/today ${todayLeaks ? 'YES' : 'no'}; the phase 17 client DTO (GET /clients) ${olderLeak ? 'also carries `location` there' : 'hides `location` there'}`,
       evidence: 'artifacts/test-35/geo-check-off-coordinates.json',
     });
-    await check('without GEO_CHECK the route DTO carries no coordinates (stops lat/lng null, start null)', () => {
-      assert(!routeLeaks && !todayLeaks, `routes/:id leaks: ${routeLeaks}, me/today leaks: ${todayLeaks} (see geo-check-off-coordinates.json)`);
-    }, { expected: 'no coordinates without GEO_CHECK (spec: "the map needs Feature.GEO_CHECK")' });
+    // Owner's decision on A-4 (docs/domain.md, "Coordinates without the GPS module"): the
+    // module gates the screens and the two map routes, not the company's own stored points.
+    await check('without GEO_CHECK the two map routes are refused; the stored points stay in the company\'s own route and client data (decided rule)', async () => {
+      const refused = [await get<{ code: string }>('/clients/map', f.d.owner), await get<{ code: string }>('/clients/nearby?lat=36.75&lng=3.06', f.d.owner)];
+      assertEqual(refused.map((r) => [r.status, r.body.code]), [[403, 'FEATURE_NOT_IN_PLAN'], [403, 'FEATURE_NOT_IN_PLAN']], 'map and nearby without the module');
+      assert(routeLeaks && todayLeaks, 'the rule changed: the route DTO no longer carries the stored points; update docs/domain.md');
+    }, { expected: 'map and nearby 403; stored coordinates still in the route DTO (docs/domain.md)' });
   }
   await check('permission CLIENTS_VIEW revoked from a user → map and nearby refused, given back → allowed', async () => {
     const u = await inviteUser(A.owner.token, 'SELLER', `noview-${run}`);

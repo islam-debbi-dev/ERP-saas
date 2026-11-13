@@ -26,6 +26,7 @@ import {
   clientMapQuerySchema,
   type ClientNearbyPointDto,
   type ClientNearbyQuery,
+  clientNearbyBodySchema,
   clientNearbyQuerySchema,
   type ClientPage,
   type ClientReconcileReport,
@@ -47,7 +48,13 @@ import {
   updateClientSchema,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
-import { CurrentUser, RequireFeature, RequirePermission, Roles } from '../auth/decorators';
+import {
+  AllowWhenSuspended,
+  CurrentUser,
+  RequireFeature,
+  RequirePermission,
+  Roles,
+} from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { AgingService } from '../credit/aging.service';
 import { Idempotent } from '../idempotency/idempotent.decorator';
@@ -87,7 +94,29 @@ export class ClientsController {
     return this.clientMap.map(query, user);
   }
 
-  /** "Clients proches" (phase 35). The position is used once, never stored nor logged. */
+  /**
+   * "Clients proches" (phase 35). The position is used once, never stored nor logged.
+   * POST although it only reads: the position travels in the body, because the hosting
+   * platform keeps the query string of every request in its own logs (REPORT-35, B-3).
+   * So no Idempotency-Key, 200 not 201, and a suspended company can still call it.
+   */
+  @Post('nearby')
+  @HttpCode(200)
+  @AllowWhenSuspended()
+  @RequirePermission(Permission.CLIENTS_VIEW)
+  @RequireFeature(Feature.GEO_CHECK)
+  nearbyByBody(
+    @Body(new ZodValidationPipe(clientNearbyBodySchema)) body: ClientNearbyQuery,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<ClientNearbyPointDto[]> {
+    return this.clientMap.nearby(body, user);
+  }
+
+  /**
+   * The same with the position in the query string: what the web sent before, kept for one
+   * release so a browser still on the previous build keeps working. The log and Sentry
+   * scrub it; the platform's request log does not. To be removed.
+   */
   @Get('nearby')
   @RequirePermission(Permission.CLIENTS_VIEW)
   @RequireFeature(Feature.GEO_CHECK)

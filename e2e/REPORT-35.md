@@ -7,13 +7,15 @@
 
 ## Fix status (2026-11-13, branch `fix/phase-35-map-findings`)
 
-The findings below were proven on `ee2df3d` and the text of this report is left as written. Fourteen of the
-eighteen are fixed on the branch `fix/phase-35-map-findings`; four wait for the owner. The suites of this
-pass were run again on the fixed build (same commands, section 2).
+The findings below were proven on `ee2df3d` and the text of this report is left as written. All eighteen
+are now closed on the branch `fix/phase-35-map-findings`: fifteen by a fix, three by a decision of the
+owner (given on 2026-11-13) that is written down and checked. The suites of this pass were run again on the
+final build (same commands, section 2).
 
 | Finding | State | How |
 |---|---|---|
-| B-1, B-2 | fixed | One scrubber in `@erp/shared` (`position-privacy.ts`) drops `lat` / `lng` and the map's view box from any URL, whatever the route or its spelling. Used by the pino serializer and by `beforeSend` / `beforeSendSpan` / `beforeBreadcrumb` of the API, browser and SSR Sentry clients. |
+| B-1, B-2 | fixed | One scrubber in `@erp/shared` (`position-privacy.ts`) drops `lat` / `lng` and the map's view box from any URL or JSON body, whatever the route or its spelling. Used by the pino serializer and by `beforeSend` / `beforeSendSpan` / `beforeBreadcrumb` of the API, browser and SSR Sentry clients. |
+| B-3 | fixed | `POST /clients/nearby` takes the position in its body, and the web uses it: the request line a platform logs is `POST /api/clients/nearby`, nothing more. The `GET` spelling is kept for one release (a browser on the previous build), scrubbed in our log and in Sentry, then to be removed. A support (impersonation) session, read-only by method, cannot call the POST. |
 | A-2, A-6 | fixed | Every list `search` refuses control characters; SQLSTATE 22021 is a 400 in the exception filter; `lat` / `lng` are parsed from a decimal string, not `z.coerce.number()`. |
 | A-7 | fixed | `PUT /routes/:id/stops` takes `baseClientIds` and answers 409 `ROUTE_STOPS_CHANGED` under its row lock when the route changed; the dialog reads again and retries, the editor tells the planner. |
 | D-4 | fixed | `useLeaveGuard`: asks before leaving the editor with unsaved changes by a link or the back button. |
@@ -23,25 +25,26 @@ pass were run again on the fixed build (same commands, section 2).
 | C-1 | fixed | Migration `20261113120000_clients_geo_float_index`: generated `lat_f` / `lng_f` (float8) and a partial index on them; the boxes are written on those columns. **Run it before deploying the API.** `clients_tenant_geo_idx` is to be dropped in a later release. |
 | A-5 | fixed | `sellerDepotPoint` falls back to the dépôt principal when the seller's only dépôt has no point. |
 | E-1 | fixed | README and runbook ("Migrations on Neon", "Reading a query plan"). |
-| A-1 | **owner decides** | Livreur (and probably STOREKEEPER) sees every client: which is right, the spec or `ScopeService`? |
-| A-3 | **owner decides** | A planned stop outside the seller's scope: allowed and written down, or refused by `setStops`? |
-| A-4 | **owner decides** | Must a tenant without `GEO_CHECK` stop receiving stored coordinates? |
-| B-3 | **owner decides** | Position in Vercel's request logs: move it to a POST body? No scrub in the app can reach those logs. |
+| A-1 | fixed, owner's choice | New company setting `livreurScope` (Paramètres, "Clients visibles par un livreur"): `ALL_CLIENTS`, the default and what every company had, or `OWN_DELIVERIES`, the clients of the commandes given to him. Applied in `ScopeService`, so list, fiche, map and nearby agree. Only the owner changes it. Migration `20261113130000_livreur_scope`. A STOREKEEPER is unchanged (sees every client). |
+| A-3 | decided: allowed | A stop planned for a seller is visible to him on his tournée and his day, even outside his scope; nothing else about that client is. Written in `docs/domain.md`. No code change. |
+| A-4 | decided: kept | `GEO_CHECK` gates the screens and the two map routes, not the company's own stored points. Written in `docs/domain.md`; the check of `api/map.ts` now asserts that rule. |
 
-Rerun on the fixed build:
+Rerun on the final build:
 
 | Part | Before | After |
 |---|---|---|
-| A `api/map.ts` (76 checks) | 64 pass, 8 fail | 68 pass, **4 fail**: the three A-1 checks and the A-4 check, nothing else |
-| B `api/map-privacy.ts` (26 checks) + browser spec | 12 pass, 8 fail; browser 1 fail | 24 pass, **0 fail**; browser spec passes |
+| A `api/map.ts` (76 checks) | 64 pass, 8 fail | 72 pass, **0 fail** (tenant A is seeded with `livreurScope = OWN_DELIVERIES`) |
+| B `api/map-privacy.ts` + browser spec | 26 checks: 12 pass, 8 fail; browser 1 fail | 28 checks: 26 pass, **0 fail**; browser spec passes |
 | C `api/map-perf.ts` (18 checks) | 10 pass, 5 fail | 15 pass, **0 fail**: the API's role uses `clients_tenant_geo_f_idx` |
 | D `web/map.spec.ts` (45 tests) | 21 pass, 24 fail | **45 pass** |
-| Repository | API 64 suites / 846 tests | lint, typecheck, test green: API 65 suites / 865 tests, shared 35 files, web 12 files (Node 26; CI is 22) |
+| Repository | API 64 suites / 846 tests | lint and typecheck green; API 65 suites / 870 tests, shared 35 files, web 12 files. In the last full run two API suites (payroll, reports: 21 tests) hit the 5 s timeout under load; run alone right after, both pass (78 of 78). Node 26 here; CI is 22. |
 
-- C, in numbers (`artifacts/test-35-fix/perf-server.md`): nearby 5 km in the 50 000-client tenant, slowest statement 12.9 → 7.4 ms; in the 5 000-client tenant 3.1 → 0.8 ms. The widest search (50 km, 100 rows) is slower through the index, as section C already showed for the owner's plan: HTTP p95 63 → 101 ms, under the 400 ms budget.
-- Two checks of the suites were changed to follow the product: the lost-update check of `api/map.ts` now sends `baseClientIds` and retries like the dialog; `web/map.spec.ts` reads the distance by test id and waits for the route list before counting it (it raced the skeleton).
+- C, in numbers (`artifacts/test-35-fix/perf-server.md`): nearby 5 km in the 50 000-client tenant, slowest statement 12.9 → about 7 ms; in the 5 000-client tenant 3.1 → 0.8 ms. The widest search (50 km, 100 rows) is slower through the index, as section C already showed for the owner's plan: HTTP p95 63 → about 100 ms, under the 400 ms budget.
+- Checks of the suites changed to follow the product: the lost-update check of `api/map.ts` sends `baseClientIds` and retries like the dialog; the A-4 check asserts the decided rule; the privacy session is the web's POST through the rewrite, with a new check on the request line; the browser specs read the POST body, the distance by test id, and wait for the route list before counting it (it raced the skeleton).
+- A false alarm met on the way, fixed in the suite: the six-character probe for a longitude (`3.0201`) matched a span timestamp (`…993.020187`) sent in the same second. Probes no longer match after a digit.
 - Seen by eye, not by a test: the banner drawn over the map showed through the "Clients proches" sheet; the map box is now its own stacking context. After-fix screenshots: `artifacts/test-35-fix/`. The files under `artifacts/test-35/` are still the proofs of the original pass.
-- Not verified: Sentry's hosted service (a local sink received the payloads), Neon, a real phone, and the back-button guard on iOS Safari.
+- Not verified: Sentry's hosted service (a local sink received the payloads), Vercel's real request log, Neon, a real phone, and the back-button guard on iOS Safari.
+- Still the owner's to do: check whether `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` were set in production before this fix; choose a tile server before real use (OSM policy; the tile host sees where the map is centred).
 
 ## Status (read this first when resuming)
 

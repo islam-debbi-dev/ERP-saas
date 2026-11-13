@@ -136,6 +136,25 @@ export const clientNearbyQuerySchema = z.object({
 });
 export type ClientNearbyQuery = z.infer<typeof clientNearbyQuerySchema>;
 
+/**
+ * The same request as a JSON body (`POST /clients/nearby`), which is what the web sends:
+ * a hosting platform keeps the query string of every request in its logs, where no scrub
+ * of ours can reach (REPORT-35, B-3). A body is not logged. Parses to `ClientNearbyQuery`.
+ */
+export const clientNearbyBodySchema = z.object({
+  search: mapFilterFields.search,
+  sectorId: id.optional(),
+  assignedSellerId: id.optional(),
+  hasDebt: z.boolean().default(false),
+  overLimit: z.boolean().default(false),
+  includeInactive: z.boolean().default(false),
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+  radiusM: z.number().int().min(100).max(50_000).default(5000),
+  limit: z.number().int().min(1).max(100).default(30),
+}) satisfies z.ZodType<ClientNearbyQuery>;
+export type ClientNearbyBody = z.input<typeof clientNearbyBodySchema>;
+
 /** A compact client for the map: no ledger, no address beyond the commune. */
 export interface ClientMapPointDto {
   id: string;

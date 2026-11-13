@@ -133,7 +133,11 @@ const common = {
 };
 
 const tierSchema = z
-  .object({ fromPct: pctString, amount: bonusAmountString.optional(), ratePct: pctString.optional() })
+  .object({
+    fromPct: pctString,
+    amount: bonusAmountString.optional(),
+    ratePct: pctString.optional(),
+  })
   .strict()
   .refine((t) => (t.amount === undefined) !== (t.ratePct === undefined), {
     message: 'tier_amount_or_rate',
@@ -286,7 +290,11 @@ export type MetricValues = Readonly<Record<string, string>>;
 /** The figure a rule is measured on (its target applies to it), or null for PER_UNIT. */
 export function ruleMainMetric(p: IncentiveRuleParams): MetricRef {
   if (p.type === IncentiveRuleType.PER_UNIT) {
-    return { metric: IncentiveMetric.QTY, scope: p.scope, ...(p.unitId ? { unitId: p.unitId } : {}) };
+    return {
+      metric: IncentiveMetric.QTY,
+      scope: p.scope,
+      ...(p.unitId ? { unitId: p.unitId } : {}),
+    };
   }
   return { metric: p.metric, ...(p.scope ? { scope: p.scope } : {}) };
 }
@@ -517,7 +525,9 @@ export function evaluateRule(
         break;
       }
       const base =
-        params.onlyAbovePct !== undefined ? achieved.minus(ofPct(t!, params.onlyAbovePct)) : achieved;
+        params.onlyAbovePct !== undefined
+          ? achieved.minus(ofPct(t!, params.onlyAbovePct))
+          : achieved;
       extra.base = toMoneyString(base);
       if (!base.gt(0)) {
         outcome = params.onlyAbovePct !== undefined ? RuleOutcome.BELOW_MIN : RuleOutcome.NOTHING;

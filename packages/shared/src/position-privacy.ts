@@ -10,7 +10,9 @@ const POSITION_PARAMS = new Set(['lat', 'lng', 'minlat', 'minlng', 'maxlat', 'ma
 const NAMES = '(?:lat|lng|minLat|minLng|maxLat|maxLng)';
 const VALUE = '[^&#;\\s"\'<>]*';
 /** Cheap test before any work: most strings hold no position. */
-const HINT = /(?:lat|lng)=/i;
+const HINT = /(?:lat|lng)"?\s*[=:]/i;
+/** The same names as members of a JSON text (a request body kept as a string). */
+const JSON_MEMBER = new RegExp(`"${NAMES}"\\s*:\\s*(?:"[^"]*"|-?[\\d.eE+-]+)\\s*,?\\s*`, 'gi');
 /** A position parameter followed by another one: drop it with its `&`, keep what is before. */
 const NOT_LAST = new RegExp(`(^|[?&;])${NAMES}=${VALUE}&`, 'gi');
 /** A position parameter that ends its query string: drop it with the separator before it. */
@@ -34,7 +36,10 @@ export function stripPositionParams(text: string): string {
     if (next === out) break;
     out = next;
   }
-  return out.replace(LAST, '');
+  out = out.replace(LAST, '');
+  const json = out.replace(JSON_MEMBER, '');
+  // A member dropped from the end of an object leaves its comma behind.
+  return json === out ? out : json.replace(/,\s*}/g, '}');
 }
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {

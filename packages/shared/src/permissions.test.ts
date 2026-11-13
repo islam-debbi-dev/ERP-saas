@@ -9,7 +9,8 @@ import {
   SENSITIVE_PERMISSIONS,
 } from './permissions';
 
-const sensitive = (ps: readonly string[]) => ps.filter((p) => SENSITIVE_PERMISSIONS.includes(p as Permission));
+const sensitive = (ps: readonly string[]) =>
+  ps.filter((p) => SENSITIVE_PERMISSIONS.includes(p as Permission));
 
 describe('effectivePermissions', () => {
   it('uses the role defaults', () => {
@@ -60,7 +61,13 @@ describe('effectivePermissions', () => {
 
 describe('module permissions (phase 24)', () => {
   it('keeps the dépôt and access permissions to the owner', () => {
-    for (const role of [Role.MANAGER, Role.SUPERVISOR, Role.SELLER, Role.STOREKEEPER, Role.LIVREUR]) {
+    for (const role of [
+      Role.MANAGER,
+      Role.SUPERVISOR,
+      Role.SELLER,
+      Role.STOREKEEPER,
+      Role.LIVREUR,
+    ]) {
       for (const p of [
         Permission.SELL_ANY_PRODUCT,
         Permission.WAREHOUSE_ACCESS_MANAGE,

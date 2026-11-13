@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from 'react';
 import {
   type ClientMapDto,
   type ClientMapPointDto,
+  type ClientNearbyBody,
   type ClientNearbyPointDto,
   Feature,
   type LatLng,
@@ -94,18 +95,32 @@ export function useClientMapByView(filters: ClientMapFilters, enabled = true) {
   return { map: byView ? inView : whole, bounds, onBoundsChange };
 }
 
-/** The position is sent only as query parameters of this one request, never stored. */
+/**
+ * The position is sent only in the body of this one request, never stored. In the body and
+ * not in the URL: the hosting platform logs the URL of every request (REPORT-35, B-3).
+ */
 export function useNearbyClients(filters: ClientMapFilters, at: LatLng | null, radiusM: number) {
   const on = useFeature(Feature.GEO_CHECK);
   return useQuery({
     queryKey: clientMapKeys.nearby(filters, at, radiusM),
     queryFn: ({ signal }) => {
-      const p = filterParams(filters);
-      p.set('lat', String(at!.lat));
-      p.set('lng', String(at!.lng));
-      p.set('radiusM', String(radiusM));
-      p.set('limit', '50');
-      return api.request<ClientNearbyPointDto[]>(`/clients/nearby?${p.toString()}`, { signal });
+      const body: ClientNearbyBody = {
+        ...(filters.search ? { search: filters.search } : {}),
+        ...(filters.sectorId ? { sectorId: filters.sectorId } : {}),
+        ...(filters.assignedSellerId ? { assignedSellerId: filters.assignedSellerId } : {}),
+        hasDebt: filters.hasDebt === true,
+        overLimit: filters.overLimit === true,
+        includeInactive: filters.includeInactive === true,
+        lat: at!.lat,
+        lng: at!.lng,
+        radiusM,
+        limit: 50,
+      };
+      return api.request<ClientNearbyPointDto[]>('/clients/nearby', {
+        method: 'POST',
+        body,
+        signal,
+      });
     },
     enabled: on && at !== null,
   });

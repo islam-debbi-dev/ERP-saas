@@ -153,8 +153,19 @@ async function main(): Promise<void> {
     if (used[0]!.n === 0) Object.assign(SESSION, { lat, lng });
   }
   if (!SESSION.lat) throw new Error('no free coordinates for the session');
-  for (const radiusM of [1000, 5000, 10000, 25000, 1000, 5000]) {
-    await (await fetch(`${BASE}/clients/nearby?lat=${SESSION.lat}&lng=${SESSION.lng}&radiusM=${radiusM}&limit=30`, { headers: { Authorization: `Bearer ${token}` } })).arrayBuffer();
+  // Since the fix of B-3 the sheet POSTs the position in a JSON body, through the /api
+  // rewrite of the web project. Seven rounds, so the Sentry sampling (one in ten) keeps some.
+  const sessionStatus = new Set<number>();
+  for (let round = 0; round < 7; round++) {
+    for (const radiusM of [1000, 5000, 10000, 25000, 1000, 5000]) {
+      const res = await fetch(`http://localhost:${PROXY_PORT}/api/clients/nearby`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat: Number(SESSION.lat), lng: Number(SESSION.lng), radiusM, limit: 30 }),
+      });
+      sessionStatus.add(res.status);
+      await res.arrayBuffer();
+    }
   }
   await sleep(4000); // let the SDK flush its envelopes
   await stop(api);
@@ -167,7 +178,10 @@ async function main(): Promise<void> {
   await sink.close();
 
   const inLog = (x: Variant): string[] => lines.filter((l) => needles(x).some((nd) => l.includes(nd)));
-  const inSentry = (x: Variant): boolean => needles(x).some((nd) => envelopes.includes(nd));
+  // Not after a digit: a span timestamp such as 1794597993.020187 holds "3.0201", the first
+  // decimals of a longitude sent in the same second, and is not a position.
+  const holds = (text: string, nd: string): boolean => new RegExp(`(?<![\\d.])${nd.replace('.', '\\.')}`).test(text);
+  const inSentry = (x: Variant): boolean => needles(x).some((nd) => holds(envelopes, nd));
 
   const table = ['| Variant | Request | HTTP | In the pino log | In a Sentry payload |', '|---|---|---|---|---|'];
   for (const x of variants) {
@@ -212,8 +226,10 @@ async function main(): Promise<void> {
       assert(hits.length === 0, `${hits.length} log lines hold ${x.lat} / ${x.lng}: …${sample(x)}…`);
     });
   }
-  await check('the full "près de moi" session (six calls) left no coordinate in the log', () => {
-    const hits = lines.filter((l) => [SESSION.lat, SESSION.lng, SESSION.lat.slice(0, 7), SESSION.lng.slice(0, 6)].some((nd) => l.includes(nd)));
+  const sessionNeedles = [SESSION.lat, SESSION.lng, SESSION.lat.slice(0, 7), SESSION.lng.slice(0, 6)];
+  await check('the full "près de moi" session (POST, position in the body, 42 calls) left no coordinate in the log', () => {
+    assert([...sessionStatus].join() === '200', `the session calls answered ${[...sessionStatus].join(', ')}`);
+    const hits = lines.filter((l) => sessionNeedles.some((nd) => l.includes(nd)));
     assert(hits.length === 0, `${hits.length} lines`);
   });
   for (const x of variants.filter((q) => !q.realistic)) {
@@ -246,6 +262,10 @@ async function main(): Promise<void> {
     });
   }
 
+  await check('the "près de moi" session (POST body) → no coordinate in a Sentry payload', () => {
+    assert(!sessionNeedles.some((nd) => holds(envelopes, nd)), 'a Sentry payload holds the position sent in the body');
+  });
+
   area('B3 the database after the session');
   await check('no table holds the coordinates that were sent (every text, numeric and json column)', async () => {
     const sql = readFileSync(fileURLToPath(new URL('../sql/map-privacy.sql', import.meta.url)), 'utf8');
@@ -263,10 +283,19 @@ async function main(): Promise<void> {
   });
 
   area('B4 outside the app — what the proxy in front sees');
+  // What a platform's request log keeps is the request line. The web's own calls must not
+  // carry the position there (B-3); the older GET spelling still does, by construction.
+  await check('the web\'s "près de moi" calls reach the proxy as `POST /api/clients/nearby`, no position in the request line', () => {
+    const posts = proxy.seen.filter((s) => s.startsWith('POST '));
+    assert(posts.length === 42, `${posts.length} POST request lines seen`);
+    const odd = posts.filter((s) => s !== 'POST /api/clients/nearby');
+    assert(odd.length === 0, `request lines with something more: ${odd.slice(0, 3).join(' | ')}`);
+    assert(!proxy.seen.some((s) => sessionNeedles.some((nd) => s.includes(nd))), 'a request line holds the session position');
+  });
   record({
-    name: 'the web project receives the position in the request line (Vercel request logs: see the report)',
+    name: 'the GET spelling kept for one release still puts the position in the request line (the web no longer uses it)',
     status: 'INFO',
-    actual: proxy.seen.find((s) => s.includes('/api/clients/nearby')) ?? 'not seen',
+    actual: proxy.seen.find((s) => s.startsWith('GET /api/clients/nearby')) ?? 'not seen',
   });
 
   writeSummary('test-35/privacy');
