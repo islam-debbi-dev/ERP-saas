@@ -3,7 +3,7 @@
  * block, geolocation mocks.
  */
 import { existsSync } from 'node:fs';
-import { type Browser, type BrowserContext, type Page, type TestInfo } from '@playwright/test';
+import { type Browser, type BrowserContext, type Locator, type Page, type TestInfo } from '@playwright/test';
 import { loadFixture, type SeedUser, PASSWORD } from '../lib/map-fixture.ts';
 
 export const WEB = process.env['WEB'] ?? 'http://localhost:3005';
@@ -133,4 +133,16 @@ export async function mockGeolocation(
     };
     Object.defineProperty(navigator, 'geolocation', { value: geo, configurable: true });
   }, mode);
+}
+
+/**
+ * Taps the dot of one client on a map. A database that kept earlier runs has their clients
+ * at the very same spots (the seed places them at fixed offsets), and the dot drawn last
+ * would take the tap: the wanted one is drawn last first, as zooming in would do by hand.
+ */
+export async function tapDot(scope: Page | Locator, clientId: string): Promise<void> {
+  const dot = scope.locator(`path.cp-${clientId}`);
+  await dot.waitFor();
+  await dot.evaluate((el) => el.parentNode?.appendChild(el));
+  await dot.click();
 }

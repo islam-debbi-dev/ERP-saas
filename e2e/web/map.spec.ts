@@ -16,7 +16,7 @@ import { closeDb, query } from '../lib/db.ts';
 import { request as api } from '../lib/http.ts';
 import { expectNoHorizontalOverflow, overflowProblems } from './mobile-helpers.ts';
 import { HERE, prepare, type UiData } from './map-data.ts';
-import { API, fixture, langOf, mockGeolocation, open, signedIn, WEB } from './map-helpers.ts';
+import { API, fixture, langOf, mockGeolocation, open, signedIn, tapDot, WEB } from './map-helpers.ts';
 
 type Messages = Record<string, Record<string, string>>;
 const messages = (lang: string): Messages =>
@@ -337,7 +337,7 @@ test('bubble of a client: fiche, tel, itinéraire (lat,lng), balance 1 234 567,8
   await open(page, '/clients/carte');
   await mapOf(page).waitFor();
   await chooseSeller(page, m, w.data.seller.id);
-  await page.locator(`path.cp-${c.id}`).click();
+  await tapDot(page, c.id);
   const bubble = page.getByRole('dialog', { name: c.name });
   await expect(bubble).toBeVisible();
   await shot(page, 'bulle');
@@ -603,7 +603,7 @@ test('/tournees/aujourdhui: "Carte" shows numbered stops, the visited one checke
   // A seller has no "Ajouter à une tournée…" on the clients map.
   await open(page, '/clients/carte');
   await mapOf(page).waitFor();
-  await page.locator(`path.cp-${w.data.clients[1]!.id}`).click();
+  await tapDot(page, w.data.clients[1]!.id);
   const bubble = page.getByRole('dialog', { name: w.data.clients[1]!.name });
   await expect(bubble).toBeVisible();
   await expect(bubble.getByRole('button', { name: cm['addToRoute'] })).toHaveCount(0);
