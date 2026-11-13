@@ -59,6 +59,7 @@ function toForm(s: TenantSettingsResponse): FormInput {
     maxDiscountPct: s.maxDiscountPct,
     reminderDays: s.reminderDays,
     sellerScope: s.sellerScope,
+    livreurScope: s.livreurScope,
     geoCheckMode: s.geoCheckMode,
     geoRadiusM: s.geoRadiusM,
     geoMaxAccuracyM: s.geoMaxAccuracyM,
@@ -416,6 +417,19 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
               <NativeSelect id="sellerScope" {...form.register('sellerScope')}>
                 <option value="ALL_CLIENTS">{t('settings.sellerScopeAll')}</option>
                 <option value="ASSIGNED_ONLY">{t('settings.sellerScopeAssigned')}</option>
+              </NativeSelect>
+            </FieldShell>
+          ) : null}
+          {salesForce ? (
+            <FieldShell
+              id="livreurScope"
+              label={t('settings.livreurScope')}
+              hint={t('settings.livreurScopeHint')}
+              wide
+            >
+              <NativeSelect id="livreurScope" {...form.register('livreurScope')}>
+                <option value="ALL_CLIENTS">{t('settings.livreurScopeAll')}</option>
+                <option value="OWN_DELIVERIES">{t('settings.livreurScopeOwn')}</option>
               </NativeSelect>
             </FieldShell>
           ) : null}

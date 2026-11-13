@@ -6,6 +6,8 @@ import {
   PrintFormat,
   SELLER_SCOPES,
   type SellerScope,
+  LIVREUR_SCOPES,
+  type LivreurScope,
 } from '../enums';
 import { parseDA } from '../money';
 import { amountString, percentString } from './common';
@@ -68,6 +70,8 @@ export const tenantSettingsSchema = z.object({
   reminderDays: z.number().int().min(1).max(365),
   /** Which clients a seller sees when SALES_FORCE is on (phase 14). */
   sellerScope: z.enum(SELLER_SCOPES as [SellerScope, ...SellerScope[]]),
+  /** Which clients a livreur sees when SALES_FORCE is on: all, or those he delivers to. */
+  livreurScope: z.enum(LIVREUR_SCOPES as [LivreurScope, ...LivreurScope[]]),
   /** Géolocalisation (phase 17, GEO_CHECK): what happens to a far operation. */
   geoCheckMode: z.enum(GEO_CHECK_MODES),
   /** Distance from the client's point still counted as "at the client", in metres. */

@@ -27,6 +27,11 @@ enum SellerScope {
   ASSIGNED_ONLY
 }
 
+enum LivreurScope {
+  ALL_CLIENTS
+  OWN_DELIVERIES
+}
+
 enum CreditLimitMode {
   WARN
   BLOCK
@@ -123,6 +128,10 @@ model Tenant {
   allowTenantAiKey Boolean @default(false)
 
   sellerScope SellerScope @default(ALL_CLIENTS)
+
+  /// Which clients a livreur sees: all of them (since phase 14), or only the clients of
+  /// the commandes given to him to deliver. The owner decides (REPORT-35, A-1).
+  livreurScope LivreurScope @default(ALL_CLIENTS)
 
   /// Géolocalisation (phase 17, GEO_CHECK): far operations are flagged (default) or blocked.
   geoCheckMode    GeoCheckMode @default(FLAG)
