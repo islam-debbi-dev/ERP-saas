@@ -3,7 +3,7 @@
 import { Crosshair, ListFilter, Loader2, MapPinned, Route } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useCallback, useMemo, useState } from 'react';
+import { type CSSProperties, useMemo, useRef, useState } from 'react';
 import { type ClientNearbyPointDto, Feature, haversineM, type LatLng, Role } from '@erp/shared';
 import { FeatureGate } from '@/components/shared/feature-gate';
 import { PageHeader } from '@/components/shared/page-header';
@@ -21,13 +21,12 @@ import {
 } from '@/components/ui/responsive-dialog';
 import { Switch } from '@/components/ui/switch';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
+import { useRemainingHeight } from '@/hooks/use-remaining-height';
 import { useAuth, useFeature } from '@/lib/auth';
 import {
   type ClientMapFilters,
-  type MapBounds,
   pointState,
-  roundBounds,
-  useClientMap,
+  useClientMapByView,
   useMyPosition,
 } from '@/lib/client-map';
 import { useSectors, useSellers } from '@/lib/sales-force';
@@ -90,13 +89,8 @@ function Screen() {
 
   // Above the cap the map asks for the current view only (bounds of the last pan / zoom,
   // debounced in the map). Back to the whole scope when the filters change.
-  const [bounds, setBounds] = useState<MapBounds | null>(null);
-  const whole = useClientMap(filters, null);
-  const byView = (whole.data?.truncated ?? false) && bounds !== null;
-  const inView = useClientMap(filters, bounds, byView);
-  const map = byView ? inView : whole;
+  const { map, onBoundsChange } = useClientMapByView(filters);
   const truncated = map.data?.truncated ?? false;
-  const onBoundsChange = useCallback((b: MapBounds) => setBounds(roundBounds(b)), []);
 
   const points = useMemo(
     () => (map.data?.points ?? []).map((p) => ({ ...p, state: pointState(p) })),
@@ -105,7 +99,11 @@ function Screen() {
   const [selected, setSelected] = useState<Selected | null>(null);
   const [focus, setFocus] = useState<(LatLng & { zoom?: number }) | null>(null);
   const me = useMyPosition();
-  const [nearby, setNearby] = useState<{ center: LatLng; around: string } | null>(null);
+  const [nearby, setNearby] = useState<{
+    center: LatLng;
+    around: string;
+    accuracyM?: number;
+  } | null>(null);
   const [nearbyOpen, setNearbyOpen] = useState(false);
   const [radiusM, setRadiusM] = useState(5000);
   const [addTo, setAddTo] = useState<Selected | null>(null);
@@ -118,7 +116,7 @@ function Screen() {
     const pos = me.position ?? (await me.locate());
     if (!pos) return;
     setFocus({ lat: pos.lat, lng: pos.lng, zoom: 14 });
-    setNearby({ center: pos, around: t('aroundMe') });
+    setNearby({ center: pos, around: t('aroundMe'), accuracyM: pos.accuracyM });
     setNearbyOpen(true);
   };
   const showFromList = (c: ClientNearbyPointDto) => {
@@ -138,9 +136,14 @@ function Screen() {
   const distance =
     selected && me.position ? Math.round(haversineM(me.position, selected)) : undefined;
 
+  // Phone: the map takes what is left of the screen under the buttons, legend included.
+  const legendRef = useRef<HTMLDivElement>(null);
+  const [mapBoxRef, mapHeight] = useRemainingHeight<HTMLDivElement>({ below: legendRef });
+
   return (
     <>
-      <PageHeader title={t('title')} description={t('subtitle')} />
+      {/* Phone: the top bar already gives the title; the screen goes to the map. */}
+      <PageHeader title={t('title')} description={t('subtitle')} className="max-md:sr-only" />
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="outline" className="h-11 md:hidden" onClick={() => setFiltersOpen(true)}>
           <ListFilter aria-hidden />
@@ -165,25 +168,12 @@ function Screen() {
             aria-label={t('loading')}
           />
         ) : null}
-        {map.data && map.data.withoutLocation > 0 ? (
-          <Link
-            href="/clients?hasLocation=false"
-            className="ms-auto inline-flex min-h-11 items-center text-sm font-medium text-primary underline-offset-4 hover:underline"
-          >
-            {t('withoutLocation', { count: map.data.withoutLocation })}
-          </Link>
-        ) : null}
       </div>
       {me.status === 'denied' || me.status === 'unavailable' ? (
         <Alert role="status">
           <AlertDescription>
             {me.status === 'denied' ? t('positionDenied') : t('positionUnavailable')}
           </AlertDescription>
-        </Alert>
-      ) : null}
-      {truncated ? (
-        <Alert role="status">
-          <AlertDescription>{t('truncated', { max: '2 000' })}</AlertDescription>
         </Alert>
       ) : null}
       {map.isError ? (
@@ -197,9 +187,37 @@ function Screen() {
           <MapFilters value={f} onChange={setF} idPrefix="side" />
         </aside>
         <div className="space-y-2">
-          <div className="relative">
+          <div
+            ref={mapBoxRef}
+            // `isolate`: what is drawn over the map (z-1000, above Leaflet's panes) must
+            // stay under the sheets and dialogs of the page.
+            className="relative isolate"
+            style={mapHeight ? ({ '--map-h': `${mapHeight}px` } as CSSProperties) : undefined}
+          >
+            {/* Over the map, not above it: each row above costs the map its height on a
+                phone. Physical left inset: the zoom buttons stay top-left in Arabic too. */}
+            {truncated || (map.data && map.data.withoutLocation > 0) ? (
+              <div className="pointer-events-none absolute top-2 right-2 left-14 z-[1000] flex flex-col items-end gap-1.5">
+                {truncated ? (
+                  <p
+                    role="status"
+                    className="pointer-events-auto rounded-md border bg-background/95 px-2.5 py-1.5 text-xs shadow-sm"
+                  >
+                    {t('truncated', { max: '2 000' })}
+                  </p>
+                ) : null}
+                {map.data && map.data.withoutLocation > 0 ? (
+                  <Link
+                    href="/clients?hasLocation=false"
+                    className="pointer-events-auto inline-flex min-h-11 items-center rounded-md border bg-background/95 px-3 text-sm font-medium text-primary underline-offset-4 shadow-sm hover:underline"
+                  >
+                    {t('withoutLocation', { count: map.data.withoutLocation })}
+                  </Link>
+                ) : null}
+              </div>
+            ) : null}
             <ClientsMap
-              className="h-[calc(100svh-15rem)] min-h-80 w-full md:h-[calc(100svh-12rem)]"
+              className="h-[var(--map-h,calc(100svh-15rem))] min-h-60 w-full md:h-[calc(100svh-12rem)] md:min-h-80"
               points={points}
               selectedId={selected?.id ?? null}
               onSelect={select}
@@ -243,7 +261,9 @@ function Screen() {
               />
             ) : null}
           </div>
-          <MapLegend states={['normal', 'debt', 'over', 'inactive']} />
+          <div ref={legendRef}>
+            <MapLegend states={['normal', 'debt', 'over', 'inactive']} />
+          </div>
         </div>
       </div>
 
@@ -270,6 +290,7 @@ function Screen() {
         open={nearbyOpen}
         onOpenChange={setNearbyOpen}
         center={nearby?.center ?? null}
+        accuracyM={nearby?.accuracyM}
         around={nearby?.around ?? ''}
         filters={filters}
         radiusM={radiusM}

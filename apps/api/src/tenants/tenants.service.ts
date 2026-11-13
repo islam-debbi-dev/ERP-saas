@@ -37,6 +37,7 @@ function toResponse(t: Tenant): TenantSettingsResponse {
     maxDiscountPct: toMoneyString(t.maxDiscountPct.toString()),
     reminderDays: t.reminderDays,
     sellerScope: t.sellerScope,
+    livreurScope: t.livreurScope,
     geoCheckMode: t.geoCheckMode,
     geoRadiusM: t.geoRadiusM,
     geoMaxAccuracyM: t.geoMaxAccuracyM,
@@ -96,6 +97,12 @@ export class TenantsService {
       const targetChanged = canonical !== undefined && canonical !== beforeTarget;
       if (targetChanged && user && user.role !== Role.OWNER) {
         throw new AppException(ErrorCode.FORBIDDEN, 'Only the owner sets the monthly target');
+      }
+      // Which clients a livreur sees is the owner's decision too (REPORT-35, A-1).
+      const livreurScopeChanged =
+        input.livreurScope !== undefined && input.livreurScope !== before.livreurScope;
+      if (livreurScopeChanged && user && user.role !== Role.OWNER) {
+        throw new AppException(ErrorCode.FORBIDDEN, 'Only the owner sets what a livreur sees');
       }
       const after = await tx.tenant.update({
         where: { id: tenantId },

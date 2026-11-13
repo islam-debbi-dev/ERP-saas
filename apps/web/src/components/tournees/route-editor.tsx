@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { Feature, orderByNearest, type RouteDto, type UpdateRouteInput } from '@erp/shared';
 import { ClientPicker } from '@/components/sales/client-picker';
@@ -50,6 +50,7 @@ import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
+import { useLeaveGuard } from '@/hooks/use-leave-guard';
 import { api } from '@/lib/api-client';
 import { useFeature } from '@/lib/auth';
 import { useSellers } from '@/lib/sales-force';
@@ -92,6 +93,7 @@ function Editor({ id }: { id: string }) {
 
 function Loaded({ route }: { route: RouteDto }) {
   const t = useTranslations('tournees');
+  const tc = useTranslations('common');
   const errorMessage = useErrorMessage();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -121,13 +123,8 @@ function Loaded({ route }: { route: RouteDto }) {
     weekdays.join() !== route.weekdays.join();
   const stopsDirty = stops.map((s) => s.id).join() !== route.stops.map((s) => s.client.id).join();
 
-  // Leaving with unsaved stops loses the work: ask the browser to confirm.
-  useEffect(() => {
-    if (!headerDirty && !stopsDirty) return;
-    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
-    window.addEventListener('beforeunload', warn);
-    return () => window.removeEventListener('beforeunload', warn);
-  }, [headerDirty, stopsDirty]);
+  // Leaving with unsaved stops loses the work: ask first, whichever way out is taken.
+  useLeaveGuard(headerDirty || stopsDirty, tc('leaveUnsaved'));
 
   const save = useMutation({
     mutationFn: async () => {
@@ -139,7 +136,11 @@ function Loaded({ route }: { route: RouteDto }) {
       if (stopsDirty) {
         next = await api.request<RouteDto>(`/routes/${route.id}/stops`, {
           method: 'PUT',
-          body: { clientIds: stops.map((s) => s.id) },
+          // The list this edit started from: refused (409) if someone changed it since.
+          body: {
+            clientIds: stops.map((s) => s.id),
+            baseClientIds: route.stops.map((s) => s.client.id),
+          },
         });
       }
       return next;

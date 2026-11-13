@@ -2,6 +2,32 @@ import { z } from 'zod';
 import { CURRENCIES } from '../landed-cost';
 import { parseDA } from '../money';
 
+/** C0 controls and DEL. PostgreSQL refuses U+0000 in text; none of them belongs in a search. */
+// eslint-disable-next-line no-control-regex
+const CONTROL_CHARS = /[\u0000-\u001f\u007f]/;
+
+/**
+ * The free-text `search` of a list: trimmed, at most `max` characters, no control character.
+ * Without the last rule a NUL byte reaches Postgres and comes back as a 500 (REPORT-35, A-2).
+ */
+export const searchText = (max = 100) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .refine((v) => !CONTROL_CHARS.test(v), 'invalid_characters');
+
+/**
+ * A number sent in a query string, written as JavaScript prints one: `36.75`, `-3`, `1e-7`
+ * (a longitude a few centimetres from Greenwich, which crosses Algeria).
+ * `z.coerce.number()` is `Number(v)`, which reads `''` and `' '` as 0 and takes `0x24`:
+ * an empty `lat=&lng=` was the position 0°N 0°E (REPORT-35, A-6).
+ */
+export const decimalQuery = z
+  .string()
+  .regex(/^-?(?:\d{1,20}(?:\.\d{0,20})?|\.\d{1,20})(?:[eE][-+]?\d{1,3})?$/, 'invalid_number')
+  .transform(Number);
+
 /** A currency code of `CURRENCIES` (phase 22). */
 export const currencyCode = z.enum(CURRENCIES);
 

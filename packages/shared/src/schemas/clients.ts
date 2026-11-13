@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ClientType, type ClientLedgerType } from '../enums';
 import { parseDA } from '../money';
-import { amountString, normalizeDecimal } from './common';
+import { amountString, decimalQuery, normalizeDecimal, searchText } from './common';
 import { type ClientLocationDto } from './geo';
 
 const id = z.uuid();
@@ -56,7 +56,7 @@ export const updateClientSchema = z.object({ ...clientFields, version: z.number(
 export type UpdateClientInput = z.infer<typeof updateClientSchema>;
 
 export const clientListQuerySchema = z.object({
-  search: z.string().trim().max(100).optional(),
+  search: searchText().optional(),
   hasDebt: z
     .enum(['true', 'false'])
     .optional()
@@ -102,8 +102,8 @@ const mapFilterFields = {
   includeInactive: flag,
 };
 
-const latQ = z.coerce.number().min(-90).max(90);
-const lngQ = z.coerce.number().min(-180).max(180);
+const latQ = decimalQuery.pipe(z.number().min(-90).max(90));
+const lngQ = decimalQuery.pipe(z.number().min(-180).max(180));
 
 export const clientMapQuerySchema = z
   .object({
@@ -135,6 +135,25 @@ export const clientNearbyQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(30),
 });
 export type ClientNearbyQuery = z.infer<typeof clientNearbyQuerySchema>;
+
+/**
+ * The same request as a JSON body (`POST /clients/nearby`), which is what the web sends:
+ * a hosting platform keeps the query string of every request in its logs, where no scrub
+ * of ours can reach (REPORT-35, B-3). A body is not logged. Parses to `ClientNearbyQuery`.
+ */
+export const clientNearbyBodySchema = z.object({
+  search: mapFilterFields.search,
+  sectorId: id.optional(),
+  assignedSellerId: id.optional(),
+  hasDebt: z.boolean().default(false),
+  overLimit: z.boolean().default(false),
+  includeInactive: z.boolean().default(false),
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+  radiusM: z.number().int().min(100).max(50_000).default(5000),
+  limit: z.number().int().min(1).max(100).default(30),
+}) satisfies z.ZodType<ClientNearbyQuery>;
+export type ClientNearbyBody = z.input<typeof clientNearbyBodySchema>;
 
 /** A compact client for the map: no ledger, no address beyond the commune. */
 export interface ClientMapPointDto {

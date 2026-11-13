@@ -327,6 +327,59 @@ describe('client map (phase 35)', () => {
     });
   });
 
+  // REPORT-35, A-2 and A-6: hostile values are a 400 with a code, never a 500 or a guess.
+  describe('hostile input', () => {
+    const refused = async (url: string) => {
+      const res = await as(d).get(url).expect(400);
+      expect((res.body as ApiError).code).toBe(ErrorCode.VALIDATION_FAILED);
+    };
+
+    it('refuses a NUL byte in search on the map, nearby and the list', async () => {
+      await refused('/clients/map?search=%00');
+      await refused('/clients/map?search=abc%00def');
+      await refused('/clients/nearby?lat=36.75&lng=3.06&search=%00');
+      await refused('/clients?search=%00');
+    });
+
+    it('does not read an empty position as 0, 0', async () => {
+      await refused('/clients/nearby?lat=&lng=');
+      await refused('/clients/nearby?lat=%20&lng=3');
+      await refused('/clients/nearby?lat=0x24&lng=3');
+      await refused('/clients/map?minLat=&minLng=2&maxLat=37&maxLng=4');
+    });
+
+    it('answers 400 when a NUL byte reaches the database through another field', async () => {
+      const res = await as(d).post('/clients', { name: `${tag} nul\u0000name` });
+      expect(res.status).toBe(400);
+      expect((res.body as ApiError).code).toBe(ErrorCode.VALIDATION_FAILED);
+    });
+  });
+
+  // REPORT-35, B-3: the web sends the position in a body, which no request log keeps.
+  describe('POST /clients/nearby', () => {
+    const post = (who: Who, body: object) => as(who).post('/clients/nearby', body, null);
+
+    it('answers what the GET answers, with 200 and without an Idempotency-Key', async () => {
+      const viaGet = await nearby(d, ALGER, '&radiusM=1000&hasDebt=true&limit=5');
+      const viaPost = (
+        await post(d, { ...ALGER, search: tag, radiusM: 1000, hasDebt: true, limit: 5 }).expect(200)
+      ).body as ClientNearbyPointDto[];
+      expect(viaPost).toEqual(viaGet);
+      expect(viaPost.length).toBeGreaterThan(0);
+    });
+
+    it('keeps the scope, the feature gate and the validation', async () => {
+      const mine = (await post(supervisor2, { ...ALGER, search: tag }).expect(200))
+        .body as ClientNearbyPointDto[];
+      expect(mine.map((p) => p.id)).toEqual([ofSeller2.id]);
+      await post(essentiel, ALGER).expect(403);
+      await post(d, { lat: '36.7', lng: 3 }).expect(400);
+      await post(d, { lng: 3 }).expect(400);
+      await post(d, { ...ALGER, search: 'a\u0000b' }).expect(400);
+      await t.http().post('/clients/nearby').send(ALGER).expect(401);
+    });
+  });
+
   describe('GET /clients?hasLocation', () => {
     it('lists clients with or without a point', async () => {
       const page = async (v: string) =>
@@ -396,6 +449,48 @@ describe('client map (phase 35)', () => {
       expect((res.body as ApiError).code).toBe(ErrorCode.VALIDATION_FAILED);
     });
 
+    // REPORT-35, A-7: "Ajouter à une tournée…" reads the route then replaces its stops.
+    describe('a save built on a stale read', () => {
+      const put = (who: Who, body: object) => as(who).put(`/routes/${route.id}/stops`, body);
+      const stopIds = async () =>
+        ((await as(supervisor).get(`/routes/${route.id}`).expect(200)).body as RouteDto).stops.map(
+          (s) => s.client.id,
+        );
+
+      it('is refused, and nothing the other planner saved is lost', async () => {
+        const read = await stopIds();
+        await put(supervisor, { clientIds: [...read, plain.id], baseClientIds: read }).expect(200);
+        const res = await put(d, { clientIds: [...read, over.id], baseClientIds: read }).expect(
+          409,
+        );
+        expect((res.body as ApiError).code).toBe(ErrorCode.ROUTE_STOPS_CHANGED);
+        const now = await stopIds();
+        expect(now).toEqual([...read, plain.id]);
+        // Read again, add again: both clients are on the route.
+        await put(d, { clientIds: [...now, over.id], baseClientIds: now }).expect(200);
+        expect(await stopIds()).toEqual([...read, plain.id, over.id]);
+      });
+
+      it('compares the order too, and still replaces blindly without a base', async () => {
+        const now = await stopIds();
+        await put(d, { clientIds: [], baseClientIds: [...now].reverse() }).expect(409);
+        await put(d, { clientIds: [indebted.id, noPoint.id] }).expect(200);
+        expect(await stopIds()).toEqual([indebted.id, noPoint.id]);
+      });
+
+      it('lets exactly one of two simultaneous saves from the same read through', async () => {
+        const read = await stopIds();
+        const [a, b] = await Promise.all([
+          put(supervisor, { clientIds: [...read, plain.id], baseClientIds: read }),
+          put(d, { clientIds: [...read, over.id], baseClientIds: read }),
+        ]);
+        expect([a.status, b.status].sort()).toEqual([200, 409]);
+        const winner = a.status === 200 ? plain.id : over.id;
+        expect(await stopIds()).toEqual([...read, winner]);
+        await put(d, { clientIds: read }).expect(200);
+      });
+    });
+
     it('takes 300 stops and refuses 301', async () => {
       const made = await tamper(t)`
         INSERT INTO clients (id, "tenantId", code, name, "assignedSellerId", "updatedAt")
@@ -418,6 +513,84 @@ describe('client map (phase 35)', () => {
       ).body as RouteDto;
       expect(ok.stops).toHaveLength(300);
       await as(supervisor).put(`/routes/${route.id}/stops`, { clientIds: all }).expect(400);
+    });
+  });
+  // REPORT-35, C-1: under row-level security only leakproof operators can be index
+  // conditions. The box must stay on float8 columns, or the index is dead again.
+  describe('the geo index the API can use', () => {
+    const sql = <T>(q: TemplateStringsArray, ...v: unknown[]) =>
+      asTenant(d.tenantId, () => t.prisma.db.$queryRaw<T[]>(q, ...v));
+
+    it('has float8 twins of lat / lng that the database keeps, and a partial index on them', async () => {
+      const cols = await sql<{ name: string; type: string; generated: string }>`
+        SELECT column_name AS name, data_type AS type, is_generated AS generated
+        FROM information_schema.columns
+        WHERE table_name = 'clients' AND column_name IN ('lat_f', 'lng_f')
+        ORDER BY column_name`;
+      expect(cols).toEqual([
+        { name: 'lat_f', type: 'double precision', generated: 'ALWAYS' },
+        { name: 'lng_f', type: 'double precision', generated: 'ALWAYS' },
+      ]);
+      const [index] = await sql<{ indexdef: string }>`
+        SELECT indexdef FROM pg_indexes WHERE indexname = 'clients_tenant_geo_f_idx'`;
+      expect(index?.indexdef).toMatch(/\("tenantId", lat_f, lng_f\) WHERE/);
+    });
+
+    it('compares them with leakproof operators, which numeric does not have', async () => {
+      const ops = await sql<{ type: string; leakproof: boolean }>`
+        SELECT o.oprleft::regtype::text AS type, bool_and(p.proleakproof) AS leakproof
+        FROM pg_operator o JOIN pg_proc p ON p.oid = o.oprcode
+        WHERE o.oprname IN ('>=', '<=') AND o.oprleft = o.oprright
+          AND o.oprleft IN ('float8'::regtype, 'numeric'::regtype)
+        GROUP BY 1 ORDER BY 1`;
+      expect(ops).toEqual([
+        { type: 'double precision', leakproof: true },
+        { type: 'numeric', leakproof: false },
+      ]);
+    });
+
+    it('follows a client whose point moves', async () => {
+      const [row] = await sql<{ same: boolean }>`
+        SELECT bool_and(lat_f = lat::float8 AND lng_f = lng::float8) AS same
+        FROM clients WHERE "tenantId" = ${d.tenantId}::uuid AND lat IS NOT NULL`;
+      expect(row?.same).toBe(true);
+      await tamper(t)`UPDATE clients SET lat = 35.5, lng = 2.5 WHERE id = ${in49.id}::uuid`;
+      const box = '&minLat=35.4&minLng=2.4&maxLat=35.6&maxLng=2.6';
+      expect(ids((await map(d, box)).points)).toEqual([in49.id]);
+      expect((await nearby(d, { lat: 35.5, lng: 2.5 }, '&radiusM=1000')).map((p) => p.id)).toEqual([
+        in49.id,
+      ]);
+    });
+  });
+
+  // REPORT-35, A-5.
+  describe('start of a route', () => {
+    it("is the dépôt principal's point when the seller's only dépôt has none", async () => {
+      const lone = await member(d, 'SELLER', supervisor.id);
+      const depot = (
+        await as(d)
+          .post('/warehouses', { name: `Sans point ${tag}`, type: 'SECONDARY' })
+          .expect(201)
+      ).body as { id: string };
+      await tamper(t)`
+        UPDATE warehouses SET lat = 36.77, lng = 3.05
+        WHERE "tenantId" = ${d.tenantId}::uuid AND "isDefault"`;
+      // He operates in the new dépôt only (the helper granted him the dépôt principal).
+      await tamper(t)`DELETE FROM user_warehouse_access WHERE "userId" = ${lone.id}::uuid`;
+      await tamper(t)`
+        INSERT INTO user_warehouse_access ("id", "tenantId", "userId", "warehouseId", "level", "grantedAt")
+        VALUES (gen_random_uuid(), ${d.tenantId}::uuid, ${lone.id}::uuid, ${depot.id}::uuid, 'OPERATE', CURRENT_TIMESTAMP)`;
+      const route = (
+        await as(d)
+          .post('/routes', { name: `Départ ${tag}`, sellerId: lone.id, weekdays: [2] }, null)
+          .expect(201)
+      ).body as RouteDto;
+      const start = async () =>
+        ((await as(d).get(`/routes/${route.id}`).expect(200)).body as RouteDto).start;
+      expect(await start()).toEqual({ lat: 36.77, lng: 3.05 });
+      // Once his own dépôt has a point, that one wins.
+      await tamper(t)`UPDATE warehouses SET lat = 36.19, lng = 5.41 WHERE id = ${depot.id}::uuid`;
+      expect(await start()).toEqual({ lat: 36.19, lng: 5.41 });
     });
   });
 });

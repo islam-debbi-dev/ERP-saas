@@ -8,7 +8,13 @@ import {
 } from '../landed-cost';
 import { PAYMENT_MODES, type PaymentMode, type PurchaseStatus } from '../enums';
 import { parseDA } from '../money';
-import { amountString, currencyCode, exchangeRateString, normalizeDecimal } from './common';
+import {
+  amountString,
+  currencyCode,
+  exchangeRateString,
+  normalizeDecimal,
+  searchText,
+} from './common';
 
 /** Phase 22 (IMPORT_COSTS): dossiers d'importation and their costs. */
 
@@ -96,7 +102,7 @@ export type CancelImportCostInput = z.infer<typeof cancelImportCostSchema>;
 
 export const importFileListQuerySchema = z.object({
   status: z.enum(['OPEN', 'CLOSED', 'CANCELLED']).optional(),
-  search: z.string().trim().max(100).optional(),
+  search: searchText().optional(),
   cursor: id.optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });

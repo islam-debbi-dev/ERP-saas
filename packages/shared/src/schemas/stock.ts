@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { AdjustmentReason, type InventoryStatus, type StockMovementType } from '../enums';
 import { parseDA } from '../money';
-import { normalizeDecimal, quantityString } from './common';
+import { normalizeDecimal, quantityString, searchText } from './common';
 
 const id = z.uuid();
 
@@ -102,7 +102,7 @@ export const inventoryLinesSchema = z.object({
 export type InventoryLinesInput = z.infer<typeof inventoryLinesSchema>;
 
 export const stockListQuerySchema = z.object({
-  search: z.string().trim().max(100).optional(),
+  search: searchText().optional(),
   lowStock: z
     .enum(['true', 'false'])
     .optional()

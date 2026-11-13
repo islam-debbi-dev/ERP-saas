@@ -94,7 +94,9 @@ export type NewPlanVersionInput = z.infer<typeof newPlanVersionSchema>;
 export const ruleInputSchema = z
   .object({
     name,
-    appliesTo: z.enum(INCENTIVE_APPLIES_TO as [IncentiveAppliesToValue, ...IncentiveAppliesToValue[]]),
+    appliesTo: z.enum(
+      INCENTIVE_APPLIES_TO as [IncentiveAppliesToValue, ...IncentiveAppliesToValue[]],
+    ),
     /** A role for ROLE, a user id for USER and TEAM_MANAGER. */
     roleOrUserId: z.string().trim().min(1).max(40),
     params: incentiveRuleParamsSchema,

@@ -127,6 +127,8 @@ export const ErrorCode = {
   WAREHOUSE_ACCESS_INVALID: 'WAREHOUSE_ACCESS_INVALID',
   // Tournées, commandes, clôture (phase 16)
   ROUTE_NOT_FOUND: 'ROUTE_NOT_FOUND',
+  /** The stops changed since the list this save started from was read (phase 35). */
+  ROUTE_STOPS_CHANGED: 'ROUTE_STOPS_CHANGED',
   VISIT_INVALID: 'VISIT_INVALID',
   ORDER_NOT_FOUND: 'ORDER_NOT_FOUND',
   ORDER_NOT_DRAFT: 'ORDER_NOT_DRAFT',

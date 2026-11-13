@@ -27,6 +27,11 @@ enum SellerScope {
   ASSIGNED_ONLY
 }
 
+enum LivreurScope {
+  ALL_CLIENTS
+  OWN_DELIVERIES
+}
+
 enum CreditLimitMode {
   WARN
   BLOCK
@@ -123,6 +128,10 @@ model Tenant {
   allowTenantAiKey Boolean @default(false)
 
   sellerScope SellerScope @default(ALL_CLIENTS)
+
+  /// Which clients a livreur sees: all of them (since phase 14), or only the clients of
+  /// the commandes given to him to deliver. The owner decides (REPORT-35, A-1).
+  livreurScope LivreurScope @default(ALL_CLIENTS)
 
   /// Géolocalisation (phase 17, GEO_CHECK): far operations are flagged (default) or blocked.
   geoCheckMode    GeoCheckMode @default(FLAG)
@@ -1053,6 +1062,13 @@ model Client {
   /// Reference GPS point (phase 17). A seller moves it only through an approved request.
   lat              Decimal?   @db.Decimal(9, 6)
   lng              Decimal?   @db.Decimal(9, 6)
+  /// `lat` / `lng` as double precision, GENERATED ALWAYS … STORED in the migration: the
+  /// database keeps them, nothing writes them. Only raw SQL reads them (the lat/lng box of
+  /// the client map): under row-level security an index is usable with float8 comparisons,
+  /// not with numeric ones (REPORT-35, C-1). `dbgenerated` is how Prisma reads a generated
+  /// column back: it keeps `migrate dev` from seeing a drift.
+  latF             Float?     @default(dbgenerated("(lat)::double precision")) @map("lat_f") @ignore
+  lngF             Float?     @default(dbgenerated("(lng)::double precision")) @map("lng_f") @ignore
   geoAccuracyM     Int?
   geoSetAt         DateTime?  @db.Timestamptz(3)
   geoSetBy         String?    @db.Uuid
@@ -1083,8 +1099,9 @@ model Client {
   @@index([tenantId, phone])
   @@index([tenantId, sectorId])
   @@index([tenantId, assignedSellerId])
-  /// Phase 35: clients_tenant_geo_idx ("tenantId", lat, lng) WHERE live and with a point,
-  /// a partial index in the migration (Prisma cannot express it).
+  /// Phase 35: clients_tenant_geo_f_idx ("tenantId", lat_f, lng_f) WHERE live and with a
+  /// point, a partial index in the migration (Prisma cannot express it). The older
+  /// clients_tenant_geo_idx on the numeric columns is unusable under RLS; to be dropped.
   @@map("clients")
 }
 

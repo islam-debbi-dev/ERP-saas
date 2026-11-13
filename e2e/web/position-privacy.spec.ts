@@ -42,10 +42,13 @@ test('the position after a "Près de moi" session: storage, URL, third parties, 
   const nearby = page.waitForRequest((r) => r.url().includes('/clients/nearby'));
   await page.getByRole('button', { name: 'Près de moi' }).click();
   const first = await nearby;
-  // The one place the spec allows: the query of the nearby request.
-  expect(has(first.url()), 'the nearby request carries the position').toBe(true);
+  // The one place the position may be: the body of the nearby request. Not its URL, which
+  // the hosting platform keeps in its request log (B-3).
+  expect(first.method(), 'the nearby request is a POST').toBe('POST');
+  expect(has(first.postData() ?? ''), 'the body of the nearby request carries the position').toBe(true);
+  expect(has(first.url()), 'the URL of the nearby request carries the position').toBe(false);
   await expect(page.getByText('Clients proches')).toBeVisible();
-  const again = page.waitForRequest((r) => r.url().includes('/clients/nearby') && r.url().includes('radiusM=10000'));
+  const again = page.waitForRequest((r) => r.url().includes('/clients/nearby') && (r.postData() ?? '').includes('"radiusM":10000'));
   await page.getByRole('radio', { name: /^10/ }).click();
   await again;
   await page.keyboard.press('Escape');

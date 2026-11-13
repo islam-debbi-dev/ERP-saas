@@ -326,6 +326,34 @@ It then checks that no row is left without a dépôt, that every client balance 
   psql "$OWNER_URL" -f apps/api/prisma/app-role.sql
   ```
 
+### Migrations on Neon
+
+The Vercel deployment has no deploy script: migrations are run by hand, **before** the API version that needs them goes live (they are written so the running version works with them in place).
+
+```bash
+DATABASE_URL_MIGRATE='postgresql://<owner>:<password>@<neon-direct-host>/<db>?sslmode=require' \
+  pnpm --filter @erp/api db:deploy
+```
+
+- `apps/api/prisma.config.ts` reads `DATABASE_URL_MIGRATE`, then `DATABASE_URL`, from the environment and then from `apps/api/.env`. Without the variable on the command line it migrates the **local** database and prints "All migrations have been successfully applied".
+- The owner role, on the direct host (no `-pooler` in the name): a pooled connection can't take the migration lock.
+- Check in the Neon SQL editor that the last migration is there:
+  ```sql
+  SELECT migration_name, finished_at FROM _prisma_migrations ORDER BY finished_at DESC LIMIT 3;
+  ```
+
+### Reading a query plan
+
+Run `EXPLAIN` **as `erp_app`**, with the tenant set, or it shows a plan the API never gets. The owner bypasses row-level security; under it, PostgreSQL only uses a condition as an index condition when its operator is leakproof (`float8` and `uuid` comparisons are, `numeric` ones are not). An index that looks used from the console can be dead for the API.
+
+```sql
+BEGIN;
+SET LOCAL ROLE erp_app;
+SELECT set_config('app.tenant_id', '<tenant uuid>', true);
+EXPLAIN (ANALYZE, BUFFERS) SELECT ...;
+ROLLBACK;
+```
+
 ## Rotate secrets
 
 Rotate a secret right away if it may have leaked (a laptop was lost, a key was pasted into a chat, someone left), and otherwise once a year.

@@ -16,7 +16,7 @@ import { closeDb, query } from '../lib/db.ts';
 import { request as api } from '../lib/http.ts';
 import { expectNoHorizontalOverflow, overflowProblems } from './mobile-helpers.ts';
 import { HERE, prepare, type UiData } from './map-data.ts';
-import { API, fixture, langOf, mockGeolocation, open, signedIn, WEB } from './map-helpers.ts';
+import { API, fixture, langOf, mockGeolocation, open, signedIn, tapDot, WEB } from './map-helpers.ts';
 
 type Messages = Record<string, Record<string, string>>;
 const messages = (lang: string): Messages =>
@@ -299,7 +299,7 @@ test('"Près de moi": the list is sorted by distance, has call and directions li
 
   const rows = sheet.getByTestId('nearby-list').locator('li');
   expect(await rows.count()).toBe(body.length);
-  const shown = (await rows.locator('button span.num').allTextContents()).map(nbsp);
+  const shown = (await rows.getByTestId('nearby-distance').allTextContents()).map(nbsp);
   const metres = shown.map((s) => (s.includes('km') ? Number(s.replace(' km', '').replace(',', '.')) * 1000 : Number(s.replace(' m', ''))));
   expect(metres.every((v, i) => i === 0 || metres[i - 1]! <= v), `distances ascending: ${shown.slice(0, 8).join(', ')}`).toBe(true);
   // First row: its links.
@@ -312,7 +312,7 @@ test('"Près de moi": the list is sorted by distance, has call and directions li
   const chips = sheet.getByRole('radio');
   expect((await chips.allTextContents()).map(nbsp)).toEqual(['1 km', '5 km', '10 km', '25 km']);
   await expect(chips.nth(1)).toHaveAttribute('aria-checked', 'true');
-  const wider = page.waitForRequest((r) => r.url().includes('/clients/nearby') && r.url().includes('radiusM=1000&'));
+  const wider = page.waitForRequest((r) => r.url().includes('/clients/nearby') && (r.postData() ?? '').includes('"radiusM":1000,'));
   await chips.first().click();
   await wider;
   expect.soft(await unnamedControls(sheet), 'controls without a name in the nearby sheet').toEqual([]);
@@ -337,7 +337,7 @@ test('bubble of a client: fiche, tel, itinéraire (lat,lng), balance 1 234 567,8
   await open(page, '/clients/carte');
   await mapOf(page).waitFor();
   await chooseSeller(page, m, w.data.seller.id);
-  await page.locator(`path.cp-${c.id}`).click();
+  await tapDot(page, c.id);
   const bubble = page.getByRole('dialog', { name: c.name });
   await expect(bubble).toBeVisible();
   await shot(page, 'bulle');
@@ -363,6 +363,8 @@ test('bubble of a client: fiche, tel, itinéraire (lat,lng), balance 1 234 567,8
   await expect(dialog).toBeVisible();
   await shot(page, 'ajouter-a-une-tournee');
   // Only the routes of the client's seller are offered.
+  // The list loads after the dialog opens (a skeleton first): wait for it before reading.
+  await expect(dialog.locator('ul li').first()).toBeVisible();
   const offered = await dialog.locator('ul li').allTextContents();
   const sellerLabel = w.data.seller.email.replace('t35-', '').replace('@audit.local', '');
   expect(offered.length, `routes offered: ${offered.join(' | ')}`).toBeGreaterThanOrEqual(2);
@@ -601,7 +603,7 @@ test('/tournees/aujourdhui: "Carte" shows numbered stops, the visited one checke
   // A seller has no "Ajouter à une tournée…" on the clients map.
   await open(page, '/clients/carte');
   await mapOf(page).waitFor();
-  await page.locator(`path.cp-${w.data.clients[1]!.id}`).click();
+  await tapDot(page, w.data.clients[1]!.id);
   const bubble = page.getByRole('dialog', { name: w.data.clients[1]!.name });
   await expect(bubble).toBeVisible();
   await expect(bubble.getByRole('button', { name: cm['addToRoute'] })).toHaveCount(0);

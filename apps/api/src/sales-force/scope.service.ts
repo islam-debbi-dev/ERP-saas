@@ -6,6 +6,7 @@ import {
   Permission,
   Role,
   SELLING_ROLES,
+  LivreurScope,
   SellerScope,
   WarehouseAccessLevel,
   WarehouseType,
@@ -20,6 +21,8 @@ import { PrismaService, type Tx } from '../prisma/prisma.service';
 /**
  * What a user may see. null = no restriction.
  * - `clientSellerIds`: only clients assigned to one of these users (phase 14).
+ * - `clientLivreurId`: only clients with a commande given to this livreur to deliver
+ *   (the company's `livreurScope` setting).
  * - `documentUserIds`: only sales / versements made by one of these users (phase 14).
  * - `warehouseIds`: only documents and stock of these dépôts, where he works (OPERATE,
  *   their trucks and his own truck; phase 24, MULTI_UNIT).
@@ -29,6 +32,7 @@ import { PrismaService, type Tx } from '../prisma/prisma.service';
  */
 export interface DataScope {
   clientSellerIds: string[] | null;
+  clientLivreurId?: string | null;
   documentUserIds: string[] | null;
   warehouseIds: string[] | null;
   statsWarehouseIds: string[] | null;
@@ -56,7 +60,10 @@ type Db = PrismaService['db'] | Tx;
  * Every service applies it; the web only mirrors it. Outside the SALES_FORCE module
  * nobody is restricted (old behaviour, and a module turned off hides nothing).
  *
- * - OWNER / MANAGER (and STOREKEEPER, LIVREUR, limited by their routes): everything.
+ * - OWNER / MANAGER (and STOREKEEPER, limited by his routes): everything.
+ * - LIVREUR: everything under `livreurScope = ALL_CLIENTS` (the default, as since phase
+ *   14); under OWN_DELIVERIES only the clients of the commandes assigned to him, on every
+ *   screen that lists clients (list, map, nearby, soldes). The owner chooses.
  * - SELLER: everything under ALL_CLIENTS; under ASSIGNED_ONLY, his assigned clients and
  *   his own sales and versements (the client comptoir has no client, so it stays open).
  * - SUPERVISOR: the documents of his team (himself and everyone under him); under
@@ -72,7 +79,8 @@ export class ScopeService {
   async of(user: CurrentUserInfo, db: Db = this.prisma.db): Promise<DataScope> {
     const w = await this.warehouses(user, db);
     const units = { ...w, userId: user.id };
-    if (user.role !== Role.SELLER && user.role !== Role.SUPERVISOR) {
+    const restrictable: Role[] = [Role.SELLER, Role.SUPERVISOR, Role.LIVREUR];
+    if (!restrictable.includes(user.role)) {
       return { clientSellerIds: null, documentUserIds: null, ...units };
     }
     if (!(await this.salesForceOn(user.tenantId))) {
@@ -80,8 +88,16 @@ export class ScopeService {
     }
     const tenant = await db.tenant.findUniqueOrThrow({
       where: { id: user.tenantId },
-      select: { sellerScope: true },
+      select: { sellerScope: true, livreurScope: true },
     });
+    if (user.role === Role.LIVREUR) {
+      return {
+        clientSellerIds: null,
+        clientLivreurId: tenant.livreurScope === LivreurScope.OWN_DELIVERIES ? user.id : null,
+        documentUserIds: null,
+        ...units,
+      };
+    }
     const assignedOnly = tenant.sellerScope === SellerScope.ASSIGNED_ONLY;
     if (user.role === Role.SELLER) {
       return assignedOnly
@@ -163,7 +179,10 @@ export class ScopeService {
           select: { lat: true, lng: true },
         })
       : [];
-    const own = depots.length === 1 ? depots[0]! : null;
+    // His own dépôt only counts when it has a point: without one the dépôt principal is
+    // the next best start, not "no start at all" (REPORT-35, A-5).
+    const only = depots.length === 1 ? depots[0]! : null;
+    const own = only?.lat && only.lng ? only : null;
     const point =
       own ??
       (await db.warehouse.findFirst({
@@ -284,6 +303,7 @@ export class ScopeService {
   }
 
   clientWhere(scope: DataScope): Prisma.ClientWhereInput {
+    if (scope.clientLivreurId) return { orders: { some: { livreurId: scope.clientLivreurId } } };
     return scope.clientSellerIds ? { assignedSellerId: { in: scope.clientSellerIds } } : {};
   }
 
@@ -355,6 +375,13 @@ export class ScopeService {
 
   /** Same as `clientWhere` for raw SQL, on a clients alias. */
   clientSql(scope: DataScope, alias: string): Prisma.Sql {
+    if (scope.clientLivreurId) {
+      const a = Prisma.raw(alias);
+      return Prisma.sql`EXISTS (
+        SELECT 1 FROM orders lo
+        WHERE lo."clientId" = ${a}.id AND lo."tenantId" = ${a}."tenantId"
+          AND lo."livreurId" = ${scope.clientLivreurId}::uuid)`;
+    }
     if (!scope.clientSellerIds) return Prisma.sql`TRUE`;
     return Prisma.sql`${Prisma.raw(`${alias}."assignedSellerId"`)} = ANY(${scope.clientSellerIds}::uuid[])`;
   }

@@ -60,12 +60,20 @@ export const updateRouteSchema = z
   .strict();
 export type UpdateRouteInput = z.infer<typeof updateRouteSchema>;
 
-/** The whole ordered list of stops; replaces the previous one. */
+/**
+ * The whole ordered list of stops; replaces the previous one.
+ *
+ * `baseClientIds` is the list the caller read before changing it. When given, the save is
+ * refused with `ROUTE_STOPS_CHANGED` if the route no longer holds exactly that list: a
+ * replace built on a stale read would silently undo what another planner just saved
+ * (REPORT-35, A-7). Omitted = replace whatever is there, as before phase 35.
+ */
 export const setRouteStopsSchema = z.object({
   clientIds: z
     .array(id)
     .max(300)
     .refine((ids) => new Set(ids).size === ids.length, { message: 'duplicate_client' }),
+  baseClientIds: z.array(id).max(300).optional(),
 });
 export type SetRouteStopsInput = z.infer<typeof setRouteStopsSchema>;
 

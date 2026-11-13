@@ -725,9 +725,13 @@ async function main(): Promise<void> {
       actual: `routes/:id ${routeLeaks ? 'YES' : 'no'}, me/today ${todayLeaks ? 'YES' : 'no'}; the phase 17 client DTO (GET /clients) ${olderLeak ? 'also carries `location` there' : 'hides `location` there'}`,
       evidence: 'artifacts/test-35/geo-check-off-coordinates.json',
     });
-    await check('without GEO_CHECK the route DTO carries no coordinates (stops lat/lng null, start null)', () => {
-      assert(!routeLeaks && !todayLeaks, `routes/:id leaks: ${routeLeaks}, me/today leaks: ${todayLeaks} (see geo-check-off-coordinates.json)`);
-    }, { expected: 'no coordinates without GEO_CHECK (spec: "the map needs Feature.GEO_CHECK")' });
+    // Owner's decision on A-4 (docs/domain.md, "Coordinates without the GPS module"): the
+    // module gates the screens and the two map routes, not the company's own stored points.
+    await check('without GEO_CHECK the two map routes are refused; the stored points stay in the company\'s own route and client data (decided rule)', async () => {
+      const refused = [await get<{ code: string }>('/clients/map', f.d.owner), await get<{ code: string }>('/clients/nearby?lat=36.75&lng=3.06', f.d.owner)];
+      assertEqual(refused.map((r) => [r.status, r.body.code]), [[403, 'FEATURE_NOT_IN_PLAN'], [403, 'FEATURE_NOT_IN_PLAN']], 'map and nearby without the module');
+      assert(routeLeaks && todayLeaks, 'the rule changed: the route DTO no longer carries the stored points; update docs/domain.md');
+    }, { expected: 'map and nearby 403; stored coordinates still in the route DTO (docs/domain.md)' });
   }
   await check('permission CLIENTS_VIEW revoked from a user → map and nearby refused, given back → allowed', async () => {
     const u = await inviteUser(A.owner.token, 'SELLER', `noview-${run}`);
@@ -913,12 +917,21 @@ async function main(): Promise<void> {
     const y = s1Located[11]!.id;
     const readA = (await get<RouteBody>(`/routes/${shared}`, A.owner)).body.stops.map((s) => s.client.id);
     const readB = (await get<RouteBody>(`/routes/${shared}`, A.manager)).body.stops.map((s) => s.client.id);
-    const saveA = await putStops(A.owner, shared, [...readA, x]);
-    const saveB = await putStops(A.manager, shared, [...readB, y]);
-    assertEqual([saveA.status, saveB.status], [200, 200], 'both saves are accepted');
+    // Since the fix of A-7 the dialog says which list it read (baseClientIds); a 409
+    // ROUTE_STOPS_CHANGED means "read again", which the dialog does by itself.
+    const putFrom = (by: SeedUser, base: string[], add: string) =>
+      request<RouteBody & { code?: string }>(`/routes/${shared}/stops`, { method: 'PUT', token: by.token, body: { clientIds: [...base, add], baseClientIds: base } });
+    const saveA = await putFrom(A.owner, readA, x);
+    const staleB = await putFrom(A.manager, readB, y);
+    assertEqual([saveA.status, staleB.status, staleB.body.code], [200, 409, 'ROUTE_STOPS_CHANGED'], 'the first save is accepted, the one built on the stale read is refused');
+    const afterRefusal = (await get<RouteBody>(`/routes/${shared}`, A.owner)).body.stops.map((s) => s.client.id);
+    assertEqual(afterRefusal, [...readA, x], 'the refused save changed nothing');
+    const rereadB = (await get<RouteBody>(`/routes/${shared}`, A.manager)).body.stops.map((s) => s.client.id);
+    const saveB = await putFrom(A.manager, rereadB, y);
+    assertEqual(saveB.status, 200, 'the retry from a fresh read is accepted');
     const final = (await get<RouteBody>(`/routes/${shared}`, A.owner)).body.stops.map((s) => s.client.id);
-    proof('add-to-route-lost-update.json', JSON.stringify({ start: readA, ownerAdds: x, managerAdds: y, bothAnswered: 200, final, lost: [x, y].filter((id) => !final.includes(id)) }, null, 2));
-    assert(final.includes(x) && final.includes(y), `the route has ${final.length} stops: the owner's client was dropped by the manager's save, and both were told it worked`);
+    proof('add-to-route-lost-update.json', JSON.stringify({ start: readA, ownerAdds: x, managerAdds: y, staleSave: staleB.status, retry: saveB.status, final, lost: [x, y].filter((id) => !final.includes(id)) }, null, 2));
+    assert(final.includes(x) && final.includes(y), `the route has ${final.length} stops: one of the two additions was lost`);
   }, { expected: 'both clients on the route, or the second save refused (stale list)' });
   await check('PUT stops writes no client row and no position anywhere else (only route_stops and audit_logs change)', async () => {
     const snap = async () => (await query<{ h: string }>(`SELECT md5(string_agg(id::text || COALESCE(lat::text,'') || COALESCE(lng::text,'') || version::text || "updatedAt"::text, ',' ORDER BY id)) AS h FROM clients WHERE "tenantId" = $1`, [A.tenantId]))[0]!.h;

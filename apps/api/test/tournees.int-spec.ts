@@ -328,6 +328,68 @@ describe('tournées, orders and seller sessions (phase 16)', () => {
     });
   });
 
+  // REPORT-35, A-1: the owner decides which clients a livreur sees.
+  describe('livreurScope', () => {
+    const settings = (who: Parameters<typeof as>[0], livreurScope: string) =>
+      as(who).patch('/tenant/settings', { livreurScope });
+    const statusOf = async (path: string) => (await as(driver).get(path)).status;
+
+    // His own livreur: the tests below count the commandes of the two others.
+    let driver: Member;
+    beforeAll(async () => {
+      driver = await member(d, 'LIVREUR');
+    });
+    afterAll(async () => {
+      await settings(d, 'ALL_CLIENTS').expect(200);
+    });
+
+    it('ALL_CLIENTS (default): a livreur sees every client, as since phase 14', async () => {
+      const c = await client();
+      expect(await statusOf(`/clients/${c.id}`)).toBe(200);
+    });
+
+    it('OWN_DELIVERIES: only the clients of the commandes given to him, everywhere', async () => {
+      const [mine, other, p] = [await client(), await client(), await product()];
+      const order = await confirmedOrder(d, mine.id, p, '1');
+      await as(d).patch(`/orders/${order.id}/livreur`, { livreurId: driver.id }).expect(200);
+      await settings(d, 'OWN_DELIVERIES').expect(200);
+
+      expect(await statusOf(`/clients/${mine.id}`)).toBe(200);
+      expect(await statusOf(`/clients/${other.id}`)).toBe(404);
+      const list = (await as(driver).get('/clients?limit=100').expect(200)).body as {
+        items: { id: string }[];
+      };
+      const ids = list.items.map((c) => c.id);
+      expect(ids).toContain(mine.id);
+      expect(ids).not.toContain(other.id);
+      // Every client he sees has a commande of his: none slips in by another road.
+      const mineOnly = await asTenant(d.tenantId, () =>
+        t.prisma.db.order.findMany({
+          where: { livreurId: driver.id },
+          select: { clientId: true },
+        }),
+      );
+      expect(new Set(ids)).toEqual(new Set(mineOnly.map((o) => o.clientId)));
+      // The map and "Clients proches" follow the same scope (raw SQL path).
+      const map = (await as(driver).get('/clients/map').expect(200)).body as {
+        points: { id: string }[];
+        withoutLocation: number;
+      };
+      expect(map.points.map((x) => x.id).filter((id) => !ids.includes(id))).toEqual([]);
+      expect(map.withoutLocation).toBeLessThanOrEqual(ids.length);
+      // The owner still sees both; another livreur sees neither of the two.
+      expect((await as(d).get(`/clients/${other.id}`)).status).toBe(200);
+      expect((await as(livreur).get(`/clients/${mine.id}`)).status).toBe(404);
+    });
+
+    it("is the owner's decision: a manager cannot change it", async () => {
+      const manager = await member(d, 'MANAGER');
+      const res = await settings(manager, 'ALL_CLIENTS');
+      expect(res.status).toBe(403);
+      expect(await statusOf('/clients?limit=1')).toBe(200);
+    });
+  });
+
   describe('bons de commande', () => {
     it('confirmation freezes the price; an order moves neither stock nor the account', async () => {
       const [c, p] = [await client(), await product()];

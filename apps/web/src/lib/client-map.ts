@@ -1,10 +1,11 @@
 'use client';
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   type ClientMapDto,
   type ClientMapPointDto,
+  type ClientNearbyBody,
   type ClientNearbyPointDto,
   Feature,
   type LatLng,
@@ -77,18 +78,49 @@ export function useClientMap(filters: ClientMapFilters, bounds: MapBounds | null
   });
 }
 
-/** The position is sent only as query parameters of this one request, never stored. */
+/**
+ * The map's data for a screen that pans and zooms: the whole scope first; when more clients
+ * match than the cap, the current view only (the bounds of the last pan / zoom, which the
+ * map debounces), so that "zoomez" really brings the missing clients in.
+ * Used by `/clients/carte` and by the route editor's picker: both show the same banner.
+ */
+export function useClientMapByView(filters: ClientMapFilters, enabled = true) {
+  /** The view as the map reports it; the query rounds it so that small pans share a key. */
+  const [bounds, setBounds] = useState<MapBounds | null>(null);
+  const rounded = useMemo(() => (bounds ? roundBounds(bounds) : null), [bounds]);
+  const whole = useClientMap(filters, null, enabled);
+  const byView = (whole.data?.truncated ?? false) && rounded !== null;
+  const inView = useClientMap(filters, rounded, enabled && byView);
+  const onBoundsChange = useCallback((b: MapBounds) => setBounds(b), []);
+  return { map: byView ? inView : whole, bounds, onBoundsChange };
+}
+
+/**
+ * The position is sent only in the body of this one request, never stored. In the body and
+ * not in the URL: the hosting platform logs the URL of every request (REPORT-35, B-3).
+ */
 export function useNearbyClients(filters: ClientMapFilters, at: LatLng | null, radiusM: number) {
   const on = useFeature(Feature.GEO_CHECK);
   return useQuery({
     queryKey: clientMapKeys.nearby(filters, at, radiusM),
     queryFn: ({ signal }) => {
-      const p = filterParams(filters);
-      p.set('lat', String(at!.lat));
-      p.set('lng', String(at!.lng));
-      p.set('radiusM', String(radiusM));
-      p.set('limit', '50');
-      return api.request<ClientNearbyPointDto[]>(`/clients/nearby?${p.toString()}`, { signal });
+      const body: ClientNearbyBody = {
+        ...(filters.search ? { search: filters.search } : {}),
+        ...(filters.sectorId ? { sectorId: filters.sectorId } : {}),
+        ...(filters.assignedSellerId ? { assignedSellerId: filters.assignedSellerId } : {}),
+        hasDebt: filters.hasDebt === true,
+        overLimit: filters.overLimit === true,
+        includeInactive: filters.includeInactive === true,
+        lat: at!.lat,
+        lng: at!.lng,
+        radiusM,
+        limit: 50,
+      };
+      return api.request<ClientNearbyPointDto[]>('/clients/nearby', {
+        method: 'POST',
+        body,
+        signal,
+      });
     },
     enabled: on && at !== null,
   });

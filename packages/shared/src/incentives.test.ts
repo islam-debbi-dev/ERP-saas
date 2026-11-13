@@ -41,9 +41,16 @@ describe('incentiveRuleParamsSchema', () => {
         ],
       }),
     ).not.toThrow();
-    expect(() => parse({ type: 'COMMISSION', metric: 'ENCAISSEMENT', ratePct: '1.5' })).not.toThrow();
     expect(() =>
-      parse({ type: 'PER_UNIT', scope: { productId: PRODUCT }, amountPerUnit: '20', unitId: CARTON }),
+      parse({ type: 'COMMISSION', metric: 'ENCAISSEMENT', ratePct: '1.5' }),
+    ).not.toThrow();
+    expect(() =>
+      parse({
+        type: 'PER_UNIT',
+        scope: { productId: PRODUCT },
+        amountPerUnit: '20',
+        unitId: CARTON,
+      }),
     ).not.toThrow();
     expect(() =>
       parse({ type: 'MANAGER_OVERRIDE', metric: 'CA_HT', amount: '20000', minPct: '100' }),
@@ -128,8 +135,11 @@ describe('incentiveRuleParamsSchema', () => {
       }).success,
     ).toBe(false);
     expect(
-      incentiveRuleParamsSchema.safeParse({ type: 'MANAGER_OVERRIDE', metric: 'CA_HT', amount: '1' })
-        .success,
+      incentiveRuleParamsSchema.safeParse({
+        type: 'MANAGER_OVERRIDE',
+        metric: 'CA_HT',
+        amount: '1',
+      }).success,
     ).toBe(false);
   });
 
@@ -166,7 +176,11 @@ describe('evaluateRule: FIXED_ON_TARGET', () => {
     expect(evaluateRule(p, { [CA]: '5' }, null).explanation.outcome).toBe(RuleOutcome.NO_TARGET);
     const zero = evaluateRule(p, { [CA]: '5' }, '0');
     expect(zero.amount).toBe('0.00');
-    expect(zero.explanation).toMatchObject({ outcome: RuleOutcome.NO_TARGET, pct: null, target: null });
+    expect(zero.explanation).toMatchObject({
+      outcome: RuleOutcome.NO_TARGET,
+      pct: null,
+      target: null,
+    });
   });
 
   it('throws when a figure is missing (a bug, never a silent 0)', () => {

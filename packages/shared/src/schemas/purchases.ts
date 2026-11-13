@@ -7,6 +7,7 @@ import {
   exchangeRateString,
   normalizeDecimal,
   quantityString,
+  searchText,
 } from './common';
 
 const id = z.uuid();
@@ -91,7 +92,7 @@ export interface SupplierDto {
 }
 
 export const supplierListQuerySchema = z.object({
-  search: z.string().trim().max(100).optional(),
+  search: searchText().optional(),
   cursor: id.optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });

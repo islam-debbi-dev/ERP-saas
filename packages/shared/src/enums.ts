@@ -24,6 +24,17 @@ export const SellerScope = {
 export type SellerScope = (typeof SellerScope)[keyof typeof SellerScope];
 export const SELLER_SCOPES = Object.values(SellerScope);
 
+/**
+ * Which clients a livreur sees when SALES_FORCE is on: every client of the company, or
+ * only the clients of the commandes assigned to him. Set by the owner in the settings.
+ */
+export const LivreurScope = {
+  ALL_CLIENTS: 'ALL_CLIENTS',
+  OWN_DELIVERIES: 'OWN_DELIVERIES',
+} as const;
+export type LivreurScope = (typeof LivreurScope)[keyof typeof LivreurScope];
+export const LIVREUR_SCOPES = Object.values(LivreurScope);
+
 /** Roles that can be put on a sale as its seller, or on a versement as its collector. */
 export const SELLING_ROLES: readonly Role[] = [
   Role.OWNER,

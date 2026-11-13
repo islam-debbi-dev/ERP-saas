@@ -195,11 +195,7 @@ export const PERMISSION_GROUPS = {
     Permission.EXPENSE_CANCEL,
     Permission.RENT_MANAGE,
   ],
-  treasury: [
-    Permission.TREASURY_VIEW,
-    Permission.TREASURY_OPERATE,
-    Permission.TREASURY_MANAGE,
-  ],
+  treasury: [Permission.TREASURY_VIEW, Permission.TREASURY_OPERATE, Permission.TREASURY_MANAGE],
   hr: [
     Permission.HR_VIEW,
     Permission.HR_MANAGE,

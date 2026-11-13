@@ -28,6 +28,28 @@ function isClientHttpError(e: unknown): e is { status: number; message: string }
   return expose === true && typeof status === 'number' && status >= 400 && status < 500;
 }
 
+/**
+ * PostgreSQL refused a text value for its bytes (SQLSTATE 22021, in practice a NUL): the
+ * input was bad, the server is fine. Prisma reports it under several shapes depending on
+ * the query (raw or not) and on the driver, so the cause chain is read too.
+ */
+export function isInvalidTextError(e: unknown): boolean {
+  for (let cur = e, depth = 0; depth < 5 && typeof cur === 'object' && cur !== null; depth++) {
+    const { code, meta, message, cause } = cur as {
+      code?: unknown;
+      meta?: { code?: unknown } | null;
+      message?: unknown;
+      cause?: unknown;
+    };
+    if (code === '22021' || meta?.code === '22021') return true;
+    if (typeof message === 'string' && /invalid byte sequence for encoding/i.test(message)) {
+      return true;
+    }
+    cur = cause;
+  }
+  return false;
+}
+
 /** Renders every error as `{ code, message, details? }` and reports unexpected ones to Sentry. */
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -78,6 +100,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
       return [
         HttpStatus.CONFLICT,
         { code: ErrorCode.CONFLICT, message: 'Unique constraint violated' },
+      ];
+    }
+    // A net under the schemas: a field that let a NUL byte through is a 400, not a page.
+    if (isInvalidTextError(exception)) {
+      return [
+        HttpStatus.BAD_REQUEST,
+        { code: ErrorCode.VALIDATION_FAILED, message: 'Invalid characters in the request' },
       ];
     }
     return [

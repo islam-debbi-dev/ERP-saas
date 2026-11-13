@@ -2,7 +2,7 @@
 
 import { Check, ListPlus, Minus, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import type { RouteStopDto } from '@erp/shared';
 import { ROUTE_STOPS_MAX } from '@/components/geo/add-to-route-dialog';
@@ -19,7 +19,7 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
 import { Switch } from '@/components/ui/switch';
-import { type MapBounds, pointState, useClientMap } from '@/lib/client-map';
+import { type MapBounds, pointState, useClientMapByView } from '@/lib/client-map';
 
 export type Stop = RouteStopDto['client'];
 
@@ -45,10 +45,14 @@ export function RouteMapSheet({
 }) {
   const t = useTranslations('clientMap');
   const [allMine, setAllMine] = useState(false);
-  const map = useClientMap(allMine ? {} : { assignedSellerId: sellerId }, null, open);
+  const filters = useMemo(
+    () => (allMine ? {} : { assignedSellerId: sellerId }),
+    [allMine, sellerId],
+  );
+  // Above 2 000 clients the banner says "zoomez": the picker then asks for the view, as
+  // /clients/carte does, or a client late in the alphabet could never be picked.
+  const { map, bounds, onBoundsChange } = useClientMapByView(filters, open);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [bounds, setBounds] = useState<MapBounds | null>(null);
-  const onBoundsChange = useCallback((b: MapBounds) => setBounds(b), []);
 
   const byId = useMemo(() => new Map((map.data?.points ?? []).map((p) => [p.id, p])), [map.data]);
   const onRoute = useMemo(() => new Map(stops.map((s, i) => [s.id, i + 1])), [stops]);

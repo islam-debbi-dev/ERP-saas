@@ -287,7 +287,8 @@ async function main(): Promise<void> {
 
   // ---- tenant A
   const aOwner = await makeTenant('A', 'DISTRIBUTEUR', adminTok);
-  await call('/tenant/settings', { method: 'PATCH', token: aOwner.token, body: { sellerScope: 'ASSIGNED_ONLY' } });
+  // livreurScope: the owner of A chose "seulement ses livraisons" (the setting added for A-1).
+  await call('/tenant/settings', { method: 'PATCH', token: aOwner.token, body: { sellerScope: 'ASSIGNED_ONLY', livreurScope: 'OWN_DELIVERIES' } });
   const manager = await invite(aOwner, 'MANAGER', 'manager');
   const supervisor = await invite(aOwner, 'SUPERVISOR', 'supervisor');
   const seller1 = await invite(aOwner, 'SELLER', 'seller1', supervisor.id);
