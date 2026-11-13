@@ -424,6 +424,48 @@ describe('client map (phase 35)', () => {
       expect((res.body as ApiError).code).toBe(ErrorCode.VALIDATION_FAILED);
     });
 
+    // REPORT-35, A-7: "Ajouter à une tournée…" reads the route then replaces its stops.
+    describe('a save built on a stale read', () => {
+      const put = (who: Who, body: object) => as(who).put(`/routes/${route.id}/stops`, body);
+      const stopIds = async () =>
+        ((await as(supervisor).get(`/routes/${route.id}`).expect(200)).body as RouteDto).stops.map(
+          (s) => s.client.id,
+        );
+
+      it('is refused, and nothing the other planner saved is lost', async () => {
+        const read = await stopIds();
+        await put(supervisor, { clientIds: [...read, plain.id], baseClientIds: read }).expect(200);
+        const res = await put(d, { clientIds: [...read, over.id], baseClientIds: read }).expect(
+          409,
+        );
+        expect((res.body as ApiError).code).toBe(ErrorCode.ROUTE_STOPS_CHANGED);
+        const now = await stopIds();
+        expect(now).toEqual([...read, plain.id]);
+        // Read again, add again: both clients are on the route.
+        await put(d, { clientIds: [...now, over.id], baseClientIds: now }).expect(200);
+        expect(await stopIds()).toEqual([...read, plain.id, over.id]);
+      });
+
+      it('compares the order too, and still replaces blindly without a base', async () => {
+        const now = await stopIds();
+        await put(d, { clientIds: [], baseClientIds: [...now].reverse() }).expect(409);
+        await put(d, { clientIds: [indebted.id, noPoint.id] }).expect(200);
+        expect(await stopIds()).toEqual([indebted.id, noPoint.id]);
+      });
+
+      it('lets exactly one of two simultaneous saves from the same read through', async () => {
+        const read = await stopIds();
+        const [a, b] = await Promise.all([
+          put(supervisor, { clientIds: [...read, plain.id], baseClientIds: read }),
+          put(d, { clientIds: [...read, over.id], baseClientIds: read }),
+        ]);
+        expect([a.status, b.status].sort()).toEqual([200, 409]);
+        const winner = a.status === 200 ? plain.id : over.id;
+        expect(await stopIds()).toEqual([...read, winner]);
+        await put(d, { clientIds: read }).expect(200);
+      });
+    });
+
     it('takes 300 stops and refuses 301', async () => {
       const made = await tamper(t)`
         INSERT INTO clients (id, "tenantId", code, name, "assignedSellerId", "updatedAt")

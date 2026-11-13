@@ -187,7 +187,10 @@ export class RoutesService {
     });
   }
 
-  /** Replaces the ordered stops. Clients must be live and within the user's scope. */
+  /**
+   * Replaces the ordered stops. Clients must be live and within the user's scope.
+   * With `baseClientIds`, only if the route still holds that list (409 otherwise).
+   */
   async setStops(id: string, input: SetRouteStopsInput, user: CurrentUserInfo): Promise<RouteDto> {
     await this.prisma.db.$transaction(async (tx) => {
       await this.live(tx, id, user);
@@ -216,6 +219,17 @@ export class RoutesService {
         orderBy: { position: 'asc' },
         select: { clientId: true },
       });
+      // Under the row lock: the list the caller started from must still be the list.
+      const base = input.baseClientIds;
+      if (
+        base &&
+        (base.length !== before.length || base.some((c, i) => c !== before[i]!.clientId))
+      ) {
+        throw new AppException(
+          ErrorCode.ROUTE_STOPS_CHANGED,
+          'The stops of this route changed since they were read',
+        );
+      }
       // Stops are planning data, not history: visits keep their own routeId.
       await tx.routeStop.deleteMany({ where: { routeId: id } });
       if (input.clientIds.length > 0) {

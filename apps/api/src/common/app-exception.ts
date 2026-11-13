@@ -41,6 +41,7 @@ const STATUS_BY_CODE: Record<ErrorCode, HttpStatus> = {
   [ErrorCode.ACCESS_ABOVE_GRANTER]: HttpStatus.FORBIDDEN,
   [ErrorCode.WAREHOUSE_ACCESS_INVALID]: HttpStatus.UNPROCESSABLE_ENTITY,
   [ErrorCode.ROUTE_NOT_FOUND]: HttpStatus.NOT_FOUND,
+  [ErrorCode.ROUTE_STOPS_CHANGED]: HttpStatus.CONFLICT,
   [ErrorCode.VISIT_INVALID]: HttpStatus.UNPROCESSABLE_ENTITY,
   [ErrorCode.ORDER_NOT_FOUND]: HttpStatus.NOT_FOUND,
   [ErrorCode.ORDER_NOT_DRAFT]: HttpStatus.CONFLICT,

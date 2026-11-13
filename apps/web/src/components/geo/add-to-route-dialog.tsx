@@ -5,7 +5,7 @@ import { Loader2, MapPinned } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import type { RouteDto } from '@erp/shared';
+import { ErrorCode, type RouteDto } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +22,9 @@ import { useErrorMessage } from '@/lib/use-error-message';
 
 /** The API's limit on a tournée (setRouteStopsSchema). */
 export const ROUTE_STOPS_MAX = 300;
+
+/** Reads of the route before giving up on a tournée several planners keep changing. */
+const ADD_ATTEMPTS = 4;
 
 /**
  * "Ajouter à une tournée…" from the map (phase 35): pick a route of the client's seller;
@@ -48,16 +51,26 @@ export function AddToRouteDialog({
 
   const add = useMutation({
     mutationFn: async (routeId: string) => {
-      const route = await api.request<RouteDto>(`/routes/${routeId}`);
-      const ids = route.stops.map((s) => s.client.id);
-      if (ids.includes(client.id)) return { route, already: true };
-      if (ids.length >= ROUTE_STOPS_MAX)
-        throw new Error(t('tooManyStops', { max: ROUTE_STOPS_MAX }));
-      const next = await api.request<RouteDto>(`/routes/${routeId}/stops`, {
-        method: 'PUT',
-        body: { clientIds: [...ids, client.id] },
-      });
-      return { route: next, already: false };
+      // "Append" on top of a route that only knows "replace": the save says which list it
+      // read, and when another planner changed the route in between (409) it reads again.
+      // Without that, the second of two additions silently undid the first.
+      for (let attempt = 1; ; attempt++) {
+        const route = await api.request<RouteDto>(`/routes/${routeId}`);
+        const ids = route.stops.map((s) => s.client.id);
+        if (ids.includes(client.id)) return { route, already: true };
+        if (ids.length >= ROUTE_STOPS_MAX)
+          throw new Error(t('tooManyStops', { max: ROUTE_STOPS_MAX }));
+        try {
+          const next = await api.request<RouteDto>(`/routes/${routeId}/stops`, {
+            method: 'PUT',
+            body: { clientIds: [...ids, client.id], baseClientIds: ids },
+          });
+          return { route: next, already: false };
+        } catch (err) {
+          const stale = err instanceof ApiError && err.code === ErrorCode.ROUTE_STOPS_CHANGED;
+          if (!stale || attempt >= ADD_ATTEMPTS) throw err;
+        }
+      }
     },
     onSuccess: ({ route, already }) => {
       queryClient.setQueryData(tourneeKeys.route(route.id), route);
