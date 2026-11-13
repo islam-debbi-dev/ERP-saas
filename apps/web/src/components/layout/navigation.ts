@@ -60,6 +60,12 @@ export interface NavItem {
   feature?: Feature;
   /** Only these roles see it (the API checks anyway); everyone when absent. */
   roles?: readonly Role[];
+  /**
+   * Who may open the page by URL, when that is wider than `roles`: the planners do not
+   * work from a seller's or a livreur's screen, so their menu leaves it out, but the API
+   * lets them in and they do open it (to deliver an order themselves, to see a round).
+   */
+  access?: readonly Role[];
   /** Only users with this permission see it (phase 25), whatever their role. */
   permission?: Permission;
 }
@@ -103,6 +109,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         icon: Navigation,
         feature: Feature.TOURNEES,
         roles: [Role.SELLER],
+        access: [...PLANNERS, Role.SELLER],
       },
       {
         key: 'tournees',
@@ -124,6 +131,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         icon: PackageCheck,
         feature: Feature.TOURNEES,
         roles: [Role.LIVREUR, Role.SELLER],
+        access: [...PLANNERS, Role.LIVREUR, Role.SELLER],
       },
       {
         key: 'promotions',
@@ -238,4 +246,28 @@ export function isActive(pathname: string, url: string): boolean {
 
 export function currentNavItem(pathname: string): NavItem | undefined {
   return NAV_ITEMS.find((item) => isActive(pathname, item.url));
+}
+
+/**
+ * Whether a page is closed to this user: the menu item that owns the path is reserved to
+ * other roles (`access` when the item has one, its `roles` otherwise), or needs a
+ * permission he lacks. This is the menu's rule for a URL typed or kept from another
+ * session, so that a livreur does not get the planners' screens with buttons the API
+ * will refuse.
+ *
+ * A module the company does not have is not "forbidden": its page says which edition has
+ * it (FeatureGate). A path no menu item owns is open (the API still checks).
+ */
+export function routeForbidden(
+  pathname: string,
+  features: readonly Feature[],
+  role: Role,
+  permissions: readonly Permission[],
+): boolean {
+  const item = currentNavItem(pathname);
+  if (!item) return false;
+  if (item.feature && !features.includes(item.feature)) return false;
+  const allowed = item.access ?? item.roles;
+  if (allowed && !allowed.includes(role)) return true;
+  return item.permission !== undefined && !permissions.includes(item.permission);
 }

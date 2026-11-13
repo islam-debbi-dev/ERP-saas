@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { type CSSProperties, useEffect } from 'react';
 import { SubscriptionBanner } from '@/components/billing/subscription-banner';
 import { AppSidebar } from '@/components/layout/app-sidebar';
+import { RouteGuard } from '@/components/layout/route-guard';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/lib/auth';
@@ -48,7 +49,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <SidebarInset className="min-w-0 bg-muted/30">
         <SiteHeader />
         <SubscriptionBanner />
-        <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">{children}</div>
+        <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
+          <RouteGuard>{children}</RouteGuard>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

@@ -19,6 +19,9 @@
     "cancel": "Annuler"
   },
   "nav": {
+    "forbiddenTitle": "Page réservée",
+    "forbiddenBody": "Votre rôle ne donne pas accès à cette page. Si vous en avez besoin, demandez au gérant de l'entreprise.",
+    "forbiddenBack": "Retour à l'accueil",
     "groupMain": "Activité",
     "groupStock": "Stock et achats",
     "groupManagement": "Gestion",

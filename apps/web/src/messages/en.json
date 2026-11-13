@@ -19,6 +19,9 @@
     "cancel": "Cancel"
   },
   "nav": {
+    "forbiddenTitle": "Page not available",
+    "forbiddenBody": "Your role does not give access to this page. If you need it, ask the company's manager.",
+    "forbiddenBack": "Back to home",
     "groupMain": "Activity",
     "groupStock": "Stock and purchases",
     "groupManagement": "Management",
