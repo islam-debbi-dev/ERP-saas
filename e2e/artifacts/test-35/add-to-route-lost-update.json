@@ -1,0 +1,19 @@
+{
+  "start": [
+    "987d2d3a-df9c-4def-98b0-b42d99cd7517",
+    "148a9c89-05ce-4936-956e-eac766c94ee7",
+    "c1fdafe6-9f43-4103-8a51-1205f29e55a0"
+  ],
+  "ownerAdds": "fae4a125-a097-45fd-b316-be30d4277150",
+  "managerAdds": "4a3819aa-c216-4f8c-834a-64c998df19ca",
+  "bothAnswered": 200,
+  "final": [
+    "987d2d3a-df9c-4def-98b0-b42d99cd7517",
+    "148a9c89-05ce-4936-956e-eac766c94ee7",
+    "c1fdafe6-9f43-4103-8a51-1205f29e55a0",
+    "4a3819aa-c216-4f8c-834a-64c998df19ca"
+  ],
+  "lost": [
+    "fae4a125-a097-45fd-b316-be30d4277150"
+  ]
+}

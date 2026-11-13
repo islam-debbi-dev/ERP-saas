@@ -904,6 +904,22 @@ async function main(): Promise<void> {
       assert(lists.some((l) => JSON.stringify(l) === JSON.stringify(final)), `round ${round}: the final list is none of the five`);
     }
   });
+  await check('"Ajouter à une tournée…" from the map by two planners (each: GET the route, PUT the list plus one client): both clients end on the route', async () => {
+    // Exactly what add-to-route-dialog.tsx does, for two planners whose dialogs are open at
+    // the same time. No race is needed: B read the route before A saved.
+    const shared = await newRoute(A.owner, A.seller1.id, 'Ajout');
+    await putStops(A.owner, shared, ids(s1Located.slice(0, 3)));
+    const x = s1Located[10]!.id;
+    const y = s1Located[11]!.id;
+    const readA = (await get<RouteBody>(`/routes/${shared}`, A.owner)).body.stops.map((s) => s.client.id);
+    const readB = (await get<RouteBody>(`/routes/${shared}`, A.manager)).body.stops.map((s) => s.client.id);
+    const saveA = await putStops(A.owner, shared, [...readA, x]);
+    const saveB = await putStops(A.manager, shared, [...readB, y]);
+    assertEqual([saveA.status, saveB.status], [200, 200], 'both saves are accepted');
+    const final = (await get<RouteBody>(`/routes/${shared}`, A.owner)).body.stops.map((s) => s.client.id);
+    proof('add-to-route-lost-update.json', JSON.stringify({ start: readA, ownerAdds: x, managerAdds: y, bothAnswered: 200, final, lost: [x, y].filter((id) => !final.includes(id)) }, null, 2));
+    assert(final.includes(x) && final.includes(y), `the route has ${final.length} stops: the owner's client was dropped by the manager's save, and both were told it worked`);
+  }, { expected: 'both clients on the route, or the second save refused (stale list)' });
   await check('PUT stops writes no client row and no position anywhere else (only route_stops and audit_logs change)', async () => {
     const snap = async () => (await query<{ h: string }>(`SELECT md5(string_agg(id::text || COALESCE(lat::text,'') || COALESCE(lng::text,'') || version::text || "updatedAt"::text, ',' ORDER BY id)) AS h FROM clients WHERE "tenantId" = $1`, [A.tenantId]))[0]!.h;
     const before = await snap();

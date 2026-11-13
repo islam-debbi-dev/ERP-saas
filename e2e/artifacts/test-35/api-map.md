@@ -1,13 +1,13 @@
 # test-35/api-map
 
-Total 75 · PASS 64 · FAIL 7 · BLOCKED 0
+Total 76 · PASS 64 · FAIL 8 · BLOCKED 0
 
 | Area | Check | Result | Expected | Actual |
 |---|---|---|---|---|
-| A1 scope — the map and the nearby list against the client list and the tables | owner: /clients/map (all slices, inactive included) = the spec's scope, as a set | PASS | 4319 clients |  |
+| A1 scope — the map and the nearby list against the client list and the tables | owner: /clients/map (all slices, inactive included) = the spec's scope, as a set | PASS | 4363 clients |  |
 | A1 scope — the map and the nearby list against the client list and the tables | owner: /clients/map = GET /clients?hasLocation=true for the same user, as a set | PASS |  |  |
 | A1 scope — the map and the nearby list against the client list and the tables | owner: /clients/nearby (50 km around Alger, 100 nearest) stays in the same set | PASS |  |  |
-| A1 scope — the map and the nearby list against the client list and the tables | manager: /clients/map (all slices, inactive included) = the spec's scope, as a set | PASS | 4319 clients |  |
+| A1 scope — the map and the nearby list against the client list and the tables | manager: /clients/map (all slices, inactive included) = the spec's scope, as a set | PASS | 4363 clients |  |
 | A1 scope — the map and the nearby list against the client list and the tables | manager: /clients/map = GET /clients?hasLocation=true for the same user, as a set | PASS |  |  |
 | A1 scope — the map and the nearby list against the client list and the tables | manager: /clients/nearby (50 km around Alger, 100 nearest) stays in the same set | PASS |  |  |
 | A1 scope — the map and the nearby list against the client list and the tables | supervisor: /clients/map (all slices, inactive included) = the spec's scope, as a set | PASS | 2625 clients |  |
@@ -19,12 +19,12 @@ Total 75 · PASS 64 · FAIL 7 · BLOCKED 0
 | A1 scope — the map and the nearby list against the client list and the tables | seller outside the team: /clients/map (all slices, inactive included) = the spec's scope, as a set | PASS | 600 clients |  |
 | A1 scope — the map and the nearby list against the client list and the tables | seller outside the team: /clients/map = GET /clients?hasLocation=true for the same user, as a set | PASS |  |  |
 | A1 scope — the map and the nearby list against the client list and the tables | seller outside the team: /clients/nearby (50 km around Alger, 100 nearest) stays in the same set | PASS |  |  |
-| A1 scope — the map and the nearby list against the client list and the tables | livreur: /clients/map (all slices, inactive included) = the spec's scope, as a set | FAIL | 0 clients | 4319 points for 0 expected: 4319 outside the scope, 0 missing |
+| A1 scope — the map and the nearby list against the client list and the tables | livreur: /clients/map (all slices, inactive included) = the spec's scope, as a set | FAIL | 0 clients | 4363 points for 0 expected: 4363 outside the scope, 0 missing |
 | A1 scope — the map and the nearby list against the client list and the tables | livreur: /clients/map = GET /clients?hasLocation=true for the same user, as a set | PASS |  |  |
 | A1 scope — the map and the nearby list against the client list and the tables | livreur: /clients/nearby (50 km around Alger, 100 nearest) stays in the same set | FAIL |  | 100 of 100 nearby clients are outside the spec's scope, e.g. T35-00015 assigned to null |
 | A1 scope — the map and the nearby list against the client list and the tables | supervisor: no client of the seller outside his team, on the map or nearby | PASS |  |  |
 | A1 scope — the map and the nearby list against the client list and the tables | seller1: asking for another seller's clients (filter, search by exact code, centre on it) gives nothing | PASS |  |  |
-| A1 scope — the map and the nearby list against the client list and the tables | `withoutLocation` counts only the user's own clients, for each role | FAIL |  | livreur: withoutLocation 500, expected 0 |
+| A1 scope — the map and the nearby list against the client list and the tables | `withoutLocation` counts only the user's own clients, for each role | FAIL |  | livreur: withoutLocation 507, expected 0 |
 | A2 tenant isolation — tenant B sits on the very same coordinates | A's whole map holds no client of B, for every role | PASS |  |  |
 | A2 tenant isolation — tenant B sits on the very same coordinates | nearby centred on 60 coordinates of B (100 m and 50 km) never returns a client of B | PASS |  |  |
 | A2 tenant isolation — tenant B sits on the very same coordinates | B's sector id, seller id and client id as filters or search give nothing and no 500 | PASS |  |  |
@@ -35,7 +35,7 @@ Total 75 · PASS 64 · FAIL 7 · BLOCKED 0
 | A3 filters — every combination against the tables | /clients/nearby: the 64 combinations, 50 km around Alger, the 100 nearest | PASS |  |  |
 | A3 filters — every combination against the tables | search treats %, _ and \ as plain characters (map, nearby, list) | PASS |  |  |
 | A3 filters — every combination against the tables | GET /clients?hasLocation=true|false splits the list exactly, alone and with the other filters | PASS |  |  |
-| A4 cap — 2 000 points, the edge at 1 999 / 2 000 / 2 001 | 4069 clients match: 2 000 points, truncated, ordered by name then id | PASS |  |  |
+| A4 cap — 2 000 points, the edge at 1 999 / 2 000 / 2 001 | 4106 clients match: 2 000 points, truncated, ordered by name then id | PASS |  |  |
 | A4 cap — 2 000 points, the edge at 1 999 / 2 000 / 2 001 | a box holding exactly 1 999, 2 000 and 2 001 clients | PASS |  |  |
 | A4 cap — 2 000 points, the edge at 1 999 / 2 000 / 2 001 | the box is inclusive on its four edges | PASS |  |  |
 | A4 cap — 2 000 points, the edge at 1 999 / 2 000 / 2 001 | the point DTO is the compact one of the spec, nothing more | PASS |  |  |
@@ -73,6 +73,7 @@ Total 75 · PASS 64 · FAIL 7 · BLOCKED 0
 | A8 route stops picked from the map — PUT /routes/:id/stops | a client outside the seller's scope, planned on his route by the owner: what the seller sees | INFO |  | map 0 point, client page HTTP 404, but GET /routes/:id shows it with lat 36.89816 and GET /me/today shows it with name, phone, point and balance 1500.00 |
 | A8 route stops picked from the map — PUT /routes/:id/stops | two planners save the same route at the same time, 25 rounds: the list is one of the two, never a mix; two audit rows each round | PASS |  |  |
 | A8 route stops picked from the map — PUT /routes/:id/stops | five planners racing on one route with 300 stops each, 5 rounds: no 500, no deadlock, no lost position | PASS |  |  |
+| A8 route stops picked from the map — PUT /routes/:id/stops | "Ajouter à une tournée…" from the map by two planners (each: GET the route, PUT the list plus one client): both clients end on the route | FAIL | both clients on the route, or the second save refused (stale list) | the route has 4 stops: the owner's client was dropped by the manager's save, and both were told it worked |
 | A8 route stops picked from the map — PUT /routes/:id/stops | PUT stops writes no client row and no position anywhere else (only route_stops and audit_logs change) | PASS |  |  |
 | A9 RouteDto.start — the dépôt of the route's seller (sellerDepotPoint) | dépôt principal without a point: one OPERATE dépôt with a point → that point; every other case → null | PASS |  |  |
 | A9 RouteDto.start — the dépôt of the route's seller (sellerDepotPoint) | dépôt principal with a point: two dépôts, a truck only, no access, VIEW_STATS only → the dépôt principal | PASS |  |  |

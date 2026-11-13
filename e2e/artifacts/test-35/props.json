@@ -9,13 +9,13 @@
   "results": [
     {
       "area": "orderByNearest — properties",
-      "durationMs": 788,
+      "durationMs": 797,
       "name": "400 random sets of 0 to 300 points, with a start",
       "status": "PASS"
     },
     {
       "area": "orderByNearest — properties",
-      "durationMs": 765,
+      "durationMs": 767,
       "name": "400 random sets of 0 to 300 points, without a start",
       "status": "PASS"
     },
@@ -39,7 +39,7 @@
     },
     {
       "area": "boundingBox — never smaller than the circle",
-      "durationMs": 22,
+      "durationMs": 23,
       "name": "20 000 random points within the radius are inside the box",
       "status": "PASS"
     }

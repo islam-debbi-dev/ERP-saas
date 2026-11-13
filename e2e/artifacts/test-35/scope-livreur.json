@@ -4,8 +4,8 @@
   "rule": "phase-35 spec, \"Who sees which clients\": owner and manager all, supervisor his team's clients, seller and livreur only the clients assigned to them",
   "request": "GET /clients/map?includeInactive=true (three boxes that cover everything)",
   "expected": 0,
-  "actual": 4319,
-  "outsideScope": 4319,
+  "actual": 4363,
+  "outsideScope": 4363,
   "missing": 0,
   "sampleOutsideScope": [
     {
