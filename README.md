@@ -107,7 +107,14 @@ Sidebar help links come from the web env (`NEXT_PUBLIC_SUPPORT_WHATSAPP`, `NEXT_
 
 - With `GEO_CHECK`, **Clients > Carte** (`/clients/carte`) shows the live clients that have a GPS point, within the user's scope, with "Près de moi" / "Près de ce client" (straight-line distances). The route editor gets "Choisir sur la carte" and "Ordonner par proximité"; the seller's day gets a map view. The browser position is never stored nor logged.
 - Tiles: OpenStreetMap by default, light use only (OSM tile policy). To switch provider, set `NEXT_PUBLIC_MAP_TILE_URL` and `NEXT_PUBLIC_MAP_TILE_ATTRIBUTION` on the web project (`apps/web/.env.example`).
-- One additive migration (partial index `clients_tenant_geo_idx`): run `pnpm --filter @erp/api db:deploy` on Neon after deploying.
+- Two additive migrations: the partial index `clients_tenant_geo_idx`, then `20261113120000_clients_geo_float_index` (generated columns `lat_f` / `lng_f` and the index the API really uses under row-level security). **Run the migration before deploying the API**: the map and "Clients proches" read `lat_f` / `lng_f`, and the previous version works with them in place. On Neon, name the database, or the command migrates the local one of `apps/api/.env` and still prints "successfully applied":
+
+  ```bash
+  DATABASE_URL_MIGRATE='postgresql://<owner>:<password>@<neon-direct-host>/<db>?sslmode=require' \
+    pnpm --filter @erp/api db:deploy
+  ```
+
+  Use the **owner** role and the **direct** host (not the `-pooler` one). Check afterwards: `docs/runbook.md`, "Migrations on Neon".
 
 ## Assistant IA (phase 30)
 

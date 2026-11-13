@@ -490,4 +490,82 @@ describe('client map (phase 35)', () => {
       await as(supervisor).put(`/routes/${route.id}/stops`, { clientIds: all }).expect(400);
     });
   });
+  // REPORT-35, C-1: under row-level security only leakproof operators can be index
+  // conditions. The box must stay on float8 columns, or the index is dead again.
+  describe('the geo index the API can use', () => {
+    const sql = <T>(q: TemplateStringsArray, ...v: unknown[]) =>
+      asTenant(d.tenantId, () => t.prisma.db.$queryRaw<T[]>(q, ...v));
+
+    it('has float8 twins of lat / lng that the database keeps, and a partial index on them', async () => {
+      const cols = await sql<{ name: string; type: string; generated: string }>`
+        SELECT column_name AS name, data_type AS type, is_generated AS generated
+        FROM information_schema.columns
+        WHERE table_name = 'clients' AND column_name IN ('lat_f', 'lng_f')
+        ORDER BY column_name`;
+      expect(cols).toEqual([
+        { name: 'lat_f', type: 'double precision', generated: 'ALWAYS' },
+        { name: 'lng_f', type: 'double precision', generated: 'ALWAYS' },
+      ]);
+      const [index] = await sql<{ indexdef: string }>`
+        SELECT indexdef FROM pg_indexes WHERE indexname = 'clients_tenant_geo_f_idx'`;
+      expect(index?.indexdef).toMatch(/\("tenantId", lat_f, lng_f\) WHERE/);
+    });
+
+    it('compares them with leakproof operators, which numeric does not have', async () => {
+      const ops = await sql<{ type: string; leakproof: boolean }>`
+        SELECT o.oprleft::regtype::text AS type, bool_and(p.proleakproof) AS leakproof
+        FROM pg_operator o JOIN pg_proc p ON p.oid = o.oprcode
+        WHERE o.oprname IN ('>=', '<=') AND o.oprleft = o.oprright
+          AND o.oprleft IN ('float8'::regtype, 'numeric'::regtype)
+        GROUP BY 1 ORDER BY 1`;
+      expect(ops).toEqual([
+        { type: 'double precision', leakproof: true },
+        { type: 'numeric', leakproof: false },
+      ]);
+    });
+
+    it('follows a client whose point moves', async () => {
+      const [row] = await sql<{ same: boolean }>`
+        SELECT bool_and(lat_f = lat::float8 AND lng_f = lng::float8) AS same
+        FROM clients WHERE "tenantId" = ${d.tenantId}::uuid AND lat IS NOT NULL`;
+      expect(row?.same).toBe(true);
+      await tamper(t)`UPDATE clients SET lat = 35.5, lng = 2.5 WHERE id = ${in49.id}::uuid`;
+      const box = '&minLat=35.4&minLng=2.4&maxLat=35.6&maxLng=2.6';
+      expect(ids((await map(d, box)).points)).toEqual([in49.id]);
+      expect((await nearby(d, { lat: 35.5, lng: 2.5 }, '&radiusM=1000')).map((p) => p.id)).toEqual([
+        in49.id,
+      ]);
+    });
+  });
+
+  // REPORT-35, A-5.
+  describe('start of a route', () => {
+    it("is the dépôt principal's point when the seller's only dépôt has none", async () => {
+      const lone = await member(d, 'SELLER', supervisor.id);
+      const depot = (
+        await as(d)
+          .post('/warehouses', { name: `Sans point ${tag}`, type: 'SECONDARY' })
+          .expect(201)
+      ).body as { id: string };
+      await tamper(t)`
+        UPDATE warehouses SET lat = 36.77, lng = 3.05
+        WHERE "tenantId" = ${d.tenantId}::uuid AND "isDefault"`;
+      // He operates in the new dépôt only (the helper granted him the dépôt principal).
+      await tamper(t)`DELETE FROM user_warehouse_access WHERE "userId" = ${lone.id}::uuid`;
+      await tamper(t)`
+        INSERT INTO user_warehouse_access ("id", "tenantId", "userId", "warehouseId", "level", "grantedAt")
+        VALUES (gen_random_uuid(), ${d.tenantId}::uuid, ${lone.id}::uuid, ${depot.id}::uuid, 'OPERATE', CURRENT_TIMESTAMP)`;
+      const route = (
+        await as(d)
+          .post('/routes', { name: `Départ ${tag}`, sellerId: lone.id, weekdays: [2] }, null)
+          .expect(201)
+      ).body as RouteDto;
+      const start = async () =>
+        ((await as(d).get(`/routes/${route.id}`).expect(200)).body as RouteDto).start;
+      expect(await start()).toEqual({ lat: 36.77, lng: 3.05 });
+      // Once his own dépôt has a point, that one wins.
+      await tamper(t)`UPDATE warehouses SET lat = 36.19, lng = 5.41 WHERE id = ${depot.id}::uuid`;
+      expect(await start()).toEqual({ lat: 36.19, lng: 5.41 });
+    });
+  });
 });

@@ -67,6 +67,11 @@ const POINT_COLUMNS = Prisma.sql`
  * The client map and "Clients proches" (phase 35). Read only, within the phase 14 scope,
  * on Client.lat/lng (phase 17). Straight-line distances, no PostGIS: a lat/lng box
  * prefilter on the partial index, then haversine in SQL.
+ *
+ * The boxes compare `lat_f` / `lng_f` (the same coordinates as float8, generated columns)
+ * with float8 values, never `lat` / `lng` with numeric ones: the API's role is bound by
+ * row-level security, under which only leakproof operators can be index conditions, and
+ * numeric comparisons are not leakproof. With numeric the index was never used.
  */
 @Injectable()
 export class ClientMapService {
@@ -83,8 +88,8 @@ export class ClientMapService {
       query.minLng !== undefined &&
       query.maxLat !== undefined &&
       query.maxLng !== undefined
-        ? Prisma.sql`AND c.lat BETWEEN ${query.minLat}::numeric AND ${query.maxLat}::numeric
-            AND c.lng BETWEEN ${query.minLng}::numeric AND ${query.maxLng}::numeric`
+        ? Prisma.sql`AND c.lat_f BETWEEN ${query.minLat}::float8 AND ${query.maxLat}::float8
+            AND c.lng_f BETWEEN ${query.minLng}::float8 AND ${query.maxLng}::float8`
         : Prisma.empty;
     const cap = mapLimits.pointsMax;
     const [rows, without] = await Promise.all([
@@ -112,8 +117,8 @@ export class ClientMapService {
     const box = boundingBox(query, query.radiusM);
     const lngIn =
       box.minLng <= box.maxLng
-        ? Prisma.sql`c.lng BETWEEN ${box.minLng}::numeric AND ${box.maxLng}::numeric`
-        : Prisma.sql`(c.lng >= ${box.minLng}::numeric OR c.lng <= ${box.maxLng}::numeric)`;
+        ? Prisma.sql`c.lng_f BETWEEN ${box.minLng}::float8 AND ${box.maxLng}::float8`
+        : Prisma.sql`(c.lng_f >= ${box.minLng}::float8 OR c.lng_f <= ${box.maxLng}::float8)`;
     const lat = query.lat;
     const lng = query.lng;
     const rows = await this.prisma.db.$queryRaw<(PointRow & { distanceM: number })[]>`
@@ -126,7 +131,7 @@ export class ClientMapService {
           )))) AS "distanceM"
         FROM clients c LEFT JOIN client_balances b ON b."clientId" = c.id
         WHERE ${where} AND c.lat IS NOT NULL AND c.lng IS NOT NULL
-          AND c.lat BETWEEN ${box.minLat}::numeric AND ${box.maxLat}::numeric AND ${lngIn}
+          AND c.lat_f BETWEEN ${box.minLat}::float8 AND ${box.maxLat}::float8 AND ${lngIn}
       ) near
       WHERE near."distanceM" <= ${query.radiusM}
       ORDER BY near."distanceM", near.name, near.id

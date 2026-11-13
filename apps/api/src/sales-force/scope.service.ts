@@ -163,7 +163,10 @@ export class ScopeService {
           select: { lat: true, lng: true },
         })
       : [];
-    const own = depots.length === 1 ? depots[0]! : null;
+    // His own dépôt only counts when it has a point: without one the dépôt principal is
+    // the next best start, not "no start at all" (REPORT-35, A-5).
+    const only = depots.length === 1 ? depots[0]! : null;
+    const own = only?.lat && only.lng ? only : null;
     const point =
       own ??
       (await db.warehouse.findFirst({

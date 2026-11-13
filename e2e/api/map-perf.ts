@@ -178,7 +178,7 @@ async function explain(tenantId: string, sql: string, asOwner = false): Promise<
     const ms = Number(/Execution Time: ([\d.]+) ms/.exec(plan)?.[1] ?? NaN);
     const index = [...plan.matchAll(/(?:Index(?: Only)? Scan|Bitmap Index Scan)(?: Backward)? (?:using|on) (\S+)/g)].map((m) => m[1]!);
     const buffers = Number(/Buffers: shared hit=(\d+)/.exec(plan)?.[1] ?? NaN);
-    return { plan, ms, usesGeo: index.includes('clients_tenant_geo_idx'), index: [...new Set(index)], buffers };
+    return { plan, ms, usesGeo: index.some((i) => /^clients_tenant_geo(_f)?_idx$/.test(i)), index: [...new Set(index)], buffers };
   } finally {
     await c.query('ROLLBACK');
     await c.end();
