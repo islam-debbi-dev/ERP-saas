@@ -1,6 +1,7 @@
 import ExcelJS from 'exceljs';
 import { ErrorCode, IMPORT_MAX_ROWS } from '@erp/shared';
 import { AppException } from '../common/app-exception';
+import { assertXlsxWithinLimits, XLSX_LIMITS } from './xlsx-guard';
 
 /** A cell as read from the file: text, or a number when Excel stored one. */
 export type Cell = string | number | null;
@@ -56,6 +57,8 @@ function toTable(lines: { rowNumber: number; cells: Cell[] }[]): ImportTable {
 // ---------------------------------------------------------------- xlsx
 
 async function readXlsx(data: Buffer): Promise<{ rowNumber: number; cells: Cell[] }[]> {
+  // Measured first: exceljs holds the whole workbook in memory (audit 02, B-1).
+  await assertXlsxWithinLimits(data);
   const workbook = new ExcelJS.Workbook();
   try {
     // exceljs types expect the older Buffer type; the runtime accepts any Buffer.
@@ -124,7 +127,15 @@ export function parseCsv(text: string): { rowNumber: number; cells: Cell[] }[] {
   let inQuotes = false;
   let line = 1;
   let rowStart = 1;
+  let cellCount = 0;
   const pushField = () => {
+    // 10 MB of separators is ten million cells: the same limit as a workbook.
+    if (++cellCount > XLSX_LIMITS.cells) {
+      throw new AppException(ErrorCode.IMPORT_TOO_MANY_ROWS, 'Too many rows', {
+        max: IMPORT_MAX_ROWS,
+        rule: 'cells',
+      });
+    }
     cells.push(field === '' ? null : field);
     field = '';
   };
