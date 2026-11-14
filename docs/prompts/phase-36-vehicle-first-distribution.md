@@ -43,7 +43,7 @@ A truck is already a dépôt (`Warehouse.type = VEHICLE`, phase 15) with its own
 - **Audit**: `VEHICLE_TYPE_CREATED/UPDATED/ARCHIVED`, `VEHICLE_DRIVER_CHANGED` (before/after user, truck), `ROUTE_CONVERTED`, plus the existing warehouse and route audits with the new fields in before/after.
 
 ### Architecture
-- One owner per concept: vehicle types, vehicle identity and `VehicleAssignment` live in the stock / warehouses module behind an exported `VehiclesService` (`currentVehicleOf(userId)`, `vehicleAt(vehicleId, t)`, `driverAt(vehicleId, t)`, `assignDriver(tx, …)`). Tournées, visits, orders and sessions call it; nobody else queries `vehicle_assignments` or writes `assignedUserId` (remove the direct writes from other services, keep their behaviour).
+- One owner per concept: vehicle types, vehicle identity and `VehicleAssignment` live in the stock / warehouses module behind an exported `VehiclesService` (`currentVehicleOf(userId)`, `vehicleAt(vehicleId, t)`, `driverAt(vehicleId, t)`, `vehiclesOf(userId, cursor)`, `assignDriver(tx, …)`). Tournées, visits, orders and sessions call it; nobody else queries `vehicle_assignments` or writes `assignedUserId` (remove the direct writes from other services, keep their behaviour).
 - `assignDriver` is the **only** path that changes a driver; it takes the caller's transaction so a route conversion or a warehouse update stays one business operation (rule 3).
 - Freezing the truck on visits / orders goes through one helper used at creation, so phase 37 can trust the column.
 - The CHECK constraints and the append-only trigger enforce the rules in the DB too, not only in services.
@@ -64,6 +64,7 @@ A truck is already a dépôt (`Warehouse.type = VEHICLE`, phase 15) with its own
 - `GET/POST/PATCH /vehicle-types`, `POST /vehicle-types/:id/archive`: `SETTINGS_EDIT` + `Feature.WAREHOUSES`.
 - `GET /warehouses?type=VEHICLE&vehicleTypeId=&wilayaCode=&search=` (search on code, name, plate) returns the new fields; `POST/PATCH /warehouses` accept them.
 - `POST /warehouses/:id/driver` `{ userId | null, reason? }`: planners in scope; row-locks both trucks in id order; writes the assignment rows and the audit. `GET /warehouses/:id/assignments` (cursor pagination).
+- `GET /users/:id/vehicle-assignments` (cursor pagination): the trucks a worker drove, newest first, each as a period `{ vehicle (id, code, name, type), fromAt, toAt | null (still driving), setBy }`. `toAt` = the `fromAt` of the next row **on the same truck** (whoever it names, a null driver included). Derived from `vehicle_assignments` only, no new table or column. Readable by the planners who can see that user (phase 14/24 scope, owner and `VIEW_ALL_WAREHOUSES` all) and by the user himself; trucks outside the reader's reach still appear by code, without a link.
 - Routes: `vehicleId` in create / update / list filters; `POST /routes/:id/convert-to-vehicle`, `POST /routes/convert-to-vehicle` (bulk, returns the count; idempotent: running it again converts 0).
 - Visits / orders: set the frozen vehicle columns in the existing services; add `vehicleId` / `deliveryVehicleId` filters to the list endpoints and to `tournee-reports.service.ts` (visit report by vehicle as well as by seller).
 
@@ -72,6 +73,7 @@ A truck is already a dépôt (`Warehouse.type = VEHICLE`, phase 15) with its own
 - **Paramètres → Types de véhicules**: list + form (code, nom, préfixe, activité with a one-line explanation of each). Empty state explains with the field examples (`MXT` gros + détail, `SELF/MT`, `MIX` livreur) that these are the company's own codes.
 - **Véhicules** (the existing dépôts screen, VEHICLE tab, or its own entry under Stock): card per truck: code (big), type badge, wilaya, plate, today's driver with a "Changer" button, stock value shortcut. Filters type / wilaya / dépôt. Form with the code helper ("Proposer un code").
 - **Driver history** sheet on a truck: who drove it, from when, set by whom.
+- **Vehicle history of a worker**: on the user's fiche (Équipe / Utilisateurs) a "Véhicules conduits" section: one row per period (code, type, du … au …, "en cours" for today's truck), tapping a row opens that truck. Empty state when he never drove one. The owner follows the worker across trucks as well as the truck across workers.
 - **Tournées**: the create form asks "Véhicule" first (picker shows `code · type · driver`), with a link "Tournée pour un vendeur (sans véhicule)". The list groups by vehicle and shows the driver of today next to it. Old seller routes show a "Convertir" action and a banner with the bulk conversion when some exist.
 - **Aujourd'hui**: the header names the truck ("VAN-28 MXT 01 · M'sila") above today's stops; a seller without a truck sees the current message plus his old seller routes.
 - Orders / delivery screens: filter and assign by delivery truck.
@@ -83,6 +85,7 @@ A truck is already a dépôt (`Warehouse.type = VEHICLE`, phase 15) with its own
   - vehicle types CRUD, archive refused when in use, code unique per tenant case-insensitive, another tenant may reuse the same code;
   - driver change writes `VehicleAssignment` rows in the same transaction (rollback leaves none), moving a driver frees his old truck, an open session blocks it, two concurrent changes on the same truck end in one consistent state (row lock);
   - "who had truck X at T" helper returns the right user across three changes;
+  - a worker's vehicle history: driver A on truck 1, moved to truck 2, then truck 2 given to B → A's history has two closed periods with the right dates, B's one open period; a supervisor outside A's scope gets 403, A himself reads his own;
   - a vehicle route shows in "aujourd'hui" for the current driver and **stops** showing for the previous one right after the change, with no route edit; an old seller route still works;
   - convert one / bulk is idempotent and audited; a seller without truck → `SELLER_HAS_NO_VEHICLE`;
   - visits and orders store the truck at creation; a later driver change does not change them;
