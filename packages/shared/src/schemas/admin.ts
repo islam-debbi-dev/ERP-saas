@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { EDITIONS, type Edition, type Feature, FEATURES } from '../features';
-import { money } from '../money';
+import { parseDA } from '../money';
 import {
   SUBSCRIPTION_PAYMENT_METHODS,
   type SubscriptionPaymentMethod,
@@ -70,7 +70,9 @@ export interface AdminTenantDetail extends SubscriptionSummary {
 }
 
 export const recordSubscriptionPaymentSchema = z.object({
-  amount: amountString.transform(normalizeDecimal).refine((v) => money(v).gt(0), 'invalid_amount'),
+  amount: amountString
+    .transform(normalizeDecimal)
+    .refine((v) => parseDA(v)?.gt(0) === true, 'invalid_amount'),
   method: z.enum(
     SUBSCRIPTION_PAYMENT_METHODS as [SubscriptionPaymentMethod, ...SubscriptionPaymentMethod[]],
   ),

@@ -5,19 +5,28 @@ import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { CLIENT_TYPE_HEADER, IDEMPOTENCY_HEADER } from '@erp/shared';
 import type { AppConfig } from './config/app-config';
+import { rejectIllFormedText } from './common/well-formed-text.middleware';
+
+/** Proxies in front of the API: TRUST_PROXY, else one on Vercel, else none (audit 01 #4). */
+export function trustedProxyHops(config: Pick<AppConfig, 'TRUST_PROXY' | 'VERCEL'>): number {
+  return config.TRUST_PROXY ?? (config.VERCEL ? 1 : 0);
+}
 
 /** Shared by main.ts and the integration tests so both run the same HTTP stack. */
 export function setupApp(app: INestApplication, config: AppConfig): void {
   const express = app as NestExpressApplication;
   express.useLogger(app.get(Logger));
-  // One proxy in front (load balancer) in production; needed for the client IP in audit logs.
-  express.set('trust proxy', 1);
+  // The client IP of the limiters and of the audit log. `X-Forwarded-For` is believed only
+  // for the proxies declared in TRUST_PROXY; with none, a caller cannot choose his address.
+  express.set('trust proxy', trustedProxyHops(config) || false);
   // A JSON API: no HTML, so the strictest defaults apply (CSP default-src 'none', …).
   // PDFs open in a new tab from the web origin, hence cross-origin resource policy.
   express.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   // Sale and purchase bodies are a few KB; imports are multipart with their own limit.
   express.useBodyParser('json', { limit: '1mb' });
   express.useBodyParser('urlencoded', { limit: '100kb', extended: false });
+  // After the body parsers: no text that is not valid Unicode reaches a schema (audit 02, B-4).
+  express.use(rejectIllFormedText);
   express.use(cookieParser());
   express.enableCors({
     origin: config.WEB_ORIGIN.split(',').map((o) => o.trim()),

@@ -1,6 +1,6 @@
 # permissions
 
-Total 14 · PASS 9 · FAIL 3 · BLOCKED 0
+Total 14 · PASS 10 · FAIL 2 · BLOCKED 0
 
 | Area | Check | Result | Expected | Actual |
 |---|---|---|---|---|
@@ -13,8 +13,8 @@ Total 14 · PASS 9 · FAIL 3 · BLOCKED 0
 | B2. Permissions: every route a role must not reach answers 403 | a permission revoked from one user closes its routes at once (CLIENTS_VIEW, SALES_VIEW) | PASS |  |  |
 | B2. Permissions: every route a role must not reach answers 403 | a MANAGER cannot grant a permission he does not hold, nor edit the owner | PASS |  |  |
 | B2. Permissions: every route a role must not reach answers 403 | a user granted USERS_MANAGE cannot give himself or another more than he has | PASS |  |  |
-| B2. Permissions: every route a role must not reach answers 403 | a SUPERVISOR granted USERS_MANAGE cannot create or take over an account with more rights than his own | FAIL |  | the supervisor reads /reports/margin: 403; invite a MANAGER with a password he chose: 201; logged in as that manager, /reports/margin: 200; promote a LIVREUR to MANAGER: 200; reset the password of the manager who holds SALARY_VIEW: 200; logged in as him, /employees (salaries): 200 |
-| B2. Permissions: cost, margin and salary figures in what a role can read | 7135 answers read as a non-owner role in 8 companies | INFO |  |  |
+| B2. Permissions: every route a role must not reach answers 403 | a SUPERVISOR granted USERS_MANAGE cannot create or take over an account with more rights than his own | PASS |  |  |
+| B2. Permissions: cost, margin and salary figures in what a role can read | 6790 answers read as a non-owner role in 8 companies | INFO |  |  |
 | B2. Permissions: cost, margin and salary figures in what a role can read | no cost or margin figure is shown to a role without VIEW_COST_AND_MARGIN | FAIL |  | 1 route(s): GET /purchases/:id → lines.unitCost [SELLER, STOREKEEPER, SUPERVISOR, LIVREUR] |
-| B2. Permissions: cost, margin and salary figures in what a role can read | no supplier balance is shown to a role without SUPPLIERS_ACCOUNT | FAIL |  | SELLER: GET /suppliers items.balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balance, GET /suppliers/:id balanceCurrency ; STOREKEEPER: GET /suppliers items.balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balance, GET /suppliers/:id balanceCurrency ; SUPERVISOR: GET /suppliers items.balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balance, GET /suppliers/:id balanceCurrency ; LIVREUR: GET /suppliers items.balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balance, GET /suppliers/:id balanceCurrency |
+| B2. Permissions: cost, margin and salary figures in what a role can read | no supplier balance is shown to a role without SUPPLIERS_ACCOUNT | FAIL |  | SELLER: GET /suppliers items.balance, GET /suppliers/:id balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balanceCurrency ; STOREKEEPER: GET /suppliers items.balance, GET /suppliers/:id balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balanceCurrency ; SUPERVISOR: GET /suppliers items.balance, GET /suppliers/:id balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balanceCurrency ; LIVREUR: GET /suppliers items.balance, GET /suppliers/:id balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balanceCurrency |
 | B2. Permissions: cost, margin and salary figures in what a role can read | no salary figure is shown to a role without SALARY_VIEW | PASS |  |  |

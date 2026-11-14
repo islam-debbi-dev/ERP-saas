@@ -2,7 +2,7 @@
  "hits": [
   {
    "who": "seller 1",
-   "path": "/stock/77d6332d-9035-486f-b391-ab60efa25b00/movements",
+   "path": "/stock/04156300-e94d-44a9-90be-3d763064af3f/movements",
    "status": 200,
    "found": [
     "sale of seller 2",
@@ -11,7 +11,7 @@
   },
   {
    "who": "supervisor of seller 1",
-   "path": "/stock/77d6332d-9035-486f-b391-ab60efa25b00/movements",
+   "path": "/stock/04156300-e94d-44a9-90be-3d763064af3f/movements",
    "status": 200,
    "found": [
     "sale of seller 2",
@@ -34,7 +34,7 @@
   },
   {
    "who": "manager limited to the annexe (OPERATE)",
-   "path": "/clients/12605acb-0644-4a8c-98eb-d18e168b2996/unpaid-documents",
+   "path": "/clients/0538e6ad-92cb-431b-8c6a-b7f1f7806eb1/unpaid-documents",
    "status": 200,
    "found": [
     "sale of the dépôt principal",
@@ -59,7 +59,7 @@
   },
   {
    "who": "manager with VIEW_STATS on the annexe",
-   "path": "/clients/12605acb-0644-4a8c-98eb-d18e168b2996/statement",
+   "path": "/clients/0538e6ad-92cb-431b-8c6a-b7f1f7806eb1/statement",
    "status": 200,
    "found": [
     "its number (annexe)"
@@ -67,7 +67,7 @@
   },
   {
    "who": "manager with VIEW_STATS on the annexe",
-   "path": "/clients/12605acb-0644-4a8c-98eb-d18e168b2996/unpaid-documents",
+   "path": "/clients/0538e6ad-92cb-431b-8c6a-b7f1f7806eb1/unpaid-documents",
    "status": 200,
    "found": [
     "sale of the dépôt principal",

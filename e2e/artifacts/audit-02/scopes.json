@@ -23,67 +23,67 @@
     },
     {
       "area": "B2. Scope: a seller sees only his clients, sales and versements (ASSIGNED_ONLY)",
-      "durationMs": 12,
+      "durationMs": 22,
       "name": "the supervisor does see the sale of his own seller",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a seller sees only his clients, sales and versements (ASSIGNED_ONLY)",
-      "durationMs": 27,
+      "durationMs": 37,
       "name": "seller 1 cannot sell to the client of seller 2",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a seller sees only his clients, sales and versements (ASSIGNED_ONLY)",
-      "durationMs": 18,
+      "durationMs": 26,
       "name": "seller 1 cannot collect a versement from the client of seller 2",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a seller sees only his clients, sales and versements (ASSIGNED_ONLY)",
-      "durationMs": 18,
+      "durationMs": 27,
       "name": "seller 1 cannot take an order from the client of seller 2",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a seller sees only his clients, sales and versements (ASSIGNED_ONLY)",
-      "durationMs": 17,
+      "durationMs": 29,
       "name": "seller 1 cannot record a visit to the client of seller 2",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a seller sees only his clients, sales and versements (ASSIGNED_ONLY)",
-      "durationMs": 4,
+      "durationMs": 8,
       "name": "seller 1 cannot return the sale of seller 2",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a seller sees only his clients, sales and versements (ASSIGNED_ONLY)",
-      "durationMs": 10,
+      "durationMs": 17,
       "name": "seller 1 cannot share the relevé of the client of seller 2",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a seller sees only his clients, sales and versements (ASSIGNED_ONLY)",
-      "durationMs": 16,
+      "durationMs": 18,
       "name": "seller 1 cannot edit the client of seller 2",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a seller sees only his clients, sales and versements (ASSIGNED_ONLY)",
-      "durationMs": 14,
+      "durationMs": 16,
       "name": "seller 1 cannot move the pin of the client of seller 2",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a seller sees only his clients, sales and versements (ASSIGNED_ONLY)",
-      "durationMs": 23,
+      "durationMs": 22,
       "name": "seller 1 cannot cancel the order of seller 2",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a seller sees only his clients, sales and versements (ASSIGNED_ONLY)",
-      "durationMs": 55,
+      "durationMs": 58,
       "name": "a seller's report and dashboard figures are his own, whatever he asks for",
       "status": "PASS"
     },
@@ -102,61 +102,61 @@
     },
     {
       "area": "B2. Scope: a user limited to one dépôt never sees another",
-      "durationMs": 17,
+      "durationMs": 9,
       "name": "he does see the sale of his own dépôt",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a user limited to one dépôt never sees another",
-      "durationMs": 37,
+      "durationMs": 26,
       "name": "the manager of the annexe cannot sell from the dépôt principal",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a user limited to one dépôt never sees another",
-      "durationMs": 29,
+      "durationMs": 14,
       "name": "the manager of the annexe cannot adjust the stock of the dépôt principal",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a user limited to one dépôt never sees another",
-      "durationMs": 34,
+      "durationMs": 14,
       "name": "the manager of the annexe cannot take stock out of the dépôt principal by transfer",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a user limited to one dépôt never sees another",
-      "durationMs": 23,
+      "durationMs": 15,
       "name": "the manager of the annexe cannot cancel the sale of the dépôt principal",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a user limited to one dépôt never sees another",
-      "durationMs": 19,
+      "durationMs": 17,
       "name": "the manager of the annexe cannot cancel the dépense of the dépôt principal",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a user limited to one dépôt never sees another",
-      "durationMs": 25,
+      "durationMs": 18,
       "name": "the manager of the annexe cannot pay a dépense from the caisse principale",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a user limited to one dépôt never sees another",
-      "durationMs": 34,
+      "durationMs": 23,
       "name": "the manager of the annexe cannot collect a versement into the caisse principale",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a user limited to one dépôt never sees another",
-      "durationMs": 22,
+      "durationMs": 20,
       "name": "the manager of the annexe cannot count the caisse principale",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: a user limited to one dépôt never sees another",
-      "durationMs": 8,
+      "durationMs": 6,
       "name": "the manager of the annexe cannot give himself access to the dépôt principal",
       "status": "PASS"
     },
@@ -169,7 +169,7 @@
     },
     {
       "area": "B2. Scope: a user limited to one dépôt never sees another",
-      "durationMs": 56,
+      "durationMs": 77,
       "name": "\"Voir les statistiques\" gives no client ledger and no user list",
       "status": "FAIL",
       "evidence": "statement 200, users 200, sale from the annexe 404"
@@ -188,7 +188,7 @@
     },
     {
       "area": "B2. Scope: without SALARY_VIEW pay does not exist",
-      "durationMs": 0,
+      "durationMs": 1,
       "name": "a MANAGER without SALARY_VIEW finds no pay row and no pay figure in any GET route",
       "status": "PASS"
     },
@@ -206,13 +206,13 @@
     },
     {
       "area": "B2. Scope: Excel exports",
-      "durationMs": 1,
+      "durationMs": 0,
       "name": "no export gives the margin or the stock value to a user without VIEW_COST_AND_MARGIN",
       "status": "PASS"
     },
     {
       "area": "B2. Scope: Excel exports",
-      "durationMs": 140,
+      "durationMs": 148,
       "name": "a user without EXPORT_DATA gets no export at all",
       "status": "PASS"
     }

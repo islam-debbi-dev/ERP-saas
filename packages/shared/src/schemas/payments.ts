@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { PAYMENT_MODES, type PaymentMode, type PaymentStatus, type SaleType } from '../enums';
 import { parseDA } from '../money';
-import { amountString, normalizeDecimal } from './common';
+import { amountString, normalizeDecimal, fitsMoney } from './common';
 import { type GeoCheckResultDto, geoInputSchema } from './geo';
 
 const id = z.uuid();
@@ -20,7 +20,7 @@ const positiveAmount = z
   .string()
   .refine((v) => {
     const parsed = parseDA(v);
-    return parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 2;
+    return parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 2 && fitsMoney(parsed);
   }, 'invalid_amount')
   .transform(normalizeDecimal);
 

@@ -7,7 +7,7 @@ import {
   type SupplierPaymentStatus,
 } from '../enums';
 import { parseDA } from '../money';
-import { exchangeRateString, normalizeDecimal } from './common';
+import { exchangeRateString, normalizeDecimal, fitsMoney } from './common';
 
 /** Phase 21, crédit avancé: supplier accounts, aging, reminders, share links. */
 
@@ -26,7 +26,7 @@ const positiveAmount = z
   .string()
   .refine((v) => {
     const parsed = parseDA(v);
-    return parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 2;
+    return parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 2 && fitsMoney(parsed);
   }, 'invalid_amount')
   .transform(normalizeDecimal);
 

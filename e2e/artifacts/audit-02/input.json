@@ -1,8 +1,8 @@
 {
   "totals": {
     "total": 15,
-    "passed": 7,
-    "failed": 1,
+    "passed": 8,
+    "failed": 0,
     "blocked": 0,
     "info": 7
   },
@@ -15,13 +15,13 @@
     },
     {
       "area": "B4. Mass assignment",
-      "durationMs": 190,
+      "durationMs": 264,
       "name": "no row took the id, the date, the number or the author sent by the client",
       "status": "PASS"
     },
     {
       "area": "B4. Mass assignment",
-      "durationMs": 6,
+      "durationMs": 8,
       "name": "a body cannot change the plan of the company or grant itself a permission",
       "status": "PASS"
     },
@@ -33,7 +33,7 @@
     },
     {
       "area": "B4. Query strings and raw bodies",
-      "durationMs": 33,
+      "durationMs": 34,
       "name": "a malformed, a huge and a deeply nested body are refused cleanly",
       "status": "PASS"
     },
@@ -47,8 +47,7 @@
       "area": "B4. Verdict of the sweeps",
       "durationMs": 0,
       "name": "no hostile value answers 5xx",
-      "status": "FAIL",
-      "evidence": "29 case(s) on 18 route(s): PATCH /tenant/settings cashCountAlertThreshold = 16 digits → 500 INTERNAL_ERROR ; POST /products units[].factorToBase = arabic digits → 500 INTERNAL_ERROR ; POST /products units[].factorToBase = empty → 500 INTERNAL_ERROR ; POST /clients/:id/adjustments amount = 16 digits → 500 INTERNAL_ERROR ; POST /clients/:id/adjustments amount = 12 digits → 500 INTERNAL_ERROR ; POST /sales lines[].unitPriceHt = 16 digits → 500 INTERNAL_ERROR ; POST /sales lines[].unitPriceHt = 12 digits → 500 INTERNAL_ERROR ; POST /sales/quick lines[].unitPriceHt = 16 digits → 500 INTERNAL_ERROR ; POST /sales/quick lines[].unitPriceHt = 12 digits → 500 INTERNAL_ERROR ; POST /payments amount = 16 digits → 500 INTERNAL_ERROR ; POST /payments amount = 12 digits → 500 INTERNAL_ERROR ; POST /purchases lines[].unitCost = 16 digits → 500 INTERNAL_ERROR ; POST /purchases lines[].unitCost = 12 digits → 500 INTERNAL_ERROR ; POST /import-files/:id/late-cost amount = 16 digits → 500 INTERNAL_ERROR ; POST /import-files/:id/late-cost amount = 12 digits → 500 INTERNAL_ERROR ; POST /supplier-payments amount = 16 digits → 500 INTERNAL_ERROR ; POST /supplier-payments amount = 12 digits → 500 INTERNAL_ERROR ; PUT /products/:id/packaging [].qtyBasePerPackaging = 16 digits → 500 INTERNAL_ERROR ; PUT /products/:id/packaging [].qtyBasePerPackaging = 12 digits → 500 INTERNAL_ERROR ; POST /cash-accounts/:id/counts counted = 16 digits → 500 INTERNAL_ERROR ; POST /employees/:id/advances amount = 12 digits → 500 INTERNAL_ERROR ; POST /clients/:id/adjustments reason = lone surrogate → 500 INTERNAL_ERROR ; POST /warehouses name = lone surrogate → 500 INTERNAL_ERROR ; POST /visits note = lone surrogate → 500 INTERNAL_ERROR ; POST /import-files reference = lone surrogate → 500 INTERNAL_ERROR ; POST /routes name = lone surrogate → 500 INTERNAL_ERROR ; POST /cash-accounts/:id/counts reason = lone surrogate → 500 INTERNAL_ERROR ; POST /incentive-plans name = lone surrogate → 500 INTERNAL_ERROR ; POST /employees fullName = lone surrogate → 500 INTERNAL_ERROR"
+      "status": "PASS"
     },
     {
       "area": "B4. Verdict of the sweeps",
@@ -58,7 +57,7 @@
     },
     {
       "area": "B4. Verdict of the sweeps",
-      "durationMs": 0,
+      "durationMs": 1,
       "name": "no amount is accepted as NaN, Infinity, an exponent, a JSON number or with too many decimals",
       "status": "PASS"
     },
@@ -71,18 +70,18 @@
     {
       "area": "B4. Verdict of the sweeps",
       "durationMs": 0,
-      "name": "text accepted with a NUL byte or a lone surrogate: 23 field(s)",
+      "name": "text accepted with a NUL byte or a lone surrogate: 3 field(s)",
       "status": "INFO"
     },
     {
       "area": "B4. Stored markup, where it is shown",
       "durationMs": 0,
-      "name": "BL PDF 143342 bytes, relevé PDF 200; requests received by the canary server: 0; text printed: the tag as text",
+      "name": "BL PDF 142461 bytes, relevé PDF 200; requests received by the canary server: 0; text printed: the tag as text",
       "status": "INFO"
     },
     {
       "area": "B4. Stored markup, where it is shown",
-      "durationMs": 1707,
+      "durationMs": 3964,
       "name": "markup in a product, a client and a note is printed as text: the PDF loads nothing and reads no file",
       "status": "PASS"
     },
@@ -94,7 +93,7 @@
     },
     {
       "area": "B4. Stored markup, where it is shown",
-      "durationMs": 119,
+      "durationMs": 242,
       "name": "a client name starting with = + - @ is not a formula in the Excel exports",
       "status": "PASS"
     }

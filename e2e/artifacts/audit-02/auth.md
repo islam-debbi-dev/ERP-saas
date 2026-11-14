@@ -18,12 +18,12 @@ Total 32 · PASS 21 · FAIL 6 · BLOCKED 0
 | B3. Invitation and reset links | only the hash of a link is stored, and the link is 32 random bytes | PASS |  |  |
 | B3. Invitation and reset links | a reset link logs the old password and the old sessions out | PASS |  |  |
 | B3. User enumeration and account lock-out | a wrong password and an unknown account get the same answer | PASS |  |  |
-| B3. User enumeration and account lock-out | login timing: known 57 ms, unknown 47 ms | INFO |  |  |
+| B3. User enumeration and account lock-out | login timing: known 46 ms, unknown 39 ms | INFO |  |  |
 | B3. User enumeration and account lock-out | response time does not tell a known account from an unknown one (median of 12 each) | PASS |  |  |
 | B3. User enumeration and account lock-out | the lock-out does not tell whether an account exists | FAIL |  | existing account: INVALID_CREDENTIALS,INVALID_CREDENTIALS,INVALID_CREDENTIALS,INVALID_CREDENTIALS,INVALID_CREDENTIALS,ACCOUNT_LOCKED,ACCOUNT_LOCKED \| unknown: INVALID_CREDENTIALS,INVALID_CREDENTIALS,INVALID_CREDENTIALS,INVALID_CREDENTIALS,INVALID_CREDENTIALS,INVALID_CREDENTIALS,INVALID_CREDENTIALS |
-| B3. User enumeration and account lock-out | an anonymous visitor cannot lock a user out of his account (the right password still works) | FAIL |  | 5 wrong passwords from 5 addresses, then the right one: HTTP 423 ACCOUNT_LOCKED, lockedUntil 2026-11-14 13:34:33.884+00 |
-| B3. User enumeration and account lock-out | registration does not tell whether an email is already used | FAIL |  | HTTP 409 {"code":"EMAIL_ALREADY_USED","message":"This email is already used","requestId":"d38920bc-34cd-44bb-b406-17aad46b51c9"} |
-| B3. Cookies, CSRF, CORS, headers | Set-Cookie: erp_rt=…; Max-Age=2592000; Path=/auth; Expires=Mon, 14 Dec 2026 13:19:34 GMT; HttpOnly; SameSite=Lax (Secure follows COOKIE_SECURE, false in this local stack and by default) | INFO |  |  |
+| B3. User enumeration and account lock-out | an anonymous visitor cannot lock a user out of his account (the right password still works) | FAIL |  | 5 wrong passwords from 5 addresses, then the right one: HTTP 423 ACCOUNT_LOCKED, lockedUntil 2026-11-14 19:08:08.469+00 |
+| B3. User enumeration and account lock-out | registration does not tell whether an email is already used | FAIL |  | HTTP 409 {"code":"EMAIL_ALREADY_USED","message":"This email is already used","requestId":"c09c1413-eb96-4ab6-97d1-46430505e3cf"} |
+| B3. Cookies, CSRF, CORS, headers | Set-Cookie: erp_rt=…; Max-Age=2592000; Path=/auth; Expires=Mon, 14 Dec 2026 18:53:08 GMT; HttpOnly; SameSite=Lax (Secure follows COOKIE_SECURE, false in this local stack and by default) | INFO |  |  |
 | B3. Cookies, CSRF, CORS, headers | the refresh cookie is HttpOnly, SameSite=Lax, limited to /auth, and the web answer carries no refresh token | PASS |  |  |
 | B3. Cookies, CSRF, CORS, headers | the cookie alone opens no business route (only /auth/refresh reads it) | PASS |  |  |
 | B3. Cookies, CSRF, CORS, headers | cross-site form POST /auth/refresh with the cookie: HTTP 200, Access-Control-Allow-Origin: none | INFO |  |  |

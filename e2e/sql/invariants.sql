@@ -354,7 +354,10 @@ WHERE table_schema = 'public' AND column_name = 'deletedAt'
 -- name: validated_sale_has_ledger_and_audit
 -- A validated sale must leave: an audit row, stock movements and a client
 -- ledger entry. A facture that groups BLs has no effect of its own (the BLs
--- keep theirs), so it is excluded.
+-- keep theirs), so it is excluded. A sale worth 0 DA (total + timbre = 0) owes
+-- nothing: it writes no ledger line (sale-workflow.service.ts, `!due.isZero()`),
+-- and none is expected of it (REPORT-02, Decisions of fix batch 1); its stock
+-- movements and its audit row still are.
 SELECT s.id, s."tenantId", s.number, s.status, s."clientId" IS NOT NULL AS has_client,
        (SELECT COUNT(*) FROM client_ledger_entries le
          WHERE le."tenantId" = s."tenantId" AND le."refId" = s.id AND le.type = 'SALE') AS ledger_rows,
@@ -366,7 +369,7 @@ FROM sales s
 WHERE s.status = 'VALIDATED'
   AND NOT EXISTS (SELECT 1 FROM sales b WHERE b."tenantId" = s."tenantId" AND b."invoiceId" = s.id)
   AND (
-    (s."clientId" IS NOT NULL AND NOT EXISTS (
+    (s."clientId" IS NOT NULL AND s."totalTtc" + s.timbre <> 0 AND NOT EXISTS (
         SELECT 1 FROM client_ledger_entries le
         WHERE le."tenantId" = s."tenantId" AND le."refId" = s.id AND le.type = 'SALE'))
     OR NOT EXISTS (SELECT 1 FROM stock_movements sm

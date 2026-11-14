@@ -1,24 +1,24 @@
 {
  "worlds": {
   "T1": [
-   "9704c29c-90cf-4a61-9b77-6c074ce024d1",
-   "c8c135a3-85f7-4983-9423-066495582959",
-   "d7c85e21-8c04-404b-8746-2cde23e268f6",
-   "6c211bf8-51a8-4b7b-be84-cb0637132863",
-   "0e5f7808-0b19-4a63-8d90-c7ef7ee5cac6",
-   "808843c3-44b9-46e5-b0f2-8a8724d14538",
-   "75b49f3a-1cfa-491e-aa1e-c66bbba49adc",
-   "7de43d00-2f5f-4985-83e5-5006f3570657"
+   "5ea657c8-973a-4c31-8d63-ed506e03b3be",
+   "f008844c-fadf-4284-b271-b09b132e3948",
+   "ef62fa0e-971e-488c-bc45-634307041c8c",
+   "808debe0-703c-4957-b18c-29c81cbf5d69",
+   "05319dbb-bd03-4fd4-94c9-9b6f0ccdc190",
+   "99872216-8e6a-4835-be2d-b9a880470532",
+   "a5368134-1b93-4514-94b1-fb6778f95f4d",
+   "7f138d6b-8507-4cc7-960b-c854f2ad8916"
   ],
   "T2": [
-   "44bc4b8a-ab62-477a-a162-150dac13f120",
-   "5bcca78f-c0ad-487a-9e95-04e9b7f58411",
-   "40e3e9f9-7c8a-47d2-8d2f-311278c48979",
-   "44005335-04e7-4f52-bc87-1f648a3e29f2",
-   "d92973e2-0f12-490a-b811-2b33afd2bf6d",
-   "da2653ac-675e-4d7d-8cb0-8e2c14e30d89",
-   "ea75aa4b-2207-49d6-a41e-edfe7ef5b8a8",
-   "90e12bd8-a580-4f51-925d-c72df439f2c7"
+   "c233e47c-78a2-4299-a1ae-ac9bd86930ca",
+   "ca375c5c-dc56-41f8-82a8-7116caa704db",
+   "5f61d21d-f049-4733-828c-88095574acac",
+   "17859f4d-962e-43b7-9fe2-94d5d782fce6",
+   "fa4f54c0-ce78-45be-bd1b-c31a737fa203",
+   "f1d7cfdd-524f-4584-a700-ffa2d33a6216",
+   "88c22fb9-641a-4049-8804-cc7aea72272d",
+   "98c4f6f2-c7ca-4089-9ce3-f0b5a38cb5c4"
   ]
  },
  "tables": 101,
@@ -33,7 +33,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Category not found\",\"requestId\":\"51c5f9c2-dece-4e5c-bc1f-94541e83e0d2\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Category not found\",\"requestId\":\"e8370d9d-a341-4e55-819b-217615ea7389\"}"
   },
   {
    "kind": "path",
@@ -44,7 +44,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Category not found\",\"requestId\":\"99d123e9-3a3f-468c-aedd-73f22e8a5d0b\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Category not found\",\"requestId\":\"4ccdea1f-dd59-495e-bc37-b53369885985\"}"
   },
   {
    "kind": "body",
@@ -55,7 +55,7 @@
    "code": "BRAND_NAME_TAKEN",
    "leaked": [],
    "verdict": "state-first",
-   "sample": "{\"code\":\"BRAND_NAME_TAKEN\",\"message\":\"Brand name already used\",\"requestId\":\"30ef81ef-6221-4f9c-94ef-12dd90f98220\"}"
+   "sample": "{\"code\":\"BRAND_NAME_TAKEN\",\"message\":\"Brand name already used\",\"requestId\":\"1b6eb925-99ee-400a-9405-3c3cea5424c4\"}"
   },
   {
    "kind": "path",
@@ -66,7 +66,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Brand not found\",\"requestId\":\"73b3162a-7d8f-4fcd-bc1c-266ee40dbcbd\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Brand not found\",\"requestId\":\"c22dc768-2796-4d6d-92ff-6700b48d95dd\"}"
   },
   {
    "kind": "body",
@@ -77,7 +77,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown supplier\",\"requestId\":\"4fe59f7f-8807-4904-8437-094fb4b8dd45\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown supplier\",\"requestId\":\"85e8ae06-44d1-4b35-bb6d-e1aed6bb1c22\"}"
   },
   {
    "kind": "path",
@@ -88,7 +88,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Price level not found\",\"requestId\":\"a90056fa-5006-46c1-bff5-a30bf8b5568a\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Price level not found\",\"requestId\":\"a6da46f1-7808-488b-afd0-82151217bf60\"}"
   },
   {
    "kind": "path",
@@ -99,7 +99,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"0d38f900-a56c-4113-bacd-73532d80781c\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"b13b2077-a493-4e06-922a-33901abf067c\"}"
   },
   {
    "kind": "body",
@@ -110,7 +110,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "state-first",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Invalid input\",\"details\":{\"issues\":[{\"path\":\"units\",\"code\":\"custom\",\"message\":\"base_unit_missing\"}]},\"requestId\":\"ee4a590a-6f24-4b12-bba7-784a627541b2\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Invalid input\",\"details\":{\"issues\":[{\"path\":\"units\",\"code\":\"custom\",\"message\":\"base_unit_missing\"}]},\"requestId\":\"3f1405cd-35ac-42c0-b45c-9217cde24be9\"}"
   },
   {
    "kind": "body",
@@ -121,7 +121,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown brand\",\"requestId\":\"3e532d83-63fb-4116-a4e1-36554ab3a0b4\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown brand\",\"requestId\":\"326c1c30-cc71-4142-9ea8-8a46cdbd9d1a\"}"
   },
   {
    "kind": "body",
@@ -143,7 +143,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "state-first",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Invalid input\",\"details\":{\"issues\":[{\"path\":\"prices.0.unitId\",\"code\":\"custom\",\"message\":\"price_unknown_unit\"}]},\"requestId\":\"83b97db1-32b1-4066-9ebb-c5388c096f63\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Invalid input\",\"details\":{\"issues\":[{\"path\":\"prices.0.unitId\",\"code\":\"custom\",\"message\":\"price_unknown_unit\"}]},\"requestId\":\"6e462bdb-8231-4c1d-acb6-d1742dbe9830\"}"
   },
   {
    "kind": "body",
@@ -154,7 +154,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown price level\",\"details\":{\"priceLevelId\":\"96942e22-f588-4d34-aec7-40db0c3ea4c1\"},\"requestId\":\"a6c5e980-241a-404b-a061-a0b4c76f1701\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown price level\",\"details\":{\"priceLevelId\":\"f3a6f262-34a4-4d21-969a-61217f1c15e7\"},\"requestId\":\"f2f85d36-8fb6-4c41-a349-fae51a352799\"}"
   },
   {
    "kind": "path",
@@ -165,7 +165,7 @@
    "code": "PRODUCT_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"26312429-090f-4dff-9711-59ede37f3080\"}"
+   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"f2c8b29d-b73f-4591-aeb2-b1b895e5b220\"}"
   },
   {
    "kind": "path",
@@ -176,7 +176,7 @@
    "code": "PRODUCT_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"97014490-d1d7-4de5-81fa-4210f6c747dd\"}"
+   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"8164d3d8-9ce1-4e53-acf0-efd509657294\"}"
   },
   {
    "kind": "path",
@@ -187,7 +187,7 @@
    "code": "PRODUCT_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"2610c317-452c-4e93-9804-e7f946eade0a\"}"
+   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"b46281b6-afd6-40ae-9687-48f3bd0f429e\"}"
   },
   {
    "kind": "body",
@@ -198,7 +198,7 @@
    "code": "INVALID_PRODUCT_UNITS",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"41e79fb1-2a04-4f75-b56c-686f1245684b\"},\"requestId\":\"d78c7c1b-aa7c-47cd-9a6c-3dc5a9305bf1\"}"
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"f58af221-3654-4b3f-bb67-2d76568dda97\"},\"requestId\":\"e7439d9e-e180-4b05-8c3e-ac2a674777ee\"}"
   },
   {
    "kind": "body",
@@ -209,7 +209,7 @@
    "code": "INVALID_PRODUCT_UNITS",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"dd851468-05aa-42c0-9dd9-76e352b7af1d\"},\"requestId\":\"27da39f1-6527-4320-be2a-4e8d4d908e2f\"}"
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"84250b67-27c3-408a-bf84-291df3432ee1\"},\"requestId\":\"7ab0cb22-d0eb-4be7-a5eb-45370680184a\"}"
   },
   {
    "kind": "path",
@@ -220,7 +220,7 @@
    "code": "PRODUCT_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"bde5ff47-c222-4498-8260-ee2275993ae7\"}"
+   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"40c1a6c1-d89c-4530-afba-db29a6d07ce7\"}"
   },
   {
    "kind": "path",
@@ -231,7 +231,7 @@
    "code": "PRODUCT_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"0f19f821-b150-4d63-be2e-cae4f8156979\"}"
+   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"12164f12-12f9-4e7b-a5a8-d289049b4b56\"}"
   },
   {
    "kind": "body",
@@ -242,7 +242,7 @@
    "code": "INVALID_PRODUCT_UNITS",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"41e79fb1-2a04-4f75-b56c-686f1245684b\"},\"requestId\":\"6c945a34-f244-4716-85ce-807e8443033a\"}"
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"f58af221-3654-4b3f-bb67-2d76568dda97\"},\"requestId\":\"18bf6656-fc59-4375-be62-80d4be2c2d84\"}"
   },
   {
    "kind": "body",
@@ -253,7 +253,7 @@
    "code": "INVALID_PRODUCT_UNITS",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"dd851468-05aa-42c0-9dd9-76e352b7af1d\"},\"requestId\":\"f0dcefc3-e907-4d4f-9865-a732eaf754d6\"}"
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"84250b67-27c3-408a-bf84-291df3432ee1\"},\"requestId\":\"5f8f5c77-2eaa-4dfc-be17-11fba9f7136a\"}"
   },
   {
    "kind": "body",
@@ -264,7 +264,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"470a0fa7-3558-4f46-b36e-a82f068ca783\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"3e898f3c-01e1-463d-88f6-b50d4ba54068\"}"
   },
   {
    "kind": "body",
@@ -275,7 +275,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"ca87872b-09d0-4df6-84c8-644ad2b239c4\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"e5887abf-06cb-4f3f-8976-47ea61cde21a\"}"
   },
   {
    "kind": "path",
@@ -286,7 +286,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"ec13057e-1810-4360-b3c6-d37aa695cb7b\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"d6638fdd-6425-49dc-8a42-730e21774648\"}"
   },
   {
    "kind": "body",
@@ -297,7 +297,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"97940ea8-78e1-487d-8438-1444260984ba\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"b1db3c01-76cc-471a-8ab3-9278ad4a6b5e\"}"
   },
   {
    "kind": "body",
@@ -308,7 +308,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"7ccac24b-2ff5-48ff-a0fe-189d000d1fdc\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"d8c762f7-1fd6-44dd-a684-cdeef0607cb6\"}"
   },
   {
    "kind": "body",
@@ -319,7 +319,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"70e9f7de-3fe5-4e66-9960-64c554ba5d0b\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"0d22512f-a676-49f6-a737-45f5e15d5b86\"}"
   },
   {
    "kind": "path",
@@ -330,7 +330,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"ea578cfe-eff6-4253-9798-c47042a3057c\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"1e3b5b4f-c126-49be-8117-106062689767\"}"
   },
   {
    "kind": "path",
@@ -341,7 +341,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"10c5c955-da7f-4b1f-871c-90e1109379ca\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"aaba9332-40ee-46aa-82ea-f858da9c9b5a\"}"
   },
   {
    "kind": "path",
@@ -352,7 +352,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"039fbab6-b9b1-4864-96bd-f93e8295a310\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"e203ce8e-a4fc-4169-91ba-bafa77baaf31\"}"
   },
   {
    "kind": "path",
@@ -363,7 +363,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"b700336f-51df-4ee0-b495-4eb3596adece\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"ef0cb7d3-d648-4315-8058-4020440de2cb\"}"
   },
   {
    "kind": "query",
@@ -374,7 +374,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"138ffd07-5c39-4a9d-a907-9489c9511843\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"1ef50cf9-2b0c-41a3-9120-16fa5e4654b7\"}"
   },
   {
    "kind": "query",
@@ -385,7 +385,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Product unit not found\",\"requestId\":\"14061e6c-cdf2-45cc-bda6-17d5c2dc18be\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Product unit not found\",\"requestId\":\"a158e435-9294-40ac-8f76-be7c74f39db4\"}"
   },
   {
    "kind": "body",
@@ -396,7 +396,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"2820df31-d60b-47cd-8ac7-054f06588256\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"9b4d3ce2-69a1-4c66-8bfa-60416dac48d0\"}"
   },
   {
    "kind": "body",
@@ -407,7 +407,7 @@
    "code": "INVALID_PRODUCT_UNITS",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"41e79fb1-2a04-4f75-b56c-686f1245684b\"},\"requestId\":\"2335bb74-f0db-49cf-812f-bb7e17155a21\"}"
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"f58af221-3654-4b3f-bb67-2d76568dda97\"},\"requestId\":\"27c60980-1c3c-4461-bca3-e296ce203e0d\"}"
   },
   {
    "kind": "body",
@@ -418,7 +418,7 @@
    "code": "INVALID_PRODUCT_UNITS",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"dd851468-05aa-42c0-9dd9-76e352b7af1d\"},\"requestId\":\"3bf46341-7fb0-4ef1-a246-0d5f778386d6\"}"
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"84250b67-27c3-408a-bf84-291df3432ee1\"},\"requestId\":\"61bcb381-d504-4b1d-9f4c-874577bef354\"}"
   },
   {
    "kind": "body",
@@ -429,7 +429,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown client\",\"details\":{\"field\":\"clientId\"},\"requestId\":\"67526e05-0479-4603-ba2a-0e1444203ded\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown client\",\"details\":{\"field\":\"clientId\"},\"requestId\":\"71f9055e-1109-41f3-97af-6fe5ade5dd45\"}"
   },
   {
    "kind": "body",
@@ -440,7 +440,7 @@
    "code": "INVALID_PRODUCT_UNITS",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"41e79fb1-2a04-4f75-b56c-686f1245684b\"},\"requestId\":\"908589ce-b2ae-493d-a970-65a2a019ed17\"}"
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"f58af221-3654-4b3f-bb67-2d76568dda97\"},\"requestId\":\"690b1991-dca2-4a29-b9a0-7edae61b7bea\"}"
   },
   {
    "kind": "body",
@@ -451,7 +451,7 @@
    "code": "INVALID_PRODUCT_UNITS",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"dd851468-05aa-42c0-9dd9-76e352b7af1d\"},\"requestId\":\"74d30820-699b-4523-93d3-fee016e7a01f\"}"
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"84250b67-27c3-408a-bf84-291df3432ee1\"},\"requestId\":\"7ad744e0-7c3e-4b5a-97b1-832508f142e6\"}"
   },
   {
    "kind": "path",
@@ -462,7 +462,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"7e8f1530-43ac-4528-a243-c030e3a60f01\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"51afb32b-bf55-4fea-8ddc-21ee7ccf256b\"}"
   },
   {
    "kind": "body",
@@ -473,7 +473,7 @@
    "code": "SALE_NOT_DRAFT",
    "leaked": [],
    "verdict": "state-first",
-   "sample": "{\"code\":\"SALE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"35a19906-5670-4f32-9866-5ca9237beb38\"}"
+   "sample": "{\"code\":\"SALE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"c808224a-db69-49ae-8443-2914cd607a9d\"}"
   },
   {
    "kind": "body",
@@ -484,7 +484,7 @@
    "code": "SALE_NOT_DRAFT",
    "leaked": [],
    "verdict": "state-first",
-   "sample": "{\"code\":\"SALE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"6887280d-3723-436e-b797-165cf6516353\"}"
+   "sample": "{\"code\":\"SALE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"6bf749bc-7416-4e2f-84a0-4d9ce5b7e8a7\"}"
   },
   {
    "kind": "body",
@@ -495,7 +495,7 @@
    "code": "SALE_NOT_DRAFT",
    "leaked": [],
    "verdict": "state-first",
-   "sample": "{\"code\":\"SALE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"b37d4da5-49d3-4d37-bfa2-becd22fed309\"}"
+   "sample": "{\"code\":\"SALE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"5d5ee8f2-d259-488c-8ab7-a2f593e470c5\"}"
   },
   {
    "kind": "path",
@@ -506,7 +506,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"b3a44bc4-6708-4f39-90f1-20926d6af9a4\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"2962da96-2592-479e-a898-54433a997073\"}"
   },
   {
    "kind": "body",
@@ -517,7 +517,7 @@
    "code": "SALE_NOT_DRAFT",
    "leaked": [],
    "verdict": "state-first",
-   "sample": "{\"code\":\"SALE_NOT_DRAFT\",\"message\":\"Only a draft can be validated\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"37a61e32-ca7b-4a31-9b73-6a9ce97cf7e6\"}"
+   "sample": "{\"code\":\"SALE_NOT_DRAFT\",\"message\":\"Only a draft can be validated\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"a586dbbf-2559-42aa-b55c-7295be04b40d\"}"
   },
   {
    "kind": "path",
@@ -528,7 +528,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"145db8d4-b640-4963-aa64-9d5a97ed4aa7\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"c3829473-9dd6-4a9d-973e-112c531cb980\"}"
   },
   {
    "kind": "path",
@@ -539,7 +539,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"f210b02c-1489-4859-b03e-1ff2249f98d0\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"506d760d-fe54-4e42-8aa5-b57f00c39005\"}"
   },
   {
    "kind": "body",
@@ -550,7 +550,7 @@
    "code": "SELLER_NOT_ALLOWED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"SELLER_NOT_ALLOWED\",\"message\":\"This user cannot be the seller\",\"details\":{\"userId\":\"49df5c17-1240-49d7-b99e-bc48827f269c\"},\"requestId\":\"0addb5c1-1e18-4ff6-81ee-a985d89a1565\"}"
+   "sample": "{\"code\":\"SELLER_NOT_ALLOWED\",\"message\":\"This user cannot be the seller\",\"details\":{\"userId\":\"d8485070-0819-49cd-a922-1b70b2d691c7\"},\"requestId\":\"ca2a3c2d-0747-4387-aa72-2b87c5a2e831\"}"
   },
   {
    "kind": "path",
@@ -561,7 +561,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"fa16711d-c7ef-4965-9815-05e369444a3c\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"25b55a95-13eb-4fb6-9d26-9f62399bb363\"}"
   },
   {
    "kind": "body",
@@ -572,7 +572,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown or repeated sale line\",\"details\":{\"saleLineId\":\"205f713f-df6d-43e0-9b1e-0298b4dbf028\"},\"requestId\":\"b6383c96-a57f-46cb-89ed-4a9b2cf98d81\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown or repeated sale line\",\"details\":{\"saleLineId\":\"2dafba1d-08e5-49c1-a0e4-e656531081c5\"},\"requestId\":\"67ba5504-d25a-4e37-ab3e-e16dbe1e9936\"}"
   },
   {
    "kind": "body",
@@ -583,7 +583,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown client\",\"details\":{\"field\":\"clientId\"},\"requestId\":\"67747659-9b9c-48b1-a1ab-05aa3626e7ad\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown client\",\"details\":{\"field\":\"clientId\"},\"requestId\":\"e038d26a-4079-48f1-a275-8b317083c3df\"}"
   },
   {
    "kind": "body",
@@ -594,7 +594,7 @@
    "code": "INVALID_PRODUCT_UNITS",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"41e79fb1-2a04-4f75-b56c-686f1245684b\"},\"requestId\":\"d37ae5aa-da87-4cb5-9669-ab39b3fed88b\"}"
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"f58af221-3654-4b3f-bb67-2d76568dda97\"},\"requestId\":\"9c01cc56-94ef-4b2e-94d0-9613fb049b6a\"}"
   },
   {
    "kind": "body",
@@ -605,7 +605,7 @@
    "code": "INVALID_PRODUCT_UNITS",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"dd851468-05aa-42c0-9dd9-76e352b7af1d\"},\"requestId\":\"54c72e9c-20d8-49ed-9043-3e698ad4778d\"}"
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"84250b67-27c3-408a-bf84-291df3432ee1\"},\"requestId\":\"78dfe3ec-eacf-476b-b5ae-d1aa3b729924\"}"
   },
   {
    "kind": "body",
@@ -616,7 +616,7 @@
    "code": "INVOICE_SOURCES_INVALID",
    "leaked": [],
    "verdict": "state-first",
-   "sample": "{\"code\":\"INVOICE_SOURCES_INVALID\",\"message\":\"BLs cannot be invoiced together\",\"details\":{\"saleIds\":[\"c8194198-67e3-4310-92b6-0224f9b0e7f9\",\"5a6947f1-c6e4-48b1-99ae-7d327239de2b\"]},\"requestId\":\"5e4503ee-e0fd-4b0b-8aa4-8b758ea061bb\"}"
+   "sample": "{\"code\":\"INVOICE_SOURCES_INVALID\",\"message\":\"BLs cannot be invoiced together\",\"details\":{\"saleIds\":[\"da7f0248-cb89-4104-befe-4b4e81462500\",\"6f5d5520-25c2-4ed3-9f97-8c8748a22783\"]},\"requestId\":\"8811ec23-000f-43f9-bb7a-c0ecb21f8e6e\"}"
   },
   {
    "kind": "path",
@@ -627,7 +627,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"902a83b7-bbc2-4027-9823-77566820a638\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"b01f2047-6aa6-4b09-9525-0e452ec58d77\"}"
   },
   {
    "kind": "body",
@@ -638,7 +638,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown client\",\"details\":{\"field\":\"clientId\"},\"requestId\":\"89d93e61-4e48-436b-9636-816c9c096e3c\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown client\",\"details\":{\"field\":\"clientId\"},\"requestId\":\"aa2550af-d6b0-4573-acf5-382ff4dbeeb8\"}"
   },
   {
    "kind": "body",
@@ -649,7 +649,7 @@
    "code": "CASH_ACCOUNT_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"92fc0db1-8b06-4572-ace1-1344866f1d97\"}"
+   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"d17ad239-c8e8-4b32-a0e2-ee4b58e07816\"}"
   },
   {
    "kind": "path",
@@ -660,7 +660,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payment not found\",\"requestId\":\"3730b4ca-ac87-4794-a4c8-15d552e6b8d2\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payment not found\",\"requestId\":\"96726468-5d03-4386-88b4-4f7492d34931\"}"
   },
   {
    "kind": "path",
@@ -671,7 +671,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payment not found\",\"requestId\":\"cda19207-e9a7-4194-adf9-d3974094e39a\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payment not found\",\"requestId\":\"4fc2e1b2-d526-403f-9a6d-20e09cdf06ba\"}"
   },
   {
    "kind": "body",
@@ -682,7 +682,7 @@
    "code": "SELLER_NOT_ALLOWED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"SELLER_NOT_ALLOWED\",\"message\":\"This user cannot be the seller\",\"details\":{\"userId\":\"49df5c17-1240-49d7-b99e-bc48827f269c\"},\"requestId\":\"148f930b-754e-4d46-8690-867c88abb4df\"}"
+   "sample": "{\"code\":\"SELLER_NOT_ALLOWED\",\"message\":\"This user cannot be the seller\",\"details\":{\"userId\":\"d8485070-0819-49cd-a922-1b70b2d691c7\"},\"requestId\":\"73045bfb-73a5-4792-9e67-fd2af2571e24\"}"
   },
   {
    "kind": "path",
@@ -693,7 +693,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payment not found\",\"requestId\":\"f1b14638-bde5-422d-abd6-4952bdc5874d\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payment not found\",\"requestId\":\"7044aabb-f99b-4d89-92da-c34cc47fef28\"}"
   },
   {
    "kind": "path",
@@ -704,7 +704,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"6a5e4e31-b80a-4c71-9893-36d30c646f3c\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"b4cac0fc-280a-4551-a577-4a94caaa1875\"}"
   },
   {
    "kind": "path",
@@ -715,7 +715,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"c403d00c-17eb-42cd-b8a7-9179a49f6ce3\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"c518b2f5-b46e-4cbc-85f6-c8f47c56dcd0\"}"
   },
   {
    "kind": "path",
@@ -726,7 +726,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payment not found\",\"requestId\":\"f9c8136d-919e-4b57-b6e0-a9f758ee518e\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payment not found\",\"requestId\":\"b24189b6-2328-43dd-bed1-76c244deedbf\"}"
   },
   {
    "kind": "path",
@@ -737,7 +737,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"eac8015d-7b8a-412c-a8e7-1977ef5feb48\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"50d16296-a0b7-4548-bc3a-33a031f040fa\"}"
   },
   {
    "kind": "path",
@@ -748,7 +748,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier not found\",\"requestId\":\"19dcbbb0-4cd4-44de-bde5-01ac55ac6017\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier not found\",\"requestId\":\"a2f9c9e6-a431-482c-8208-b07b2129fdce\"}"
   },
   {
    "kind": "body",
@@ -759,7 +759,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"b3efc0d4-eba5-4a31-92a4-4d0060f6a8c8\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"e5cb381e-b153-4eae-badc-a13e0d00e7c3\"}"
   },
   {
    "kind": "path",
@@ -770,7 +770,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Share link not found\",\"requestId\":\"f6d391a9-ac37-43cb-a2fd-1d02e1f8f4ea\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Share link not found\",\"requestId\":\"365532c0-37d2-4505-8770-50786e80f899\"}"
   },
   {
    "kind": "body",
@@ -781,7 +781,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown supplier\",\"details\":{\"field\":\"supplierId\"},\"requestId\":\"f05252e8-429d-4d5c-9f23-5b2fe26b3d2c\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown supplier\",\"details\":{\"field\":\"supplierId\"},\"requestId\":\"3b7be693-93fa-41fb-a40b-0f4af957b75a\"}"
   },
   {
    "kind": "body",
@@ -792,7 +792,7 @@
    "code": "INVALID_PRODUCT_UNITS",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"41e79fb1-2a04-4f75-b56c-686f1245684b\"},\"requestId\":\"08b77ef1-caef-4b74-aa99-cfc6a9713367\"}"
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"f58af221-3654-4b3f-bb67-2d76568dda97\"},\"requestId\":\"af770a63-11b7-48f1-9922-7aa954c7e961\"}"
   },
   {
    "kind": "body",
@@ -803,7 +803,7 @@
    "code": "INVALID_PRODUCT_UNITS",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"dd851468-05aa-42c0-9dd9-76e352b7af1d\"},\"requestId\":\"d55c83f4-ecd1-443a-8274-86221ab2f7f3\"}"
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"84250b67-27c3-408a-bf84-291df3432ee1\"},\"requestId\":\"a519e12b-bc2f-4e57-84e4-40c193313282\"}"
   },
   {
    "kind": "path",
@@ -814,7 +814,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Purchase not found\",\"requestId\":\"c4ac4b1f-2883-4f1a-9dbc-1e394c06eaeb\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Purchase not found\",\"requestId\":\"de9d5661-f50a-436c-ae27-0df5cbd5a77f\"}"
   },
   {
    "kind": "body",
@@ -825,7 +825,7 @@
    "code": "PURCHASE_NOT_DRAFT",
    "leaked": [],
    "verdict": "state-first",
-   "sample": "{\"code\":\"PURCHASE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"5b0bd6ef-36ca-413f-95ff-a9a3b51aa4a6\"}"
+   "sample": "{\"code\":\"PURCHASE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"19e3b901-d3d5-4df1-9531-33e00814e9e7\"}"
   },
   {
    "kind": "body",
@@ -836,7 +836,7 @@
    "code": "PURCHASE_NOT_DRAFT",
    "leaked": [],
    "verdict": "state-first",
-   "sample": "{\"code\":\"PURCHASE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"7bf51bdb-e37f-4fdc-9e6a-ffb2e6ee31ba\"}"
+   "sample": "{\"code\":\"PURCHASE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"5317e9ea-5c4e-4210-8a09-159f9f1a98c7\"}"
   },
   {
    "kind": "body",
@@ -847,7 +847,7 @@
    "code": "PURCHASE_NOT_DRAFT",
    "leaked": [],
    "verdict": "state-first",
-   "sample": "{\"code\":\"PURCHASE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"fa8bd5a3-f9dc-47ab-8524-1b06aa908f6d\"}"
+   "sample": "{\"code\":\"PURCHASE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"ca9d2b71-cefc-4f53-ad93-e49b45f56bca\"}"
   },
   {
    "kind": "path",
@@ -858,7 +858,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Purchase not found\",\"requestId\":\"17981b3f-a16d-4468-8d02-2b3f642e6535\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Purchase not found\",\"requestId\":\"e1767ed6-34a7-43f7-b489-86a7dc7a7f14\"}"
   },
   {
    "kind": "path",
@@ -869,7 +869,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Purchase not found\",\"requestId\":\"d23e3ec8-4529-4508-9d7c-41fea6b1376e\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Purchase not found\",\"requestId\":\"c30206d2-ebc5-4bf1-945a-9a2411ccd2b9\"}"
   },
   {
    "kind": "path",
@@ -880,7 +880,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Purchase not found\",\"requestId\":\"b826a0d6-da42-4308-b85a-580019c38f4c\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Purchase not found\",\"requestId\":\"00374ea6-7717-442e-9814-083ea579ed39\"}"
   },
   {
    "kind": "body",
@@ -891,7 +891,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown or repeated purchase line\",\"details\":{\"purchaseLineId\":\"48500fc2-544a-48bc-a143-956c8690e6ec\"},\"requestId\":\"74a2eb66-4fa0-421f-86f9-bcbb7adfb256\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown or repeated purchase line\",\"details\":{\"purchaseLineId\":\"5e3cf9be-5c84-4d53-90b9-205ad207340e\"},\"requestId\":\"84aed094-40bd-4a6f-87fe-effd3fa825f2\"}"
   },
   {
    "kind": "path",
@@ -902,7 +902,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier not found\",\"requestId\":\"44eecc21-ba3f-4221-b82e-db5f1f8eff43\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier not found\",\"requestId\":\"6fba3358-61ad-4ddb-a925-4906534d47f6\"}"
   },
   {
    "kind": "path",
@@ -913,7 +913,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier not found\",\"requestId\":\"3765ce7f-79b6-4967-9ec1-aba93e60246d\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier not found\",\"requestId\":\"d57f98af-24b0-4c17-9c78-0aa959690fcf\"}"
   },
   {
    "kind": "path",
@@ -924,7 +924,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier not found\",\"requestId\":\"2fe6e4fd-547b-4c67-a8f2-8cee30b5f798\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier not found\",\"requestId\":\"d0f2882f-6e59-460f-b58a-b5244ba1d6e2\"}"
   },
   {
    "kind": "path",
@@ -935,7 +935,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier not found\",\"requestId\":\"b5545cf2-f325-4036-84e4-bf2193a2f921\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier not found\",\"requestId\":\"1234c6ce-84f4-4f5e-af64-f9fe98c8e320\"}"
   },
   {
    "kind": "path",
@@ -946,7 +946,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Inventory not found\",\"requestId\":\"7c7b4dd0-6d48-4fd2-bd45-df3f6e71bde0\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Inventory not found\",\"requestId\":\"8ef5be81-635d-479d-8d7a-66f99f2daa4a\"}"
   },
   {
    "kind": "path",
@@ -957,7 +957,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Inventory not found\",\"requestId\":\"9ce36362-bfce-4144-aa84-35d1cbb211ec\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Inventory not found\",\"requestId\":\"bc920151-2107-4b96-ac5f-38449ef9a372\"}"
   },
   {
    "kind": "body",
@@ -968,7 +968,7 @@
    "code": "INVENTORY_CLOSED",
    "leaked": [],
    "verdict": "state-first",
-   "sample": "{\"code\":\"INVENTORY_CLOSED\",\"message\":\"Inventory is closed\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"8749d5ef-f322-4386-b297-49902d29f0e5\"}"
+   "sample": "{\"code\":\"INVENTORY_CLOSED\",\"message\":\"Inventory is closed\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"15be55f0-36c3-49ad-b897-0c238a5e26c5\"}"
   },
   {
    "kind": "body",
@@ -979,7 +979,7 @@
    "code": "INVENTORY_CLOSED",
    "leaked": [],
    "verdict": "state-first",
-   "sample": "{\"code\":\"INVENTORY_CLOSED\",\"message\":\"Inventory is closed\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"08fff7ad-8588-483b-bb71-2bec3e8ce2c5\"}"
+   "sample": "{\"code\":\"INVENTORY_CLOSED\",\"message\":\"Inventory is closed\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"d87f988f-decf-4398-9939-fcce94666057\"}"
   },
   {
    "kind": "path",
@@ -990,7 +990,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Inventory not found\",\"requestId\":\"0af50b35-db26-4872-9cf1-a269134746e7\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Inventory not found\",\"requestId\":\"8ed685a7-c88f-4eee-be6a-944abb7c10fd\"}"
   },
   {
    "kind": "path",
@@ -1001,7 +1001,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Inventory not found\",\"requestId\":\"8e95ae80-db9a-42e0-abb4-228d6a590252\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Inventory not found\",\"requestId\":\"68a00a7e-bff5-4ac0-bb24-06808a0a34da\"}"
   },
   {
    "kind": "path",
@@ -1012,7 +1012,7 @@
    "code": "WAREHOUSE_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"33b27c0e-e802-423f-bfcb-f2806ec4ab64\"}"
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"30f3a3c1-00ca-4079-bbe7-1a884470b7ad\"}"
   },
   {
    "kind": "path",
@@ -1023,7 +1023,7 @@
    "code": "WAREHOUSE_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"dfe92e30-9594-4fdd-bc2f-107f78840e60\"}"
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"7a3bb4c3-1dee-47f5-9909-9671e3589f1c\"}"
   },
   {
    "kind": "path",
@@ -1034,7 +1034,7 @@
    "code": "WAREHOUSE_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"f52d2b4c-57b2-433f-a71b-b1e05ad7c7e0\"}"
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"2b6967c3-b67c-4fa9-ad9e-0d997cbb1df3\"}"
   },
   {
    "kind": "body",
@@ -1045,7 +1045,7 @@
    "code": "WAREHOUSE_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"632707be-3cf1-4854-92d4-2a6fbaa1b515\"}"
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"981b8509-69a0-44d1-bfac-78a20a07a3bc\"}"
   },
   {
    "kind": "path",
@@ -1056,7 +1056,7 @@
    "code": "WAREHOUSE_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"5624f2a5-4239-4bcb-aea4-2cd524c9d1de\"}"
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"3ff8665c-168c-4492-bb56-c2c7e778f87b\"}"
   },
   {
    "kind": "body",
@@ -1067,7 +1067,7 @@
    "code": "WAREHOUSE_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"2acbcc38-7972-4e66-9790-ac5eb3a41d22\"}"
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"ad0403e7-f2fa-4bd4-ae6f-0855ced2581f\"}"
   },
   {
    "kind": "path",
@@ -1078,7 +1078,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"97f54554-185b-4093-ab44-a96b50e10832\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"9be6361d-1dfd-4345-be89-2edf41f2787b\"}"
   },
   {
    "kind": "path",
@@ -1089,7 +1089,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"7606f0cc-1027-4251-8281-771d667e909c\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"a6fa36f8-718e-40b1-befa-43a0b471c25c\"}"
   },
   {
    "kind": "path",
@@ -1100,7 +1100,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"6d31a948-9284-4547-9a10-e6f4dff78f49\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"f9b319df-ad93-4f84-9039-bfbeabbe3cfb\"}"
   },
   {
    "kind": "body",
@@ -1111,7 +1111,7 @@
    "code": "WAREHOUSE_ACCESS_INVALID",
    "leaked": [],
    "verdict": "state-first",
-   "sample": "{\"code\":\"WAREHOUSE_ACCESS_INVALID\",\"message\":\"Access is given on a dépôt, not on a truck\",\"details\":{\"warehouseIds\":[\"f3bdbff0-70c8-41cc-8ac7-829e6471ab4d\"]},\"requestId\":\"b0cc347b-2a23-49a8-b7f0-9ee5cc1867fd\"}"
+   "sample": "{\"code\":\"WAREHOUSE_ACCESS_INVALID\",\"message\":\"Access is given on a dépôt, not on a truck\",\"details\":{\"warehouseIds\":[\"6e81e976-70bc-424c-a312-7b760d57b1af\"]},\"requestId\":\"0f4894e5-2c44-4cb5-876c-bf181c9da216\"}"
   },
   {
    "kind": "path",
@@ -1122,7 +1122,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"03eca5b3-e8ad-41f7-ad33-b938ebb209b8\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"de40f610-ed2b-42ac-84f1-030d75f66777\"}"
   },
   {
    "kind": "path",
@@ -1133,7 +1133,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"6dbc573b-1bf3-4c3f-aceb-186f92b4cf02\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"eb16f2e6-ae6f-4bee-b035-e2094ae242e3\"}"
   },
   {
    "kind": "path",
@@ -1144,7 +1144,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"f9655365-14c7-4963-bcfc-37a9f2caf1ff\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"93d1a71e-7fc5-4a0b-9ef1-79e1787138d0\"}"
   },
   {
    "kind": "path",
@@ -1155,7 +1155,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"15dc12eb-c7a5-430e-a922-d7b2b0c202a7\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"98148c8a-2ee7-4af2-99aa-0ce8be1b985b\"}"
   },
   {
    "kind": "path",
@@ -1166,7 +1166,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"22277fb9-59fe-46a8-882c-124df1ca0969\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"06a7f8e2-552b-42e3-802d-8c1f0801e24c\"}"
   },
   {
    "kind": "path",
@@ -1177,7 +1177,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"6b2fea8a-c930-427b-8738-b65e244793e8\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"d2bba344-6080-49c3-9fb9-6a9f0913f91d\"}"
   },
   {
    "kind": "body",
@@ -1188,7 +1188,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"fff8e12d-cb8d-4fe1-b435-52c4f2d8c09d\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"3c646f77-40b3-42e1-aa4d-ef9edbf67ad8\"}"
   },
   {
    "kind": "query",
@@ -1364,7 +1364,7 @@
    "code": "CASH_ACCOUNT_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"8025a451-8a5d-49d1-a8b4-f9d79bb1c249\"}"
+   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"eed4a605-be85-4e52-9be1-28ab07faf44a\"}"
   },
   {
    "kind": "path",
@@ -1375,7 +1375,7 @@
    "code": "CASH_ACCOUNT_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"2195990d-b1ae-42ae-8e8f-d658dc4dc98e\"}"
+   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"8f70297f-a1fd-4932-9112-1eede1550c9d\"}"
   },
   {
    "kind": "query",
@@ -1397,7 +1397,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"69b26361-9efe-47e4-9715-42abcb0da4ec\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"94429a95-05e1-464e-a336-f66f1fdc581a\"}"
   },
   {
    "kind": "path",
@@ -1408,7 +1408,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"caf7cbe9-1f04-4690-a216-b0f4830900f6\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"a5939aa5-9631-4465-ab67-9e282a38e46d\"}"
   },
   {
    "kind": "path",
@@ -1419,7 +1419,7 @@
    "code": "WAREHOUSE_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"830bfddf-c0c5-49fa-a392-c3f321e984de\"}"
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"210cbe9c-5d92-41d2-84bf-72ca615c42eb\"}"
   },
   {
    "kind": "path",
@@ -1430,7 +1430,7 @@
    "code": "CASH_ACCOUNT_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"fcf9bb7b-75c5-4759-a1ef-7917d1141d12\"}"
+   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"68a4bcf4-84a6-4409-a339-0c8aa154ef25\"}"
   },
   {
    "kind": "body",
@@ -1441,7 +1441,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown import file\",\"details\":{\"field\":\"importFileId\"},\"requestId\":\"6a5a99d5-91aa-4728-bf04-e187f02ceaa9\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown import file\",\"details\":{\"field\":\"importFileId\"},\"requestId\":\"f55d40a1-1f2e-4a9e-a43d-3500f7dbb6ea\"}"
   },
   {
    "kind": "path",
@@ -1452,7 +1452,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Import file not found\",\"requestId\":\"fc321d82-dc92-41dd-89d8-fe67ad620946\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Import file not found\",\"requestId\":\"0e87b5f8-4d49-4567-b4ec-96851af3a5aa\"}"
   },
   {
    "kind": "body",
@@ -1463,7 +1463,7 @@
    "code": "IMPORT_FILE_NOT_OPEN",
    "leaked": [],
    "verdict": "state-first",
-   "sample": "{\"code\":\"IMPORT_FILE_NOT_OPEN\",\"message\":\"The dossier is not open\",\"details\":{\"status\":\"CLOSED\"},\"requestId\":\"81c3baf4-9053-4e76-bc60-06201c8180f3\"}"
+   "sample": "{\"code\":\"IMPORT_FILE_NOT_OPEN\",\"message\":\"The dossier is not open\",\"details\":{\"status\":\"CLOSED\"},\"requestId\":\"3eee10bc-32e1-44e4-8a15-d14b22774feb\"}"
   },
   {
    "kind": "path",
@@ -1474,7 +1474,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Import file not found\",\"requestId\":\"6df7c047-8d31-4207-8e84-e2bacba1c802\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Import file not found\",\"requestId\":\"f113e36f-fbf4-4fd8-ab78-a77dfe521889\"}"
   },
   {
    "kind": "path",
@@ -1485,7 +1485,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Import file not found\",\"requestId\":\"e070ab43-2ac8-40fb-a746-a0792afac813\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Import file not found\",\"requestId\":\"ebe8d812-9709-4619-91c7-9c136598c770\"}"
   },
   {
    "kind": "body",
@@ -1496,7 +1496,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown supplier\",\"details\":{\"field\":\"supplierId\"},\"requestId\":\"7a9c513d-474c-405b-a8bb-ac530c579c42\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown supplier\",\"details\":{\"field\":\"supplierId\"},\"requestId\":\"4795e904-e266-4456-b61e-ba7924b98b33\"}"
   },
   {
    "kind": "body",
@@ -1507,7 +1507,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown supplier\",\"details\":{\"field\":\"supplierId\"},\"requestId\":\"fa0a692e-1879-4dcd-bb66-76f33b31e57f\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown supplier\",\"details\":{\"field\":\"supplierId\"},\"requestId\":\"fc33bee7-85bb-4c37-99c8-8de017c91b64\"}"
   },
   {
    "kind": "body",
@@ -1518,7 +1518,7 @@
    "code": "SELLER_NOT_ALLOWED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"SELLER_NOT_ALLOWED\",\"message\":\"This user cannot drive a truck\",\"details\":{\"field\":\"assignedUserId\"},\"requestId\":\"271258ad-3ee2-4071-9363-15e74a5cff25\"}"
+   "sample": "{\"code\":\"SELLER_NOT_ALLOWED\",\"message\":\"This user cannot drive a truck\",\"details\":{\"field\":\"assignedUserId\"},\"requestId\":\"c5d6527c-1ca3-4b36-91b4-b110e06f7475\"}"
   },
   {
    "kind": "body",
@@ -1529,7 +1529,7 @@
    "code": "WAREHOUSE_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"3b89fee4-c681-43a8-bb92-f2b56efff10d\"}"
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"278d7911-9084-4589-9073-3324352b970c\"}"
   },
   {
    "kind": "body",
@@ -1540,7 +1540,7 @@
    "code": "WAREHOUSE_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"1f180037-a82f-453b-bf6b-7b70f5c0d112\"}"
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"bd017605-d0ac-40db-91b4-0863eabb1571\"}"
   },
   {
    "kind": "body",
@@ -1551,7 +1551,7 @@
    "code": "INVALID_PRODUCT_UNITS",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"e6559bd8-1692-4f3b-977c-7d4589f7d6b3\"},\"requestId\":\"55292848-580b-4b5d-8460-6518cfef257d\"}"
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"6d4d2f28-96d0-4aaf-a48d-55c97212f711\"},\"requestId\":\"310a58f7-3ce5-4758-bd57-e3495a37a0a4\"}"
   },
   {
    "kind": "body",
@@ -1562,7 +1562,7 @@
    "code": "INVALID_PRODUCT_UNITS",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"05858d5b-371c-48d0-b915-fea661bcdf7a\"},\"requestId\":\"d93429b3-0329-4783-b68e-d0ca99a8986a\"}"
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"8dc644c5-5cf3-4b89-847e-35f2213d1c66\"},\"requestId\":\"ddc49b1e-9913-466e-a042-e298892e2232\"}"
   },
   {
    "kind": "path",
@@ -1573,7 +1573,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Transfer not found\",\"requestId\":\"c8cdb8fe-d259-4f9e-aa5c-2316c57aab27\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Transfer not found\",\"requestId\":\"b9053c25-7081-4abe-b0aa-f8554ae69352\"}"
   },
   {
    "kind": "path",
@@ -1584,7 +1584,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Transfer not found\",\"requestId\":\"4744d229-52a7-4f15-91cc-cd8e72a52354\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Transfer not found\",\"requestId\":\"9b1a8b65-df64-40c0-b6c3-d56deda3009e\"}"
   },
   {
    "kind": "body",
@@ -1595,7 +1595,7 @@
    "code": "SELLER_NOT_ALLOWED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"SELLER_NOT_ALLOWED\",\"message\":\"This user cannot be the seller\",\"details\":{\"userId\":\"07ba22c1-39d0-4234-9eb8-c35f3dfc0891\"},\"requestId\":\"0cf3362d-40e6-43a2-8fee-7bff0a4bdac5\"}"
+   "sample": "{\"code\":\"SELLER_NOT_ALLOWED\",\"message\":\"This user cannot be the seller\",\"details\":{\"userId\":\"c88fe2a0-68b8-4fb5-9a43-247caeb986bd\"},\"requestId\":\"d496a0ce-3100-4010-9921-6836125208c3\"}"
   },
   {
    "kind": "path",
@@ -1606,7 +1606,7 @@
    "code": "ROUTE_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"ROUTE_NOT_FOUND\",\"message\":\"Route not found\",\"requestId\":\"0cddfc69-810f-404a-a8a1-b9ce8a9a8fed\"}"
+   "sample": "{\"code\":\"ROUTE_NOT_FOUND\",\"message\":\"Route not found\",\"requestId\":\"f33edd0a-353a-4381-99a2-86fa723ed1ec\"}"
   },
   {
    "kind": "body",
@@ -1617,7 +1617,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown client on the route\",\"details\":{\"field\":\"clientIds\"},\"requestId\":\"b2365165-43c5-43eb-8d10-84f0c0d17b4d\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown client on the route\",\"details\":{\"field\":\"clientIds\"},\"requestId\":\"88197cba-fa2a-4be4-bbad-117afccf4233\"}"
   },
   {
    "kind": "body",
@@ -1628,7 +1628,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown client\",\"details\":{\"field\":\"clientId\"},\"requestId\":\"f85e2923-64c7-4214-87ad-42687e8b0fbe\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown client\",\"details\":{\"field\":\"clientId\"},\"requestId\":\"963931da-36da-4de4-8fa2-ca1997c4b525\"}"
   },
   {
    "kind": "body",
@@ -1639,7 +1639,7 @@
    "code": "WAREHOUSE_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"f4373b85-a6ae-4194-b075-a4910da40b74\"}"
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"4b87d7cb-fe04-4d93-a910-2e09d90dd871\"}"
   },
   {
    "kind": "body",
@@ -1650,7 +1650,7 @@
    "code": "INVALID_PRODUCT_UNITS",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"e6559bd8-1692-4f3b-977c-7d4589f7d6b3\"},\"requestId\":\"9c5e1fc8-108d-4ab6-a498-6d6949a08795\"}"
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"6d4d2f28-96d0-4aaf-a48d-55c97212f711\"},\"requestId\":\"6a55f70f-8be1-48d5-a251-90d301e7d1db\"}"
   },
   {
    "kind": "body",
@@ -1661,7 +1661,7 @@
    "code": "INVALID_PRODUCT_UNITS",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"05858d5b-371c-48d0-b915-fea661bcdf7a\"},\"requestId\":\"d9a80988-20ad-46df-b848-81d2ba4206dc\"}"
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"8dc644c5-5cf3-4b89-847e-35f2213d1c66\"},\"requestId\":\"63432f82-a896-45c5-b186-3e0acc9cdbdd\"}"
   },
   {
    "kind": "path",
@@ -1672,7 +1672,7 @@
    "code": "ORDER_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"ORDER_NOT_FOUND\",\"message\":\"Order not found\",\"requestId\":\"74d729c7-1645-4af2-b68f-987a99a3494d\"}"
+   "sample": "{\"code\":\"ORDER_NOT_FOUND\",\"message\":\"Order not found\",\"requestId\":\"360102d2-95fd-411c-9767-890a7d57deaf\"}"
   },
   {
    "kind": "path",
@@ -1683,7 +1683,7 @@
    "code": "ORDER_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"ORDER_NOT_FOUND\",\"message\":\"Order not found\",\"requestId\":\"6296a5bc-57d0-4c9f-9ea9-a570ec8dccad\"}"
+   "sample": "{\"code\":\"ORDER_NOT_FOUND\",\"message\":\"Order not found\",\"requestId\":\"f10ba80e-8825-4ae3-a6be-037e1b4d66ef\"}"
   },
   {
    "kind": "body",
@@ -1694,7 +1694,7 @@
    "code": "ORDER_NOT_CONFIRMED",
    "leaked": [],
    "verdict": "state-first",
-   "sample": "{\"code\":\"ORDER_NOT_CONFIRMED\",\"message\":\"Only a confirmed order\",\"details\":{\"status\":\"DELIVERED\"},\"requestId\":\"0c07ed99-f0fe-4869-924a-177201885fcc\"}"
+   "sample": "{\"code\":\"ORDER_NOT_CONFIRMED\",\"message\":\"Only a confirmed order\",\"details\":{\"status\":\"DELIVERED\"},\"requestId\":\"2b4392d6-6131-446a-b008-12ebf02723ca\"}"
   },
   {
    "kind": "path",
@@ -1705,7 +1705,7 @@
    "code": "ORDER_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"ORDER_NOT_FOUND\",\"message\":\"Order not found\",\"requestId\":\"19f8b09d-81c9-497e-9b16-c60b0293f79a\"}"
+   "sample": "{\"code\":\"ORDER_NOT_FOUND\",\"message\":\"Order not found\",\"requestId\":\"99937f67-82ca-44f3-8d88-b48257f881b8\"}"
   },
   {
    "kind": "body",
@@ -1716,7 +1716,7 @@
    "code": "ORDER_ALREADY_DELIVERED",
    "leaked": [],
    "verdict": "state-first",
-   "sample": "{\"code\":\"ORDER_ALREADY_DELIVERED\",\"message\":\"Already delivered\",\"details\":{\"saleId\":\"3ff0d83a-bf95-413a-9ed4-7664760e9a57\"},\"requestId\":\"a34d2e9f-0fc1-47b1-8f57-122ee8715b3c\"}"
+   "sample": "{\"code\":\"ORDER_ALREADY_DELIVERED\",\"message\":\"Already delivered\",\"details\":{\"saleId\":\"1afbe8ba-3a4b-402e-8560-b893eb99f66e\"},\"requestId\":\"ee231bbe-02d3-4e76-ae53-258f65c2f619\"}"
   },
   {
    "kind": "body",
@@ -1727,7 +1727,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Seller not found\",\"requestId\":\"cd3b3b86-c817-4d4e-bf2a-4bc7087e2f45\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Seller not found\",\"requestId\":\"38508404-07eb-40cc-a75a-717768bed3c8\"}"
   },
   {
    "kind": "path",
@@ -1738,7 +1738,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Session not found\",\"requestId\":\"9f3548a5-052a-42ae-a1bd-10084fbc3614\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Session not found\",\"requestId\":\"5e7cbd0b-df1d-4047-b2e4-a6b65b456943\"}"
   },
   {
    "kind": "path",
@@ -1749,7 +1749,7 @@
    "code": "PRODUCT_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"346a9c8b-75c9-47b5-a2aa-2a3b31bfcf57\"}"
+   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"fd987f0b-d660-4654-85cd-7da1639b096d\"}"
   },
   {
    "kind": "body",
@@ -1760,7 +1760,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown packaging type\",\"details\":{\"field\":\"packagingTypeId\"},\"requestId\":\"9f1fcde9-b9d1-43f9-b4ba-6a3b928e004a\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown packaging type\",\"details\":{\"field\":\"packagingTypeId\"},\"requestId\":\"c3686100-e442-4319-a882-789b4d866851\"}"
   },
   {
    "kind": "body",
@@ -1771,7 +1771,7 @@
    "code": "WAREHOUSE_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"1b76ef3e-958f-43e2-950d-d59ee25014ba\"}"
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"d8b83adf-c19c-47fa-bde5-8c5072ed071f\"}"
   },
   {
    "kind": "body",
@@ -1782,7 +1782,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown packaging type\",\"details\":{\"field\":\"packagingTypeId\"},\"requestId\":\"4e6ab298-40db-45e1-a253-f2d4e6554243\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown packaging type\",\"details\":{\"field\":\"packagingTypeId\"},\"requestId\":\"6a9e487f-168b-47ee-b2dd-9b6cd9b7bd45\"}"
   },
   {
    "kind": "body",
@@ -1793,7 +1793,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"29facb5a-b5f7-47e7-825e-f7c0dfa0f50c\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"973ebefa-600c-4aac-8a84-376a02110631\"}"
   },
   {
    "kind": "body",
@@ -1804,7 +1804,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown packaging type\",\"details\":{\"field\":\"packagingTypeId\"},\"requestId\":\"233bf124-892b-4d13-88ca-e89b10e23782\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown packaging type\",\"details\":{\"field\":\"packagingTypeId\"},\"requestId\":\"3215a1d4-60dc-4902-9468-606187351fd3\"}"
   },
   {
    "kind": "path",
@@ -1815,7 +1815,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier payment not found\",\"requestId\":\"0edf437f-ffe5-4d5d-8c9f-fbe8e6cc7bdb\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier payment not found\",\"requestId\":\"7e9ee263-02f0-4cd2-a644-ad5a95a5fcc2\"}"
   },
   {
    "kind": "path",
@@ -1826,7 +1826,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payment not found\",\"requestId\":\"63dd913c-0881-45d8-8188-a1aa40500c6b\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payment not found\",\"requestId\":\"fd347b94-0bc2-4873-9e79-d32c04385b85\"}"
   },
   {
    "kind": "body",
@@ -1837,7 +1837,7 @@
    "code": "VALIDATION_FAILED",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown category\",\"details\":{\"field\":\"categoryId\"},\"requestId\":\"e8ad69b5-bcbb-47a8-ae50-a4e1db7b42b3\"}"
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown category\",\"details\":{\"field\":\"categoryId\"},\"requestId\":\"fe39d97e-d87a-43d5-8b97-9ad24d4f50bb\"}"
   },
   {
    "kind": "body",
@@ -1848,7 +1848,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Rent contract not found\",\"requestId\":\"8d9cc5ff-1778-47ac-a512-d789477f766b\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Rent contract not found\",\"requestId\":\"ac6d1789-7366-42b3-ab9d-52820b457dc4\"}"
   },
   {
    "kind": "path",
@@ -1859,7 +1859,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Expense not found\",\"requestId\":\"da9b64a1-026a-4f95-b334-a9cfffb5263c\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Expense not found\",\"requestId\":\"426fa563-1990-4071-900f-d7d4613eb26c\"}"
   },
   {
    "kind": "body",
@@ -1870,7 +1870,7 @@
    "code": "CASH_ACCOUNT_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"39867e6e-377f-4209-88ba-e613b30044be\"}"
+   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"15f8edcb-0b09-472e-9256-66effd596180\"}"
   },
   {
    "kind": "body",
@@ -1881,7 +1881,7 @@
    "code": "CASH_ACCOUNT_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"ec2832f6-574a-412b-9e49-e97607059388\"}"
+   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"2a0c12b8-eac9-48c1-bb94-8ea061eba801\"}"
   },
   {
    "kind": "path",
@@ -1892,7 +1892,7 @@
    "code": "CASH_ACCOUNT_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"7572601f-b239-4711-94aa-244e2182faba\"}"
+   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"a6730dbe-6bf8-4077-aa4a-200cc20a021a\"}"
   },
   {
    "kind": "path",
@@ -1903,7 +1903,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Purchase not found\",\"requestId\":\"ab168590-eb09-440b-a63f-94ef41dce6b0\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Purchase not found\",\"requestId\":\"f161acad-0f5d-4739-82e5-2f47f5db1e45\"}"
   },
   {
    "kind": "path",
@@ -1914,7 +1914,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Transfer not found\",\"requestId\":\"624db9ad-277a-4538-950c-ef1ec256916a\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Transfer not found\",\"requestId\":\"24a056f9-0f24-4e1d-aa8a-51984e92f536\"}"
   },
   {
    "kind": "path",
@@ -1925,7 +1925,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Plan not found\",\"requestId\":\"c68aeebe-bcce-4415-8c13-b6ecdd991e7d\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Plan not found\",\"requestId\":\"e259a5cc-10d9-4090-89ef-7ee21c752dc2\"}"
   },
   {
    "kind": "path",
@@ -1936,7 +1936,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Plan not found\",\"requestId\":\"1db103b8-0bbe-4ea9-a2bf-4f2e30dfe07a\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Plan not found\",\"requestId\":\"43c7ff2f-b3a1-432e-a7e6-0246d4d5f0ad\"}"
   },
   {
    "kind": "body",
@@ -1947,7 +1947,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Plan not found\",\"requestId\":\"89cbf81c-af6a-4bb2-a950-3ef85f854096\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Plan not found\",\"requestId\":\"f90b47b2-2994-43a2-b4c0-fbcee13d85f2\"}"
   },
   {
    "kind": "path",
@@ -1958,7 +1958,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Run not found\",\"requestId\":\"619ba4cc-4881-495c-a480-4aa34865b55f\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Run not found\",\"requestId\":\"83f4fec6-d46b-4790-bbce-017340b9639f\"}"
   },
   {
    "kind": "path",
@@ -1969,7 +1969,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Run not found\",\"requestId\":\"5e990560-7197-4cc0-895e-6eb370e8766a\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Run not found\",\"requestId\":\"f6439608-c7dc-4340-915c-48267d99feac\"}"
   },
   {
    "kind": "body",
@@ -1980,7 +1980,7 @@
    "code": "WAREHOUSE_NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"66b0d8d9-5107-4a2b-90ae-6d37fb3662d4\"}"
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"305f5f0b-507c-4894-ae3c-08b8f6a8bed4\"}"
   },
   {
    "kind": "path",
@@ -1991,7 +1991,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"dd44a6ce-ae39-46dc-9b97-742090729626\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"3f448b82-810d-4a5d-ada5-1fa0f21b3db9\"}"
   },
   {
    "kind": "path",
@@ -2002,7 +2002,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"92e7d98e-ada9-49ce-b20f-464b253cd0f8\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"836ff2e6-9856-407e-b030-770d0ca35eaf\"}"
   },
   {
    "kind": "body",
@@ -2013,7 +2013,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"475e6caf-c2c6-4015-8151-081e78e0e778\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"e22805cf-2dc3-4a68-bd84-45bfb9a3d019\"}"
   },
   {
    "kind": "path",
@@ -2024,7 +2024,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Leave request not found\",\"requestId\":\"898619a6-fe1a-47b0-8df5-5c990d64bdf2\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Leave request not found\",\"requestId\":\"5ee04a86-42e9-47b7-b602-3e9bf63166db\"}"
   },
   {
    "kind": "path",
@@ -2035,7 +2035,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"b30c77d8-ff34-433f-8354-ff35cfbc2706\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"75d004ad-8d1c-430e-a3a9-4b085842b543\"}"
   },
   {
    "kind": "body",
@@ -2046,7 +2046,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"2308ea79-68a5-4669-97ba-b67180b9e283\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"bf457e76-653f-4393-aab7-94ee329cdb96\"}"
   },
   {
    "kind": "path",
@@ -2057,7 +2057,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"05ad992e-c5e6-4f4e-a8af-907cec52cf87\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"f76b1a31-7a8c-4e3e-8ddc-188d78f9de9f\"}"
   },
   {
    "kind": "path",
@@ -2068,7 +2068,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payroll run not found\",\"requestId\":\"9adc2d46-83d4-4c66-ac19-742160f5ce40\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payroll run not found\",\"requestId\":\"f143aedf-eb4a-4438-abea-170bd3cc1b6f\"}"
   },
   {
    "kind": "path",
@@ -2079,7 +2079,7 @@
    "code": "NOT_FOUND",
    "leaked": [],
    "verdict": "refused",
-   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payroll run not found\",\"requestId\":\"b4b6c6e0-3f65-41ff-acd1-85cbc325ea4b\"}"
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payroll run not found\",\"requestId\":\"7bace950-3257-4d91-906a-0dc48eb0c1de\"}"
   }
  ],
  "brute": {

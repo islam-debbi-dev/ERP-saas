@@ -1,9 +1,1 @@
-owner password: …ercelAI","OpenAI","Anthropic_AI","Google_GenAI","Mistral","Groq","TogetherAI","TypeSafe","PostgresJs","Neon","Firebase","McpServer","SpanStreaming"],"type":"array"},"http.request.body.data":{"value":"{\"identifier\":\"secmwgfv5dk2@audit.local\",\"password\":\"<OWNER PASSWORD>
-
-refresh cookie: …protocol.name":{"value":"http","type":"string"},"network.protocol.version":{"value":"1.1","type":"string"},"network.transport":{"value":"tcp","type":"string"},"http.request.body.size":{"value":0,"type":"integer"},"http.request.header.cookie":{"value":["erp_rt=<REFRESH COOKIE>
-
-cheque number: …h-mode":"cors","user-agent":"node","accept-encoding":"gzip, deflate","content-length":"178"},"method":"POST","url":"http://localhost:3013/payments","cookies":{},"data":"{\"clientId\":\"4bc5af03-9283-401f-a992-09be29a24366\",\"mode\":\"CHEQUE\",\"reference\":\"<CHEQUE NUMBER>
-
-cheque bank: …ode","accept-encoding":"gzip, deflate","content-length":"178"},"method":"POST","url":"http://localhost:3013/payments","cookies":{},"data":"{\"clientId\":\"4bc5af03-9283-401f-a992-09be29a24366\",\"mode\":\"CHEQUE\",\"reference\":\"<CHEQUE NUMBER>\",\"bank\":\"<CHEQUE BANK>
-
-salary amount: …tral","Groq","TogetherAI","TypeSafe","PostgresJs","Neon","Firebase","McpServer","SpanStreaming"],"type":"array"},"http.request.body.data":{"value":"{\"amount\":\"9999999999999999.99\",\"payType\":\"MONTHLY\",\"effectiveFrom\":\"2025-02-01\",\"note\":\"salaire <SALARY AMOUNT>
+nothing found

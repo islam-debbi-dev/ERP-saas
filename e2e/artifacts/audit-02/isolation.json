@@ -15,133 +15,133 @@
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 9,
+      "durationMs": 11,
       "name": "a draft sale cannot take another company's product",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 5,
+      "durationMs": 6,
       "name": "a draft sale cannot take another company's dépôt",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 12,
+      "durationMs": 18,
       "name": "a facture cannot group another company's BL with one's own",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 14,
+      "durationMs": 18,
       "name": "a return cannot name another company's sale line",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 19,
+      "durationMs": 10,
       "name": "a draft BR cannot take another company's supplier",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 5,
+      "durationMs": 11,
       "name": "a draft BR cannot take another company's product",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 5,
+      "durationMs": 10,
       "name": "a draft BR cannot join another company's import dossier",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 11,
+      "durationMs": 21,
       "name": "a règlement cannot leave from another company's caisse",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 11,
+      "durationMs": 20,
       "name": "an import cost cannot name another company's supplier",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 8,
+      "durationMs": 9,
       "name": "another company's BR cannot be attached to one's dossier",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 5,
+      "durationMs": 12,
       "name": "a brand cannot point at another company's supplier",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 6,
+      "durationMs": 15,
       "name": "an inventory cannot count another company's product",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 5,
+      "durationMs": 12,
       "name": "a dépôt cannot be limited to another company's brand",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 5,
+      "durationMs": 11,
       "name": "a dépôt cannot be limited to another company's category",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 5,
+      "durationMs": 13,
       "name": "a user cannot be given access to another company's dépôt",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 5,
+      "durationMs": 12,
       "name": "an order cannot be given to another company's livreur",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 12,
+      "durationMs": 16,
       "name": "a delivery cannot name another company's order line",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 10,
+      "durationMs": 14,
       "name": "a dépense cannot leave from another company's caisse",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 6,
+      "durationMs": 17,
       "name": "a payroll draft cannot take a line for another company's employee",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 12,
+      "durationMs": 28,
       "name": "an avance cannot leave from another company's caisse",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 14,
+      "durationMs": 31,
       "name": "salaries cannot be paid from another company's caisse",
       "status": "PASS"
     },
     {
       "area": "B1. Tenant isolation: a foreign key in the body of a fresh draft",
-      "durationMs": 11,
+      "durationMs": 29,
       "name": "a salary payment cannot name another company's employee",
       "status": "PASS"
     },
@@ -159,7 +159,7 @@
     },
     {
       "area": "B1. Tenant isolation: verdict",
-      "durationMs": 0,
+      "durationMs": 1,
       "name": "no probe answers 5xx",
       "status": "PASS"
     },
@@ -177,7 +177,7 @@
     },
     {
       "area": "B1. Tenant isolation: verdict",
-      "durationMs": 67,
+      "durationMs": 75,
       "name": "no foreign key of the database joins two tenants",
       "status": "PASS"
     },

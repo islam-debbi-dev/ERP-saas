@@ -1,6 +1,6 @@
 // Server-side rendering errors → Sentry (runtime env: SENTRY_DSN, APP_ENV, SENTRY_RELEASE).
 import * as Sentry from '@sentry/nextjs';
-import { scrubPosition } from '@erp/shared';
+import { scrubSentry } from '@erp/shared';
 
 export function register(): void {
   const dsn = process.env['SENTRY_DSN'];
@@ -10,10 +10,14 @@ export function register(): void {
     environment: process.env['APP_ENV'] ?? 'production',
     release: process.env['SENTRY_RELEASE'] || undefined,
     tracesSampleRate: 0.1,
+    // The body of an incoming request is never read for Sentry (audit 02, B-2).
+    integrations: [Sentry.httpIntegration({ maxRequestBodySize: 'none' })],
     // Same scrub as the browser and the API: no position leaves for Sentry (phase 35).
-    beforeBreadcrumb: scrubPosition,
-    beforeSend: scrubPosition,
-    beforeSendSpan: scrubPosition,
+    // No request body, cookie or one-time link token either (audit 02, B-2).
+    beforeBreadcrumb: scrubSentry,
+    beforeSend: scrubSentry,
+    beforeSendTransaction: scrubSentry,
+    beforeSendSpan: scrubSentry,
   });
 }
 

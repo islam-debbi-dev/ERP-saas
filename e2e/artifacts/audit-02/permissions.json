@@ -1,8 +1,8 @@
 {
   "totals": {
     "total": 14,
-    "passed": 9,
-    "failed": 3,
+    "passed": 10,
+    "failed": 2,
     "blocked": 0,
     "info": 2
   },
@@ -45,48 +45,47 @@
     },
     {
       "area": "B2. Permissions: every route a role must not reach answers 403",
-      "durationMs": 48,
+      "durationMs": 57,
       "name": "a permission revoked from one user closes its routes at once (CLIENTS_VIEW, SALES_VIEW)",
       "status": "PASS"
     },
     {
       "area": "B2. Permissions: every route a role must not reach answers 403",
-      "durationMs": 9,
+      "durationMs": 12,
       "name": "a MANAGER cannot grant a permission he does not hold, nor edit the owner",
       "status": "PASS"
     },
     {
       "area": "B2. Permissions: every route a role must not reach answers 403",
-      "durationMs": 144,
+      "durationMs": 130,
       "name": "a user granted USERS_MANAGE cannot give himself or another more than he has",
       "status": "PASS"
     },
     {
       "area": "B2. Permissions: every route a role must not reach answers 403",
-      "durationMs": 1068,
+      "durationMs": 171,
       "name": "a SUPERVISOR granted USERS_MANAGE cannot create or take over an account with more rights than his own",
-      "status": "FAIL",
-      "evidence": "the supervisor reads /reports/margin: 403; invite a MANAGER with a password he chose: 201; logged in as that manager, /reports/margin: 200; promote a LIVREUR to MANAGER: 200; reset the password of the manager who holds SALARY_VIEW: 200; logged in as him, /employees (salaries): 200"
+      "status": "PASS"
     },
     {
       "area": "B2. Permissions: cost, margin and salary figures in what a role can read",
       "durationMs": 0,
-      "name": "7135 answers read as a non-owner role in 8 companies",
+      "name": "6790 answers read as a non-owner role in 8 companies",
       "status": "INFO"
     },
     {
       "area": "B2. Permissions: cost, margin and salary figures in what a role can read",
-      "durationMs": 2,
+      "durationMs": 1,
       "name": "no cost or margin figure is shown to a role without VIEW_COST_AND_MARGIN",
       "status": "FAIL",
       "evidence": "1 route(s): GET /purchases/:id → lines.unitCost [SELLER, STOREKEEPER, SUPERVISOR, LIVREUR]"
     },
     {
       "area": "B2. Permissions: cost, margin and salary figures in what a role can read",
-      "durationMs": 2,
+      "durationMs": 1,
       "name": "no supplier balance is shown to a role without SUPPLIERS_ACCOUNT",
       "status": "FAIL",
-      "evidence": "SELLER: GET /suppliers items.balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balance, GET /suppliers/:id balanceCurrency ; STOREKEEPER: GET /suppliers items.balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balance, GET /suppliers/:id balanceCurrency ; SUPERVISOR: GET /suppliers items.balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balance, GET /suppliers/:id balanceCurrency ; LIVREUR: GET /suppliers items.balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balance, GET /suppliers/:id balanceCurrency"
+      "evidence": "SELLER: GET /suppliers items.balance, GET /suppliers/:id balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balanceCurrency ; STOREKEEPER: GET /suppliers items.balance, GET /suppliers/:id balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balanceCurrency ; SUPERVISOR: GET /suppliers items.balance, GET /suppliers/:id balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balanceCurrency ; LIVREUR: GET /suppliers items.balance, GET /suppliers/:id balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balanceCurrency"
     },
     {
       "area": "B2. Permissions: cost, margin and salary figures in what a role can read",

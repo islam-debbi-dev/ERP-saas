@@ -1,6 +1,6 @@
 # attacks
 
-Total 48 · PASS 44 · FAIL 2 · BLOCKED 0
+Total 48 · PASS 45 · FAIL 1 · BLOCKED 0
 
 | Area | Check | Result | Expected | Actual |
 |---|---|---|---|---|
@@ -24,7 +24,7 @@ Total 48 · PASS 44 · FAIL 2 · BLOCKED 0
 | C. Permissions (phase 11) | a SELLER cannot change the price of a line | PASS |  |  |
 | C. Permissions (phase 11) | a SELLER does not see the costs and the margins | PASS |  |  |
 | D. Money precision | an amount with 3 decimals is refused | PASS |  |  |
-| D. Money precision | an amount over Decimal(14,2) is refused with a clean error | FAIL | HTTP 400 VALIDATION_FAILED (the amount does not fit in Decimal(14,2)) | HTTP 500 INTERNAL_ERROR {"code":"INTERNAL_ERROR","message":"Internal server error","requestId":"12b4c48c-71e2-47f6-ba93-6ef18c35d64b"} |
+| D. Money precision | an amount over Decimal(14,2) is refused with a clean error | PASS | HTTP 400 VALIDATION_FAILED (the amount does not fit in Decimal(14,2)) |  |
 | D. Money precision | the totals are exact on a non-round price | PASS |  |  |
 | D. Money precision | a quantity with more than 3 decimals is refused | PASS |  |  |
 | E. Concurrency | three concurrent payments do not lose an update | PASS |  |  |
@@ -35,8 +35,8 @@ Total 48 · PASS 44 · FAIL 2 · BLOCKED 0
 | F. Authentication | no token at all is refused | PASS |  |  |
 | F. Authentication | a refresh token reused after the grace window closes the session | PASS |  |  |
 | F. Authentication | ten logins from one IP lock out a valid user of another account | PASS |  |  |
-| F. Authentication | the login rate limit is bypassed with a forged X-Forwarded-For | PASS |  |  |
-| F. Authentication | the forged IP is what the audit trail records | PASS |  |  |
+| F. Authentication | a forged X-Forwarded-For does not bypass the login rate limit | PASS |  |  |
+| F. Authentication | a forged X-Forwarded-For is not what the audit trail records | PASS |  |  |
 | G. State machine and optimistic locking | a sale cannot be validated twice | PASS |  |  |
 | G. State machine and optimistic locking | a stale version is refused | PASS |  |  |
 | G. State machine and optimistic locking | more than sold cannot be returned | PASS |  |  |
@@ -49,6 +49,6 @@ Total 48 · PASS 44 · FAIL 2 · BLOCKED 0
 | H. Injection and mass assignment | the client balance cannot be written directly | PASS |  |  |
 | H. Injection and mass assignment | info: the API stores the payload as data, the web must escape it | INFO | the API stores the text; React escapes it on render | designation=<script>alert(1)</script> |
 | H. Injection and mass assignment | a script tag in a designation is stored as data | PASS |  |  |
-| I. Audit trail and timestamps | the rows of one operation share the same createdAt | FAIL |  | 5 rows of one transaction carry 5 different createdAt values: 2026-11-14 05:35:48.663+00, 2026-11-14 05:35:48.69+00, 2026-11-14 05:35:48.694+00, 2026-11-14 05:35:48.697+00, 2026-11-14 05:35:48.7+00 |
-| I. Audit trail and timestamps | info: the createdAt of the audit rows of one transaction | INFO | one timestamp for the whole transaction (the schema says so) | 2 rows, 2 timestamps, xmin=105490/105492 |
+| I. Audit trail and timestamps | the rows of one operation share the same createdAt | FAIL |  | 5 rows of one transaction carry 5 different createdAt values: 2026-11-14 18:47:03.926+00, 2026-11-14 18:47:03.983+00, 2026-11-14 18:47:03.99+00, 2026-11-14 18:47:03.995+00, 2026-11-14 18:47:04+00 |
+| I. Audit trail and timestamps | info: the createdAt of the audit rows of one transaction | INFO | one timestamp for the whole transaction (the schema says so) | 2 rows, 2 timestamps, xmin=129702/129704 |
 | I. Audit trail and timestamps | the audit rows of one operation keep the transaction order | PASS |  |  |

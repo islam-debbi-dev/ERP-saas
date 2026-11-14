@@ -9,7 +9,7 @@ import {
 } from '../enums';
 import { parseDA } from '../money';
 import { type RentAlert, type RentSlotStatus } from '../rent';
-import { normalizeDecimal } from './common';
+import { normalizeDecimal, fitsMoney } from './common';
 
 const id = z.uuid();
 const optionalText = (max: number) =>
@@ -27,7 +27,7 @@ const positiveAmount = z
   .string()
   .refine((v) => {
     const parsed = parseDA(v);
-    return parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 2 && parsed.lt(1e12);
+    return parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 2 && fitsMoney(parsed);
   }, 'invalid_amount')
   .transform(normalizeDecimal);
 

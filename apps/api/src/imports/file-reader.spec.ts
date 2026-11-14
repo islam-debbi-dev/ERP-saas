@@ -25,6 +25,12 @@ describe('parseCsv', () => {
     expect(rows[2]).toEqual({ rowNumber: 4, cells: ['4', null, '6'] });
   });
 
+  it('refuses a file of separators only: millions of cells in a few MB', () => {
+    expect(() => parseCsv(';'.repeat(1_000_000))).toThrow(
+      expect.objectContaining({ status: 400 }) as Error,
+    );
+  });
+
   it('refuses an unclosed quote', () => {
     expect(() => parseCsv('a;b\n"open;2')).toThrow(AppException);
   });

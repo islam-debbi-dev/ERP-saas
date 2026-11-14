@@ -15,7 +15,7 @@ import {
   PAYROLL_DAY_DIVISORS,
   type PayDaySummary,
 } from '../payroll';
-import { normalizeDecimal } from './common';
+import { normalizeDecimal, fitsMoney } from './common';
 
 const id = z.uuid();
 const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'invalid_date');
@@ -34,9 +34,7 @@ const amount = (test: (v: NonNullable<ReturnType<typeof parseDA>>) => boolean) =
     .string()
     .refine((v) => {
       const parsed = parseDA(v);
-      return (
-        parsed !== null && test(parsed) && parsed.decimalPlaces() <= 2 && parsed.abs().lt(1e12)
-      );
+      return parsed !== null && test(parsed) && parsed.decimalPlaces() <= 2 && fitsMoney(parsed);
     }, 'invalid_amount')
     .transform(normalizeDecimal);
 const positiveAmount = amount((v) => v.gt(0));

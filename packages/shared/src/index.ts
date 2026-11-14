@@ -13,6 +13,7 @@ export * from './periods';
 export * from './permissions';
 export * from './phone';
 export * from './position-privacy';
+export * from './sentry-privacy';
 export * from './pricing';
 export * from './quantity';
 export * from './schemas';

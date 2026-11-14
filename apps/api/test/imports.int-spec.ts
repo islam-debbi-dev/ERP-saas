@@ -21,6 +21,7 @@ import {
   type TenantCatalog,
   type TestApp,
 } from './helpers';
+import { xlsxBomb } from './xlsx-fixture';
 
 type Row = (string | number | null)[];
 
@@ -362,6 +363,24 @@ describe('imports', () => {
   it('refuses files that are not spreadsheets', async () => {
     const res = await preview(a, 'CLIENTS', Buffer.from('%PDF-1.7'), { name: 'x.pdf' }).expect(400);
     expect(errorOf(res).code).toBe(ErrorCode.IMPORT_FILE_INVALID);
+  });
+
+  // Audit 02, B-1: this file took the process down (heap out of memory) from a signup.
+  it('a 1 MB xlsx that inflates to 250 MB answers 400 and the API stays up', async () => {
+    const bomb = xlsxBomb();
+    expect(bomb.length).toBeLessThan(1.5 * 1024 * 1024);
+    const res = await preview(a, 'CLIENTS', bomb, { name: 'bomb.xlsx' }).expect(400);
+    expect(errorOf(res).code).toBe(ErrorCode.IMPORT_TOO_MANY_ROWS);
+    await t.http().get('/health').expect(200);
+    const ok = await preview(
+      a,
+      'CLIENTS',
+      await xlsx([
+        ['Code', 'Nom'],
+        ['B1', 'Après la bombe'],
+      ]),
+    );
+    expect(ok.status).toBe(200);
   });
 
   it('keeps tenants apart', async () => {

@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import { parseDA } from '../money';
-import { qty } from '../quantity';
 import {
   amountString,
   normalizeDecimal,
   percentString,
   quantityString,
   searchText,
+  fitsQuantity,
 } from './common';
 
 const name = (max: number) => z.string().trim().min(1).max(max);
@@ -114,7 +114,7 @@ const productFields = {
     .string()
     .refine((v) => {
       const parsed = parseDA(v);
-      return parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 4;
+      return parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 4 && fitsQuantity(parsed);
     }, 'invalid_quantity')
     .transform(normalizeDecimal)
     .nullable()
@@ -141,7 +141,10 @@ function checkProduct(p: ProductShape, ctx: z.RefinementCtx): void {
 
   const base = p.units.find((u) => u.unitId === p.baseUnitId);
   if (!base) issue(PRODUCT_RULES.baseUnitMissing, ['units']);
-  else if (!qty(base.factorToBase).eq(1)) issue(PRODUCT_RULES.baseFactorNotOne, ['units']);
+  // A factor that is not a number already has its own issue; `qty('')` would throw (a 500).
+  else if (parseDA(base.factorToBase)?.eq(1) === false) {
+    issue(PRODUCT_RULES.baseFactorNotOne, ['units']);
+  }
 
   const unitIds = new Set<string>();
   const barcodes = new Set<string>();

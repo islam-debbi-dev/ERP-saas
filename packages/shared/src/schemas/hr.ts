@@ -20,7 +20,7 @@ import {
 } from '../enums';
 import { type MonthCounts } from '../attendance';
 import { parseDA } from '../money';
-import { normalizeDecimal, searchText } from './common';
+import { normalizeDecimal, searchText, fitsMoney } from './common';
 import { geoInputSchema } from './geo';
 
 const id = z.uuid();
@@ -39,7 +39,7 @@ const positiveAmount = z
   .string()
   .refine((v) => {
     const parsed = parseDA(v);
-    return parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 2 && parsed.lt(1e12);
+    return parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 2 && fitsMoney(parsed);
   }, 'invalid_amount')
   .transform(normalizeDecimal);
 

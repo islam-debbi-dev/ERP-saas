@@ -9,91 +9,91 @@
   "results": [
     {
       "area": "database invariants",
-      "durationMs": 32,
+      "durationMs": 25,
       "name": "stock_equals_ledger",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 2,
+      "durationMs": 1,
       "name": "stock_products_missing_cache",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 4,
+      "durationMs": 3,
       "name": "warehouse_sum_equals_product",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 3,
+      "durationMs": 1,
       "name": "warehouse_stock_equals_ledger",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 2,
+      "durationMs": 1,
       "name": "stock_balance_chain",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 4,
+      "durationMs": 7,
       "name": "client_balance_equals_ledger",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 2,
+      "durationMs": 4,
       "name": "supplier_balance_equals_ledger",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 1,
+      "durationMs": 0,
       "name": "suppliers_missing_balance",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 2,
+      "durationMs": 1,
       "name": "clients_missing_balance",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 5,
+      "durationMs": 3,
       "name": "employee_balances_equal_ledgers",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 35,
+      "durationMs": 70,
       "name": "document_numbers_contiguous",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 4,
+      "durationMs": 3,
       "name": "document_numbers_bad_format",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 7,
+      "durationMs": 6,
       "name": "document_sequence_matches_usage",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 8,
+      "durationMs": 7,
       "name": "ledger_tables_have_no_updated_at",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 4,
+      "durationMs": 3,
       "name": "money_columns_are_numeric",
       "status": "PASS"
     },
@@ -117,22 +117,22 @@
     },
     {
       "area": "database invariants",
-      "durationMs": 2,
+      "durationMs": 1,
       "name": "deleted_at_only_on_master_data",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 3,
+      "durationMs": 18,
       "name": "validated_sale_has_ledger_and_audit",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 6,
+      "durationMs": 11,
       "name": "sale_operation_rows_share_created_at",
       "status": "FAIL",
-      "evidence": "205 violation(s): [{\"id\":\"d3028e4f-c88c-4b24-aeff-b09c0dc8871e\",\"number\":\"BL-2026-000001\",\"tenantId\":\"54d387a8-c3c2-448c-af3a-804f867b26c6\",\"movement_at\":\"2026-11-13T22:50:57.735Z\",\"ledger_at\":\"2026-11-13T22:50:57.743Z\",\"audit_at\":\"2026-11-13T22:50:57.856Z\"},{\"id\":\"d3028e4f-c88c-4b24-aeff-b09c0dc8871e\",\"number\":\"BL-2026-000001\",\"tenantId\":\"54d387a8-c3c2-448c-af3a-804f867b26c6\",\"movement_at\":\"2026-11-13T22:50:57.735Z\",\"ledger_at\":\"2026-11-13T22:50:57.757Z\",\"audit_at\":\"2026-11-13T22:50:57.856Z\"},{\"id\":\"14eed306-d40c-4a05-8e23-ca5521cbfc1e\",\"number\":\"BL-2026-000002\",\"tenantId\":\"54d387a8-c3c2-448c-af3a-804f867b26c6\",\"movement_at\":\"2026-11-13T22:50:58.418Z\",\"ledger_at\":\"2026-11-13T22:50:58.426Z\",\"audit_at\":\"2026-11-13T22:50:58.486Z\"},{\"id\":\"14eed306-d40c-4a05-8e23-ca5521cbfc1e\",\"number\":\"BL-2026-000002\",\"tenantId\":\"54d387a8-c3c2-448c-af3a-804f867b26c6\",\"movement_at\":\"2026-11-13T22:50:58.418Z\",\"ledger_at\":\"2026-11-13T22:50:58.428Z\",\"audit_at\":\"2026-11-13T22:50:58.486Z\"},{\"id\":\"3adcccb3-f6e7-4570-bbe1-e85c6b9ea3c8\",\"number\":\"BL-2026-000001\",\"tenantId\":\"df9337d0-a498-45ca-8592-d54d66f5d329\",\"movement_at\":\"2026-11-13T22:52:41.478Z\",\"ledger_at\":\"2026-11-13T22:52:41.489Z\",\"audit_at\":\"2026-11-13T22:52:41.844Z\"}]"
+      "evidence": "458 violation(s): [{\"id\":\"d3028e4f-c88c-4b24-aeff-b09c0dc8871e\",\"number\":\"BL-2026-000001\",\"tenantId\":\"54d387a8-c3c2-448c-af3a-804f867b26c6\",\"movement_at\":\"2026-11-13T22:50:57.735Z\",\"ledger_at\":\"2026-11-13T22:50:57.743Z\",\"audit_at\":\"2026-11-13T22:50:57.856Z\"},{\"id\":\"d3028e4f-c88c-4b24-aeff-b09c0dc8871e\",\"number\":\"BL-2026-000001\",\"tenantId\":\"54d387a8-c3c2-448c-af3a-804f867b26c6\",\"movement_at\":\"2026-11-13T22:50:57.735Z\",\"ledger_at\":\"2026-11-13T22:50:57.757Z\",\"audit_at\":\"2026-11-13T22:50:57.856Z\"},{\"id\":\"14eed306-d40c-4a05-8e23-ca5521cbfc1e\",\"number\":\"BL-2026-000002\",\"tenantId\":\"54d387a8-c3c2-448c-af3a-804f867b26c6\",\"movement_at\":\"2026-11-13T22:50:58.418Z\",\"ledger_at\":\"2026-11-13T22:50:58.426Z\",\"audit_at\":\"2026-11-13T22:50:58.486Z\"},{\"id\":\"14eed306-d40c-4a05-8e23-ca5521cbfc1e\",\"number\":\"BL-2026-000002\",\"tenantId\":\"54d387a8-c3c2-448c-af3a-804f867b26c6\",\"movement_at\":\"2026-11-13T22:50:58.418Z\",\"ledger_at\":\"2026-11-13T22:50:58.428Z\",\"audit_at\":\"2026-11-13T22:50:58.486Z\"},{\"id\":\"3adcccb3-f6e7-4570-bbe1-e85c6b9ea3c8\",\"number\":\"BL-2026-000001\",\"tenantId\":\"df9337d0-a498-45ca-8592-d54d66f5d329\",\"movement_at\":\"2026-11-13T22:52:41.478Z\",\"ledger_at\":\"2026-11-13T22:52:41.489Z\",\"audit_at\":\"2026-11-13T22:52:41.844Z\"}]"
     },
     {
       "area": "database invariants",
@@ -142,7 +142,7 @@
     },
     {
       "area": "database invariants",
-      "durationMs": 1,
+      "durationMs": 2,
       "name": "validated_payment_has_ledger_and_audit",
       "status": "PASS"
     },
@@ -190,26 +190,26 @@
     },
     {
       "area": "database invariants",
-      "durationMs": 1,
+      "durationMs": 2,
       "name": "ledger_tables_are_append_only",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 3,
+      "durationMs": 2,
       "name": "ledger_like_tables_without_append_only_trigger",
       "status": "FAIL",
       "evidence": "1 violation(s): [{\"table_name\":\"payment_allocations\"}]"
     },
     {
       "area": "database invariants",
-      "durationMs": 2,
+      "durationMs": 3,
       "name": "tenant_tables_without_rls",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 7,
+      "durationMs": 8,
       "name": "rls_policies_not_bound_to_the_tenant",
       "status": "PASS"
     },
@@ -221,7 +221,7 @@
     },
     {
       "area": "database invariants",
-      "durationMs": 3,
+      "durationMs": 2,
       "name": "float_columns",
       "status": "PASS"
     },
@@ -233,7 +233,7 @@
     },
     {
       "area": "database invariants",
-      "durationMs": 17,
+      "durationMs": 15,
       "name": "money_named_columns_outside_14_2",
       "status": "PASS"
     },
@@ -245,31 +245,31 @@
     },
     {
       "area": "database invariants",
-      "durationMs": 1,
+      "durationMs": 2,
       "name": "sale_totals_equal_their_lines",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 5,
+      "durationMs": 22,
       "name": "sale_stock_movements_equal_their_lines",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 0,
+      "durationMs": 1,
       "name": "stock_transfer_movements_sum_to_zero",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 1,
+      "durationMs": 2,
       "name": "negative_stock_while_blocked",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 0,
+      "durationMs": 1,
       "name": "cash_transfer_movements_sum_to_zero",
       "status": "PASS"
     },
@@ -287,7 +287,7 @@
     },
     {
       "area": "database invariants",
-      "durationMs": 0,
+      "durationMs": 1,
       "name": "payroll_paid_more_than_due",
       "status": "PASS"
     },
@@ -299,7 +299,7 @@
     },
     {
       "area": "database invariants",
-      "durationMs": 0,
+      "durationMs": 1,
       "name": "salary_posted_twice",
       "status": "PASS"
     },
@@ -311,19 +311,19 @@
     },
     {
       "area": "database invariants",
-      "durationMs": 1,
+      "durationMs": 3,
       "name": "idempotency_keys_used_twice",
       "status": "PASS"
     },
     {
       "area": "database invariants",
-      "durationMs": 3,
+      "durationMs": 4,
       "name": "rows_pointing_at_another_tenant",
       "status": "PASS"
     },
     {
       "area": "append-only ledgers (live probe, rolled back)",
-      "durationMs": 2,
+      "durationMs": 3,
       "name": "stock_movements: UPDATE of an existing row is refused",
       "status": "PASS"
     },
@@ -347,7 +347,7 @@
     },
     {
       "area": "append-only ledgers (live probe, rolled back)",
-      "durationMs": 0,
+      "durationMs": 2,
       "name": "supplier_ledger_entries: UPDATE of an existing row is refused",
       "status": "PASS"
     },
@@ -359,7 +359,7 @@
     },
     {
       "area": "append-only ledgers (live probe, rolled back)",
-      "durationMs": 1,
+      "durationMs": 2,
       "name": "employee_ledger_entries: UPDATE of an existing row is refused",
       "status": "PASS"
     },
@@ -371,7 +371,7 @@
     },
     {
       "area": "append-only ledgers (live probe, rolled back)",
-      "durationMs": 1,
+      "durationMs": 2,
       "name": "cash_movements: UPDATE of an existing row is refused",
       "status": "PASS"
     },
@@ -383,7 +383,7 @@
     },
     {
       "area": "append-only ledgers (live probe, rolled back)",
-      "durationMs": 1,
+      "durationMs": 2,
       "name": "leave_entries: UPDATE of an existing row is refused",
       "status": "PASS"
     },
@@ -395,13 +395,13 @@
     },
     {
       "area": "append-only ledgers (live probe, rolled back)",
-      "durationMs": 0,
+      "durationMs": 1,
       "name": "client_packaging_entries: UPDATE of an existing row is refused",
       "status": "PASS"
     },
     {
       "area": "append-only ledgers (live probe, rolled back)",
-      "durationMs": 0,
+      "durationMs": 2,
       "name": "client_packaging_entries: DELETE of an existing row is refused",
       "status": "PASS"
     },
@@ -419,7 +419,7 @@
     },
     {
       "area": "append-only ledgers (live probe, rolled back)",
-      "durationMs": 1,
+      "durationMs": 2,
       "name": "attendance_events: UPDATE of an existing row is refused",
       "status": "PASS"
     },

@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import * as argon2 from 'argon2';
 import {
   Activity,
   type ApiError,
   type AuthResponse,
   ErrorCode,
   type InventoryDto,
+  type InviteResultDto,
   type ProductDto,
   type PurchaseDto,
   type SaleResultDto,
@@ -21,7 +21,6 @@ import {
 import { tenantContext } from '../src/common/tenant-context';
 import { RECONCILE_CHECKS } from '../src/reconcile/reconcile-sql';
 import {
-  asTenant,
   bearer,
   catalogOf,
   createTestApp,
@@ -138,25 +137,40 @@ describe('warehouses and vehicle stock (phase 15)', () => {
     return { id, piece, carton };
   }
 
+  /**
+   * A seller as a company really gets one: invited by the owner through the API, so he has
+   * the dépôt access an invitation gives (audit 02, A-1: a seller inserted in the database
+   * has none, and hid that his sales left from the dépôt principal).
+   */
   const seller = async (who: RegisteredTenant) => {
     const email = uniqueEmail('vendeur');
-    const user = await asTenant(who.tenantId, async () =>
-      t.prisma.db.user.create({
-        data: {
-          tenantId: who.tenantId,
-          email,
-          passwordHash: await argon2.hash('Password123!'),
-          fullName: `Vendeur ${++seq}`,
-          role: 'SELLER',
-        },
-      }),
-    );
-    const login = await t
+    const invited = (
+      await as(who)
+        .post(
+          '/users/invite',
+          {
+            fullName: `Vendeur ${++seq}`,
+            email,
+            role: 'SELLER',
+            mode: 'PASSWORD',
+            password: 'Password123!',
+          },
+          null,
+        )
+        .expect(201)
+    ).body as InviteResultDto;
+    // One login only: the suite makes five sellers and the limiter allows ten logins a
+    // minute. Changing the password keeps the session it is changed from.
+    const login = (
+      await t.http().post('/auth/login').send({ email, password: 'Password123!' }).expect(200)
+    ).body as AuthResponse;
+    await t
       .http()
-      .post('/auth/login')
-      .send({ email, password: 'Password123!' })
+      .post('/auth/password')
+      .set(...bearer(login.accessToken))
+      .send({ currentPassword: 'Password123!', newPassword: 'Password456!' })
       .expect(200);
-    return { id: user.id, auth: login.body as AuthResponse };
+    return { id: invited.user.id, auth: login };
   };
 
   const warehouses = async (who: Who) =>

@@ -6742,7 +6742,7 @@
    "keys": [
     "lines[].unitCost"
    ],
-   "path": "/purchases/53fce75c-8e98-465a-b760-48ea9e39c75e"
+   "path": "/purchases/eb6360aa-c773-4f76-a183-29083161619b"
   },
   {
    "company": "core",
@@ -6752,7 +6752,7 @@
    "keys": [
     "lines[].unitCost"
    ],
-   "path": "/purchases/53fce75c-8e98-465a-b760-48ea9e39c75e"
+   "path": "/purchases/eb6360aa-c773-4f76-a183-29083161619b"
   },
   {
    "company": "core",
@@ -6762,7 +6762,7 @@
    "keys": [
     "lines[].unitCost"
    ],
-   "path": "/purchases/53fce75c-8e98-465a-b760-48ea9e39c75e"
+   "path": "/purchases/eb6360aa-c773-4f76-a183-29083161619b"
   },
   {
    "company": "core",
@@ -6772,87 +6772,7 @@
    "keys": [
     "lines[].unitCost"
    ],
-   "path": "/purchases/53fce75c-8e98-465a-b760-48ea9e39c75e"
-  },
-  {
-   "company": "core",
-   "role": "SELLER",
-   "route": "GET /purchases/:id",
-   "kind": "cost",
-   "keys": [
-    "lines[].unitCost"
-   ],
-   "path": "/purchases/624da54a-c52d-4e53-be15-8e554438d4f3"
-  },
-  {
-   "company": "core",
-   "role": "STOREKEEPER",
-   "route": "GET /purchases/:id",
-   "kind": "cost",
-   "keys": [
-    "lines[].unitCost"
-   ],
-   "path": "/purchases/624da54a-c52d-4e53-be15-8e554438d4f3"
-  },
-  {
-   "company": "core",
-   "role": "SUPERVISOR",
-   "route": "GET /purchases/:id",
-   "kind": "cost",
-   "keys": [
-    "lines[].unitCost"
-   ],
-   "path": "/purchases/624da54a-c52d-4e53-be15-8e554438d4f3"
-  },
-  {
-   "company": "core",
-   "role": "LIVREUR",
-   "route": "GET /purchases/:id",
-   "kind": "cost",
-   "keys": [
-    "lines[].unitCost"
-   ],
-   "path": "/purchases/624da54a-c52d-4e53-be15-8e554438d4f3"
-  },
-  {
-   "company": "core",
-   "role": "SELLER",
-   "route": "GET /purchases/:id",
-   "kind": "cost",
-   "keys": [
-    "lines[].unitCost"
-   ],
-   "path": "/purchases/8a6f2efc-a0f3-49dd-b5f8-f503ffcd650f"
-  },
-  {
-   "company": "core",
-   "role": "STOREKEEPER",
-   "route": "GET /purchases/:id",
-   "kind": "cost",
-   "keys": [
-    "lines[].unitCost"
-   ],
-   "path": "/purchases/8a6f2efc-a0f3-49dd-b5f8-f503ffcd650f"
-  },
-  {
-   "company": "core",
-   "role": "SUPERVISOR",
-   "route": "GET /purchases/:id",
-   "kind": "cost",
-   "keys": [
-    "lines[].unitCost"
-   ],
-   "path": "/purchases/8a6f2efc-a0f3-49dd-b5f8-f503ffcd650f"
-  },
-  {
-   "company": "core",
-   "role": "LIVREUR",
-   "route": "GET /purchases/:id",
-   "kind": "cost",
-   "keys": [
-    "lines[].unitCost"
-   ],
-   "path": "/purchases/8a6f2efc-a0f3-49dd-b5f8-f503ffcd650f"
+   "path": "/purchases/eb6360aa-c773-4f76-a183-29083161619b"
   },
   {
    "company": "import",
@@ -6862,7 +6782,7 @@
    "keys": [
     "lines[].unitCost"
    ],
-   "path": "/purchases/b8b2fb82-bd82-4c01-ba61-e4e54e372bfd"
+   "path": "/purchases/4806809d-860d-405e-aa47-5a0a5b251da6"
   },
   {
    "company": "import",
@@ -6872,7 +6792,7 @@
    "keys": [
     "lines[].unitCost"
    ],
-   "path": "/purchases/b8b2fb82-bd82-4c01-ba61-e4e54e372bfd"
+   "path": "/purchases/4806809d-860d-405e-aa47-5a0a5b251da6"
   },
   {
    "company": "import",
@@ -6882,7 +6802,7 @@
    "keys": [
     "lines[].unitCost"
    ],
-   "path": "/purchases/b8b2fb82-bd82-4c01-ba61-e4e54e372bfd"
+   "path": "/purchases/4806809d-860d-405e-aa47-5a0a5b251da6"
   },
   {
    "company": "import",
@@ -6892,7 +6812,7 @@
    "keys": [
     "lines[].unitCost"
    ],
-   "path": "/purchases/b8b2fb82-bd82-4c01-ba61-e4e54e372bfd"
+   "path": "/purchases/4806809d-860d-405e-aa47-5a0a5b251da6"
   },
   {
    "company": "credit",
@@ -6902,7 +6822,7 @@
    "keys": [
     "lines[].unitCost"
    ],
-   "path": "/purchases/68cdbe0a-a957-45ca-ba70-bb03e0092bc2"
+   "path": "/purchases/420a4cdb-456b-44dd-b881-46f61039720a"
   },
   {
    "company": "credit",
@@ -6912,7 +6832,7 @@
    "keys": [
     "lines[].unitCost"
    ],
-   "path": "/purchases/68cdbe0a-a957-45ca-ba70-bb03e0092bc2"
+   "path": "/purchases/420a4cdb-456b-44dd-b881-46f61039720a"
   },
   {
    "company": "credit",
@@ -6922,7 +6842,7 @@
    "keys": [
     "lines[].unitCost"
    ],
-   "path": "/purchases/68cdbe0a-a957-45ca-ba70-bb03e0092bc2"
+   "path": "/purchases/420a4cdb-456b-44dd-b881-46f61039720a"
   },
   {
    "company": "credit",
@@ -6932,47 +6852,7 @@
    "keys": [
     "lines[].unitCost"
    ],
-   "path": "/purchases/68cdbe0a-a957-45ca-ba70-bb03e0092bc2"
-  },
-  {
-   "company": "credit",
-   "role": "SELLER",
-   "route": "GET /purchases/:id",
-   "kind": "cost",
-   "keys": [
-    "lines[].unitCost"
-   ],
-   "path": "/purchases/71f1803f-e144-4a37-b991-1faac0d3f7f2"
-  },
-  {
-   "company": "credit",
-   "role": "STOREKEEPER",
-   "route": "GET /purchases/:id",
-   "kind": "cost",
-   "keys": [
-    "lines[].unitCost"
-   ],
-   "path": "/purchases/71f1803f-e144-4a37-b991-1faac0d3f7f2"
-  },
-  {
-   "company": "credit",
-   "role": "SUPERVISOR",
-   "route": "GET /purchases/:id",
-   "kind": "cost",
-   "keys": [
-    "lines[].unitCost"
-   ],
-   "path": "/purchases/71f1803f-e144-4a37-b991-1faac0d3f7f2"
-  },
-  {
-   "company": "credit",
-   "role": "LIVREUR",
-   "route": "GET /purchases/:id",
-   "kind": "cost",
-   "keys": [
-    "lines[].unitCost"
-   ],
-   "path": "/purchases/71f1803f-e144-4a37-b991-1faac0d3f7f2"
+   "path": "/purchases/420a4cdb-456b-44dd-b881-46f61039720a"
   },
   {
    "company": "treasury",
@@ -6982,7 +6862,7 @@
    "keys": [
     "lines[].unitCost"
    ],
-   "path": "/purchases/75e8a0e8-f498-48e9-b50a-7d706bdd3864"
+   "path": "/purchases/e496c6a6-e2c2-4560-b537-07062594e34d"
   },
   {
    "company": "treasury",
@@ -6992,7 +6872,7 @@
    "keys": [
     "lines[].unitCost"
    ],
-   "path": "/purchases/75e8a0e8-f498-48e9-b50a-7d706bdd3864"
+   "path": "/purchases/e496c6a6-e2c2-4560-b537-07062594e34d"
   },
   {
    "company": "treasury",
@@ -7002,7 +6882,7 @@
    "keys": [
     "lines[].unitCost"
    ],
-   "path": "/purchases/75e8a0e8-f498-48e9-b50a-7d706bdd3864"
+   "path": "/purchases/e496c6a6-e2c2-4560-b537-07062594e34d"
   },
   {
    "company": "treasury",
@@ -7012,7 +6892,7 @@
    "keys": [
     "lines[].unitCost"
    ],
-   "path": "/purchases/75e8a0e8-f498-48e9-b50a-7d706bdd3864"
+   "path": "/purchases/e496c6a6-e2c2-4560-b537-07062594e34d"
   }
  ],
  "figures": {
@@ -7032,6 +6912,7 @@
    "GET /clients/:id/statement totalDebit",
    "GET /clients/:id/unpaid-documents paid",
    "GET /clients/:id/unpaid-documents remaining",
+   "GET /clients/:id/unpaid-documents returned",
    "GET /clients/:id/unpaid-documents totalTtc",
    "GET /clients/debtors balance",
    "GET /clients/map points.balance",
@@ -7056,6 +6937,22 @@
    "GET /dashboard/todo items.amount",
    "GET /expenses items.amount",
    "GET /expenses/:id amount",
+   "GET /import-files items.totalLanded",
+   "GET /import-files/:id costs.allocated",
+   "GET /import-files/:id costs.amount",
+   "GET /import-files/:id purchases.totalCurrency",
+   "GET /import-files/:id purchases.totalTtc",
+   "GET /import-files/:id totalCosts",
+   "GET /import-files/:id totalGoods",
+   "GET /import-files/:id totalLanded",
+   "GET /import-files/:id/preview costs.allocated",
+   "GET /import-files/:id/preview lines.landedTotal",
+   "GET /import-files/:id/preview lines.qtyBase",
+   "GET /import-files/:id/preview lines.value",
+   "GET /import-files/:id/preview lines.valueCurrency",
+   "GET /import-files/:id/preview totalCosts",
+   "GET /import-files/:id/preview totalGoods",
+   "GET /import-files/:id/preview totalLanded",
    "GET /incentive-runs total",
    "GET /incentive-runs/:id total",
    "GET /incentive-runs/:id users.lines.amount",
@@ -7073,6 +6970,8 @@
    "GET /orders/:id lines.lineHt",
    "GET /orders/:id lines.qty",
    "GET /orders/:id lines.qtyBase",
+   "GET /orders/:id lines.qtyDelivered",
+   "GET /orders/:id lines.qtyNotDelivered",
    "GET /orders/:id lines.tvaRate",
    "GET /orders/:id lines.unitPriceHt",
    "GET /orders/:id totalHt",
@@ -7295,9 +7194,6 @@
    "GET /treasury/summary accounts.balance",
    "GET /treasury/summary accounts.cashIn",
    "GET /treasury/summary accounts.cashOut",
-   "GET /treasury/summary alerts.counted",
-   "GET /treasury/summary alerts.ecart",
-   "GET /treasury/summary alerts.expected",
    "GET /treasury/summary byWarehouse.balance",
    "GET /treasury/summary totals.banques",
    "GET /treasury/summary totals.caisses",
@@ -7316,6 +7212,7 @@
    "GET /clients/:id/statement totalDebit",
    "GET /clients/:id/unpaid-documents paid",
    "GET /clients/:id/unpaid-documents remaining",
+   "GET /clients/:id/unpaid-documents returned",
    "GET /clients/:id/unpaid-documents totalTtc",
    "GET /clients/debtors balance",
    "GET /clients/map points.balance",
@@ -7411,6 +7308,7 @@
    "GET /clients/:id/statement totalDebit",
    "GET /clients/:id/unpaid-documents paid",
    "GET /clients/:id/unpaid-documents remaining",
+   "GET /clients/:id/unpaid-documents returned",
    "GET /clients/:id/unpaid-documents totalTtc",
    "GET /clients/debtors balance",
    "GET /clients/map points.balance",
@@ -7423,6 +7321,8 @@
    "GET /orders/:id lines.lineHt",
    "GET /orders/:id lines.qty",
    "GET /orders/:id lines.qtyBase",
+   "GET /orders/:id lines.qtyDelivered",
+   "GET /orders/:id lines.qtyNotDelivered",
    "GET /orders/:id lines.tvaRate",
    "GET /orders/:id lines.unitPriceHt",
    "GET /orders/:id totalHt",
@@ -7520,6 +7420,7 @@
    "GET /clients/:id/statement totalDebit",
    "GET /clients/:id/unpaid-documents paid",
    "GET /clients/:id/unpaid-documents remaining",
+   "GET /clients/:id/unpaid-documents returned",
    "GET /clients/:id/unpaid-documents totalTtc",
    "GET /clients/debtors balance",
    "GET /clients/map points.balance",
@@ -7586,6 +7487,7 @@
    "GET /clients/:id/statement totalDebit",
    "GET /clients/:id/unpaid-documents paid",
    "GET /clients/:id/unpaid-documents remaining",
+   "GET /clients/:id/unpaid-documents returned",
    "GET /clients/:id/unpaid-documents totalTtc",
    "GET /clients/debtors balance",
    "GET /clients/map points.balance",

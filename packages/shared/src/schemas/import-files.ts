@@ -14,6 +14,7 @@ import {
   exchangeRateString,
   normalizeDecimal,
   searchText,
+  fitsMoney,
 } from './common';
 
 /** Phase 22 (IMPORT_COSTS): dossiers d'importation and their costs. */
@@ -33,7 +34,7 @@ const positiveAmount = z
   .string()
   .refine((v) => {
     const parsed = parseDA(v);
-    return parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 2;
+    return parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 2 && fitsMoney(parsed);
   }, 'invalid_amount')
   .transform(normalizeDecimal);
 

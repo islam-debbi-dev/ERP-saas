@@ -8,6 +8,7 @@ import {
   normalizeDecimal,
   quantityString,
   searchText,
+  fitsMoney,
 } from './common';
 
 const id = z.uuid();
@@ -23,7 +24,9 @@ const optionalText = (max: number) =>
 /** A cost per unit, up to 4 decimals (prices per kg or per piece can need them). */
 const costString = z.string().refine((v) => {
   const parsed = parseDA(v);
-  return parsed !== null && !parsed.isNegative() && parsed.decimalPlaces() <= 4;
+  return (
+    parsed !== null && !parsed.isNegative() && parsed.decimalPlaces() <= 4 && fitsMoney(parsed)
+  );
 }, 'invalid_amount');
 
 /** ISO date `YYYY-MM-DD` (a document date, no time). */

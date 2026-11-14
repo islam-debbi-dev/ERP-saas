@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { CASH_ACCOUNT_TYPES, type CashAccountType, type CashMovementType } from '../treasury';
 import { parseDA } from '../money';
-import { amountString, normalizeDecimal } from './common';
+import { amountString, normalizeDecimal, fitsMoney } from './common';
 
 const id = z.uuid();
 const optionalText = (max: number) =>
@@ -19,14 +19,14 @@ const positiveAmount = z
   .string()
   .refine((v) => {
     const parsed = parseDA(v);
-    return parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 2;
+    return parsed !== null && parsed.gt(0) && parsed.decimalPlaces() <= 2 && fitsMoney(parsed);
   }, 'invalid_amount')
   .transform(normalizeDecimal);
 
 const signedAmount = z
   .string()
   .trim()
-  .regex(/^-?\d{1,12}([.,]\d{1,2})?$/, 'invalid_amount')
+  .regex(/^-?\d{1,10}([.,]\d{1,2})?$/, 'invalid_amount')
   .transform(normalizeDecimal);
 
 const accountFields = {

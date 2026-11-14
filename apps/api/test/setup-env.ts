@@ -12,3 +12,7 @@ process.env['SENTRY_DSN'] = '';
 process.env['RATE_LIMIT_PER_MINUTE'] ??= '1000000';
 process.env['RATE_LIMIT_AUTH_PER_MINUTE'] ??= '1000000';
 process.env['RATE_LIMIT_ASSISTANT_PER_MINUTE'] ??= '1000000';
+// The suites stand in for the reverse proxy: each gives its logins their own address in
+// X-Forwarded-For so the login limiter stays out of the way. forwarded-for.int-spec.ts tests
+// the API reached directly (TRUST_PROXY=0).
+process.env['TRUST_PROXY'] ??= '1';

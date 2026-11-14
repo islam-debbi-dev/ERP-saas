@@ -3,7 +3,7 @@
  *
  * A second API is started for this file alone (port 3013, same audit database) with
  * SENTRY_DSN pointing at a local sink (lib/sentry-sink.ts) and its own log file. Requests
- * carrying marked secrets are sent, some of them made to fail with a 500 (finding 01-#2),
+ * carrying marked secrets are sent, one of them made to fail with a 500 (a database trigger),
  * then the log and every Sentry envelope are searched for the marks.
  *
  *   tsx api/security/secrets.ts
@@ -25,7 +25,7 @@ const LOG = `${OUT}api-secrets.log`;
 const sink = await startSink(3098);
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 const api = spawn('sh', [`${root}e2e/map-stack.sh`, 'api'], {
-  env: { ...process.env, AUDIT_DB: new URL(DB).pathname.slice(1), API_PORT: String(PORT), SENTRY_DSN: 'http://audit02@localhost:3098/1', LOG_LEVEL: 'debug' },
+  env: { ...process.env, AUDIT_DB: new URL(DB).pathname.slice(1), API_PORT: String(PORT), SENTRY_DSN: 'http://audit02@localhost:3098/1', LOG_LEVEL: 'debug', TRUST_PROXY: '1' },
 });
 const out = createWriteStream(LOG);
 api.stdout.pipe(out);
@@ -111,7 +111,22 @@ marks['cheque number'] = CHEQUE;
 marks['cheque bank'] = BANK;
 const cheque = { clientId: cl.json['id'], mode: 'CHEQUE', reference: CHEQUE, bank: BANK, dueDate: '2026-12-31' };
 const okPay = await call('/payments', { method: 'POST', token, key: true, body: { ...cheque, amount: '1234' } });
-const badPay = await call('/payments', { method: 'POST', token, key: true, body: { ...cheque, amount: '9999999999999999.99' } });
+// A real 500 with a body full of secrets. Until fix batch 1 an amount too large for its column
+// did it (01-#2); that is a 400 now, so the database is made to refuse this company's next
+// versement: a trigger on the audit database, for this tenant only, dropped right after.
+await query(`CREATE OR REPLACE FUNCTION audit02_refuse_payment() RETURNS trigger LANGUAGE plpgsql AS $f$
+  BEGIN
+    IF NEW."tenantId" = '${tenantId}'::uuid THEN RAISE EXCEPTION 'audit02: provoked failure'; END IF;
+    RETURN NEW;
+  END $f$`);
+await query(`CREATE TRIGGER audit02_refuse_payment BEFORE INSERT ON payments FOR EACH ROW EXECUTE FUNCTION audit02_refuse_payment()`);
+let badPay: Awaited<ReturnType<typeof call>>;
+try {
+  badPay = await call('/payments', { method: 'POST', token, key: true, body: { ...cheque, amount: '4321' } });
+} finally {
+  await query(`DROP TRIGGER IF EXISTS audit02_refuse_payment ON payments`);
+  await query(`DROP FUNCTION IF EXISTS audit02_refuse_payment()`);
+}
 const wh = (await call('/warehouses', { token })).json as unknown as { id: string; type: string }[];
 const EMP = `Salarie-${tag}`;
 const emp = await call('/employees', { method: 'POST', token, body: { fullName: EMP, hireDate: '2025-01-01', contract: 'CDI', declared: true, warehouseId: wh.find((w) => w.type === 'MAIN')?.id, rib: `RIB${tag}00799999` } });
@@ -160,7 +175,7 @@ await check('the Authorization and Cookie headers are redacted in the log', () =
 });
 await check('a 500 logs its error without the request body', () => {
   const errors = log.split('\n').filter((l) => l.includes('"level":50'));
-  const withBody = errors.filter((l) => /"body":|"password"|"amount":"9999/.test(l));
+  const withBody = errors.filter((l) => /"body":|"password"|"amount":"4321/.test(l));
   assert(errors.length > 0, 'no 500 was logged: the check proved nothing');
   assert(withBody.length === 0, withBody[0]?.slice(0, 300) ?? '');
 });
