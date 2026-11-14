@@ -13,7 +13,10 @@
     "test:map:privacy": "tsx api/map-privacy.ts; T35_MATCH=position-privacy playwright test --config web/map.playwright.config.ts --project m393-fr",
     "test:map:perf": "tsx api/map-perf.ts; T35_MATCH=map-perf playwright test --config web/map.playwright.config.ts --project m360-fr",
     "test:map:web": "playwright test --config web/map.playwright.config.ts",
-    "test:map:lock": "tsx api/map-index-lock.ts"
+    "test:map:lock": "tsx api/map-index-lock.ts",
+    "audit02:routes": "tsx audit-02/routes.ts",
+    "audit02:a": "bash audit-02/part-a.sh",
+    "test:concurrency": "tsx api/concurrency.ts"
   },
   "dependencies": {
     "decimal.js": "^10.6.0",

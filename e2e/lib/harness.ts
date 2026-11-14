@@ -78,10 +78,16 @@ export function summary(): { total: number; passed: number; failed: number; bloc
   return t;
 }
 
+/**
+ * `AUDIT_RUN=audit-02` sends the summaries to artifacts/audit-02/, so a later audit does
+ * not overwrite the proofs of an earlier one.
+ */
+const RUN_DIR = process.env['AUDIT_RUN'] ? `${ARTIFACTS}${process.env['AUDIT_RUN']}/` : ARTIFACTS;
+
 export function writeSummary(file: string): void {
-  mkdirSync(ARTIFACTS, { recursive: true });
+  mkdirSync(RUN_DIR, { recursive: true });
   const t = summary();
-  writeFileSync(`${ARTIFACTS}${file}.json`, JSON.stringify({ totals: t, results }, null, 2));
+  writeFileSync(`${RUN_DIR}${file}.json`, JSON.stringify({ totals: t, results }, null, 2));
   const lines = [
     `# ${file}`,
     '',
@@ -94,7 +100,7 @@ export function writeSummary(file: string): void {
         `| ${r.area} | ${r.name} | ${r.status} | ${r.expected ?? ''} | ${(r.actual ?? r.evidence ?? '').replace(/\|/g, '\\|').replace(/\n/g, ' ')} |`,
     ),
   ];
-  writeFileSync(`${ARTIFACTS}${file}.md`, lines.join('\n'));
+  writeFileSync(`${RUN_DIR}${file}.md`, lines.join('\n'));
   console.log(`\n${file}: ${t.total} checks · ${t.passed} passed · ${t.failed} failed · ${t.blocked} blocked`);
   if (t.failed > 0) {
     console.log('\nFailures:');

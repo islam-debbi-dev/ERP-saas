@@ -3,7 +3,8 @@
 End-to-end audit of the ERP SaaS, written against the **real** API and the **real** PostgreSQL
 database. No mock, no stub.
 
-**The report with every finding: [REPORT.md](./REPORT.md).**
+**The reports with every finding: [REPORT.md](./REPORT.md) (audit 01, phases 1–11) and
+[REPORT-02.md](./REPORT-02.md) (audit 02, the whole project).**
 
 ## The suites
 
@@ -30,6 +31,23 @@ the ports differ.
 The web suite needs the Chromium build: `pnpm install:browsers`.
 
 The results are written to `artifacts/` (`*.md` for the humans, `*.json` for the machines).
+
+## Audit 02
+
+Audit 02 runs on its own database (`erp_audit02`), with the API connected as `erp_app` so
+row-level security applies. The steps are in the header of `audit-02/part-a.sh`.
+
+| Command | What it runs |
+|---|---|
+| `pnpm audit02:a` | Part A in order: scenario (the old chain + one chain per module since phase 12, in `api/chains/`), attacks, concurrency, invariants, the repo's reconcile CLI. Add `web` for the browser suite. |
+| `pnpm test:concurrency` | `api/concurrency.ts`: 20 requests at once per race (last unit, versements, cash transfers, one Idempotency-Key, payroll approval). |
+| `pnpm audit02:routes` | `audit-02/routes.ts`: the list of API routes, read from the controllers. |
+| `bash audit-02/baseline.sh` | lint, typecheck, test, build and `pnpm audit --prod` on Node 22. `baseline-rerun.sh` runs the API suites again alone. |
+
+The new suites refuse any database that is not a local `erp_audit02*` (`lib/audit.ts`), and
+`AUDIT_RUN=audit-02` sends their summaries to `artifacts/audit-02/` so the proofs of audit 01
+are not overwritten. `sql/invariants.sql` now holds 52 blocks, and the runner also tries a
+real `UPDATE` and `DELETE` on every ledger (rolled back).
 
 ## Notes
 

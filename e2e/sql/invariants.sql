@@ -130,6 +130,13 @@ WITH used AS (
   UNION ALL SELECT "tenantId", 'VER', "number" FROM payments
   UNION ALL SELECT "tenantId", 'INV', "number" FROM inventories
   UNION ALL SELECT "tenantId", 'PAIE', "number" FROM payroll_runs WHERE "number" IS NOT NULL
+  -- Audit 02: the documents added since phase 12.
+  UNION ALL SELECT "tenantId", 'RGF', "number" FROM supplier_payments
+  UNION ALL SELECT "tenantId", 'TR',  "number" FROM stock_transfers WHERE "number" IS NOT NULL
+  UNION ALL SELECT "tenantId", 'BC',  "number" FROM orders WHERE "number" IS NOT NULL
+  UNION ALL SELECT "tenantId", 'DI',  "number" FROM import_files
+  UNION ALL SELECT "tenantId", 'DEP', "number" FROM expenses
+  UNION ALL SELECT "tenantId", 'TRF', "number" FROM cash_transfers
 ),
 parsed AS (
   SELECT "tenantId", doctype, "number",
@@ -167,7 +174,35 @@ SELECT 'payments', "tenantId", "number", 'VER' FROM payments
   WHERE "number" !~ '^VER-[0-9]{4}-[0-9]{6}$'
 UNION ALL
 SELECT 'inventories', "tenantId", "number", 'INV' FROM inventories
-  WHERE "number" !~ '^INV-[0-9]{4}-[0-9]{6}$';
+  WHERE "number" !~ '^INV-[0-9]{4}-[0-9]{6}$'
+UNION ALL
+SELECT 'purchase_returns', "tenantId", "number", 'RF' FROM purchase_returns
+  WHERE "number" !~ '^RF-[0-9]{4}-[0-9]{6}$'
+UNION ALL
+SELECT 'supplier_payments', "tenantId", "number", 'RGF' FROM supplier_payments
+  WHERE "number" !~ '^RGF-[0-9]{4}-[0-9]{6}$'
+UNION ALL
+SELECT 'stock_transfers', "tenantId", "number", 'TR' FROM stock_transfers
+  WHERE "number" IS NOT NULL AND "number" !~ '^TR-[0-9]{4}-[0-9]{6}$'
+UNION ALL
+SELECT 'orders', "tenantId", "number", 'BC' FROM orders
+  WHERE "number" IS NOT NULL AND "number" !~ '^BC-[0-9]{4}-[0-9]{6}$'
+UNION ALL
+SELECT 'import_files', "tenantId", "number", 'DI' FROM import_files
+  WHERE "number" !~ '^DI-[0-9]{4}-[0-9]{6}$'
+UNION ALL
+SELECT 'expenses', "tenantId", "number", 'DEP' FROM expenses
+  WHERE "number" !~ '^DEP-[0-9]{4}-[0-9]{6}$'
+UNION ALL
+SELECT 'cash_transfers', "tenantId", "number", 'TRF' FROM cash_transfers
+  WHERE "number" !~ '^TRF-[0-9]{4}-[0-9]{6}$'
+UNION ALL
+SELECT 'payroll_runs', "tenantId", "number", 'PAIE' FROM payroll_runs
+  WHERE "number" IS NOT NULL AND "number" !~ '^PAIE-[0-9]{4}-[0-9]{6}$'
+UNION ALL
+SELECT 'employees', "tenantId", matricule, 'EMP' FROM employees
+  WHERE matricule !~ '^EMP-[0-9]{6}$';
+
 
 -- name: document_sequence_matches_usage
 -- The sequence counter must equal the number of documents issued.
@@ -180,6 +215,13 @@ WITH used AS (
   UNION ALL SELECT "tenantId", 'VER', "number" FROM payments
   UNION ALL SELECT "tenantId", 'INV', "number" FROM inventories
   UNION ALL SELECT "tenantId", 'PAIE', "number" FROM payroll_runs WHERE "number" IS NOT NULL
+  -- Audit 02: the documents added since phase 12.
+  UNION ALL SELECT "tenantId", 'RGF', "number" FROM supplier_payments
+  UNION ALL SELECT "tenantId", 'TR',  "number" FROM stock_transfers WHERE "number" IS NOT NULL
+  UNION ALL SELECT "tenantId", 'BC',  "number" FROM orders WHERE "number" IS NOT NULL
+  UNION ALL SELECT "tenantId", 'DI',  "number" FROM import_files
+  UNION ALL SELECT "tenantId", 'DEP', "number" FROM expenses
+  UNION ALL SELECT "tenantId", 'TRF', "number" FROM cash_transfers
 ),
 counts AS (
   SELECT "tenantId", doctype, SUBSTRING("number" FROM '^[A-Z]+-([0-9]{4})-')::int AS yr,
@@ -213,6 +255,8 @@ SELECT table_name, column_name, data_type, numeric_precision, numeric_scale
 FROM information_schema.columns
 WHERE table_schema = 'public'
   AND data_type IN ('double precision', 'real')
+  -- clients.lat_f / lng_f (phase 35) are the float twins of lat / lng the geo index needs.
+  AND column_name NOT IN ('lat_f', 'lng_f')
   AND table_name IN (
     'sales', 'sale_lines', 'sale_returns', 'sale_return_lines',
     'purchases', 'purchase_lines', 'purchase_returns', 'purchase_return_lines',
@@ -263,6 +307,9 @@ WHERE t.table_schema = 'public'
   AND t.table_type = 'BASE TABLE'
   AND t.table_name <> '_prisma_migrations'
   AND t.table_name <> 'tenants'
+  -- Platform tables (phases 13, 13b): plans and prices are the same for every company and
+  -- the super-admins belong to none.
+  AND t.table_name NOT IN ('plans', 'edition_prices', 'platform_admins', 'platform_admin_sessions')
   AND NOT EXISTS (
     SELECT 1 FROM information_schema.columns c
     WHERE c.table_schema = 'public' AND c.table_name = t.table_name AND c.column_name = 'tenantId');
@@ -430,3 +477,322 @@ LEFT JOIN cash_movements m
 GROUP BY b."tenantId", b."cashAccountId", b.balance
 HAVING b.balance <> COALESCE(SUM(m.amount) FILTER (
   WHERE a."openingDate" IS NULL OR m.date >= a."openingDate"), 0);
+
+-- ============================================================================
+-- Audit 02 (2026-11): phases 12 to 34. Same rule: a block that returns a row is
+-- a violated invariant.
+-- ============================================================================
+
+-- name: employee_matricules_contiguous
+-- Matricules are EMP-000001..N per tenant and never restart (an archived employee keeps his).
+SELECT "tenantId", COUNT(*) AS used, COUNT(DISTINCT matricule) AS distinct_used,
+       MAX(SUBSTRING(matricule FROM '([0-9]+)$')::int) AS max_n
+FROM employees
+GROUP BY "tenantId"
+HAVING COUNT(*) <> COUNT(DISTINCT matricule)
+    OR COUNT(*) <> MAX(SUBSTRING(matricule FROM '([0-9]+)$')::int);
+
+-- name: supplier_currency_balance_equals_ledger
+-- Phase 22: the balance in the supplier's currency equals its ledger too.
+SELECT sb."tenantId", sb."supplierId", sb."balanceCurrency" AS cached,
+       COALESCE(SUM(le."amountCurrency"), 0) AS ledger
+FROM supplier_balances sb
+LEFT JOIN supplier_ledger_entries le
+  ON le."tenantId" = sb."tenantId" AND le."supplierId" = sb."supplierId"
+GROUP BY sb."tenantId", sb."supplierId", sb."balanceCurrency"
+HAVING sb."balanceCurrency" IS NOT NULL
+   AND sb."balanceCurrency" <> COALESCE(SUM(le."amountCurrency"), 0);
+
+-- name: ledger_rows_missing_cached_balance
+-- A cash account or an employee with ledger rows must have its cached balance row.
+SELECT 'cash_movements' AS ledger, m."tenantId", m."cashAccountId"::text AS party, COUNT(*) AS entries
+FROM cash_movements m
+LEFT JOIN cash_account_balances b
+  ON b."tenantId" = m."tenantId" AND b."cashAccountId" = m."cashAccountId"
+WHERE b."cashAccountId" IS NULL
+GROUP BY m."tenantId", m."cashAccountId"
+UNION ALL
+SELECT 'employee_ledger_entries', l."tenantId", l."employeeId"::text, COUNT(*)
+FROM employee_ledger_entries l
+LEFT JOIN employee_balances b
+  ON b."tenantId" = l."tenantId" AND b."employeeId" = l."employeeId"
+WHERE b."employeeId" IS NULL
+GROUP BY l."tenantId", l."employeeId"
+UNION ALL
+SELECT 'leave_entries', l."tenantId", l."employeeId"::text, COUNT(*)
+FROM leave_entries l
+LEFT JOIN employee_balances b
+  ON b."tenantId" = l."tenantId" AND b."employeeId" = l."employeeId"
+WHERE b."employeeId" IS NULL
+GROUP BY l."tenantId", l."employeeId";
+
+-- name: ledger_tables_are_append_only
+-- AGENTS.md 3.1: "Never UPDATE a ledger row". Every ledger table must carry an enabled
+-- BEFORE UPDATE OR DELETE row trigger, so a row that exists was never rewritten.
+-- run-invariants.ts also tries it for real on the nine money, stock and time ledgers.
+WITH ledgers(table_name) AS (
+  VALUES ('stock_movements'), ('client_ledger_entries'), ('supplier_ledger_entries'),
+         ('employee_ledger_entries'), ('cash_movements'), ('leave_entries'),
+         ('client_packaging_entries'), ('audit_logs'), ('attendance_events'),
+         ('import_cost_allocations'), ('employee_salaries'), ('document_prints'),
+         ('geo_check_reviews'), ('payroll_rate_sets'), ('payroll_rate_confirmations'),
+         ('employee_pay_items')
+)
+SELECT l.table_name
+FROM ledgers l
+WHERE NOT EXISTS (
+  SELECT 1 FROM pg_trigger t
+  WHERE t.tgrelid = ('public.' || quote_ident(l.table_name))::regclass
+    AND NOT t.tgisinternal
+    AND t.tgenabled IN ('O', 'A')
+    AND (t.tgtype & 1) = 1    -- FOR EACH ROW
+    AND (t.tgtype & 2) = 2    -- BEFORE
+    AND (t.tgtype & 8) = 8    -- DELETE
+    AND (t.tgtype & 16) = 16  -- UPDATE
+);
+
+-- name: ledger_like_tables_without_append_only_trigger
+-- Tables named like the rows of an operation (`*_entries`, `*_movements`, `*_allocations`,
+-- `*_events`) that no UPDATE / DELETE trigger protects.
+SELECT c.relname AS table_name
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE n.nspname = 'public' AND c.relkind = 'r'
+  AND c.relname ~ '(_entries|_movements|_allocations|_events)$'
+  AND NOT EXISTS (
+    SELECT 1 FROM pg_trigger t
+    WHERE t.tgrelid = c.oid AND NOT t.tgisinternal AND t.tgenabled IN ('O', 'A')
+      AND (t.tgtype & 8) = 8 AND (t.tgtype & 16) = 16);
+
+-- name: tenant_tables_without_rls
+-- AGENTS.md 3.5 and architecture.md: every table with a tenantId has row-level security
+-- on and at least one policy.
+SELECT c.relname AS table_name, c.relrowsecurity AS rls_enabled,
+       (SELECT COUNT(*) FROM pg_policies p
+         WHERE p.schemaname = 'public' AND p.tablename = c.relname) AS policies
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE n.nspname = 'public' AND c.relkind = 'r'
+  AND EXISTS (SELECT 1 FROM pg_attribute a
+               WHERE a.attrelid = c.oid AND a.attname = 'tenantId' AND NOT a.attisdropped)
+  AND (NOT c.relrowsecurity
+       OR NOT EXISTS (SELECT 1 FROM pg_policies p
+                       WHERE p.schemaname = 'public' AND p.tablename = c.relname));
+
+-- name: rls_policies_not_bound_to_the_tenant
+-- A policy on a tenant table must compare tenantId with the session's app.tenant_id.
+SELECT p.tablename, p.policyname, p.qual
+FROM pg_policies p
+WHERE p.schemaname = 'public'
+  AND EXISTS (SELECT 1 FROM information_schema.columns k
+               WHERE k.table_schema = 'public' AND k.table_name = p.tablename
+                 AND k.column_name = 'tenantId')
+  AND POSITION('"tenantId" = (NULLIF(current_setting(''app.tenant_id''' IN COALESCE(p.qual, '')) = 0
+  -- A table only the platform reads (platform_audit_logs) is closed to every tenant.
+  AND COALESCE(p.qual, '') <> '(current_setting(''app.rls_bypass''::text, true) = ''on''::text)';
+
+-- name: tenant_tables_without_tenant_leading_index
+-- AGENTS.md 3.5: "Composite indexes start with tenantId". Every table with a tenantId
+-- needs at least one index whose first column is tenantId.
+SELECT c.relname AS table_name
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE n.nspname = 'public' AND c.relkind = 'r'
+  AND EXISTS (SELECT 1 FROM pg_attribute a
+               WHERE a.attrelid = c.oid AND a.attname = 'tenantId' AND NOT a.attisdropped)
+  AND NOT EXISTS (
+    SELECT 1 FROM pg_index i
+    JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum = i.indkey[0]
+    WHERE i.indrelid = c.oid AND a.attname = 'tenantId');
+
+-- name: float_columns
+-- No float anywhere, except the two generated columns the geo index uses (not money).
+SELECT table_name, column_name, data_type
+FROM information_schema.columns
+WHERE table_schema = 'public' AND data_type IN ('double precision', 'real', 'money')
+  AND (table_name, column_name) NOT IN (('clients', 'lat_f'), ('clients', 'lng_f'));
+
+-- name: numeric_columns_of_an_unknown_shape
+-- Every numeric column of the schema has one of the shapes below. A new shape must be a
+-- decision, not an accident: money is (14,2), a quantity (14,3), a unit cost (14,4).
+SELECT table_name, column_name, numeric_precision, numeric_scale
+FROM information_schema.columns
+WHERE table_schema = 'public' AND data_type = 'numeric'
+  AND (numeric_precision, numeric_scale) NOT IN (
+    (14,2),          -- money
+    (14,3),          -- quantities
+    (14,4),          -- unit costs (CUMP precision), lissage terms
+    (12,6),          -- exchange rates
+    (9,6),           -- latitude / longitude
+    (5,2), (4,2),    -- percentages, hours of a day
+    (6,1), (3,1),    -- congé days
+    (6,2), (6,4), (7,4), (8,4),  -- payroll divisors and rates, timbre rate
+    (16,3),          -- incentive targets (money or units)
+    (12,3), (12,4),  -- weight, volume, price per million tokens (USD)
+    (10,2)           -- payslip line quantity (days, hours)
+  );
+
+-- name: money_named_columns_outside_14_2
+-- AGENTS.md 3.4: money is Decimal(14,2). Any numeric column named like money must be it.
+-- Unit costs are (14,4) on purpose and USD-per-token prices are not tenant money.
+SELECT table_name, column_name, numeric_precision, numeric_scale
+FROM information_schema.columns
+WHERE table_schema = 'public' AND data_type = 'numeric'
+  AND column_name ~* '(amount|total|balance|price|paid|salary|cash|ecart|timbre|deposit|gross|^net|irg|cnas|retenue|cotisable|taxable|creditLimit|lineHt|supplement|threshold|expected|handed|counted|valueDelta|stockValue|snmg|employerCost)'
+  AND column_name !~* '(PerMTok|balanceAfter|exchangeRate|timbreRate|Rate$|Qty)'
+  AND NOT (numeric_precision = 14 AND numeric_scale = 2);
+
+-- name: quantity_named_columns_outside_14_3
+-- AGENTS.md 3.4: quantities are Decimal(14,3) in the base unit.
+SELECT table_name, column_name, numeric_precision, numeric_scale
+FROM information_schema.columns
+WHERE table_schema = 'public' AND data_type = 'numeric'
+  AND (column_name ~ '(^qty|Qty|factorToBase|minStock)'
+       OR (table_name = 'stock_movements' AND column_name = 'balanceAfter'))
+  AND NOT (numeric_precision = 14 AND numeric_scale = 3);
+
+-- name: sale_totals_equal_their_lines
+-- A numbered sale: total HT = sum of its lines, TTC = HT + TVA + timbre.
+SELECT s."tenantId", s.id, s."number", s."totalHt", SUM(l."lineHt") AS lines_ht,
+       s."totalTva", s.timbre, s."totalTtc"
+FROM sales s
+JOIN sale_lines l ON l."saleId" = s.id
+WHERE s."number" IS NOT NULL
+GROUP BY s."tenantId", s.id, s."number", s."totalHt", s."totalTva", s.timbre, s."totalTtc"
+HAVING s."totalHt" <> SUM(l."lineHt")
+    OR s."totalTtc" <> s."totalHt" + s."totalTva" + COALESCE(s.timbre, 0);
+
+-- name: sale_stock_movements_equal_their_lines
+-- What a validated sale took out of stock is exactly what its lines say (a facture made
+-- from BLs moves nothing: its lines have a sourceLineId).
+SELECT s."tenantId", s.id, s."number",
+       (SELECT COALESCE(SUM(l."qtyBase"), 0) FROM sale_lines l
+         WHERE l."saleId" = s.id AND l."sourceLineId" IS NULL) AS lines_qty,
+       (SELECT COALESCE(-SUM(m."qtyBase"), 0) FROM stock_movements m
+         WHERE m."tenantId" = s."tenantId" AND m."refId" = s.id AND m.type = 'SALE') AS moved_qty
+FROM sales s
+WHERE s."validatedAt" IS NOT NULL
+  AND (SELECT COALESCE(SUM(l."qtyBase"), 0) FROM sale_lines l
+        WHERE l."saleId" = s.id AND l."sourceLineId" IS NULL)
+   <> (SELECT COALESCE(-SUM(m."qtyBase"), 0) FROM stock_movements m
+        WHERE m."tenantId" = s."tenantId" AND m."refId" = s.id AND m.type = 'SALE');
+
+-- name: stock_transfer_movements_sum_to_zero
+-- A transfer moves goods between two dépôts: for the company its movements sum to zero
+-- (validated: out + in; cancelled: out + in + in + out).
+SELECT m."tenantId", m."refId" AS transfer_id, m."productId", SUM(m."qtyBase") AS net
+FROM stock_movements m
+WHERE m."refType" = 'StockTransfer'
+GROUP BY m."tenantId", m."refId", m."productId"
+HAVING SUM(m."qtyBase") <> 0;
+
+-- name: negative_stock_while_blocked
+-- A tenant in BLOCK mode holds no negative dépôt level (concurrent sales of the last unit
+-- included).
+SELECT ws."tenantId", ws."productId", ws."warehouseId", ws."qtyBase"
+FROM warehouse_stocks ws
+JOIN tenants t ON t.id = ws."tenantId"
+WHERE t."negativeStockMode" = 'BLOCK' AND ws."qtyBase" < 0;
+
+-- name: cash_transfer_movements_sum_to_zero
+-- Phase 34: a transfer between two accounts is neither cash in nor cash out.
+SELECT m."tenantId", m."refId" AS transfer_id, SUM(m.amount) AS net
+FROM cash_movements m
+WHERE m."refType" = 'CashTransfer'
+GROUP BY m."tenantId", m."refId"
+HAVING SUM(m.amount) <> 0;
+
+-- name: money_documents_move_their_account_exactly_once
+-- Phase 34: "A document moves an account once and reverses it once". A valid versement
+-- nets +amount on its account, a valid règlement or dépense -amount, and a cancelled or
+-- bounced one nets zero. Rows written before the TREASURY backfill have no account.
+SELECT 'payments' AS doc, p."tenantId", p.id, p."number", p.status::text, p.amount,
+       COALESCE((SELECT SUM(m.amount) FROM cash_movements m
+                  WHERE m."tenantId" = p."tenantId" AND m."refType" = 'Payment' AND m."refId" = p.id), 0) AS moved
+FROM payments p
+WHERE p."cashAccountId" IS NOT NULL
+  AND COALESCE((SELECT SUM(m.amount) FROM cash_movements m
+                 WHERE m."tenantId" = p."tenantId" AND m."refType" = 'Payment' AND m."refId" = p.id), 0)
+      <> CASE WHEN p.status = 'VALID' THEN p.amount ELSE 0 END
+UNION ALL
+SELECT 'supplier_payments', p."tenantId", p.id, p."number", p.status::text, p.amount,
+       COALESCE((SELECT SUM(m.amount) FROM cash_movements m
+                  WHERE m."tenantId" = p."tenantId" AND m."refType" = 'SupplierPayment' AND m."refId" = p.id), 0)
+FROM supplier_payments p
+WHERE p."cashAccountId" IS NOT NULL
+  AND COALESCE((SELECT SUM(m.amount) FROM cash_movements m
+                 WHERE m."tenantId" = p."tenantId" AND m."refType" = 'SupplierPayment' AND m."refId" = p.id), 0)
+      <> CASE WHEN p.status = 'VALID' THEN -p.amount ELSE 0 END
+UNION ALL
+SELECT 'expenses', e."tenantId", e.id, e."number", e.status::text, e.amount,
+       COALESCE((SELECT SUM(m.amount) FROM cash_movements m
+                  WHERE m."tenantId" = e."tenantId" AND m."refType" = 'Expense' AND m."refId" = e.id), 0)
+FROM expenses e
+WHERE e."cashAccountId" IS NOT NULL
+  AND COALESCE((SELECT SUM(m.amount) FROM cash_movements m
+                 WHERE m."tenantId" = e."tenantId" AND m."refType" = 'Expense' AND m."refId" = e.id), 0)
+      <> CASE WHEN e.status = 'VALID' THEN -e.amount ELSE 0 END;
+
+-- name: payslips_add_up
+-- Phase 31b: net = brut - CNAS - IRG and net à payer = net - retenues - avance, to the centime.
+SELECT p."tenantId", p.id, p.matricule, p.gross, p."cnasEmployee", p.irg, p.net,
+       p.retenues, p."advanceDeducted", p."netToPay"
+FROM payslips p
+JOIN payroll_runs r ON r.id = p."runId"
+WHERE r.status <> 'CANCELLED'
+  AND (p.net <> p.gross - p."cnasEmployee" - p.irg
+       OR p."netToPay" <> p.net - p.retenues - p."advanceDeducted");
+
+-- name: payroll_paid_more_than_due
+-- What was paid for an employee of a run (its valid dépenses) never exceeds his net à payer.
+SELECT p."tenantId", p."runId", p."employeeId", p."netToPay", SUM(e.amount) AS paid
+FROM payslips p
+JOIN expenses e
+  ON e."tenantId" = p."tenantId" AND e."payrollRunId" = p."runId"
+ AND e."employeeId" = p."employeeId" AND e.status = 'VALID'
+GROUP BY p."tenantId", p."runId", p."employeeId", p."netToPay"
+HAVING SUM(e.amount) > p."netToPay";
+
+-- name: payroll_runs_live_twice_or_badly_numbered
+-- One live run per month and dépôt; an approved run has a number, a draft has none.
+SELECT r."tenantId", r.month, r."warehouseId", COUNT(*) AS live_runs,
+       COUNT(*) FILTER (WHERE r.status = 'DRAFT' AND r."number" IS NOT NULL) AS numbered_drafts,
+       COUNT(*) FILTER (WHERE r.status = 'APPROVED' AND r."number" IS NULL) AS approved_without_number
+FROM payroll_runs r
+WHERE r.status <> 'CANCELLED'
+GROUP BY r."tenantId", r.month, r."warehouseId"
+HAVING COUNT(*) > 1
+    OR COUNT(*) FILTER (WHERE r.status = 'DRAFT' AND r."number" IS NOT NULL) > 0
+    OR COUNT(*) FILTER (WHERE r.status = 'APPROVED' AND r."number" IS NULL) > 0;
+
+-- name: salary_posted_twice
+-- An approved payslip posts SALARY_DUE once (approving the same run twice must not double it).
+SELECT l."tenantId", l."employeeId", l."payrollRunId", COUNT(*) AS salary_due_rows
+FROM employee_ledger_entries l
+WHERE l.type = 'SALARY_DUE'
+GROUP BY l."tenantId", l."employeeId", l."payrollRunId"
+HAVING COUNT(*) > 1;
+
+-- name: order_lines_deliver_more_than_ordered
+-- Phase 16: what was delivered plus what came back never exceeds what was ordered.
+SELECT l."tenantId", l."orderId", l.id, l.qty, l."qtyDelivered", l."qtyNotDelivered"
+FROM order_lines l
+WHERE l."qtyDelivered" + l."qtyNotDelivered" > l.qty OR l."qtyDelivered" < 0 OR l."qtyNotDelivered" < 0;
+
+-- name: idempotency_keys_used_twice
+-- A key answers one request of a tenant.
+SELECT "tenantId", key, COUNT(*) AS n
+FROM idempotency_keys
+GROUP BY "tenantId", key
+HAVING COUNT(*) > 1;
+
+-- name: rows_pointing_at_another_tenant
+-- A row never points at a parent of another tenant.
+SELECT 'sales.clientId' AS link, s.id::text AS row_id FROM sales s JOIN clients c ON c.id = s."clientId" WHERE c."tenantId" <> s."tenantId"
+UNION ALL SELECT 'payments.clientId', p.id::text FROM payments p JOIN clients c ON c.id = p."clientId" WHERE c."tenantId" <> p."tenantId"
+UNION ALL SELECT 'sale_lines.productId', l.id::text FROM sale_lines l JOIN products p ON p.id = l."productId" WHERE p."tenantId" <> l."tenantId"
+UNION ALL SELECT 'stock_movements.warehouseId', m.id::text FROM stock_movements m JOIN warehouses w ON w.id = m."warehouseId" WHERE w."tenantId" <> m."tenantId"
+UNION ALL SELECT 'cash_movements.cashAccountId', m.id::text FROM cash_movements m JOIN cash_accounts a ON a.id = m."cashAccountId" WHERE a."tenantId" <> m."tenantId"
+UNION ALL SELECT 'payslips.employeeId', p.id::text FROM payslips p JOIN employees e ON e.id = p."employeeId" WHERE e."tenantId" <> p."tenantId"
+UNION ALL SELECT 'purchases.supplierId', p.id::text FROM purchases p JOIN suppliers s ON s.id = p."supplierId" WHERE s."tenantId" <> p."tenantId"
+UNION ALL SELECT 'expenses.cashAccountId', e.id::text FROM expenses e JOIN cash_accounts a ON a.id = e."cashAccountId" WHERE a."tenantId" <> e."tenantId";

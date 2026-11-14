@@ -1,0 +1,580 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/26.10.0_2/bin/node",
+      "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "web/playwright.config.ts",
+      "--project=desktop",
+      "--trace",
+      "off"
+    ],
+    "configFile": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/playwright.config.ts",
+    "rootDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/global-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/web\\.spec\\.ts/"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/mobile\\.spec\\.ts/"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile-360",
+        "name": "mobile-360",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/mobile\\.spec\\.ts/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "desktop",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "snapshotDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": {},
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://localhost:3005",
+          "actionTimeout": 20000,
+          "navigationTimeout": 30000,
+          "trace": "off",
+          "storageState": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/.auth/state.json",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          }
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "desktop"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../artifacts/web.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "web.spec.ts",
+      "file": "web.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "the session survives a reload (the refresh cookie is used)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1724,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-14T05:37:02.579Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2948388c6448a8e5345d-06adc39c2d7277010ce8",
+          "file": "web.spec.ts",
+          "line": 114,
+          "column": 1
+        },
+        {
+          "title": "the token stays out of the browser storage and the cookie is httpOnly",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 910,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-14T05:37:04.313Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2948388c6448a8e5345d-83f1ed323cb1dd3b1ba3",
+          "file": "web.spec.ts",
+          "line": 124,
+          "column": 1
+        },
+        {
+          "title": "the balance of a client is shown exactly, in DA",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1055,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-14T05:37:05.230Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2948388c6448a8e5345d-81ec3b15d60b5907a7d1",
+          "file": "web.spec.ts",
+          "line": 140,
+          "column": 1
+        },
+        {
+          "title": "a hostile client name is shown as text, not executed",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 915,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-14T05:37:06.293Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2948388c6448a8e5345d-4a2a7b75f1ee7225bae9",
+          "file": "web.spec.ts",
+          "line": 149,
+          "column": 1
+        },
+        {
+          "title": "a hostile id in the URL gives a message, not a crash",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 868,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-14T05:37:07.215Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2948388c6448a8e5345d-13cf1924395e2ec65273",
+          "file": "web.spec.ts",
+          "line": 167,
+          "column": 1
+        },
+        {
+          "title": "a payment made from the screen carries an idempotency key",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1419,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-14T05:37:08.090Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2948388c6448a8e5345d-aab663097a14efefe2a5",
+          "file": "web.spec.ts",
+          "line": 178,
+          "column": 1
+        },
+        {
+          "title": "logging out ends the session for good",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1918,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-14T05:37:13.657Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2948388c6448a8e5345d-f0b617ab65f38329c876",
+          "file": "web.spec.ts",
+          "line": 288,
+          "column": 1
+        }
+      ],
+      "suites": [
+        {
+          "title": "the login itself",
+          "file": "web.spec.ts",
+          "line": 76,
+          "column": 6,
+          "specs": [
+            {
+              "title": "an anonymous visitor is sent to the login page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 757,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T05:37:00.403Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-5aecc166d87a067ed82d",
+              "file": "web.spec.ts",
+              "line": 80,
+              "column": 3
+            },
+            {
+              "title": "a wrong password is refused and says nothing about the secret",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 262,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T05:37:01.254Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-5a413aa38ddd63c4c7ff",
+              "file": "web.spec.ts",
+              "line": 87,
+              "column": 3
+            },
+            {
+              "title": "the right credentials open the dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1045,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T05:37:01.526Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-4dea74d700d2e0e38d8b",
+              "file": "web.spec.ts",
+              "line": 102,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "client map and tournée stops from the map (phase 35)",
+          "file": "web.spec.ts",
+          "line": 194,
+          "column": 6,
+          "specs": [
+            {
+              "title": "picks stops on the map, saves them in tap order, orders them by distance",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3193,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T05:37:09.516Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-3b7f17986e59f05fda23",
+              "file": "web.spec.ts",
+              "line": 231,
+              "column": 3
+            },
+            {
+              "title": "refused location explains itself and the map still loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop",
+                  "projectName": "desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 936,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T05:37:12.714Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-4734285fef074e4b1c97",
+              "file": "web.spec.ts",
+              "line": 277,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-14T05:36:56.533Z",
+    "duration": 19092.307,
+    "expected": 12,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
