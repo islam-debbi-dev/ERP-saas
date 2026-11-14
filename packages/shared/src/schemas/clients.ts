@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ClientType, type ClientLedgerType } from '../enums';
 import { parseDA } from '../money';
-import { amountString, decimalQuery, normalizeDecimal, searchText } from './common';
+import { amountString, decimalQuery, normalizeDecimal, searchText, fitsMoney } from './common';
 import { type ClientLocationDto } from './geo';
 
 const id = z.uuid();
@@ -21,7 +21,7 @@ const signedAmount = (opts: { nonZero: boolean }) =>
     .string()
     .refine((v) => {
       const parsed = parseDA(v);
-      if (parsed === null || parsed.decimalPlaces() > 2) return false;
+      if (parsed === null || parsed.decimalPlaces() > 2 || !fitsMoney(parsed)) return false;
       return opts.nonZero ? !parsed.isZero() : true;
     }, 'invalid_amount')
     .transform(normalizeDecimal);

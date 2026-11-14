@@ -1,20 +1,22 @@
 import { z } from 'zod';
 import { AdjustmentReason, type InventoryStatus, type StockMovementType } from '../enums';
 import { parseDA } from '../money';
-import { normalizeDecimal, quantityString, searchText } from './common';
+import { normalizeDecimal, quantityString, searchText, fitsMoney, fitsQuantity } from './common';
 
 const id = z.uuid();
 
 /** A non-zero signed quantity as a string (adjustments: + adds, - removes). */
 const signedQuantityString = z.string().refine((v) => {
   const parsed = parseDA(v);
-  return parsed !== null && !parsed.isZero() && parsed.decimalPlaces() <= 3;
+  return parsed !== null && !parsed.isZero() && parsed.decimalPlaces() <= 3 && fitsQuantity(parsed);
 }, 'invalid_quantity');
 
 /** A cost per unit, up to 4 decimals (a pièce cost from a carton price is 45.8333). */
 const costString = z.string().refine((v) => {
   const parsed = parseDA(v);
-  return parsed !== null && !parsed.isNegative() && parsed.decimalPlaces() <= 4;
+  return (
+    parsed !== null && !parsed.isNegative() && parsed.decimalPlaces() <= 4 && fitsMoney(parsed)
+  );
 }, 'invalid_amount');
 
 /** Unique products per request: one line per product keeps the ledger readable. */

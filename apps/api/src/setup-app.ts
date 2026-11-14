@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { CLIENT_TYPE_HEADER, IDEMPOTENCY_HEADER } from '@erp/shared';
 import type { AppConfig } from './config/app-config';
+import { rejectIllFormedText } from './common/well-formed-text.middleware';
 
 /** Shared by main.ts and the integration tests so both run the same HTTP stack. */
 export function setupApp(app: INestApplication, config: AppConfig): void {
@@ -18,6 +19,8 @@ export function setupApp(app: INestApplication, config: AppConfig): void {
   // Sale and purchase bodies are a few KB; imports are multipart with their own limit.
   express.useBodyParser('json', { limit: '1mb' });
   express.useBodyParser('urlencoded', { limit: '100kb', extended: false });
+  // After the body parsers: no text that is not valid Unicode reaches a schema (audit 02, B-4).
+  express.use(rejectIllFormedText);
   express.use(cookieParser());
   express.enableCors({
     origin: config.WEB_ORIGIN.split(',').map((o) => o.trim()),

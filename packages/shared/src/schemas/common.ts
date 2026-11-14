@@ -40,10 +40,29 @@ export const exchangeRateString = z
   }, 'invalid_rate')
   .transform((v) => normalizeDecimal(v));
 
+/**
+ * The largest amount a request may carry: 9 999 999 999,99 DA. The columns are
+ * `Decimal(14,2)` (twelve digits before the comma), and a total or a balance is computed from
+ * what is sent: an amount that just fits its own column overflowed the next one and answered
+ * 500 (audit 01 #2; audit 02, B-4). Two digits of room are left for those sums. No grossiste
+ * writes a ten-billion-dinar line; the API filter still answers 400 if a sum overflows.
+ */
+export const MAX_MONEY = '9999999999.99';
+/** The largest quantity a request may carry (`Decimal(14,3)`), with the same room. */
+export const MAX_QUANTITY = '99999999.999';
+
+type Parsed = NonNullable<ReturnType<typeof parseDA>>;
+/** True when an amount, a price or a cost (signed or not) is within `MAX_MONEY`. */
+export const fitsMoney = (v: Parsed): boolean => v.abs().lte(MAX_MONEY);
+/** True when a quantity (signed or not) is within `MAX_QUANTITY`. */
+export const fitsQuantity = (v: Parsed): boolean => v.abs().lte(MAX_QUANTITY);
+
 /** A non-negative money amount sent as a string (`"1500.00"`, `"1 500,00"`), max 2 decimals. */
 export const amountString = z.string().refine((v) => {
   const parsed = parseDA(v);
-  return parsed !== null && !parsed.isNegative() && parsed.decimalPlaces() <= 2;
+  return (
+    parsed !== null && !parsed.isNegative() && parsed.decimalPlaces() <= 2 && fitsMoney(parsed)
+  );
 }, 'invalid_amount');
 
 /** A rate in percent, 0 to 100, at most `decimals` decimals. */
@@ -63,12 +82,16 @@ export const quantityString = (opts: { positive: boolean }) =>
   z.string().refine((v) => {
     const parsed = parseDA(v);
     if (parsed === null || parsed.isNegative() || parsed.decimalPlaces() > 3) return false;
+    if (!fitsQuantity(parsed)) return false;
     return opts.positive ? parsed.gt(0) : true;
   }, 'invalid_quantity');
 
-/** Normalizes a parsed decimal string (`"1 500,5"` → `"1500.5"`). Call after validation. */
+/**
+ * Normalizes a decimal string (`"1 500,5"` → `"1500.5"`), as the `.transform()` after a
+ * `.refine()`. zod runs a transform even when the refine before it failed, so a value that
+ * is not a number is given back as it is: the refine has already recorded the issue, and
+ * throwing here turned a validation error into a 500 (`factorToBase: ""`, audit 02, B-4).
+ */
 export function normalizeDecimal(value: string): string {
-  const parsed = parseDA(value);
-  if (!parsed) throw new Error(`normalizeDecimal: invalid value ${value}`);
-  return parsed.toString();
+  return parseDA(value)?.toString() ?? value;
 }

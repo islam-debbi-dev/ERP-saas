@@ -28,12 +28,10 @@ function isClientHttpError(e: unknown): e is { status: number; message: string }
   return expose === true && typeof status === 'number' && status >= 400 && status < 500;
 }
 
-/**
- * PostgreSQL refused a text value for its bytes (SQLSTATE 22021, in practice a NUL): the
- * input was bad, the server is fine. Prisma reports it under several shapes depending on
- * the query (raw or not) and on the driver, so the cause chain is read too.
- */
-export function isInvalidTextError(e: unknown): boolean {
+/** The SQLSTATE or Prisma codes found in an error and its causes, and their messages. */
+function dbFacts(e: unknown): { codes: string[]; messages: string[] } {
+  const codes: string[] = [];
+  const messages: string[] = [];
   for (let cur = e, depth = 0; depth < 5 && typeof cur === 'object' && cur !== null; depth++) {
     const { code, meta, message, cause } = cur as {
       code?: unknown;
@@ -41,16 +39,46 @@ export function isInvalidTextError(e: unknown): boolean {
       message?: unknown;
       cause?: unknown;
     };
-    if (code === '22021' || meta?.code === '22021') return true;
-    if (typeof message === 'string' && /invalid byte sequence for encoding/i.test(message)) {
-      return true;
-    }
+    if (typeof code === 'string') codes.push(code);
+    if (typeof meta?.code === 'string') codes.push(meta.code);
+    if (typeof message === 'string') messages.push(message);
     cur = cause;
   }
-  return false;
+  return { codes, messages };
 }
 
-/** Renders every error as `{ code, message, details? }` and reports unexpected ones to Sentry. */
+/**
+ * PostgreSQL refused a text value for its bytes (SQLSTATE 22021, in practice a NUL; 22P05,
+ * a lone surrogate in jsonb): the input was bad, the server is fine. Prisma reports it under
+ * several shapes depending on the query (raw or not) and on the driver, so the cause chain
+ * is read too.
+ */
+export function isInvalidTextError(e: unknown): boolean {
+  const { codes, messages } = dbFacts(e);
+  return (
+    codes.includes('22021') ||
+    codes.includes('22P05') ||
+    messages.some((m) =>
+      /invalid byte sequence for encoding|unsupported Unicode escape sequence/i.test(m),
+    )
+  );
+}
+
+/**
+ * A number the column cannot hold (SQLSTATE 22003, Prisma P2020): `Decimal(14,2)` is twelve
+ * digits before the comma, and a total or a balance computed from valid amounts can pass it.
+ * The schemas bound each amount (`MAX_MONEY`); this is the net under them (audit 02, B-4).
+ * The transaction has rolled back: nothing was written.
+ */
+export function isNumericOverflowError(e: unknown): boolean {
+  const { codes, messages } = dbFacts(e);
+  return (
+    codes.includes('22003') ||
+    codes.includes('P2020') ||
+    messages.some((m) => /numeric field overflow|value out of range for the type/i.test(m))
+  );
+}
+
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger('ExceptionFilter');
@@ -107,6 +135,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
       return [
         HttpStatus.BAD_REQUEST,
         { code: ErrorCode.VALIDATION_FAILED, message: 'Invalid characters in the request' },
+      ];
+    }
+    if (isNumericOverflowError(exception)) {
+      return [
+        HttpStatus.BAD_REQUEST,
+        {
+          code: ErrorCode.VALIDATION_FAILED,
+          message: 'An amount or a quantity is too large',
+          details: { rule: 'number_too_large' },
+        },
       ];
     }
     return [
