@@ -6,7 +6,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { query } from '../lib/db.ts';
+import { db, query } from '../lib/db.ts';
 import { area, check, writeSummary } from '../lib/harness.ts';
 
 const SQL_FILE = fileURLToPath(new URL('./invariants.sql', import.meta.url));
@@ -28,6 +28,51 @@ function parseBlocks(sql: string): { name: string; sql: string }[] {
   return blocks;
 }
 
+/** The ledgers whose rows must be impossible to rewrite (AGENTS.md 3.1). */
+const LEDGERS = [
+  'stock_movements',
+  'client_ledger_entries',
+  'supplier_ledger_entries',
+  'employee_ledger_entries',
+  'cash_movements',
+  'leave_entries',
+  'client_packaging_entries',
+  'audit_logs',
+  'attendance_events',
+];
+
+/**
+ * Tries, for real, to UPDATE and to DELETE one row of every ledger, as the database owner
+ * (the strongest role the app ever uses), inside a transaction that is rolled back. The
+ * statement must be refused: the trigger is what proves no existing row was rewritten.
+ */
+async function appendOnlyProbes(): Promise<void> {
+  area('append-only ledgers (live probe, rolled back)');
+  for (const table of LEDGERS) {
+    for (const verb of ['UPDATE', 'DELETE'] as const) {
+      await check(`${table}: ${verb} of an existing row is refused`, async () => {
+        const client = await db().connect();
+        try {
+          await client.query('BEGIN');
+          const row = await client.query(`SELECT ctid::text AS ctid FROM ${table} LIMIT 1`);
+          if (row.rowCount === 0) throw new Error(`${table} is empty: run the scenario first`);
+          const where = `WHERE ctid = '${row.rows[0].ctid as string}'::tid`;
+          const sql =
+            verb === 'UPDATE' ? `UPDATE ${table} SET id = id ${where}` : `DELETE FROM ${table} ${where}`;
+          const outcome = await client.query(sql).then(
+            (r) => `accepted (${r.rowCount} row)`,
+            (err: Error) => `refused: ${err.message}`,
+          );
+          if (!outcome.startsWith('refused')) throw new Error(`${verb} on ${table} was ${outcome}`);
+        } finally {
+          await client.query('ROLLBACK').catch(() => undefined);
+          client.release();
+        }
+      });
+    }
+  }
+}
+
 async function main(): Promise<void> {
   const blocks = parseBlocks(readFileSync(SQL_FILE, 'utf8'));
   area('database invariants');
@@ -40,10 +85,13 @@ async function main(): Promise<void> {
       }
     });
   }
+  await appendOnlyProbes();
   writeSummary('db-invariants');
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });

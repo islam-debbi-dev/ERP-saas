@@ -1,0 +1,4325 @@
+[
+  {
+    "verb": "POST",
+    "path": "/admin/auth/login",
+    "file": "apps/api/src/admin/admin.controller.ts",
+    "line": 76,
+    "handler": "login",
+    "classDecorators": [
+      "@AdminController()"
+    ],
+    "decorators": [
+      "@AdminPublic()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/admin/auth/refresh",
+    "file": "apps/api/src/admin/admin.controller.ts",
+    "line": 88,
+    "handler": "refresh",
+    "classDecorators": [
+      "@AdminController()"
+    ],
+    "decorators": [
+      "@AdminPublic()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/admin/auth/logout",
+    "file": "apps/api/src/admin/admin.controller.ts",
+    "line": 109,
+    "handler": "logout",
+    "classDecorators": [
+      "@AdminController()"
+    ],
+    "decorators": [
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/admin/auth/me",
+    "file": "apps/api/src/admin/admin.controller.ts",
+    "line": 119,
+    "handler": "me",
+    "classDecorators": [
+      "@AdminController()"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/admin/assistant/config",
+    "file": "apps/api/src/admin/admin.controller.ts",
+    "line": 148,
+    "handler": "config",
+    "classDecorators": [
+      "@AdminController()"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "PUT",
+    "path": "/admin/assistant/config",
+    "file": "apps/api/src/admin/admin.controller.ts",
+    "line": 153,
+    "handler": "save",
+    "classDecorators": [
+      "@AdminController()"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/admin/assistant/config/test",
+    "file": "apps/api/src/admin/admin.controller.ts",
+    "line": 161,
+    "handler": "test",
+    "classDecorators": [
+      "@AdminController()"
+    ],
+    "decorators": [
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/admin/assistant/usage",
+    "file": "apps/api/src/admin/admin.controller.ts",
+    "line": 169,
+    "handler": "usage",
+    "classDecorators": [
+      "@AdminController()"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/admin/payroll-rate-sets",
+    "file": "apps/api/src/admin/admin.controller.ts",
+    "line": 182,
+    "handler": "list",
+    "classDecorators": [
+      "@AdminController()"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/admin/payroll-rate-sets",
+    "file": "apps/api/src/admin/admin.controller.ts",
+    "line": 187,
+    "handler": "append",
+    "classDecorators": [
+      "@AdminController()"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/admin/tenants",
+    "file": "apps/api/src/admin/admin.controller.ts",
+    "line": 200,
+    "handler": "list",
+    "classDecorators": [
+      "@AdminController()"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/admin/tenants/:id",
+    "file": "apps/api/src/admin/admin.controller.ts",
+    "line": 207,
+    "handler": "detail",
+    "classDecorators": [
+      "@AdminController()"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/admin/tenants/:id/payments",
+    "file": "apps/api/src/admin/admin.controller.ts",
+    "line": 212,
+    "handler": "recordPayment",
+    "classDecorators": [
+      "@AdminController()"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "PATCH",
+    "path": "/admin/tenants/:id/subscription",
+    "file": "apps/api/src/admin/admin.controller.ts",
+    "line": 229,
+    "handler": "update",
+    "classDecorators": [
+      "@AdminController()"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "PATCH",
+    "path": "/admin/tenants/:id/ai-key",
+    "file": "apps/api/src/admin/admin.controller.ts",
+    "line": 239,
+    "handler": "setAiKey",
+    "classDecorators": [
+      "@AdminController()"
+    ],
+    "decorators": [
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/admin/tenants/:id/impersonate",
+    "file": "apps/api/src/admin/admin.controller.ts",
+    "line": 249,
+    "handler": "impersonate",
+    "classDecorators": [
+      "@AdminController()"
+    ],
+    "decorators": [
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/assistant/status",
+    "file": "apps/api/src/assistant/assistant.controllers.ts",
+    "line": 54,
+    "handler": "status",
+    "classDecorators": [],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/assistant/chat",
+    "file": "apps/api/src/assistant/assistant.controllers.ts",
+    "line": 63,
+    "handler": "chat",
+    "classDecorators": [],
+    "decorators": [
+      "@RequireFeature(Feature.AI_ASSISTANT)",
+      "@RequirePermission(Permission.USE_ASSISTANT)",
+      "@UseGuards(AssistantThrottlerGuard)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/assistant/conversations",
+    "file": "apps/api/src/assistant/assistant.controllers.ts",
+    "line": 94,
+    "handler": "conversations",
+    "classDecorators": [],
+    "decorators": [
+      "@RequireFeature(Feature.AI_ASSISTANT)",
+      "@RequirePermission(Permission.USE_ASSISTANT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/assistant/conversations/:id",
+    "file": "apps/api/src/assistant/assistant.controllers.ts",
+    "line": 105,
+    "handler": "conversation",
+    "classDecorators": [],
+    "decorators": [
+      "@RequireFeature(Feature.AI_ASSISTANT)",
+      "@RequirePermission(Permission.USE_ASSISTANT)"
+    ]
+  },
+  {
+    "verb": "DELETE",
+    "path": "/assistant/conversations/:id",
+    "file": "apps/api/src/assistant/assistant.controllers.ts",
+    "line": 115,
+    "handler": "deleteConversation",
+    "classDecorators": [],
+    "decorators": [
+      "@HttpCode(HttpStatus.NO_CONTENT)",
+      "@RequireFeature(Feature.AI_ASSISTANT)",
+      "@RequirePermission(Permission.USE_ASSISTANT)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/assistant/messages/:id/feedback",
+    "file": "apps/api/src/assistant/assistant.controllers.ts",
+    "line": 126,
+    "handler": "feedback",
+    "classDecorators": [],
+    "decorators": [
+      "@HttpCode(HttpStatus.NO_CONTENT)",
+      "@RequireFeature(Feature.AI_ASSISTANT)",
+      "@RequirePermission(Permission.USE_ASSISTANT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/assistant/config",
+    "file": "apps/api/src/assistant/assistant.controllers.ts",
+    "line": 146,
+    "handler": "get",
+    "classDecorators": [
+      "@Roles(Role.OWNER)",
+      "@RequireFeature(Feature.AI_ASSISTANT)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "PUT",
+    "path": "/assistant/config",
+    "file": "apps/api/src/assistant/assistant.controllers.ts",
+    "line": 151,
+    "handler": "save",
+    "classDecorators": [
+      "@Roles(Role.OWNER)",
+      "@RequireFeature(Feature.AI_ASSISTANT)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/assistant/config/test",
+    "file": "apps/api/src/assistant/assistant.controllers.ts",
+    "line": 159,
+    "handler": "test",
+    "classDecorators": [
+      "@Roles(Role.OWNER)",
+      "@RequireFeature(Feature.AI_ASSISTANT)"
+    ],
+    "decorators": [
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/audit-logs",
+    "file": "apps/api/src/audit/audit-logs.controller.ts",
+    "line": 14,
+    "handler": "list",
+    "classDecorators": [
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/audit-logs/facets",
+    "file": "apps/api/src/audit/audit-logs.controller.ts",
+    "line": 22,
+    "handler": "facets",
+    "classDecorators": [
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/auth/register",
+    "file": "apps/api/src/auth/auth.controller.ts",
+    "line": 52,
+    "handler": "register",
+    "classDecorators": [],
+    "decorators": [
+      "@Public()"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/auth/login",
+    "file": "apps/api/src/auth/auth.controller.ts",
+    "line": 62,
+    "handler": "login",
+    "classDecorators": [],
+    "decorators": [
+      "@Public()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/auth/refresh",
+    "file": "apps/api/src/auth/auth.controller.ts",
+    "line": 73,
+    "handler": "refresh",
+    "classDecorators": [],
+    "decorators": [
+      "@Public()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/auth/invitations/:token",
+    "file": "apps/api/src/auth/auth.controller.ts",
+    "line": 91,
+    "handler": "invitation",
+    "classDecorators": [],
+    "decorators": [
+      "@Public()"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/auth/invitations/:token/accept",
+    "file": "apps/api/src/auth/auth.controller.ts",
+    "line": 98,
+    "handler": "acceptInvitation",
+    "classDecorators": [],
+    "decorators": [
+      "@Public()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/auth/password",
+    "file": "apps/api/src/auth/auth.controller.ts",
+    "line": 109,
+    "handler": "changePassword",
+    "classDecorators": [],
+    "decorators": [
+      "@AllowWhenSuspended()",
+      "@HttpCode(HttpStatus.OK)",
+      "@AllowPendingPasswordChange()"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/auth/logout",
+    "file": "apps/api/src/auth/auth.controller.ts",
+    "line": 120,
+    "handler": "logout",
+    "classDecorators": [],
+    "decorators": [
+      "@AllowWhenSuspended()",
+      "@HttpCode(HttpStatus.NO_CONTENT)",
+      "@AllowPendingPasswordChange()"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/auth/me",
+    "file": "apps/api/src/auth/auth.controller.ts",
+    "line": 132,
+    "handler": "me",
+    "classDecorators": [],
+    "decorators": [
+      "@AllowPendingPasswordChange()"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/auth/sessions",
+    "file": "apps/api/src/auth/auth.controller.ts",
+    "line": 138,
+    "handler": "sessions",
+    "classDecorators": [],
+    "decorators": []
+  },
+  {
+    "verb": "DELETE",
+    "path": "/auth/sessions/:id",
+    "file": "apps/api/src/auth/auth.controller.ts",
+    "line": 143,
+    "handler": "revokeSession",
+    "classDecorators": [],
+    "decorators": [
+      "@AllowWhenSuspended()",
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/sessions",
+    "file": "apps/api/src/auth/auth.controller.ts",
+    "line": 181,
+    "handler": "list",
+    "classDecorators": [],
+    "decorators": []
+  },
+  {
+    "verb": "DELETE",
+    "path": "/sessions/:id",
+    "file": "apps/api/src/auth/auth.controller.ts",
+    "line": 187,
+    "handler": "revoke",
+    "classDecorators": [],
+    "decorators": [
+      "@AllowWhenSuspended()",
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/tenant/subscription",
+    "file": "apps/api/src/billing/billing.controller.ts",
+    "line": 11,
+    "handler": "summary",
+    "classDecorators": [],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/units",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 54,
+    "handler": "list",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/units",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 60,
+    "handler": "create",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_CREATE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/price-levels",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 71,
+    "handler": "list",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "PATCH",
+    "path": "/price-levels/:id",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 77,
+    "handler": "rename",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_EDIT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/categories",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 91,
+    "handler": "tree",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/categories",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 97,
+    "handler": "create",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_CREATE)"
+    ]
+  },
+  {
+    "verb": "PATCH",
+    "path": "/categories/:id",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 105,
+    "handler": "update",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_EDIT)"
+    ]
+  },
+  {
+    "verb": "DELETE",
+    "path": "/categories/:id",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 114,
+    "handler": "remove",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_EDIT)",
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/brands",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 127,
+    "handler": "list",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/brands",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 133,
+    "handler": "create",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_CREATE)"
+    ]
+  },
+  {
+    "verb": "PATCH",
+    "path": "/brands/:id",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 141,
+    "handler": "update",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_EDIT)"
+    ]
+  },
+  {
+    "verb": "DELETE",
+    "path": "/brands/:id",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 150,
+    "handler": "archive",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_EDIT)",
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/products",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 162,
+    "handler": "list",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/products/by-barcode/:code",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 171,
+    "handler": "byBarcode",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/products/:id",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 177,
+    "handler": "get",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/products",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 183,
+    "handler": "create",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_CREATE)"
+    ]
+  },
+  {
+    "verb": "PATCH",
+    "path": "/products/:id",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 191,
+    "handler": "update",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_EDIT)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/products/:id/archive",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 200,
+    "handler": "archive",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_EDIT)",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/products/:id/restore",
+    "file": "apps/api/src/catalog/catalog.controllers.ts",
+    "line": 207,
+    "handler": "restore",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PRODUCTS_EDIT)",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "PATCH",
+    "path": "/clients/:id/location",
+    "file": "apps/api/src/clients/client-location.controller.ts",
+    "line": 30,
+    "handler": "set",
+    "classDecorators": [
+      "@RequireFeature(Feature.GEO_CHECK)"
+    ],
+    "decorators": [
+      "@Roles(...FIELD_AND_OFFICE)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/clients/:id/location-requests",
+    "file": "apps/api/src/clients/client-location.controller.ts",
+    "line": 40,
+    "handler": "request",
+    "classDecorators": [
+      "@RequireFeature(Feature.GEO_CHECK)"
+    ],
+    "decorators": [
+      "@Roles(...FIELD_AND_OFFICE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/location-requests",
+    "file": "apps/api/src/clients/client-location.controller.ts",
+    "line": 56,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.GEO_CHECK)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/location-requests/:id/approve",
+    "file": "apps/api/src/clients/client-location.controller.ts",
+    "line": 64,
+    "handler": "approve",
+    "classDecorators": [
+      "@RequireFeature(Feature.GEO_CHECK)"
+    ],
+    "decorators": [
+      "@Roles(...DECIDERS)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/location-requests/:id/reject",
+    "file": "apps/api/src/clients/client-location.controller.ts",
+    "line": 73,
+    "handler": "reject",
+    "classDecorators": [
+      "@RequireFeature(Feature.GEO_CHECK)"
+    ],
+    "decorators": [
+      "@Roles(...DECIDERS)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/clients",
+    "file": "apps/api/src/clients/clients.controller.ts",
+    "line": 76,
+    "handler": "list",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.CLIENTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/clients/map",
+    "file": "apps/api/src/clients/clients.controller.ts",
+    "line": 86,
+    "handler": "map",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.CLIENTS_VIEW)",
+      "@RequireFeature(Feature.GEO_CHECK)",
+      "@Header('Cache-Control', 'private, max-age=30')"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/clients/nearby",
+    "file": "apps/api/src/clients/clients.controller.ts",
+    "line": 103,
+    "handler": "nearbyByBody",
+    "classDecorators": [],
+    "decorators": [
+      "@HttpCode(200)",
+      "@AllowWhenSuspended()",
+      "@RequirePermission(Permission.CLIENTS_VIEW)",
+      "@RequireFeature(Feature.GEO_CHECK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/clients/nearby",
+    "file": "apps/api/src/clients/clients.controller.ts",
+    "line": 120,
+    "handler": "nearby",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.CLIENTS_VIEW)",
+      "@RequireFeature(Feature.GEO_CHECK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/clients/debtors",
+    "file": "apps/api/src/clients/clients.controller.ts",
+    "line": 131,
+    "handler": "debtors",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.CLIENTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "PATCH",
+    "path": "/clients/bulk-assign",
+    "file": "apps/api/src/clients/clients.controller.ts",
+    "line": 141,
+    "handler": "bulkAssign",
+    "classDecorators": [],
+    "decorators": [
+      "@Roles(...MANAGERS)",
+      "@RequireFeature(Feature.SALES_FORCE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/clients/to-remind",
+    "file": "apps/api/src/clients/clients.controller.ts",
+    "line": 151,
+    "handler": "toRemind",
+    "classDecorators": [],
+    "decorators": [
+      "@Roles(...MANAGERS)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/clients/reconcile",
+    "file": "apps/api/src/clients/clients.controller.ts",
+    "line": 157,
+    "handler": "reconcile",
+    "classDecorators": [],
+    "decorators": [
+      "@Roles(Role.OWNER)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/clients/:id",
+    "file": "apps/api/src/clients/clients.controller.ts",
+    "line": 163,
+    "handler": "get",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.CLIENTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/clients/:id/statement",
+    "file": "apps/api/src/clients/clients.controller.ts",
+    "line": 172,
+    "handler": "statement",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.CLIENTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/clients",
+    "file": "apps/api/src/clients/clients.controller.ts",
+    "line": 182,
+    "handler": "create",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.CLIENTS_CREATE)"
+    ]
+  },
+  {
+    "verb": "PATCH",
+    "path": "/clients/:id",
+    "file": "apps/api/src/clients/clients.controller.ts",
+    "line": 191,
+    "handler": "update",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.CLIENTS_EDIT)"
+    ]
+  },
+  {
+    "verb": "DELETE",
+    "path": "/clients/:id",
+    "file": "apps/api/src/clients/clients.controller.ts",
+    "line": 201,
+    "handler": "archive",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.CLIENTS_ARCHIVE)",
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/clients/:id/opening-balance",
+    "file": "apps/api/src/clients/clients.controller.ts",
+    "line": 208,
+    "handler": "openingBalance",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.CLIENTS_BALANCE_ADJUST)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/clients/:id/adjustments",
+    "file": "apps/api/src/clients/clients.controller.ts",
+    "line": 219,
+    "handler": "adjust",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.CLIENTS_BALANCE_ADJUST)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/expense-categories",
+    "file": "apps/api/src/expenses/expenses.controllers.ts",
+    "line": 63,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.EXPENSES)",
+      "@RequirePermission(Permission.EXPENSES_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/expense-categories",
+    "file": "apps/api/src/expenses/expenses.controllers.ts",
+    "line": 70,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.EXPENSES)",
+      "@RequirePermission(Permission.EXPENSES_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.RENT_MANAGE)"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/expense-categories/:id",
+    "file": "apps/api/src/expenses/expenses.controllers.ts",
+    "line": 78,
+    "handler": "rename",
+    "classDecorators": [
+      "@RequireFeature(Feature.EXPENSES)",
+      "@RequirePermission(Permission.EXPENSES_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.RENT_MANAGE)"
+    ]
+  },
+  {
+    "verb": "DELETE",
+    "path": "/expense-categories/:id",
+    "file": "apps/api/src/expenses/expenses.controllers.ts",
+    "line": 87,
+    "handler": "archive",
+    "classDecorators": [
+      "@RequireFeature(Feature.EXPENSES)",
+      "@RequirePermission(Permission.EXPENSES_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.RENT_MANAGE)",
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/expense-categories/:id/restore",
+    "file": "apps/api/src/expenses/expenses.controllers.ts",
+    "line": 94,
+    "handler": "restore",
+    "classDecorators": [
+      "@RequireFeature(Feature.EXPENSES)",
+      "@RequirePermission(Permission.EXPENSES_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.RENT_MANAGE)",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/expenses",
+    "file": "apps/api/src/expenses/expenses.controllers.ts",
+    "line": 109,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.EXPENSES)",
+      "@RequirePermission(Permission.EXPENSES_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/expenses/:id",
+    "file": "apps/api/src/expenses/expenses.controllers.ts",
+    "line": 117,
+    "handler": "get",
+    "classDecorators": [
+      "@RequireFeature(Feature.EXPENSES)",
+      "@RequirePermission(Permission.EXPENSES_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/expenses",
+    "file": "apps/api/src/expenses/expenses.controllers.ts",
+    "line": 125,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.EXPENSES)",
+      "@RequirePermission(Permission.EXPENSES_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.EXPENSES_CREATE)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/expenses/:id/cancel",
+    "file": "apps/api/src/expenses/expenses.controllers.ts",
+    "line": 135,
+    "handler": "cancel",
+    "classDecorators": [
+      "@RequireFeature(Feature.EXPENSES)",
+      "@RequirePermission(Permission.EXPENSES_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.EXPENSE_CANCEL)",
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/rent-contracts",
+    "file": "apps/api/src/expenses/expenses.controllers.ts",
+    "line": 155,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.EXPENSES)",
+      "@RequirePermission(Permission.EXPENSES_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/rent-contracts/:id",
+    "file": "apps/api/src/expenses/expenses.controllers.ts",
+    "line": 163,
+    "handler": "get",
+    "classDecorators": [
+      "@RequireFeature(Feature.EXPENSES)",
+      "@RequirePermission(Permission.EXPENSES_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/rent-contracts/:id/schedule",
+    "file": "apps/api/src/expenses/expenses.controllers.ts",
+    "line": 171,
+    "handler": "schedule",
+    "classDecorators": [
+      "@RequireFeature(Feature.EXPENSES)",
+      "@RequirePermission(Permission.EXPENSES_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/rent-contracts",
+    "file": "apps/api/src/expenses/expenses.controllers.ts",
+    "line": 179,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.EXPENSES)",
+      "@RequirePermission(Permission.EXPENSES_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.RENT_MANAGE)"
+    ]
+  },
+  {
+    "verb": "PATCH",
+    "path": "/rent-contracts/:id",
+    "file": "apps/api/src/expenses/expenses.controllers.ts",
+    "line": 188,
+    "handler": "update",
+    "classDecorators": [
+      "@RequireFeature(Feature.EXPENSES)",
+      "@RequirePermission(Permission.EXPENSES_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.RENT_MANAGE)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/rent-contracts/:id/close",
+    "file": "apps/api/src/expenses/expenses.controllers.ts",
+    "line": 198,
+    "handler": "close",
+    "classDecorators": [
+      "@RequireFeature(Feature.EXPENSES)",
+      "@RequirePermission(Permission.EXPENSES_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.RENT_MANAGE)",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/geo-checks",
+    "file": "apps/api/src/geo/geo-checks.controller.ts",
+    "line": 39,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.GEO_CHECK)"
+    ],
+    "decorators": [
+      "@Roles(...VIEWERS)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/geo-checks/report",
+    "file": "apps/api/src/geo/geo-checks.controller.ts",
+    "line": 49,
+    "handler": "report",
+    "classDecorators": [
+      "@RequireFeature(Feature.GEO_CHECK)"
+    ],
+    "decorators": [
+      "@Roles(...VIEWERS)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/geo-checks/:id",
+    "file": "apps/api/src/geo/geo-checks.controller.ts",
+    "line": 58,
+    "handler": "get",
+    "classDecorators": [
+      "@RequireFeature(Feature.GEO_CHECK)"
+    ],
+    "decorators": [
+      "@Roles(...VIEWERS)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/geo-checks/:id/review",
+    "file": "apps/api/src/geo/geo-checks.controller.ts",
+    "line": 67,
+    "handler": "review",
+    "classDecorators": [
+      "@RequireFeature(Feature.GEO_CHECK)"
+    ],
+    "decorators": [
+      "@Roles(...MANAGERS)",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/health",
+    "file": "apps/api/src/health/health.controller.ts",
+    "line": 19,
+    "handler": "check",
+    "classDecorators": [
+      "@SkipThrottle({ default: true, auth: true })"
+    ],
+    "decorators": [
+      "@Public()"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/employees",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 97,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/employees/:id",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 105,
+    "handler": "get",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/employees",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 113,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.HR_MANAGE)"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/employees/:id",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 122,
+    "handler": "update",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.HR_MANAGE)"
+    ]
+  },
+  {
+    "verb": "DELETE",
+    "path": "/employees/:id",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 132,
+    "handler": "archive",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.HR_MANAGE)",
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/employees/:id/restore",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 142,
+    "handler": "restore",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.HR_MANAGE)",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/employees/:id/salaries",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 152,
+    "handler": "salaries",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/employees/:id/salaries",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 161,
+    "handler": "appendSalary",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.SALARY_VIEW)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/employees/:id/ledger",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 173,
+    "handler": "ledger",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/employees/:id/leave-balance",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 183,
+    "handler": "leaveBalance",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/employees/:id/leave-entries",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 191,
+    "handler": "leaveEntry",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.LEAVE_APPROVE)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/employees/:id/advances",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 202,
+    "handler": "advance",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.ADVANCE_PAY)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/attendance/day",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 220,
+    "handler": "day",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.HR_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/attendance/today",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 229,
+    "handler": "today",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.HR_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/attendance/month",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 235,
+    "handler": "month",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.HR_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/attendance/month/export.xlsx",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 244,
+    "handler": "export",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.EXPORT_DATA)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/attendance/events",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 259,
+    "handler": "mark",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.ATTENDANCE_MARK)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/attendance/corrections",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 269,
+    "handler": "correct",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.ATTENDANCE_CORRECT)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/attendance/me",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 279,
+    "handler": "mine",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/attendance/check-in",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 284,
+    "handler": "checkIn",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/attendance/check-out",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 294,
+    "handler": "checkOut",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/leave-requests",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 311,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.HR_VIEW)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/leave-requests",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 320,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)"
+    ],
+    "decorators": [
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/leave-requests/:id/approve",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 329,
+    "handler": "approve",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.LEAVE_APPROVE)",
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/leave-requests/:id/reject",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 340,
+    "handler": "reject",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.LEAVE_APPROVE)",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/leave-requests/:id/cancel",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 351,
+    "handler": "cancel",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/hr-settings",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 370,
+    "handler": "get",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "PUT",
+    "path": "/hr-settings",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 375,
+    "handler": "update",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.HR_MANAGE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/public-holidays",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 390,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/public-holidays",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 397,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.HR_MANAGE)"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/public-holidays/:id",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 405,
+    "handler": "update",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.HR_MANAGE)"
+    ]
+  },
+  {
+    "verb": "DELETE",
+    "path": "/public-holidays/:id",
+    "file": "apps/api/src/hr/hr.controllers.ts",
+    "line": 414,
+    "handler": "remove",
+    "classDecorators": [
+      "@RequireFeature(Feature.HR)",
+      "@RequirePermission(Permission.HR_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.HR_MANAGE)",
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/import-files",
+    "file": "apps/api/src/import-files/import-files.controller.ts",
+    "line": 46,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.IMPORT_COSTS)",
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/import-files/:id",
+    "file": "apps/api/src/import-files/import-files.controller.ts",
+    "line": 53,
+    "handler": "get",
+    "classDecorators": [
+      "@RequireFeature(Feature.IMPORT_COSTS)",
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/import-files/:id/preview",
+    "file": "apps/api/src/import-files/import-files.controller.ts",
+    "line": 59,
+    "handler": "preview",
+    "classDecorators": [
+      "@RequireFeature(Feature.IMPORT_COSTS)",
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/import-files",
+    "file": "apps/api/src/import-files/import-files.controller.ts",
+    "line": 64,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.IMPORT_COSTS)",
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": [
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/import-files/:id",
+    "file": "apps/api/src/import-files/import-files.controller.ts",
+    "line": 72,
+    "handler": "update",
+    "classDecorators": [
+      "@RequireFeature(Feature.IMPORT_COSTS)",
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/import-files/:id/cancel",
+    "file": "apps/api/src/import-files/import-files.controller.ts",
+    "line": 80,
+    "handler": "cancel",
+    "classDecorators": [
+      "@RequireFeature(Feature.IMPORT_COSTS)",
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/import-files/:id/purchases",
+    "file": "apps/api/src/import-files/import-files.controller.ts",
+    "line": 90,
+    "handler": "attach",
+    "classDecorators": [
+      "@RequireFeature(Feature.IMPORT_COSTS)",
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": [
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "DELETE",
+    "path": "/import-files/:id/purchases/:purchaseId",
+    "file": "apps/api/src/import-files/import-files.controller.ts",
+    "line": 99,
+    "handler": "detach",
+    "classDecorators": [
+      "@RequireFeature(Feature.IMPORT_COSTS)",
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/import-files/:id/costs",
+    "file": "apps/api/src/import-files/import-files.controller.ts",
+    "line": 107,
+    "handler": "addCost",
+    "classDecorators": [
+      "@RequireFeature(Feature.IMPORT_COSTS)",
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": [
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/import-files/:id/costs/:costId/cancel",
+    "file": "apps/api/src/import-files/import-files.controller.ts",
+    "line": 117,
+    "handler": "cancelCost",
+    "classDecorators": [
+      "@RequireFeature(Feature.IMPORT_COSTS)",
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/import-files/:id/close",
+    "file": "apps/api/src/import-files/import-files.controller.ts",
+    "line": 128,
+    "handler": "close",
+    "classDecorators": [
+      "@RequireFeature(Feature.IMPORT_COSTS)",
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/import-files/:id/late-cost",
+    "file": "apps/api/src/import-files/import-files.controller.ts",
+    "line": 135,
+    "handler": "lateCost",
+    "classDecorators": [
+      "@RequireFeature(Feature.IMPORT_COSTS)",
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": [
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/imports",
+    "file": "apps/api/src/imports/imports.controller.ts",
+    "line": 44,
+    "handler": "list",
+    "classDecorators": [
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/imports/templates/:type",
+    "file": "apps/api/src/imports/imports.controller.ts",
+    "line": 51,
+    "handler": "template",
+    "classDecorators": [
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/imports/:type/preview",
+    "file": "apps/api/src/imports/imports.controller.ts",
+    "line": 66,
+    "handler": "preview",
+    "classDecorators": [
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": [
+      "@HttpCode(HttpStatus.OK)",
+      "@UseInterceptors(FileInterceptor('file', { limits: { fileSize: IMPORT_MAX_FILE_BYTES, files: 1 } }),)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/imports/:id/confirm",
+    "file": "apps/api/src/imports/imports.controller.ts",
+    "line": 80,
+    "handler": "confirm",
+    "classDecorators": [
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/sales-targets",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 59,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)"
+    ],
+    "decorators": [
+      "@Roles(...MANAGERS, Role.SUPERVISOR)"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/sales-targets/bulk",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 68,
+    "handler": "bulk",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)"
+    ],
+    "decorators": [
+      "@Roles(...MANAGERS)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/incentive-plans",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 84,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)",
+      "@Roles(...MANAGERS)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/incentive-plans",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 89,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)",
+      "@Roles(...MANAGERS)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/incentive-plans/:id",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 97,
+    "handler": "get",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)",
+      "@Roles(...MANAGERS)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "PATCH",
+    "path": "/incentive-plans/:id",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 102,
+    "handler": "update",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)",
+      "@Roles(...MANAGERS)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/incentive-plans/:id/rules",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 110,
+    "handler": "addRule",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)",
+      "@Roles(...MANAGERS)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "PUT",
+    "path": "/incentive-plans/:id/rules/:ruleId",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 119,
+    "handler": "updateRule",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)",
+      "@Roles(...MANAGERS)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "DELETE",
+    "path": "/incentive-plans/:id/rules/:ruleId",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 129,
+    "handler": "removeRule",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)",
+      "@Roles(...MANAGERS)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/incentive-plans/:id/activate",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 137,
+    "handler": "activate",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)",
+      "@Roles(...MANAGERS)"
+    ],
+    "decorators": [
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/incentive-plans/:id/new-version",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 143,
+    "handler": "newVersion",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)",
+      "@Roles(...MANAGERS)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/incentive-plans/:id/archive",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 152,
+    "handler": "archive",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)",
+      "@Roles(...MANAGERS)"
+    ],
+    "decorators": [
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/incentive-runs",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 165,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)",
+      "@Roles(...MANAGERS)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/incentive-runs",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 173,
+    "handler": "preview",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)",
+      "@Roles(...MANAGERS)"
+    ],
+    "decorators": [
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/incentive-runs/:id",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 182,
+    "handler": "get",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)",
+      "@Roles(...MANAGERS)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/incentive-runs/:id/approve",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 190,
+    "handler": "approve",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)",
+      "@Roles(...MANAGERS)"
+    ],
+    "decorators": [
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/incentive-runs/:id/export.xlsx",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 199,
+    "handler": "export",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)",
+      "@Roles(...MANAGERS)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/me/objectives",
+    "file": "apps/api/src/incentives/incentives.controllers.ts",
+    "line": 220,
+    "handler": "mine",
+    "classDecorators": [
+      "@RequireFeature(Feature.INCENTIVES)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/packaging-types",
+    "file": "apps/api/src/packaging/packaging.controllers.ts",
+    "line": 44,
+    "handler": "list",
+    "classDecorators": [],
+    "decorators": [
+      "@Roles(...FIELD, Role.STOREKEEPER)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/packaging-types",
+    "file": "apps/api/src/packaging/packaging.controllers.ts",
+    "line": 50,
+    "handler": "create",
+    "classDecorators": [],
+    "decorators": [
+      "@Roles(...MANAGERS)",
+      "@RequireFeature(Feature.PACKAGING)"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/packaging-types/:id",
+    "file": "apps/api/src/packaging/packaging.controllers.ts",
+    "line": 59,
+    "handler": "update",
+    "classDecorators": [],
+    "decorators": [
+      "@Roles(...MANAGERS)",
+      "@RequireFeature(Feature.PACKAGING)"
+    ]
+  },
+  {
+    "verb": "DELETE",
+    "path": "/packaging-types/:id",
+    "file": "apps/api/src/packaging/packaging.controllers.ts",
+    "line": 69,
+    "handler": "archive",
+    "classDecorators": [],
+    "decorators": [
+      "@Roles(...MANAGERS)",
+      "@RequireFeature(Feature.PACKAGING)",
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/clients/:id/packaging",
+    "file": "apps/api/src/packaging/packaging.controllers.ts",
+    "line": 83,
+    "handler": "ofClient",
+    "classDecorators": [],
+    "decorators": [
+      "@Roles(...FIELD)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/products/:id/packaging",
+    "file": "apps/api/src/packaging/packaging.controllers.ts",
+    "line": 93,
+    "handler": "ofProduct",
+    "classDecorators": [],
+    "decorators": [
+      "@Roles(...FIELD, Role.STOREKEEPER)"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/products/:id/packaging",
+    "file": "apps/api/src/packaging/packaging.controllers.ts",
+    "line": 99,
+    "handler": "setProduct",
+    "classDecorators": [],
+    "decorators": [
+      "@Roles(...MANAGERS)",
+      "@RequireFeature(Feature.PACKAGING)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/packaging-movements",
+    "file": "apps/api/src/packaging/packaging.controllers.ts",
+    "line": 109,
+    "handler": "move",
+    "classDecorators": [],
+    "decorators": [
+      "@Idempotent()",
+      "@Roles(...FIELD)",
+      "@RequireFeature(Feature.PACKAGING)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/payments",
+    "file": "apps/api/src/payments/payments.controllers.ts",
+    "line": 42,
+    "handler": "list",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PAYMENTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/payments/summary",
+    "file": "apps/api/src/payments/payments.controllers.ts",
+    "line": 52,
+    "handler": "summary",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PAYMENTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/payments/:id",
+    "file": "apps/api/src/payments/payments.controllers.ts",
+    "line": 61,
+    "handler": "get",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PAYMENTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "PATCH",
+    "path": "/payments/:id/collector",
+    "file": "apps/api/src/payments/payments.controllers.ts",
+    "line": 71,
+    "handler": "reassignCollector",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PAYMENTS_CREATE)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/payments",
+    "file": "apps/api/src/payments/payments.controllers.ts",
+    "line": 81,
+    "handler": "create",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PAYMENTS_CREATE)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/payments/:id/cancel",
+    "file": "apps/api/src/payments/payments.controllers.ts",
+    "line": 91,
+    "handler": "cancel",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PAYMENTS_CREATE)",
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/payments/:id/bounce",
+    "file": "apps/api/src/payments/payments.controllers.ts",
+    "line": 103,
+    "handler": "bounce",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PAYMENTS_BOUNCE)",
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/clients/:id/unpaid-documents",
+    "file": "apps/api/src/payments/payments.controllers.ts",
+    "line": 120,
+    "handler": "unpaid",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.CLIENTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/payroll-settings",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 89,
+    "handler": "get",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "PUT",
+    "path": "/payroll-settings",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 94,
+    "handler": "update",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.PAYROLL_MANAGE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/payroll-rates",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 110,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/payroll-rates",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 115,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@RequirePermission(Permission.PAYROLL_RATES_MANAGE)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/payroll-rates/:id/accept",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 125,
+    "handler": "accept",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": [
+      "@HttpCode(HttpStatus.OK)",
+      "@RequirePermission(Permission.PAYROLL_RATES_MANAGE)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/payroll-rates/:id/keep-own",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 136,
+    "handler": "keepOwn",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": [
+      "@HttpCode(HttpStatus.OK)",
+      "@RequirePermission(Permission.PAYROLL_RATES_MANAGE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/pay-item-types",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 154,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/pay-item-types",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 159,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.PAYROLL_MANAGE)"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/pay-item-types/:id",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 167,
+    "handler": "update",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.PAYROLL_MANAGE)"
+    ]
+  },
+  {
+    "verb": "DELETE",
+    "path": "/pay-item-types/:id",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 176,
+    "handler": "archive",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.PAYROLL_MANAGE)",
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/employees/:id/pay-items",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 190,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/employees/:id/pay-items",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 198,
+    "handler": "append",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.PAYROLL_MANAGE)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/employees/:id/payslips",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 216,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/payroll-runs/das.xlsx",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 234,
+    "handler": "das",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/payroll-runs/payslips/:id/pdf",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 242,
+    "handler": "slipPdf",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/payroll-runs/:id/pdf",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 250,
+    "handler": "runPdf",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/payroll-runs/:id/livre-de-paie.xlsx",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 258,
+    "handler": "livre",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/payroll-runs/:id/etat-cnas.xlsx",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 263,
+    "handler": "cnas",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/payroll-runs/:id/recap-irg.xlsx",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 268,
+    "handler": "irg",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/payroll-runs",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 281,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/payroll-runs/:id",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 289,
+    "handler": "get",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/payroll-runs",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 297,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/payroll-runs/:id/recompute",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 305,
+    "handler": "recompute",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": [
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "PATCH",
+    "path": "/payroll-runs/:id",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 314,
+    "handler": "patch",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/payroll-runs/:id/approve",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 323,
+    "handler": "approve",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": [
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/payroll-runs/:id/cancel",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 333,
+    "handler": "cancel",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": [
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/payroll-runs/:id/payments",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 343,
+    "handler": "pay",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)",
+      "@RequirePermission(Permission.SALARY_VIEW)"
+    ],
+    "decorators": [
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/me/payslips",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 360,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/me/payslips/:id/pdf",
+    "file": "apps/api/src/payroll/payroll.controllers.ts",
+    "line": 365,
+    "handler": "pdf",
+    "classDecorators": [
+      "@RequireFeature(Feature.PAYROLL)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/documents/:type/:id/pdf",
+    "file": "apps/api/src/printing/printing.controller.ts",
+    "line": 52,
+    "handler": "document",
+    "classDecorators": [],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/clients/:id/statement/pdf",
+    "file": "apps/api/src/printing/printing.controller.ts",
+    "line": 70,
+    "handler": "statement",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.CLIENTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/clients/:id/packaging/pdf",
+    "file": "apps/api/src/printing/printing.controller.ts",
+    "line": 82,
+    "handler": "packagingStatement",
+    "classDecorators": [],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/payments/:id/receipt.pdf",
+    "file": "apps/api/src/printing/printing.controller.ts",
+    "line": 99,
+    "handler": "receipt",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PAYMENTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/suppliers/:id/statement/pdf",
+    "file": "apps/api/src/printing/printing.controller.ts",
+    "line": 119,
+    "handler": "statement",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SUPPLIERS_ACCOUNT)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/share-links",
+    "file": "apps/api/src/printing/printing.controller.ts",
+    "line": 136,
+    "handler": "create",
+    "classDecorators": [
+      "@Roles(Role.OWNER, Role.MANAGER, Role.SELLER)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "DELETE",
+    "path": "/share-links/:id",
+    "file": "apps/api/src/printing/printing.controller.ts",
+    "line": 144,
+    "handler": "revoke",
+    "classDecorators": [
+      "@Roles(Role.OWNER, Role.MANAGER, Role.SELLER)"
+    ],
+    "decorators": [
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/s/:token",
+    "file": "apps/api/src/printing/printing.controller.ts",
+    "line": 162,
+    "handler": "open",
+    "classDecorators": [],
+    "decorators": [
+      "@Public()"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/promotions",
+    "file": "apps/api/src/promotions/promotions.controllers.ts",
+    "line": 42,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.PROMOTIONS)"
+    ],
+    "decorators": [
+      "@Roles(...SELLERS, Role.LIVREUR)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/promotions/:id",
+    "file": "apps/api/src/promotions/promotions.controllers.ts",
+    "line": 50,
+    "handler": "get",
+    "classDecorators": [
+      "@RequireFeature(Feature.PROMOTIONS)"
+    ],
+    "decorators": [
+      "@Roles(...SELLERS, Role.LIVREUR)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/promotions",
+    "file": "apps/api/src/promotions/promotions.controllers.ts",
+    "line": 58,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.PROMOTIONS)"
+    ],
+    "decorators": [
+      "@Roles(...MANAGERS)"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/promotions/:id",
+    "file": "apps/api/src/promotions/promotions.controllers.ts",
+    "line": 67,
+    "handler": "update",
+    "classDecorators": [
+      "@RequireFeature(Feature.PROMOTIONS)"
+    ],
+    "decorators": [
+      "@Roles(...MANAGERS)"
+    ]
+  },
+  {
+    "verb": "DELETE",
+    "path": "/promotions/:id",
+    "file": "apps/api/src/promotions/promotions.controllers.ts",
+    "line": 76,
+    "handler": "archive",
+    "classDecorators": [
+      "@RequireFeature(Feature.PROMOTIONS)"
+    ],
+    "decorators": [
+      "@Roles(...MANAGERS)",
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/pricing/preview",
+    "file": "apps/api/src/promotions/promotions.controllers.ts",
+    "line": 94,
+    "handler": "preview",
+    "classDecorators": [],
+    "decorators": [
+      "@Roles(...SELLERS, Role.LIVREUR)",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/suppliers",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 66,
+    "handler": "list",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SUPPLIERS_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/suppliers/balances",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 75,
+    "handler": "balances",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SUPPLIERS_ACCOUNT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/suppliers/:id/ledger",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 81,
+    "handler": "ledger",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SUPPLIERS_ACCOUNT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/suppliers/:id/statement",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 90,
+    "handler": "statement",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SUPPLIERS_ACCOUNT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/suppliers/:id",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 99,
+    "handler": "get",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SUPPLIERS_VIEW)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/suppliers",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 105,
+    "handler": "create",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SUPPLIERS_CREATE)"
+    ]
+  },
+  {
+    "verb": "PATCH",
+    "path": "/suppliers/:id",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 111,
+    "handler": "update",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SUPPLIERS_EDIT)"
+    ]
+  },
+  {
+    "verb": "DELETE",
+    "path": "/suppliers/:id",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 120,
+    "handler": "archive",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SUPPLIERS_EDIT)",
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/purchases",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 135,
+    "handler": "list",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PURCHASES_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/purchases/:id",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 144,
+    "handler": "get",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PURCHASES_VIEW)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/purchases",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 153,
+    "handler": "create",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PURCHASES_CREATE)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/purchases/:id",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 163,
+    "handler": "update",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PURCHASES_CREATE)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/purchases/:id/validate",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 173,
+    "handler": "validate",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PURCHASES_VALIDATE)",
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/purchases/:id/cancel",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 185,
+    "handler": "cancel",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PURCHASES_CANCEL)",
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/purchases/:id/returns",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 196,
+    "handler": "createReturn",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.PURCHASES_CANCEL)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/supplier-payments",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 214,
+    "handler": "list",
+    "classDecorators": [
+      "@RequirePermission(Permission.SUPPLIERS_ACCOUNT)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/supplier-payments/:id",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 221,
+    "handler": "get",
+    "classDecorators": [
+      "@RequirePermission(Permission.SUPPLIERS_ACCOUNT)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/supplier-payments",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 226,
+    "handler": "create",
+    "classDecorators": [
+      "@RequirePermission(Permission.SUPPLIERS_ACCOUNT)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.SUPPLIERS_PAY)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/supplier-payments/:id/cancel",
+    "file": "apps/api/src/purchases/purchases.controllers.ts",
+    "line": 236,
+    "handler": "cancel",
+    "classDecorators": [
+      "@RequirePermission(Permission.SUPPLIERS_ACCOUNT)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.SUPPLIERS_PAY)",
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/dashboard",
+    "file": "apps/api/src/reports/reports.controller.ts",
+    "line": 82,
+    "handler": "get",
+    "classDecorators": [],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/dashboard/todo",
+    "file": "apps/api/src/reports/reports.controller.ts",
+    "line": 91,
+    "handler": "todo",
+    "classDecorators": [],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/dashboard/onboarding",
+    "file": "apps/api/src/reports/reports.controller.ts",
+    "line": 97,
+    "handler": "onboardingStatus",
+    "classDecorators": [],
+    "decorators": [
+      "@Roles(Role.OWNER, Role.MANAGER)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/dashboard/onboarding/dismiss",
+    "file": "apps/api/src/reports/reports.controller.ts",
+    "line": 103,
+    "handler": "dismissOnboarding",
+    "classDecorators": [],
+    "decorators": [
+      "@HttpCode(HttpStatus.NO_CONTENT)",
+      "@Roles(Role.OWNER)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/reports/overview",
+    "file": "apps/api/src/reports/reports.controller.ts",
+    "line": 126,
+    "handler": "overviewReport",
+    "classDecorators": [],
+    "decorators": [
+      "@RequireFeature(Feature.MULTI_UNIT)",
+      "@RequirePermission(Permission.REPORTS_FINANCE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/reports/overview/export.xlsx",
+    "file": "apps/api/src/reports/reports.controller.ts",
+    "line": 136,
+    "handler": "overviewExport",
+    "classDecorators": [],
+    "decorators": [
+      "@RequireFeature(Feature.MULTI_UNIT)",
+      "@RequirePermission(Permission.REPORTS_FINANCE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/reports/aging",
+    "file": "apps/api/src/reports/reports.controller.ts",
+    "line": 154,
+    "handler": "clientAging",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.REPORTS_FINANCE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/reports/supplier-aging",
+    "file": "apps/api/src/reports/reports.controller.ts",
+    "line": 162,
+    "handler": "supplierAging",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.REPORTS_FINANCE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/reports/aging/export.xlsx",
+    "file": "apps/api/src/reports/reports.controller.ts",
+    "line": 170,
+    "handler": "clientAgingExport",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.REPORTS_FINANCE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/reports/supplier-aging/export.xlsx",
+    "file": "apps/api/src/reports/reports.controller.ts",
+    "line": 180,
+    "handler": "supplierAgingExport",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.REPORTS_FINANCE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/reports/charges",
+    "file": "apps/api/src/reports/reports.controller.ts",
+    "line": 194,
+    "handler": "chargesReport",
+    "classDecorators": [],
+    "decorators": [
+      "@RequireFeature(Feature.EXPENSES)",
+      "@RequirePermission(Permission.REPORTS_FINANCE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/reports/charges/export.xlsx",
+    "file": "apps/api/src/reports/reports.controller.ts",
+    "line": 204,
+    "handler": "chargesExport",
+    "classDecorators": [],
+    "decorators": [
+      "@RequireFeature(Feature.EXPENSES)",
+      "@RequirePermission(Permission.REPORTS_FINANCE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/reports/sell-out",
+    "file": "apps/api/src/reports/reports.controller.ts",
+    "line": 222,
+    "handler": "sellOut",
+    "classDecorators": [],
+    "decorators": [
+      "@Roles(Role.OWNER, Role.MANAGER, Role.SUPERVISOR)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/reports/sell-out/export.xlsx",
+    "file": "apps/api/src/reports/reports.controller.ts",
+    "line": 231,
+    "handler": "sellOutExport",
+    "classDecorators": [],
+    "decorators": [
+      "@Roles(Role.OWNER, Role.MANAGER, Role.SUPERVISOR)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/reports/:name",
+    "file": "apps/api/src/reports/reports.controller.ts",
+    "line": 247,
+    "handler": "run",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.REPORTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/reports/:name/export.xlsx",
+    "file": "apps/api/src/reports/reports.controller.ts",
+    "line": 257,
+    "handler": "export",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.REPORTS_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/sectors",
+    "file": "apps/api/src/sales-force/sectors.controller.ts",
+    "line": 33,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.SALES_FORCE)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/sectors",
+    "file": "apps/api/src/sales-force/sectors.controller.ts",
+    "line": 38,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.SALES_FORCE)"
+    ],
+    "decorators": [
+      "@Roles(...MANAGERS)"
+    ]
+  },
+  {
+    "verb": "PATCH",
+    "path": "/sectors/:id",
+    "file": "apps/api/src/sales-force/sectors.controller.ts",
+    "line": 46,
+    "handler": "update",
+    "classDecorators": [
+      "@RequireFeature(Feature.SALES_FORCE)"
+    ],
+    "decorators": [
+      "@Roles(...MANAGERS)"
+    ]
+  },
+  {
+    "verb": "DELETE",
+    "path": "/sectors/:id",
+    "file": "apps/api/src/sales-force/sectors.controller.ts",
+    "line": 55,
+    "handler": "archive",
+    "classDecorators": [
+      "@RequireFeature(Feature.SALES_FORCE)"
+    ],
+    "decorators": [
+      "@Roles(...MANAGERS)",
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/sales",
+    "file": "apps/api/src/sales/sales.controllers.ts",
+    "line": 55,
+    "handler": "list",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SALES_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/sales/price-preview",
+    "file": "apps/api/src/sales/sales.controllers.ts",
+    "line": 65,
+    "handler": "pricePreview",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SALES_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/sales/:id",
+    "file": "apps/api/src/sales/sales.controllers.ts",
+    "line": 74,
+    "handler": "get",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SALES_VIEW)"
+    ]
+  },
+  {
+    "verb": "PATCH",
+    "path": "/sales/:id/seller",
+    "file": "apps/api/src/sales/sales.controllers.ts",
+    "line": 84,
+    "handler": "reassignSeller",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SALES_CREATE)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/sales",
+    "file": "apps/api/src/sales/sales.controllers.ts",
+    "line": 94,
+    "handler": "create",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SALES_CREATE)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/sales/quick",
+    "file": "apps/api/src/sales/sales.controllers.ts",
+    "line": 103,
+    "handler": "quick",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SALES_CREATE)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/sales/:id",
+    "file": "apps/api/src/sales/sales.controllers.ts",
+    "line": 113,
+    "handler": "update",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SALES_CREATE)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/sales/:id/validate",
+    "file": "apps/api/src/sales/sales.controllers.ts",
+    "line": 123,
+    "handler": "validate",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SALES_CREATE)",
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/sales/:id/cancel",
+    "file": "apps/api/src/sales/sales.controllers.ts",
+    "line": 135,
+    "handler": "cancel",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SALES_CREATE)",
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/sales/:id/returns",
+    "file": "apps/api/src/sales/sales.controllers.ts",
+    "line": 147,
+    "handler": "returns",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SALES_RETURN)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/invoices/from-bls",
+    "file": "apps/api/src/sales/sales.controllers.ts",
+    "line": 163,
+    "handler": "fromBls",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SALES_CREATE)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/stock",
+    "file": "apps/api/src/stock/stock.controllers.ts",
+    "line": 61,
+    "handler": "list",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.STOCK_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/stock/reconcile",
+    "file": "apps/api/src/stock/stock.controllers.ts",
+    "line": 76,
+    "handler": "reconcile",
+    "classDecorators": [],
+    "decorators": [
+      "@Roles(Role.OWNER)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/stock/:productId",
+    "file": "apps/api/src/stock/stock.controllers.ts",
+    "line": 82,
+    "handler": "level",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.STOCK_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/stock/:productId/movements",
+    "file": "apps/api/src/stock/stock.controllers.ts",
+    "line": 96,
+    "handler": "movements",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.STOCK_VIEW)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/stock/opening",
+    "file": "apps/api/src/stock/stock.controllers.ts",
+    "line": 111,
+    "handler": "opening",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.STOCK_ADJUST)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/stock/adjustments",
+    "file": "apps/api/src/stock/stock.controllers.ts",
+    "line": 122,
+    "handler": "adjust",
+    "classDecorators": [],
+    "decorators": [
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/inventories",
+    "file": "apps/api/src/stock/stock.controllers.ts",
+    "line": 136,
+    "handler": "list",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.STOCK_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/inventories/:id",
+    "file": "apps/api/src/stock/stock.controllers.ts",
+    "line": 142,
+    "handler": "get",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.STOCK_VIEW)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/inventories",
+    "file": "apps/api/src/stock/stock.controllers.ts",
+    "line": 152,
+    "handler": "create",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.STOCK_COUNT)",
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/inventories/:id/lines",
+    "file": "apps/api/src/stock/stock.controllers.ts",
+    "line": 162,
+    "handler": "setLines",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.STOCK_COUNT)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/inventories/:id/validate",
+    "file": "apps/api/src/stock/stock.controllers.ts",
+    "line": 172,
+    "handler": "validate",
+    "classDecorators": [],
+    "decorators": [
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/inventories/:id/cancel",
+    "file": "apps/api/src/stock/stock.controllers.ts",
+    "line": 182,
+    "handler": "cancel",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.STOCK_ADJUST)",
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/warehouses",
+    "file": "apps/api/src/stock/warehouses.controllers.ts",
+    "line": 54,
+    "handler": "list",
+    "classDecorators": [],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/warehouses/:id",
+    "file": "apps/api/src/stock/warehouses.controllers.ts",
+    "line": 60,
+    "handler": "detail",
+    "classDecorators": [],
+    "decorators": [
+      "@RequireFeature(Feature.MULTI_UNIT)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/warehouses",
+    "file": "apps/api/src/stock/warehouses.controllers.ts",
+    "line": 69,
+    "handler": "create",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SETTINGS_EDIT)",
+      "@RequireFeature(Feature.WAREHOUSES)"
+    ]
+  },
+  {
+    "verb": "PATCH",
+    "path": "/warehouses/:id",
+    "file": "apps/api/src/stock/warehouses.controllers.ts",
+    "line": 79,
+    "handler": "update",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SETTINGS_EDIT)",
+      "@RequireFeature(Feature.WAREHOUSES)"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/warehouses/:id/brands",
+    "file": "apps/api/src/stock/warehouses.controllers.ts",
+    "line": 91,
+    "handler": "setBrands",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SETTINGS_EDIT)",
+      "@RequireFeature(Feature.MULTI_UNIT)"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/warehouses/:id/categories",
+    "file": "apps/api/src/stock/warehouses.controllers.ts",
+    "line": 103,
+    "handler": "setCategories",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SETTINGS_EDIT)",
+      "@RequireFeature(Feature.MULTI_UNIT)"
+    ]
+  },
+  {
+    "verb": "DELETE",
+    "path": "/warehouses/:id",
+    "file": "apps/api/src/stock/warehouses.controllers.ts",
+    "line": 114,
+    "handler": "archive",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SETTINGS_EDIT)",
+      "@RequireFeature(Feature.WAREHOUSES)",
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/stock-transfers",
+    "file": "apps/api/src/stock/warehouses.controllers.ts",
+    "line": 132,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.WAREHOUSES)",
+      "@RequirePermission(Permission.STOCK_TRANSFER)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/stock-transfers/:id",
+    "file": "apps/api/src/stock/warehouses.controllers.ts",
+    "line": 140,
+    "handler": "get",
+    "classDecorators": [
+      "@RequireFeature(Feature.WAREHOUSES)",
+      "@RequirePermission(Permission.STOCK_TRANSFER)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/stock-transfers",
+    "file": "apps/api/src/stock/warehouses.controllers.ts",
+    "line": 148,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.WAREHOUSES)",
+      "@RequirePermission(Permission.STOCK_TRANSFER)"
+    ],
+    "decorators": [
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/stock-transfers/:id",
+    "file": "apps/api/src/stock/warehouses.controllers.ts",
+    "line": 157,
+    "handler": "update",
+    "classDecorators": [
+      "@RequireFeature(Feature.WAREHOUSES)",
+      "@RequirePermission(Permission.STOCK_TRANSFER)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/stock-transfers/:id/validate",
+    "file": "apps/api/src/stock/warehouses.controllers.ts",
+    "line": 166,
+    "handler": "validate",
+    "classDecorators": [
+      "@RequireFeature(Feature.WAREHOUSES)",
+      "@RequirePermission(Permission.STOCK_TRANSFER)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/stock-transfers/:id/cancel",
+    "file": "apps/api/src/stock/warehouses.controllers.ts",
+    "line": 176,
+    "handler": "cancel",
+    "classDecorators": [
+      "@RequireFeature(Feature.WAREHOUSES)",
+      "@RequirePermission(Permission.STOCK_TRANSFER)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/tenant/settings",
+    "file": "apps/api/src/tenants/tenants.controller.ts",
+    "line": 17,
+    "handler": "get",
+    "classDecorators": [],
+    "decorators": []
+  },
+  {
+    "verb": "PATCH",
+    "path": "/tenant/settings",
+    "file": "apps/api/src/tenants/tenants.controller.ts",
+    "line": 22,
+    "handler": "update",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.SETTINGS_EDIT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/routes",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 86,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/routes/:id",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 94,
+    "handler": "get",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/routes",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 102,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": [
+      "@Roles(...PLANNERS)"
+    ]
+  },
+  {
+    "verb": "PATCH",
+    "path": "/routes/:id",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 111,
+    "handler": "update",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": [
+      "@Roles(...PLANNERS)"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/routes/:id/stops",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 121,
+    "handler": "setStops",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": [
+      "@Roles(...PLANNERS)"
+    ]
+  },
+  {
+    "verb": "DELETE",
+    "path": "/routes/:id",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 131,
+    "handler": "archive",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": [
+      "@Roles(...PLANNERS)",
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/me/today",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 148,
+    "handler": "today",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/visits",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 159,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/visits/:id",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 167,
+    "handler": "get",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/visits",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 175,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@Roles(...SELLERS)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/orders",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 191,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/orders/deliverers",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 200,
+    "handler": "deliverers",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": [
+      "@Roles(...PLANNERS)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/orders/:id",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 206,
+    "handler": "get",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/orders",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 214,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@Roles(...SELLERS)"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/orders/:id",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 224,
+    "handler": "update",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": [
+      "@Roles(...SELLERS)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/orders/:id/confirm",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 234,
+    "handler": "confirm",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@Roles(...SELLERS)",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/orders/:id/cancel",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 245,
+    "handler": "cancel",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@Roles(...SELLERS)",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "PATCH",
+    "path": "/orders/:id/livreur",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 257,
+    "handler": "assignLivreur",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": [
+      "@Roles(...PLANNERS)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/orders/:id/deliver",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 267,
+    "handler": "deliver",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@Roles(...DELIVERERS)",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/seller-sessions",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 286,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)",
+      "@Roles(...PLANNERS)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/seller-sessions/:id",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 294,
+    "handler": "get",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)",
+      "@Roles(...PLANNERS)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/seller-sessions",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 302,
+    "handler": "open",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)",
+      "@Roles(...PLANNERS)"
+    ],
+    "decorators": [
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/seller-sessions/:id/close",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 311,
+    "handler": "close",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)",
+      "@Roles(...PLANNERS)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/seller-sessions/:id/adjust",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 322,
+    "handler": "adjust",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)",
+      "@Roles(...PLANNERS)"
+    ],
+    "decorators": [
+      "@Idempotent()"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/tournees/reports",
+    "file": "apps/api/src/tournees/tournees.controllers.ts",
+    "line": 339,
+    "handler": "report",
+    "classDecorators": [
+      "@RequireFeature(Feature.TOURNEES)",
+      "@Roles(...SELLERS)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/cash-accounts",
+    "file": "apps/api/src/treasury/treasury.controllers.ts",
+    "line": 58,
+    "handler": "list",
+    "classDecorators": [
+      "@RequireFeature(Feature.TREASURY)"
+    ],
+    "decorators": []
+  },
+  {
+    "verb": "POST",
+    "path": "/cash-accounts",
+    "file": "apps/api/src/treasury/treasury.controllers.ts",
+    "line": 66,
+    "handler": "create",
+    "classDecorators": [
+      "@RequireFeature(Feature.TREASURY)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.TREASURY_MANAGE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/cash-accounts/:id",
+    "file": "apps/api/src/treasury/treasury.controllers.ts",
+    "line": 75,
+    "handler": "get",
+    "classDecorators": [
+      "@RequireFeature(Feature.TREASURY)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.TREASURY_VIEW)"
+    ]
+  },
+  {
+    "verb": "PATCH",
+    "path": "/cash-accounts/:id",
+    "file": "apps/api/src/treasury/treasury.controllers.ts",
+    "line": 84,
+    "handler": "update",
+    "classDecorators": [
+      "@RequireFeature(Feature.TREASURY)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.TREASURY_MANAGE)"
+    ]
+  },
+  {
+    "verb": "DELETE",
+    "path": "/cash-accounts/:id",
+    "file": "apps/api/src/treasury/treasury.controllers.ts",
+    "line": 94,
+    "handler": "archive",
+    "classDecorators": [
+      "@RequireFeature(Feature.TREASURY)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.TREASURY_MANAGE)",
+      "@HttpCode(HttpStatus.NO_CONTENT)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/cash-accounts/:id/movements",
+    "file": "apps/api/src/treasury/treasury.controllers.ts",
+    "line": 101,
+    "handler": "movements",
+    "classDecorators": [
+      "@RequireFeature(Feature.TREASURY)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.TREASURY_VIEW)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/cash-accounts/:id/opening",
+    "file": "apps/api/src/treasury/treasury.controllers.ts",
+    "line": 111,
+    "handler": "opening",
+    "classDecorators": [
+      "@RequireFeature(Feature.TREASURY)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@RequirePermission(Permission.TREASURY_MANAGE)",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/cash-accounts/:id/counts",
+    "file": "apps/api/src/treasury/treasury.controllers.ts",
+    "line": 123,
+    "handler": "count",
+    "classDecorators": [
+      "@RequireFeature(Feature.TREASURY)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@RequirePermission(Permission.TREASURY_OPERATE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/treasury/summary",
+    "file": "apps/api/src/treasury/treasury.controllers.ts",
+    "line": 140,
+    "handler": "summary",
+    "classDecorators": [
+      "@RequireFeature(Feature.TREASURY)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.TREASURY_VIEW)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/treasury/reconcile",
+    "file": "apps/api/src/treasury/treasury.controllers.ts",
+    "line": 149,
+    "handler": "reconcile",
+    "classDecorators": [
+      "@RequireFeature(Feature.TREASURY)"
+    ],
+    "decorators": [
+      "@RequirePermission(Permission.TREASURY_MANAGE)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/treasury/transfers",
+    "file": "apps/api/src/treasury/treasury.controllers.ts",
+    "line": 155,
+    "handler": "transfer",
+    "classDecorators": [
+      "@RequireFeature(Feature.TREASURY)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@RequirePermission(Permission.TREASURY_OPERATE)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/treasury/transfers/:id/cancel",
+    "file": "apps/api/src/treasury/treasury.controllers.ts",
+    "line": 165,
+    "handler": "cancelTransfer",
+    "classDecorators": [
+      "@RequireFeature(Feature.TREASURY)"
+    ],
+    "decorators": [
+      "@Idempotent()",
+      "@RequirePermission(Permission.TREASURY_OPERATE)",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/users",
+    "file": "apps/api/src/users/users.controller.ts",
+    "line": 52,
+    "handler": "list",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.USERS_VIEW)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/users/invite",
+    "file": "apps/api/src/users/users.controller.ts",
+    "line": 58,
+    "handler": "invite",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.USERS_MANAGE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/users/sellers",
+    "file": "apps/api/src/users/users.controller.ts",
+    "line": 68,
+    "handler": "sellers",
+    "classDecorators": [],
+    "decorators": [
+      "@Roles(Role.OWNER, Role.MANAGER, Role.SUPERVISOR)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/users/team",
+    "file": "apps/api/src/users/users.controller.ts",
+    "line": 77,
+    "handler": "team",
+    "classDecorators": [],
+    "decorators": [
+      "@Roles(Role.OWNER, Role.MANAGER, Role.SUPERVISOR)",
+      "@RequireFeature(Feature.SALES_FORCE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/users/me/dashboard-layout",
+    "file": "apps/api/src/users/users.controller.ts",
+    "line": 85,
+    "handler": "dashboardLayout",
+    "classDecorators": [],
+    "decorators": []
+  },
+  {
+    "verb": "PATCH",
+    "path": "/users/me/dashboard-layout",
+    "file": "apps/api/src/users/users.controller.ts",
+    "line": 90,
+    "handler": "saveDashboardLayout",
+    "classDecorators": [],
+    "decorators": []
+  },
+  {
+    "verb": "GET",
+    "path": "/users/:id",
+    "file": "apps/api/src/users/users.controller.ts",
+    "line": 98,
+    "handler": "get",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.USERS_VIEW)"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/users/:id",
+    "file": "apps/api/src/users/users.controller.ts",
+    "line": 104,
+    "handler": "update",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.USERS_MANAGE)"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/users/:id/permissions",
+    "file": "apps/api/src/users/users.controller.ts",
+    "line": 114,
+    "handler": "permissions",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.USERS_MANAGE)"
+    ]
+  },
+  {
+    "verb": "GET",
+    "path": "/users/:id/access",
+    "file": "apps/api/src/users/users.controller.ts",
+    "line": 125,
+    "handler": "getAccess",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.USERS_VIEW)",
+      "@RequireFeature(Feature.MULTI_UNIT)"
+    ]
+  },
+  {
+    "verb": "PUT",
+    "path": "/users/:id/access",
+    "file": "apps/api/src/users/users.controller.ts",
+    "line": 133,
+    "handler": "setAccess",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.WAREHOUSE_ACCESS_MANAGE)",
+      "@RequireFeature(Feature.MULTI_UNIT)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/users/:id/deactivate",
+    "file": "apps/api/src/users/users.controller.ts",
+    "line": 144,
+    "handler": "deactivate",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.USERS_MANAGE)",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/users/:id/reactivate",
+    "file": "apps/api/src/users/users.controller.ts",
+    "line": 154,
+    "handler": "reactivate",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.USERS_MANAGE)",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  },
+  {
+    "verb": "POST",
+    "path": "/users/:id/reset-password",
+    "file": "apps/api/src/users/users.controller.ts",
+    "line": 164,
+    "handler": "resetPassword",
+    "classDecorators": [],
+    "decorators": [
+      "@RequirePermission(Permission.USERS_MANAGE)",
+      "@HttpCode(HttpStatus.OK)"
+    ]
+  }
+]

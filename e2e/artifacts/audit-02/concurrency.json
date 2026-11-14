@@ -1,0 +1,95 @@
+{
+  "totals": {
+    "total": 14,
+    "passed": 14,
+    "failed": 0,
+    "blocked": 0,
+    "info": 0
+  },
+  "results": [
+    {
+      "area": "C1. Two sellers, the last unit (20 at once)",
+      "durationMs": 10,
+      "name": "BLOCK: exactly one sale wins, the 19 others are refused cleanly",
+      "status": "PASS"
+    },
+    {
+      "area": "C1. Two sellers, the last unit (20 at once)",
+      "durationMs": 2,
+      "name": "BLOCK: the refused sales burned no document number",
+      "status": "PASS"
+    },
+    {
+      "area": "C1. Two sellers, the last unit (20 at once)",
+      "durationMs": 2,
+      "name": "WARN: the 20 sales pass and the stock is exactly -20, equal to its ledger",
+      "status": "PASS"
+    },
+    {
+      "area": "C1. Two sellers, the last unit (20 at once)",
+      "durationMs": 1,
+      "name": "sales locking two products in opposite orders never deadlock into a 500",
+      "status": "PASS"
+    },
+    {
+      "area": "C1. Two sellers, the last unit (20 at once)",
+      "durationMs": 0,
+      "name": "a draft validated 20 times at once is validated once",
+      "status": "PASS"
+    },
+    {
+      "area": "C1. Two sellers, the last unit (20 at once)",
+      "durationMs": 1,
+      "name": "a sale cancelled 20 times at once is reversed once",
+      "status": "PASS"
+    },
+    {
+      "area": "C2. Versements on one client (20 at once)",
+      "durationMs": 7,
+      "name": "no versement is lost: 11 900 - 20 x 100 = 9 900, ledger equal, numbers 1..20",
+      "status": "PASS"
+    },
+    {
+      "area": "C4. The same Idempotency-Key sent 20 times",
+      "durationMs": 1,
+      "name": "one key creates one versement, whatever the number of copies in flight",
+      "status": "PASS"
+    },
+    {
+      "area": "C4. The same Idempotency-Key sent 20 times",
+      "durationMs": 0,
+      "name": "every copy answers the original (2xx, same id) or \"in progress\" (409), nothing else",
+      "status": "PASS"
+    },
+    {
+      "area": "C4. The same Idempotency-Key sent 20 times",
+      "durationMs": 4,
+      "name": "the key replayed afterwards still answers the original",
+      "status": "PASS"
+    },
+    {
+      "area": "C3. Transfers out of one cash account (20 at once)",
+      "durationMs": 2,
+      "name": "exactly 10 transfers pass, the caisse ends at zero and never below",
+      "status": "PASS"
+    },
+    {
+      "area": "C3. Transfers out of one cash account (20 at once)",
+      "durationMs": 2,
+      "name": "transfers in both directions never deadlock and the money stays 1 000 DA",
+      "status": "PASS"
+    },
+    {
+      "area": "C5. The same payroll run approved 20 times, then paid 20 times",
+      "durationMs": 3,
+      "name": "one approval wins: one number, the salary posted once",
+      "status": "PASS"
+    },
+    {
+      "area": "C5. The same payroll run approved 20 times, then paid 20 times",
+      "durationMs": 2,
+      "name": "a run paid 20 times at once is paid once",
+      "status": "PASS"
+    }
+  ]
+}

@@ -8,6 +8,10 @@ import { area, assert, check, record, writeSummary } from '../lib/harness.ts';
 import { call, idemKey, request } from '../lib/http.ts';
 import { dbState, buildFixture, makeSale, num, today, type Fixture } from './fixture.ts';
 import { query } from '../lib/db.ts';
+import { importChain } from './chains/import.ts';
+import { depotsChain } from './chains/depots.ts';
+import { chargesChain, creditChain, treasuryChain } from './chains/money.ts';
+import { payrollChain, primesChain } from './chains/people.ts';
 
 const money = (v: string): number => Number(v);
 
@@ -205,8 +209,10 @@ async function main(): Promise<void> {
   });
   await check('the audit rows keep who, when and which device', async () => {
     const rows = await query<{ userId: string | null; createdAt: string; deviceName: string | null }>(
+      // A row written by the super-admin (the plan limits lifted by the fixture on an audit
+      // database) has no user of the company: it is not a business write of the tenant.
       `SELECT "userId"::text, "createdAt"::text, "deviceName" FROM audit_logs
-        WHERE "tenantId" = $1::uuid ORDER BY "createdAt" LIMIT 5`,
+        WHERE "tenantId" = $1::uuid AND action <> 'SUBSCRIPTION_UPDATED' ORDER BY "createdAt" LIMIT 5`,
       [tenantId],
     );
     for (const r of rows) {
@@ -215,6 +221,33 @@ async function main(): Promise<void> {
     }
   });
 
+  // ---------------------------------------------------------------- 9..16: audit 02
+  // One chain per module added since audit 01 (phases 12-34), each in its own company with
+  // every module on. They need the audit database (DB=...erp_audit02, see REPORT-02.md).
+  const chains: [string, () => Promise<void>][] = [
+    ['import', importChain],
+    ['dépôts, tournée, session, emballages', depotsChain],
+    ['règlements, chèques, aging', creditChain],
+    ['charges, loyer, résultat net', chargesChain],
+    ['trésorerie', treasuryChain],
+    ['primes', primesChain],
+    ['RH et paie', payrollChain],
+  ];
+  for (const [name, chain] of chains) {
+    try {
+      await chain();
+    } catch (err) {
+      // A chain that cannot go on is a result too: it must not hide the next ones.
+      record({
+        name: `chain "${name}" ran to its end`,
+        status: 'FAIL',
+        expected: 'every step of the chain answers',
+        evidence: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
+  area('Scenario');
   record({
     name: 'scenario completed',
     status: 'PASS',

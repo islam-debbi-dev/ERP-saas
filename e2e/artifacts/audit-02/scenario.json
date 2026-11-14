@@ -1,0 +1,551 @@
+{
+  "totals": {
+    "total": 89,
+    "passed": 87,
+    "failed": 2,
+    "blocked": 0,
+    "info": 0
+  },
+  "results": [
+    {
+      "area": "1. Sale on credit",
+      "durationMs": 0,
+      "name": "sale is validated and numbered",
+      "status": "PASS"
+    },
+    {
+      "area": "1. Sale on credit",
+      "durationMs": 24,
+      "name": "state after the sale is the expected one",
+      "status": "PASS"
+    },
+    {
+      "area": "1. Sale on credit",
+      "durationMs": 11,
+      "name": "the sale DTO totals match the ledger",
+      "status": "PASS"
+    },
+    {
+      "area": "2. Partial payment (versement)",
+      "durationMs": 3,
+      "name": "the payment lowers the client balance and allocates the oldest document",
+      "status": "PASS"
+    },
+    {
+      "area": "2. Partial payment (versement)",
+      "durationMs": 1,
+      "name": "the payment is audited",
+      "status": "PASS"
+    },
+    {
+      "area": "3. Return of one unit",
+      "durationMs": 2,
+      "name": "the avoir restocks the goods and lowers the balance",
+      "status": "PASS"
+    },
+    {
+      "area": "3. Return of one unit",
+      "durationMs": 1,
+      "name": "the avoir has its own number and ledger entry",
+      "status": "PASS"
+    },
+    {
+      "area": "4. Cancellation of the sale",
+      "durationMs": 0,
+      "name": "the sale is cancelled",
+      "status": "PASS"
+    },
+    {
+      "area": "4. Cancellation of the sale",
+      "durationMs": 3,
+      "name": "the balance is back to zero and the goods are back",
+      "status": "PASS"
+    },
+    {
+      "area": "4. Cancellation of the sale",
+      "durationMs": 1,
+      "name": "the cancellation is audited",
+      "status": "PASS"
+    },
+    {
+      "area": "5. Counter sale (no client)",
+      "durationMs": 2,
+      "name": "a counter sale moves the stock but no client account",
+      "status": "PASS"
+    },
+    {
+      "area": "6. Facture grouping BLs",
+      "durationMs": 0,
+      "name": "the facture is created and numbered",
+      "status": "PASS"
+    },
+    {
+      "area": "6. Facture grouping BLs",
+      "durationMs": 2,
+      "name": "the grouped facture does not charge the client twice",
+      "status": "PASS"
+    },
+    {
+      "area": "7. Document numbering",
+      "durationMs": 3,
+      "name": "the numbers of a tenant are sequential per type and year",
+      "status": "PASS"
+    },
+    {
+      "area": "8. Audit trail",
+      "durationMs": 1,
+      "name": "every business write left an audit row",
+      "status": "PASS"
+    },
+    {
+      "area": "8. Audit trail",
+      "durationMs": 2,
+      "name": "the audit rows keep who, when and which device",
+      "status": "PASS"
+    },
+    {
+      "area": "9. Import: landed costs, close, sale, late cost",
+      "durationMs": 0,
+      "name": "the dossier is numbered DI-YYYY-000001 and open",
+      "status": "PASS"
+    },
+    {
+      "area": "9. Import: landed costs, close, sale, late cost",
+      "durationMs": 3,
+      "name": "a BR of an open dossier posts the supplier account and moves no stock",
+      "status": "PASS"
+    },
+    {
+      "area": "9. Import: landed costs, close, sale, late cost",
+      "durationMs": 3,
+      "name": "a cost with a supplier is a debt; a cost paid now leaves the caisse",
+      "status": "PASS"
+    },
+    {
+      "area": "9. Import: landed costs, close, sale, late cost",
+      "durationMs": 4,
+      "name": "closing puts the goods in stock at the coût de revient",
+      "status": "PASS"
+    },
+    {
+      "area": "9. Import: landed costs, close, sale, late cost",
+      "durationMs": 13,
+      "name": "closing twice with the same key replays and moves nothing",
+      "status": "PASS"
+    },
+    {
+      "area": "9. Import: landed costs, close, sale, late cost",
+      "durationMs": 4,
+      "name": "the sale leaves at the landed cost and its cash reaches the caisse",
+      "status": "PASS"
+    },
+    {
+      "area": "9. Import: landed costs, close, sale, late cost",
+      "durationMs": 5,
+      "name": "a late cost moves the CUMP of what is on hand only",
+      "status": "PASS"
+    },
+    {
+      "area": "9. Import: landed costs, close, sale, late cost",
+      "durationMs": 22,
+      "name": "the past sale keeps its cost; the share of sold units is the écart (2 400 DA)",
+      "status": "PASS"
+    },
+    {
+      "area": "9. Import: landed costs, close, sale, late cost",
+      "durationMs": 14,
+      "name": "a règlement in USD lowers both balances and leaves the bank in DZD",
+      "status": "PASS"
+    },
+    {
+      "area": "9. Import: landed costs, close, sale, late cost",
+      "durationMs": 2,
+      "name": "the BR got its number at validation and the dossier keeps its own",
+      "status": "PASS"
+    },
+    {
+      "area": "10. Dépôts, camion, tournée",
+      "durationMs": 2,
+      "name": "a transfer and a chargement move the goods between dépôts, not the CUMP",
+      "status": "PASS"
+    },
+    {
+      "area": "10. Dépôts, camion, tournée",
+      "durationMs": 1,
+      "name": "a seller's sale with no dépôt chosen leaves from his truck (domain.md, phase 15)",
+      "status": "FAIL",
+      "evidence": "the SALE movement is on the dépôt principal, not on the truck: camion=24.000 (4 pièces physically left it), dépôt principal=62.000",
+      "expected": "truck 20, dépôt principal 66"
+    },
+    {
+      "area": "10. Dépôts, camion, tournée",
+      "durationMs": 0,
+      "name": "the sale itself is right: total, credit, company stock",
+      "status": "PASS"
+    },
+    {
+      "area": "10. Dépôts, camion, tournée",
+      "durationMs": 62,
+      "name": "stock is judged per dépôt: more than the truck holds is refused in BLOCK mode",
+      "status": "PASS"
+    },
+    {
+      "area": "10. Dépôts, camion, tournée",
+      "durationMs": 1,
+      "name": "a confirmed order is numbered and touches neither stock nor the account",
+      "status": "PASS"
+    },
+    {
+      "area": "10. Dépôts, camion, tournée",
+      "durationMs": 1,
+      "name": "delivering 7 of 10 creates one BL for 7, from the dépôt of the order",
+      "status": "PASS"
+    },
+    {
+      "area": "10. Dépôts, camion, tournée",
+      "durationMs": 5,
+      "name": "the same delivery sent again replays and delivers nothing more",
+      "status": "PASS"
+    },
+    {
+      "area": "10. Dépôts, camion, tournée",
+      "durationMs": 42,
+      "name": "a déchargement brings the truck back to zero",
+      "status": "PASS"
+    },
+    {
+      "area": "11. Clôture de tournée, emballages consignés",
+      "durationMs": 1,
+      "name": "the session expects the seller's cash (2 000 at the sale + 500) and stores the écart",
+      "status": "PASS"
+    },
+    {
+      "area": "11. Clôture de tournée, emballages consignés",
+      "durationMs": 1,
+      "name": "the client account holds the sale, the cash and the cheque",
+      "status": "PASS"
+    },
+    {
+      "area": "11. Clôture de tournée, emballages consignés",
+      "durationMs": 4,
+      "name": "cash went to the caisse and the cheque to the bank",
+      "status": "PASS"
+    },
+    {
+      "area": "11. Clôture de tournée, emballages consignés",
+      "durationMs": 1,
+      "name": "30 bouteilles leave 2 casiers with the client, 1 comes back at the sale",
+      "status": "PASS"
+    },
+    {
+      "area": "11. Clôture de tournée, emballages consignés",
+      "durationMs": 1,
+      "name": "a return of empties brings the count to zero",
+      "status": "PASS"
+    },
+    {
+      "area": "11. Clôture de tournée, emballages consignés",
+      "durationMs": 1,
+      "name": "cancelling the sale reverses exactly what it left (2 given - 1 returned)",
+      "status": "PASS"
+    },
+    {
+      "area": "11. Clôture de tournée, emballages consignés",
+      "durationMs": 2,
+      "name": "document numbers of the company have no gap",
+      "status": "PASS"
+    },
+    {
+      "area": "12. Règlements fournisseur, chèques, balances âgées",
+      "durationMs": 4,
+      "name": "a BR paid in part at reception leaves the rest as a debt and takes the cash",
+      "status": "PASS"
+    },
+    {
+      "area": "12. Règlements fournisseur, chèques, balances âgées",
+      "durationMs": 2,
+      "name": "a cheque to the supplier lowers the debt and leaves the bank",
+      "status": "PASS"
+    },
+    {
+      "area": "12. Règlements fournisseur, chèques, balances âgées",
+      "durationMs": 24,
+      "name": "the cheque is listed among the cheques due this week",
+      "status": "PASS"
+    },
+    {
+      "area": "12. Règlements fournisseur, chèques, balances âgées",
+      "durationMs": 1,
+      "name": "cancelling the règlement brings the debt and the money back, nothing deleted",
+      "status": "PASS"
+    },
+    {
+      "area": "12. Règlements fournisseur, chèques, balances âgées",
+      "durationMs": 4,
+      "name": "the supplier aging sums to the balance, all in 0-30 days",
+      "status": "PASS"
+    },
+    {
+      "area": "12. Règlements fournisseur, chèques, balances âgées",
+      "durationMs": 4,
+      "name": "the client aging puts each debt in its bucket and a versement on the oldest",
+      "status": "PASS"
+    },
+    {
+      "area": "12. Règlements fournisseur, chèques, balances âgées",
+      "durationMs": 1,
+      "name": "a client cheque lowers his balance and goes to the bank",
+      "status": "PASS"
+    },
+    {
+      "area": "12. Règlements fournisseur, chèques, balances âgées",
+      "durationMs": 9,
+      "name": "a bounced cheque gives the debt back, plus the bank fees, and leaves the bank",
+      "status": "PASS"
+    },
+    {
+      "area": "12. Règlements fournisseur, chèques, balances âgées",
+      "durationMs": 5,
+      "name": "the relevé of the client ends on his balance",
+      "status": "PASS"
+    },
+    {
+      "area": "12. Règlements fournisseur, chèques, balances âgées",
+      "durationMs": 1,
+      "name": "numbers: BR, RGF, VER, BL have no gap",
+      "status": "PASS"
+    },
+    {
+      "area": "13. Dépenses, loyer au prorata, résultat net de la Vue d'ensemble",
+      "durationMs": 5,
+      "name": "the charges of 2026-11-01..2026-11-14 are the rent by day + the dépenses, the rent payment apart",
+      "status": "PASS"
+    },
+    {
+      "area": "13. Dépenses, loyer au prorata, résultat net de la Vue d'ensemble",
+      "durationMs": 5,
+      "name": "a whole month of a monthly lease costs exactly its amount",
+      "status": "PASS"
+    },
+    {
+      "area": "13. Dépenses, loyer au prorata, résultat net de la Vue d'ensemble",
+      "durationMs": 14,
+      "name": "the Vue d'ensemble: résultat net = marge - charges, cash out = every dépense paid",
+      "status": "PASS"
+    },
+    {
+      "area": "13. Dépenses, loyer au prorata, résultat net de la Vue d'ensemble",
+      "durationMs": 1,
+      "name": "the caisse holds the sale minus the three dépenses",
+      "status": "PASS"
+    },
+    {
+      "area": "13. Dépenses, loyer au prorata, résultat net de la Vue d'ensemble",
+      "durationMs": 10,
+      "name": "paying the same rent period twice is refused",
+      "status": "PASS"
+    },
+    {
+      "area": "13. Dépenses, loyer au prorata, résultat net de la Vue d'ensemble",
+      "durationMs": 7,
+      "name": "cancelling the rent payment gives the cash back and changes no charge",
+      "status": "PASS"
+    },
+    {
+      "area": "14. Trésorerie: ouverture, virement interne, comptage, payé à la réception",
+      "durationMs": 11,
+      "name": "an opening sets the balance; a second one is refused",
+      "status": "PASS"
+    },
+    {
+      "area": "14. Trésorerie: ouverture, virement interne, comptage, payé à la réception",
+      "durationMs": 2,
+      "name": "a transfer moves money between two accounts and sums to zero",
+      "status": "PASS"
+    },
+    {
+      "area": "14. Trésorerie: ouverture, virement interne, comptage, payé à la réception",
+      "durationMs": 9,
+      "name": "a transfer above the balance is refused (CASH_INSUFFICIENT)",
+      "status": "PASS"
+    },
+    {
+      "area": "14. Trésorerie: ouverture, virement interne, comptage, payé à la réception",
+      "durationMs": 27,
+      "name": "a comptage needs a reason when it differs, then posts the écart",
+      "status": "PASS"
+    },
+    {
+      "area": "14. Trésorerie: ouverture, virement interne, comptage, payé à la réception",
+      "durationMs": 0,
+      "name": "paid at reception is a real règlement, from the caisse",
+      "status": "PASS"
+    },
+    {
+      "area": "14. Trésorerie: ouverture, virement interne, comptage, payé à la réception",
+      "durationMs": 9,
+      "name": "that règlement cannot be cancelled alone",
+      "status": "PASS"
+    },
+    {
+      "area": "14. Trésorerie: ouverture, virement interne, comptage, payé à la réception",
+      "durationMs": 2,
+      "name": "cancelling the BR cancels its règlement: supplier at zero, cash and stock back",
+      "status": "PASS"
+    },
+    {
+      "area": "14. Trésorerie: ouverture, virement interne, comptage, payé à la réception",
+      "durationMs": 1,
+      "name": "cancelling the transfer reverses both sides",
+      "status": "PASS"
+    },
+    {
+      "area": "14. Trésorerie: ouverture, virement interne, comptage, payé à la réception",
+      "durationMs": 3,
+      "name": "GET /treasury/reconcile finds no difference",
+      "status": "PASS"
+    },
+    {
+      "area": "15. Primes: un mois approuvé, puis une vente annulée le mois suivant",
+      "durationMs": 0,
+      "name": "last month: 2 % of 10 000 DA HT = 200 DA for the seller",
+      "status": "PASS"
+    },
+    {
+      "area": "15. Primes: un mois approuvé, puis une vente annulée le mois suivant",
+      "durationMs": 0,
+      "name": "the owner approves: the run is frozen",
+      "status": "PASS"
+    },
+    {
+      "area": "15. Primes: un mois approuvé, puis une vente annulée le mois suivant",
+      "durationMs": 5,
+      "name": "approving twice is refused and adds nothing",
+      "status": "PASS"
+    },
+    {
+      "area": "15. Primes: un mois approuvé, puis une vente annulée le mois suivant",
+      "durationMs": 11,
+      "name": "the approved month is not rewritten by the cancellation",
+      "status": "PASS"
+    },
+    {
+      "area": "15. Primes: un mois approuvé, puis une vente annulée le mois suivant",
+      "durationMs": 24,
+      "name": "this month takes the cancelled sale back: CA HT -10 000, prime -200 or 0, never +",
+      "status": "PASS"
+    },
+    {
+      "area": "15. Primes: un mois approuvé, puis une vente annulée le mois suivant",
+      "durationMs": 1,
+      "name": "a frozen run refuses any change in the database itself",
+      "status": "PASS"
+    },
+    {
+      "area": "15. Primes: un mois approuvé, puis une vente annulée le mois suivant",
+      "durationMs": 6,
+      "name": "stock and client account are back after the cancellation",
+      "status": "PASS"
+    },
+    {
+      "area": "16. RH et paie: pointage, congé, avance, paie approuvée et payée",
+      "durationMs": 0,
+      "name": "the employee gets matricule EMP-000001",
+      "status": "PASS"
+    },
+    {
+      "area": "16. RH et paie: pointage, congé, avance, paie approuvée et payée",
+      "durationMs": 6,
+      "name": "an approved paid leave of 2 working days takes 2 days off the balance",
+      "status": "PASS"
+    },
+    {
+      "area": "16. RH et paie: pointage, congé, avance, paie approuvée et payée",
+      "durationMs": 19,
+      "name": "a second mark on a marked day is refused (corrections only)",
+      "status": "PASS"
+    },
+    {
+      "area": "16. RH et paie: pointage, congé, avance, paie approuvée et payée",
+      "durationMs": 7,
+      "name": "an avance is a dépense, an employee ledger row and cash out, in one go",
+      "status": "PASS"
+    },
+    {
+      "area": "16. RH et paie: pointage, congé, avance, paie approuvée et payée",
+      "durationMs": 13,
+      "name": "the avance is cash, not a charge",
+      "status": "PASS"
+    },
+    {
+      "area": "16. RH et paie: pointage, congé, avance, paie approuvée et payée",
+      "durationMs": 0,
+      "name": "the draft payslip: 60 000 - one absent day (2 000), CNAS 9 %, IRG of the barème",
+      "status": "PASS"
+    },
+    {
+      "area": "16. RH et paie: pointage, congé, avance, paie approuvée et payée",
+      "durationMs": 1,
+      "name": "a draft has no number and posts nothing",
+      "status": "PASS"
+    },
+    {
+      "area": "16. RH et paie: pointage, congé, avance, paie approuvée et payée",
+      "durationMs": 2,
+      "name": "approval numbers the run PAIE-YYYY-000001 and posts the ledgers",
+      "status": "PASS"
+    },
+    {
+      "area": "16. RH et paie: pointage, congé, avance, paie approuvée et payée",
+      "durationMs": 28,
+      "name": "the approved month is locked: no new mark",
+      "status": "PASS"
+    },
+    {
+      "area": "16. RH et paie: pointage, congé, avance, paie approuvée et payée",
+      "durationMs": 15,
+      "name": "the approved run costs brut + employer CNAS in its month (charges)",
+      "status": "PASS"
+    },
+    {
+      "area": "16. RH et paie: pointage, congé, avance, paie approuvée et payée",
+      "durationMs": 6,
+      "name": "paying the run: one dépense per employee, salary due at zero, cash out",
+      "status": "PASS"
+    },
+    {
+      "area": "16. RH et paie: pointage, congé, avance, paie approuvée et payée",
+      "durationMs": 12,
+      "name": "the same payment sent again pays nothing more",
+      "status": "PASS"
+    },
+    {
+      "area": "16. RH et paie: pointage, congé, avance, paie approuvée et payée",
+      "durationMs": 47,
+      "name": "paying a run that is already paid, with a new key, pays nothing and says so",
+      "status": "FAIL",
+      "evidence": "nothing was left to pay, no dépense was written, and the API answered 201 as if it had paid",
+      "expected": "409 or 422: nothing left to pay"
+    },
+    {
+      "area": "16. RH et paie: pointage, congé, avance, paie approuvée et payée",
+      "durationMs": 14,
+      "name": "a paid run cannot be cancelled",
+      "status": "PASS"
+    },
+    {
+      "area": "16. RH et paie: pointage, congé, avance, paie approuvée et payée",
+      "durationMs": 5,
+      "name": "the employee ledger adds up to both balances",
+      "status": "PASS"
+    },
+    {
+      "area": "Scenario",
+      "durationMs": 0,
+      "name": "scenario completed",
+      "status": "PASS",
+      "expected": "the whole sale/payment/return/cancel chain holds",
+      "actual": "tenant db4af486-608d-4f87-857b-1d5699b5f4fb"
+    }
+  ]
+}

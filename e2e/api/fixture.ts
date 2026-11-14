@@ -4,6 +4,8 @@
  */
 import { call, idemKey, register, request, type Session } from '../lib/http.ts';
 import { query } from '../lib/db.ts';
+import { DB } from '../lib/config.ts';
+import { adminToken } from '../lib/audit.ts';
 
 export interface Fixture {
   session: Session;
@@ -32,7 +34,24 @@ export async function makeTenant(
   activity?: 'GROSSISTE' | 'IMPORTATEUR' | 'DISTRIBUTEUR',
 ): Promise<Session> {
   const tag = uniq('e2e');
-  return register(`${label} ${tag}`, `Owner ${tag}`, `${tag}@audit.local`, 'Audit1234!', activity);
+  const session = await register(`${label} ${tag}`, `Owner ${tag}`, `${tag}@audit.local`, 'Audit1234!', activity);
+  await liftPlanLimits(session.tenantId);
+  return session;
+}
+
+/**
+ * Since phase 13 a trial company is capped at 5 users, which the attack suite passes when it
+ * invites its sixth. On an audit database (its own super-admin, see lib/audit.ts) the
+ * company is made free of plan limits through the admin API; its edition is not touched.
+ * On any other database nothing changes.
+ */
+async function liftPlanLimits(tenantId: string): Promise<void> {
+  if (!new URL(DB).pathname.startsWith('/erp_audit02')) return;
+  await call(`/admin/tenants/${tenantId}/subscription`, {
+    method: 'PATCH',
+    token: await adminToken(),
+    body: { isFree: true },
+  });
 }
 
 export async function buildFixture(

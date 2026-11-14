@@ -1,0 +1,10 @@
+commit: c469e9abbbaea32d48186027620c29e8bfbf4b4c
+node:   v22.23.5   pnpm: 11.28.6
+date:   2026-11-13T22:39:44Z
+lint: exit 0, 475 s
+typecheck: exit 0, 35 s
+test: exit 1, 590 s
+build: exit 0, 99 s
+audit: exit 1, 4 s
+done
+test-rerun (API suites alone): exit 0, 194 s
