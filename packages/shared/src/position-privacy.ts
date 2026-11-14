@@ -48,28 +48,44 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
   return proto === Object.prototype || proto === null;
 }
 
-function walk(value: unknown, depth: number, seen: WeakSet<object>): unknown {
-  if (typeof value === 'string') return stripPositionParams(value);
+/** What a scrub drops: object keys by name, and parts of every string. */
+export interface ScrubRules {
+  dropKey(key: string): boolean;
+  cleanString(text: string): string;
+}
+
+function walk(value: unknown, depth: number, seen: WeakSet<object>, rules: ScrubRules): unknown {
+  if (typeof value === 'string') return rules.cleanString(value);
   if (depth > 12 || value === null || typeof value !== 'object') return value;
   if (seen.has(value)) return value;
   seen.add(value);
   if (Array.isArray(value)) {
-    for (let i = 0; i < value.length; i++) value[i] = walk(value[i], depth + 1, seen);
+    for (let i = 0; i < value.length; i++) value[i] = walk(value[i], depth + 1, seen, rules);
     return value;
   }
   if (!isPlainObject(value)) return value;
   for (const key of Object.keys(value)) {
-    if (isPositionParam(key)) delete value[key];
-    else value[key] = walk(value[key], depth + 1, seen);
+    if (rules.dropKey(key)) delete value[key];
+    else value[key] = walk(value[key], depth + 1, seen, rules);
   }
   return value;
 }
 
 /**
- * Drops the position from a Sentry payload (error event, span, breadcrumb) **in place** and
- * returns it: every string loses its position parameters, every `lat` / `lng` key goes.
- * In place because the SDK hands over its own object and events are large.
+ * Scrubs a Sentry payload (error event, span, breadcrumb) **in place** and returns it:
+ * every key the rules name goes, every string is cleaned. In place because the SDK hands
+ * over its own object and events are large. Shared with `sentry-privacy.ts` (audit 02, B-2).
+ */
+export function scrubPayload<T>(payload: T, rules: ScrubRules): T {
+  return walk(payload, 0, new WeakSet(), rules) as T;
+}
+
+const POSITION_RULES: ScrubRules = { dropKey: isPositionParam, cleanString: stripPositionParams };
+
+/**
+ * Drops the position from a payload in place: every string loses its position parameters,
+ * every `lat` / `lng` key goes.
  */
 export function scrubPosition<T>(payload: T): T {
-  return walk(payload, 0, new WeakSet()) as T;
+  return scrubPayload(payload, POSITION_RULES);
 }

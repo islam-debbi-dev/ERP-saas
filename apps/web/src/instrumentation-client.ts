@@ -1,7 +1,7 @@
 // Browser errors → Sentry, when the image was built with NEXT_PUBLIC_SENTRY_DSN.
 // One image serves staging and production, so the environment comes from the host.
 import * as Sentry from '@sentry/nextjs';
-import { scrubPosition } from '@erp/shared';
+import { scrubSentry } from '@erp/shared';
 
 const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
 
@@ -18,9 +18,11 @@ if (dsn) {
     tracesSampleRate: 0.1,
     // Phase 35: the position sent to "Clients proches" is never kept. The SDK keeps every
     // fetch URL as a breadcrumb and as a span, and sends them with the next error.
-    beforeBreadcrumb: scrubPosition,
-    beforeSend: scrubPosition,
-    beforeSendSpan: scrubPosition,
+    // No request body, cookie or one-time link token either (audit 02, B-2).
+    beforeBreadcrumb: scrubSentry,
+    beforeSend: scrubSentry,
+    beforeSendTransaction: scrubSentry,
+    beforeSendSpan: scrubSentry,
   });
 }
 
