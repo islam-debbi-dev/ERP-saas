@@ -8,13 +8,21 @@ describe('stripLinkTokens', () => {
     [`http://localhost:3003/s/${TOKEN}`, 'http://localhost:3003/s/[token]'],
     [`/auth/invitations/${TOKEN}/accept`, '/auth/invitations/[token]/accept'],
     [`GET /auth/invitations/${TOKEN}`, 'GET /auth/invitations/[token]'],
-    [`https://app.example.dz/invitation/${TOKEN}?lang=ar`, 'https://app.example.dz/invitation/[token]?lang=ar'],
+    [
+      `https://app.example.dz/invitation/${TOKEN}?lang=ar`,
+      'https://app.example.dz/invitation/[token]?lang=ar',
+    ],
   ])('%s', (text, clean) => {
     expect(stripLinkTokens(text)).toBe(clean);
   });
 
   it('leaves the routes and ordinary paths alone', () => {
-    for (const text of ['/s/:token', '/auth/invitations/:token/accept', '/sales/quick', '/clients/s/1']) {
+    for (const text of [
+      '/s/:token',
+      '/auth/invitations/:token/accept',
+      '/sales/quick',
+      '/clients/s/1',
+    ]) {
       expect(stripLinkTokens(text)).toBe(text);
     }
   });
@@ -24,7 +32,9 @@ describe('stripLinkTokens', () => {
 describe('scrubSentry', () => {
   it('an error event loses the body, the cookies and the Authorization header of its request', () => {
     const event = {
-      exception: { values: [{ type: 'PrismaClientKnownRequestError', value: 'numeric field overflow' }] },
+      exception: {
+        values: [{ type: 'PrismaClientKnownRequestError', value: 'numeric field overflow' }],
+      },
       request: {
         method: 'POST',
         url: 'http://localhost:3013/payments',
@@ -87,8 +97,13 @@ describe('scrubSentry', () => {
     const tx = {
       type: 'transaction',
       transaction: 'POST /admin/auth/login',
-      request: { url: 'http://localhost:3013/admin/auth/login', data: { password: 'Admin-pw', code: '123456' } },
-      contexts: { trace: { data: { 'http.request.body.data': '{"password":"Admin-pw","code":"123456"}' } } },
+      request: {
+        url: 'http://localhost:3013/admin/auth/login',
+        data: { password: 'Admin-pw', code: '123456' },
+      },
+      contexts: {
+        trace: { data: { 'http.request.body.data': '{"password":"Admin-pw","code":"123456"}' } },
+      },
       spans: [{ data: { 'http.request.body.data': '{"password":"Admin-pw"}' } }],
     };
     expect(JSON.stringify(scrubSentry(tx))).not.toMatch(/Admin-pw|123456/);
@@ -97,7 +112,11 @@ describe('scrubSentry', () => {
   it('a breadcrumb and a browser span lose the token of a share or invitation link', () => {
     const crumb = {
       category: 'fetch',
-      data: { method: 'GET', url: `http://localhost:3003/auth/invitations/${TOKEN}`, status_code: 200 },
+      data: {
+        method: 'GET',
+        url: `http://localhost:3003/auth/invitations/${TOKEN}`,
+        status_code: 200,
+      },
     };
     const nav = { category: 'navigation', data: { from: '/login', to: `/invitation/${TOKEN}` } };
     expect(scrubSentry(crumb).data.url).toBe('http://localhost:3003/auth/invitations/[token]');
@@ -105,7 +124,9 @@ describe('scrubSentry', () => {
   });
 
   it('still drops the position (phase 35)', () => {
-    const span = { data: { 'url.full': 'http://x/clients/nearby?lat=36.7&lng=3.05&limit=5', lat: 36.7 } };
+    const span = {
+      data: { 'url.full': 'http://x/clients/nearby?lat=36.7&lng=3.05&limit=5', lat: 36.7 },
+    };
     expect(scrubSentry(span)).toEqual({ data: { 'url.full': 'http://x/clients/nearby?limit=5' } });
   });
 
