@@ -1,0 +1,94 @@
+{
+ "hits": [
+  {
+   "who": "seller 1",
+   "path": "/stock/77d6332d-9035-486f-b391-ab60efa25b00/movements",
+   "status": 200,
+   "found": [
+    "sale of seller 2",
+    "sale number"
+   ]
+  },
+  {
+   "who": "supervisor of seller 1",
+   "path": "/stock/77d6332d-9035-486f-b391-ab60efa25b00/movements",
+   "status": 200,
+   "found": [
+    "sale of seller 2",
+    "sale number"
+   ]
+  },
+  {
+   "who": "manager limited to the annexe (OPERATE)",
+   "path": "/audit-logs",
+   "status": 200,
+   "found": [
+    "dépôt principal (id)",
+    "sale of the dépôt principal",
+    "its number",
+    "caisse principale (id)",
+    "dépense of the dépôt principal",
+    "inventory of the dépôt principal",
+    "employee of the dépôt principal"
+   ]
+  },
+  {
+   "who": "manager limited to the annexe (OPERATE)",
+   "path": "/clients/12605acb-0644-4a8c-98eb-d18e168b2996/unpaid-documents",
+   "status": 200,
+   "found": [
+    "sale of the dépôt principal",
+    "its number"
+   ]
+  },
+  {
+   "who": "manager with VIEW_STATS on the annexe",
+   "path": "/audit-logs",
+   "status": 200,
+   "found": [
+    "dépôt principal (id)",
+    "sale of the dépôt principal",
+    "its number",
+    "caisse principale (id)",
+    "dépense of the dépôt principal",
+    "inventory of the dépôt principal",
+    "employee of the dépôt principal",
+    "a document of the annexe",
+    "its number (annexe)"
+   ]
+  },
+  {
+   "who": "manager with VIEW_STATS on the annexe",
+   "path": "/clients/12605acb-0644-4a8c-98eb-d18e168b2996/statement",
+   "status": 200,
+   "found": [
+    "its number (annexe)"
+   ]
+  },
+  {
+   "who": "manager with VIEW_STATS on the annexe",
+   "path": "/clients/12605acb-0644-4a8c-98eb-d18e168b2996/unpaid-documents",
+   "status": 200,
+   "found": [
+    "sale of the dépôt principal",
+    "its number",
+    "a document of the annexe",
+    "its number (annexe)"
+   ]
+  }
+ ],
+ "exports": [
+  "/attendance/month/export.xlsx: owner 200, manager without VIEW_COST_AND_MARGIN 200",
+  "/payroll-runs/das.xlsx: owner 200, manager without VIEW_COST_AND_MARGIN 403",
+  "/reports/overview/export.xlsx: owner 200, manager without VIEW_COST_AND_MARGIN 200 — labels: Marge brute, Résultat net, Valeur du stock",
+  "/reports/aging/export.xlsx: owner 200, manager without VIEW_COST_AND_MARGIN 200",
+  "/reports/supplier-aging/export.xlsx: owner 200, manager without VIEW_COST_AND_MARGIN 200",
+  "/reports/charges/export.xlsx: owner 200, manager without VIEW_COST_AND_MARGIN 200",
+  "/reports/sell-out/export.xlsx: owner 200, manager without VIEW_COST_AND_MARGIN 200",
+  "/reports/sales/export.xlsx: owner 200, manager without VIEW_COST_AND_MARGIN 200",
+  "/reports/margin/export.xlsx: owner 200, manager without VIEW_COST_AND_MARGIN 403",
+  "/reports/stock-movements/export.xlsx: owner 200, manager without VIEW_COST_AND_MARGIN 200",
+  "/reports/payments/export.xlsx: owner 200, manager without VIEW_COST_AND_MARGIN 200",
+  "/reports/purchases/export.xlsx: owner 200, manager without VIEW_COST_AND_MARGIN 200"
+ ]
+}

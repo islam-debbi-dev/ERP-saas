@@ -1,0 +1,312 @@
+# Tenant isolation: coverage
+
+World 1: 8 companies, 1000 rows with an id in 101 tenant tables. World 2: 8 companies.
+
+## Replayed with a valid request and one foreign id (128 routes, 187 probes)
+
+- `DELETE /clients/:id` path#0 (clients) → 404 NOT_FOUND **refused**
+- `DELETE /sectors/:id` path#0 (sectors) → 404 NOT_FOUND **refused**
+- `DELETE /share-links/:id` path#0 (share_links) → 404 NOT_FOUND **refused**
+- `DELETE /warehouses/:id` path#0 (warehouses) → 404 WAREHOUSE_NOT_FOUND **refused**
+- `GET /audit-logs` ?userId (users) → 200  **empty**
+- `GET /cash-accounts/:id/movements` path#0 (cash_accounts) → 404 CASH_ACCOUNT_NOT_FOUND **refused**
+- `GET /cash-accounts/:id` path#0 (cash_accounts) → 404 CASH_ACCOUNT_NOT_FOUND **refused**
+- `GET /clients/:id/statement/pdf` path#0 (clients) → 404 NOT_FOUND **refused**
+- `GET /clients/:id/statement` path#0 (clients) → 404 NOT_FOUND **refused**
+- `GET /clients/:id/unpaid-documents` path#0 (clients) → 404 NOT_FOUND **refused**
+- `GET /clients/:id` path#0 (clients) → 404 NOT_FOUND **refused**
+- `GET /clients` ?sectorId (sectors) → 200  **empty**
+- `GET /clients` ?sellerId (users) → 200  **empty**
+- `GET /documents/BL/:id/pdf` path#0 (sales) → 404 NOT_FOUND **refused**
+- `GET /documents/FAC/:id/pdf` path#0 (sales) → 404 NOT_FOUND **refused**
+- `GET /employees/:id/leave-balance` path#0 (employees) → 404 NOT_FOUND **refused**
+- `GET /expenses` ?cashAccountId (cash_accounts) → 200  **empty**
+- `GET /incentive-runs/:id` path#0 (incentive_runs) → 404 NOT_FOUND **refused**
+- `GET /inventories/:id` path#0 (inventories) → 404 NOT_FOUND **refused**
+- `GET /payments/:id/receipt.pdf` path#0 (payments) → 404 NOT_FOUND **refused**
+- `GET /payments/:id` path#0 (payments) → 404 NOT_FOUND **refused**
+- `GET /payments` ?clientId (clients) → 200  **empty**
+- `GET /products/:id` path#0 (products) → 404 PRODUCT_NOT_FOUND **refused**
+- `GET /products` ?brandId (brands) → 200  **empty**
+- `GET /products` ?categoryId (categories) → 200  **empty**
+- `GET /purchases/:id` path#0 (purchases) → 404 NOT_FOUND **refused**
+- `GET /purchases` ?supplierId (suppliers) → 200  **empty**
+- `GET /reports/margin` ?teamOf (users) → 200  **empty**
+- `GET /reports/sales` ?brandId (brands) → 200  **empty**
+- `GET /reports/sales` ?sellerId (users) → 200  **empty**
+- `GET /reports/sales` ?warehouseId (warehouses) → 200  **empty**
+- `GET /sales/:id` path#0 (sales) → 404 NOT_FOUND **refused**
+- `GET /sales/price-preview` ?clientId (clients) → 404 NOT_FOUND **refused**
+- `GET /sales/price-preview` ?productUnitId (product_units) → 404 NOT_FOUND **refused**
+- `GET /sales` ?clientId (clients) → 200  **empty**
+- `GET /sales` ?sellerId (users) → 200  **empty**
+- `GET /stock-transfers/:id` path#0 (stock_transfers) → 404 NOT_FOUND **refused**
+- `GET /stock/:id/movements` path#0 (products) → 404 PRODUCT_NOT_FOUND **refused**
+- `GET /stock/:id` path#0 (products) → 404 PRODUCT_NOT_FOUND **refused**
+- `GET /stock` ?warehouseId (warehouses) → 200  **empty**
+- `GET /supplier-payments` ?supplierId (suppliers) → 200  **empty**
+- `GET /suppliers/:id/ledger` path#0 (suppliers) → 404 NOT_FOUND **refused**
+- `GET /suppliers/:id/statement/pdf` path#0 (suppliers) → 404 NOT_FOUND **refused**
+- `GET /suppliers/:id/statement` path#0 (suppliers) → 404 NOT_FOUND **refused**
+- `GET /suppliers/:id` path#0 (suppliers) → 404 NOT_FOUND **refused**
+- `GET /users/:id/access` path#0 (users) → 404 NOT_FOUND **refused**
+- `GET /users/:id` path#0 (users) → 404 NOT_FOUND **refused**
+- `GET /warehouses/:id` path#0 (warehouses) → 404 WAREHOUSE_NOT_FOUND **refused**
+- `PATCH /brands/:id` body.supplierId (suppliers) → 400 VALIDATION_FAILED **refused**
+- `PATCH /brands/:id` path#0 (brands) → 404 NOT_FOUND **refused**
+- `PATCH /categories/:id` path#0 (categories) → 404 NOT_FOUND **refused**
+- `PATCH /clients/:id/location` path#0 (clients) → 404 NOT_FOUND **refused**
+- `PATCH /clients/bulk-assign` body.assignedSellerId (users) → 404 NOT_FOUND **refused**
+- `PATCH /clients/bulk-assign` body.clientIds[] (clients) → 404 NOT_FOUND **refused**
+- `PATCH /clients/bulk-assign` body.sectorId (sectors) → 404 NOT_FOUND **refused**
+- `PATCH /orders/:id/livreur` body.livreurId (users) → 409 ORDER_NOT_CONFIRMED **state-first**
+- `PATCH /orders/:id/livreur` path#0 (orders) → 404 ORDER_NOT_FOUND **refused**
+- `PATCH /payments/:id/collector` body.collectedBy (users) → 422 SELLER_NOT_ALLOWED **refused**
+- `PATCH /payments/:id/collector` path#0 (payments) → 404 NOT_FOUND **refused**
+- `PATCH /price-levels/:id` path#0 (price_levels) → 404 NOT_FOUND **refused**
+- `PATCH /sales/:id/seller` body.sellerId (users) → 422 SELLER_NOT_ALLOWED **refused**
+- `PATCH /sales/:id/seller` path#0 (sales) → 404 NOT_FOUND **refused**
+- `PATCH /sectors/:id` path#0 (sectors) → 404 NOT_FOUND **refused**
+- `PATCH /suppliers/:id` path#0 (suppliers) → 404 NOT_FOUND **refused**
+- `PATCH /warehouses/:id` path#0 (warehouses) → 404 WAREHOUSE_NOT_FOUND **refused**
+- `POST /attendance/events` body.marks[].employeeId (employees) → 404 NOT_FOUND **refused**
+- `POST /brands` body.supplierId (suppliers) → 409 BRAND_NAME_TAKEN **state-first**
+- `POST /cash-accounts/:id/counts` path#0 (cash_accounts) → 404 CASH_ACCOUNT_NOT_FOUND **refused**
+- `POST /cash-accounts/:id/opening` path#0 (cash_accounts) → 404 CASH_ACCOUNT_NOT_FOUND **refused**
+- `POST /categories` body.parentId (categories) → 404 NOT_FOUND **refused**
+- `POST /clients/:id/adjustments` path#0 (clients) → 404 NOT_FOUND **refused**
+- `POST /clients/:id/opening-balance` path#0 (clients) → 404 NOT_FOUND **refused**
+- `POST /clients` body.sectorId (sectors) → 404 NOT_FOUND **refused**
+- `POST /clients` body.sellerId (users) → 404 NOT_FOUND **refused**
+- `POST /employees/:id/advances` path#0 (employees) → 404 NOT_FOUND **refused**
+- `POST /employees/:id/leave-entries` path#0 (employees) → 404 NOT_FOUND **refused**
+- `POST /employees/:id/salaries` path#0 (employees) → 404 NOT_FOUND **refused**
+- `POST /employees` body.warehouseId (warehouses) → 404 WAREHOUSE_NOT_FOUND **refused**
+- `POST /expenses/:id/cancel` path#0 (expenses) → 404 NOT_FOUND **refused**
+- `POST /expenses` body.categoryId (expense_categories) → 400 VALIDATION_FAILED **refused**
+- `POST /expenses` body.rentContractId (rent_contracts) → 404 NOT_FOUND **refused**
+- `POST /import-files/:id/close` path#0 (import_files) → 404 NOT_FOUND **refused**
+- `POST /import-files/:id/costs` body.supplierId (suppliers) → 409 IMPORT_FILE_NOT_OPEN **state-first**
+- `POST /import-files/:id/costs` path#0 (import_files) → 404 NOT_FOUND **refused**
+- `POST /import-files/:id/late-cost` body.supplierId (suppliers) → 400 VALIDATION_FAILED **refused**
+- `POST /import-files/:id/late-cost` path#0 (import_files) → 404 NOT_FOUND **refused**
+- `POST /incentive-plans/:id/activate` path#0 (incentive_plans) → 404 NOT_FOUND **refused**
+- `POST /incentive-plans/:id/rules` path#0 (incentive_plans) → 404 NOT_FOUND **refused**
+- `POST /incentive-runs/:id/approve` path#0 (incentive_runs) → 404 NOT_FOUND **refused**
+- `POST /incentive-runs` body.planId (incentive_plans) → 404 NOT_FOUND **refused**
+- `POST /inventories/:id/cancel` path#0 (inventories) → 404 NOT_FOUND **refused**
+- `POST /inventories/:id/validate` path#0 (inventories) → 404 NOT_FOUND **refused**
+- `POST /invoices/from-bls` body.saleIds[] (sales) → 409 INVOICE_SOURCES_INVALID **state-first**
+- `POST /leave-requests/:id/approve` path#0 (leave_requests) → 404 NOT_FOUND **refused**
+- `POST /leave-requests` body.employeeId (employees) → 404 NOT_FOUND **refused**
+- `POST /orders/:id/confirm` path#0 (orders) → 404 ORDER_NOT_FOUND **refused**
+- `POST /orders/:id/deliver` body.lines[].orderLineId (order_lines) → 409 ORDER_ALREADY_DELIVERED **state-first**
+- `POST /orders/:id/deliver` path#0 (orders) → 404 ORDER_NOT_FOUND **refused**
+- `POST /orders` body.clientId (clients) → 400 VALIDATION_FAILED **refused**
+- `POST /orders` body.lines[].productId (products) → 400 INVALID_PRODUCT_UNITS **refused**
+- `POST /orders` body.lines[].unitId (units) → 400 INVALID_PRODUCT_UNITS **refused**
+- `POST /orders` body.warehouseId (warehouses) → 404 WAREHOUSE_NOT_FOUND **refused**
+- `POST /packaging-movements` body.clientId (clients) → 404 NOT_FOUND **refused**
+- `POST /packaging-movements` body.packagingTypeId (packaging_types) → 400 VALIDATION_FAILED **refused**
+- `POST /payments/:id/bounce` path#0 (payments) → 404 NOT_FOUND **refused**
+- `POST /payments/:id/cancel` path#0 (payments) → 404 NOT_FOUND **refused**
+- `POST /payments` body.cashAccountId (cash_accounts) → 404 CASH_ACCOUNT_NOT_FOUND **refused**
+- `POST /payments` body.clientId (clients) → 400 VALIDATION_FAILED **refused**
+- `POST /payroll-runs/:id/approve` path#0 (payroll_runs) → 404 NOT_FOUND **refused**
+- `POST /payroll-runs/:id/payments` path#0 (payroll_runs) → 404 NOT_FOUND **refused**
+- `POST /pricing/preview` body.clientId (clients) → 404 NOT_FOUND **refused**
+- `POST /pricing/preview` body.lines[].productId (products) → 400 INVALID_PRODUCT_UNITS **refused**
+- `POST /pricing/preview` body.lines[].unitId (units) → 400 INVALID_PRODUCT_UNITS **refused**
+- `POST /products/:id/archive` path#0 (products) → 404 PRODUCT_NOT_FOUND **refused**
+- `POST /products/:id/restore` path#0 (products) → 404 PRODUCT_NOT_FOUND **refused**
+- `POST /products` body.baseUnitId (units) → 400 VALIDATION_FAILED **state-first**
+- `POST /products` body.brandId (brands) → 400 VALIDATION_FAILED **refused**
+- `POST /products` body.prices[].priceLevelId (price_levels) → 400 VALIDATION_FAILED **refused**
+- `POST /products` body.prices[].unitId (units) → 400 VALIDATION_FAILED **state-first**
+- `POST /products` body.units[].unitId (units) → 400 VALIDATION_FAILED **state-first**
+- `POST /purchases/:id/cancel` path#0 (purchases) → 404 NOT_FOUND **refused**
+- `POST /purchases/:id/returns` body.lines[].purchaseLineId (purchase_lines) → 400 VALIDATION_FAILED **refused**
+- `POST /purchases/:id/returns` path#0 (purchases) → 404 NOT_FOUND **refused**
+- `POST /purchases/:id/validate` path#0 (purchases) → 404 NOT_FOUND **refused**
+- `POST /purchases` body.importFileId (import_files) → 400 VALIDATION_FAILED **refused**
+- `POST /purchases` body.lines[].productId (products) → 400 INVALID_PRODUCT_UNITS **refused**
+- `POST /purchases` body.lines[].unitId (units) → 400 INVALID_PRODUCT_UNITS **refused**
+- `POST /purchases` body.supplierId (suppliers) → 400 VALIDATION_FAILED **refused**
+- `POST /routes` body.sellerId (users) → 422 SELLER_NOT_ALLOWED **refused**
+- `POST /sales/:id/cancel` path#0 (sales) → 404 NOT_FOUND **refused**
+- `POST /sales/:id/returns` body.lines[].saleLineId (sale_lines) → 400 VALIDATION_FAILED **refused**
+- `POST /sales/:id/returns` path#0 (sales) → 404 NOT_FOUND **refused**
+- `POST /sales/:id/validate` body.cashAccountId (cash_accounts) → 409 SALE_NOT_DRAFT **state-first**
+- `POST /sales/:id/validate` path#0 (sales) → 404 NOT_FOUND **refused**
+- `POST /sales/quick` body.clientId (clients) → 400 VALIDATION_FAILED **refused**
+- `POST /sales/quick` body.lines[].productId (products) → 400 INVALID_PRODUCT_UNITS **refused**
+- `POST /sales/quick` body.lines[].unitId (units) → 400 INVALID_PRODUCT_UNITS **refused**
+- `POST /sales/quick` body.packagingReturned[].packagingTypeId (packaging_types) → 400 VALIDATION_FAILED **refused**
+- `POST /sales/quick` body.warehouseId (warehouses) → 404 WAREHOUSE_NOT_FOUND **refused**
+- `POST /sales` body.clientId (clients) → 400 VALIDATION_FAILED **refused**
+- `POST /sales` body.lines[].productId (products) → 400 INVALID_PRODUCT_UNITS **refused**
+- `POST /sales` body.lines[].unitId (units) → 400 INVALID_PRODUCT_UNITS **refused**
+- `POST /seller-sessions/:id/close` path#0 (seller_sessions) → 404 NOT_FOUND **refused**
+- `POST /seller-sessions` body.sellerId (users) → 404 NOT_FOUND **refused**
+- `POST /share-links` body.docId (sales) → 404 NOT_FOUND **refused**
+- `POST /stock-transfers/:id/validate` path#0 (stock_transfers) → 404 NOT_FOUND **refused**
+- `POST /stock-transfers` body.fromWarehouseId (warehouses) → 404 WAREHOUSE_NOT_FOUND **refused**
+- `POST /stock-transfers` body.lines[].productId (products) → 400 INVALID_PRODUCT_UNITS **refused**
+- `POST /stock-transfers` body.lines[].unitId (units) → 400 INVALID_PRODUCT_UNITS **refused**
+- `POST /stock-transfers` body.toWarehouseId (warehouses) → 404 WAREHOUSE_NOT_FOUND **refused**
+- `POST /stock/adjustments` body.lines[].productId (products) → 400 INVALID_PRODUCT_UNITS **refused**
+- `POST /stock/adjustments` body.lines[].unitId (units) → 400 INVALID_PRODUCT_UNITS **refused**
+- `POST /stock/opening` body.lines[].productId (products) → 400 INVALID_PRODUCT_UNITS **refused**
+- `POST /stock/opening` body.lines[].unitId (units) → 400 INVALID_PRODUCT_UNITS **refused**
+- `POST /supplier-payments/:id/cancel` path#0 (supplier_payments) → 404 NOT_FOUND **refused**
+- `POST /supplier-payments` body.supplierId (suppliers) → 400 VALIDATION_FAILED **refused**
+- `POST /treasury/transfers/:id/cancel` path#0 (cash_transfers) → 404 NOT_FOUND **refused**
+- `POST /treasury/transfers` body.fromAccountId (cash_accounts) → 404 CASH_ACCOUNT_NOT_FOUND **refused**
+- `POST /treasury/transfers` body.toAccountId (cash_accounts) → 404 CASH_ACCOUNT_NOT_FOUND **refused**
+- `POST /users/:id/deactivate` path#0 (users) → 404 NOT_FOUND **refused**
+- `POST /users/:id/reactivate` path#0 (users) → 404 NOT_FOUND **refused**
+- `POST /users/:id/reset-password` path#0 (users) → 404 NOT_FOUND **refused**
+- `POST /visits` body.clientId (clients) → 404 NOT_FOUND **refused**
+- `POST /warehouses` body.assignedUserId (users) → 422 SELLER_NOT_ALLOWED **refused**
+- `PUT /inventories/:id/lines` body.lines[].productId (products) → 409 INVENTORY_CLOSED **state-first**
+- `PUT /inventories/:id/lines` body.lines[].unitId (units) → 409 INVENTORY_CLOSED **state-first**
+- `PUT /inventories/:id/lines` path#0 (inventories) → 404 NOT_FOUND **refused**
+- `PUT /products/:id/packaging` body.[].packagingTypeId (packaging_types) → 400 VALIDATION_FAILED **refused**
+- `PUT /products/:id/packaging` path#0 (products) → 404 PRODUCT_NOT_FOUND **refused**
+- `PUT /purchases/:id` body.lines[].productId (products) → 409 PURCHASE_NOT_DRAFT **state-first**
+- `PUT /purchases/:id` body.lines[].unitId (units) → 409 PURCHASE_NOT_DRAFT **state-first**
+- `PUT /purchases/:id` body.supplierId (suppliers) → 409 PURCHASE_NOT_DRAFT **state-first**
+- `PUT /purchases/:id` path#0 (purchases) → 404 NOT_FOUND **refused**
+- `PUT /routes/:id/stops` body.clientIds[] (clients) → 400 VALIDATION_FAILED **refused**
+- `PUT /routes/:id/stops` path#0 (routes) → 404 ROUTE_NOT_FOUND **refused**
+- `PUT /sales/:id` body.clientId (clients) → 409 SALE_NOT_DRAFT **state-first**
+- `PUT /sales/:id` body.lines[].productId (products) → 409 SALE_NOT_DRAFT **state-first**
+- `PUT /sales/:id` body.lines[].unitId (units) → 409 SALE_NOT_DRAFT **state-first**
+- `PUT /sales/:id` path#0 (sales) → 404 NOT_FOUND **refused**
+- `PUT /users/:id/access` body.access[].warehouseId (warehouses) → 422 WAREHOUSE_ACCESS_INVALID **state-first**
+- `PUT /users/:id/access` path#0 (users) → 404 NOT_FOUND **refused**
+- `PUT /users/:id/permissions` path#0 (users) → 404 NOT_FOUND **refused**
+- `PUT /users/:id` path#0 (users) → 404 NOT_FOUND **refused**
+- `PUT /warehouses/:id/brands` body.brandIds[] (brands) → 404 WAREHOUSE_NOT_FOUND **refused**
+- `PUT /warehouses/:id/brands` path#0 (warehouses) → 404 WAREHOUSE_NOT_FOUND **refused**
+- `PUT /warehouses/:id/categories` body.categoryIds[] (categories) → 404 WAREHOUSE_NOT_FOUND **refused**
+- `PUT /warehouses/:id/categories` path#0 (warehouses) → 404 WAREHOUSE_NOT_FOUND **refused**
+
+## Answered by a state or validation check before the foreign id was looked at (18)
+
+- POST /brands body.supplierId → 409 BRAND_NAME_TAKEN
+- POST /products body.baseUnitId → 400 VALIDATION_FAILED
+- POST /products body.units[0].unitId → 400 VALIDATION_FAILED
+- POST /products body.prices[0].unitId → 400 VALIDATION_FAILED
+- PUT /sales/:id body.clientId → 409 SALE_NOT_DRAFT
+- PUT /sales/:id body.lines[0].productId → 409 SALE_NOT_DRAFT
+- PUT /sales/:id body.lines[0].unitId → 409 SALE_NOT_DRAFT
+- POST /sales/:id/validate body.cashAccountId → 409 SALE_NOT_DRAFT
+- POST /invoices/from-bls body.saleIds[0] → 409 INVOICE_SOURCES_INVALID
+- PUT /purchases/:id body.supplierId → 409 PURCHASE_NOT_DRAFT
+- PUT /purchases/:id body.lines[0].productId → 409 PURCHASE_NOT_DRAFT
+- PUT /purchases/:id body.lines[0].unitId → 409 PURCHASE_NOT_DRAFT
+- PUT /inventories/:id/lines body.lines[0].productId → 409 INVENTORY_CLOSED
+- PUT /inventories/:id/lines body.lines[0].unitId → 409 INVENTORY_CLOSED
+- PUT /users/:id/access body.access[0].warehouseId → 422 WAREHOUSE_ACCESS_INVALID
+- POST /import-files/:id/costs body.supplierId → 409 IMPORT_FILE_NOT_OPEN
+- PATCH /orders/:id/livreur body.livreurId → 409 ORDER_NOT_CONFIRMED
+- POST /orders/:id/deliver body.lines[0].orderLineId → 409 ORDER_ALREADY_DELIVERED
+
+## Write routes reached only by brute force with an empty body (57)
+
+The route answered 4xx to one id of each table of world 1 and no row of world 1 changed; where the body is validated before the id is read, this does not prove the lookup itself.
+
+- `DELETE /assistant/conversations/:id` → 404 NOT_FOUND
+- `DELETE /auth/sessions/:id` → 404 NOT_FOUND
+- `DELETE /brands/:id` → 404 NOT_FOUND
+- `DELETE /cash-accounts/:id` → 404 CASH_ACCOUNT_NOT_FOUND
+- `DELETE /categories/:id` → 404 NOT_FOUND
+- `DELETE /employees/:id` → 404 NOT_FOUND
+- `DELETE /expense-categories/:id` → 404 NOT_FOUND
+- `DELETE /import-files/:id/purchases/:id` → 404 NOT_FOUND
+- `DELETE /incentive-plans/:id/rules/:id` → 404 NOT_FOUND
+- `DELETE /packaging-types/:id` → 404 NOT_FOUND
+- `DELETE /pay-item-types/:id` → 404 NOT_FOUND
+- `DELETE /promotions/:id` → 404 NOT_FOUND
+- `DELETE /public-holidays/:id` → 404 NOT_FOUND
+- `DELETE /routes/:id` → 404 ROUTE_NOT_FOUND
+- `DELETE /sessions/:id` → 404 NOT_FOUND
+- `DELETE /suppliers/:id` → 404 NOT_FOUND
+- `PATCH /cash-accounts/:id` → 400 VALIDATION_FAILED
+- `PATCH /clients/:id` → 400 VALIDATION_FAILED
+- `PATCH /incentive-plans/:id` → 404 NOT_FOUND
+- `PATCH /payroll-runs/:id` → 404 NOT_FOUND
+- `PATCH /products/:id` → 400 VALIDATION_FAILED
+- `PATCH /rent-contracts/:id` → 400 VALIDATION_FAILED
+- `PATCH /routes/:id` → 404 ROUTE_NOT_FOUND
+- `POST /assistant/messages/:id/feedback` → 400 VALIDATION_FAILED
+- `POST /clients/:id/location-requests` → 400 VALIDATION_FAILED
+- `POST /employees/:id/pay-items` → 400 VALIDATION_FAILED
+- `POST /employees/:id/restore` → 404 NOT_FOUND
+- `POST /expense-categories/:id/restore` → 404 NOT_FOUND
+- `POST /geo-checks/:id/review` → 400 VALIDATION_FAILED
+- `POST /import-files/:id/cancel` → 400 VALIDATION_FAILED
+- `POST /import-files/:id/costs/:id/cancel` → 400 VALIDATION_FAILED
+- `POST /import-files/:id/purchases` → 400 VALIDATION_FAILED
+- `POST /imports/:id/confirm` → 404 NOT_FOUND
+- `POST /incentive-plans/:id/archive` → 404 NOT_FOUND
+- `POST /incentive-plans/:id/new-version` → 400 VALIDATION_FAILED
+- `POST /leave-requests/:id/cancel` → 400 VALIDATION_FAILED
+- `POST /leave-requests/:id/reject` → 400 VALIDATION_FAILED
+- `POST /location-requests/:id/approve` → 404 NOT_FOUND
+- `POST /location-requests/:id/reject` → 400 VALIDATION_FAILED
+- `POST /orders/:id/cancel` → 400 VALIDATION_FAILED
+- `POST /payroll-rates/:id/accept` → 400 VALIDATION_FAILED
+- `POST /payroll-rates/:id/keep-own` → 400 VALIDATION_FAILED
+- `POST /payroll-runs/:id/cancel` → 400 VALIDATION_FAILED
+- `POST /payroll-runs/:id/recompute` → 404 NOT_FOUND
+- `POST /rent-contracts/:id/close` → 400 VALIDATION_FAILED
+- `POST /seller-sessions/:id/adjust` → 400 VALIDATION_FAILED
+- `POST /stock-transfers/:id/cancel` → 400 VALIDATION_FAILED
+- `PUT /employees/:id` → 400 VALIDATION_FAILED
+- `PUT /expense-categories/:id` → 400 VALIDATION_FAILED
+- `PUT /import-files/:id` → 400 VALIDATION_FAILED
+- `PUT /incentive-plans/:id/rules/:id` → 400 VALIDATION_FAILED
+- `PUT /orders/:id` → 400 VALIDATION_FAILED
+- `PUT /packaging-types/:id` → 400 VALIDATION_FAILED
+- `PUT /pay-item-types/:id` → 400 VALIDATION_FAILED
+- `PUT /promotions/:id` → 400 VALIDATION_FAILED
+- `PUT /public-holidays/:id` → 400 VALIDATION_FAILED
+- `PUT /stock-transfers/:id` → 400 VALIDATION_FAILED
+
+## GET routes reached by brute force (31)
+
+- `GET /assistant/conversations/:id` → 404 NOT_FOUND
+- `GET /clients/:id/packaging` → 404 NOT_FOUND
+- `GET /clients/:id/packaging/pdf` → 404 NOT_FOUND
+- `GET /documents/:type/:id/pdf` → 404 NOT_FOUND
+- `GET /employees/:id` → 404 NOT_FOUND
+- `GET /employees/:id/ledger` → 404 NOT_FOUND
+- `GET /employees/:id/pay-items` → 404 NOT_FOUND
+- `GET /employees/:id/payslips` → 404 NOT_FOUND
+- `GET /employees/:id/salaries` → 404 NOT_FOUND
+- `GET /expenses/:id` → 404 NOT_FOUND
+- `GET /geo-checks/:id` → 404 NOT_FOUND
+- `GET /import-files/:id` → 404 NOT_FOUND
+- `GET /import-files/:id/preview` → 404 NOT_FOUND
+- `GET /incentive-plans/:id` → 404 NOT_FOUND
+- `GET /incentive-runs/:id/export.xlsx` → 404 NOT_FOUND
+- `GET /me/payslips/:id/pdf` → 404 EMPLOYEE_NOT_LINKED
+- `GET /orders/:id` → 404 ORDER_NOT_FOUND
+- `GET /payroll-runs/:id` → 404 NOT_FOUND
+- `GET /payroll-runs/:id/etat-cnas.xlsx` → 404 NOT_FOUND
+- `GET /payroll-runs/:id/livre-de-paie.xlsx` → 404 NOT_FOUND
+- `GET /payroll-runs/:id/pdf` → 404 NOT_FOUND
+- `GET /payroll-runs/:id/recap-irg.xlsx` → 404 NOT_FOUND
+- `GET /payroll-runs/payslips/:id/pdf` → 404 NOT_FOUND
+- `GET /products/:id/packaging` → 200 
+- `GET /promotions/:id` → 404 NOT_FOUND
+- `GET /rent-contracts/:id` → 404 NOT_FOUND
+- `GET /rent-contracts/:id/schedule` → 404 NOT_FOUND
+- `GET /routes/:id` → 404 ROUTE_NOT_FOUND
+- `GET /seller-sessions/:id` → 404 NOT_FOUND
+- `GET /supplier-payments/:id` → 404 NOT_FOUND
+- `GET /visits/:id` → 404 NOT_FOUND
+
+## Not covered (0)
