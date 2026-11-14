@@ -74,10 +74,13 @@ export class SalesService {
       ? fromOrder.sellerId
       : ((await this.resolveSeller(tx, user, input.sellerId, undefined)) ?? null);
     // Checked now (exists, module); the final choice is made at validation. A user who
-    // works in one dépôt only sells from it (phase 24).
+    // works in one dépôt only sells from it (phase 24), unless the seller drives a truck:
+    // then no dépôt is fixed here and validation takes the truck (phase 15; audit 02, A-1).
     const warehouseId = input.warehouseId
       ? await this.warehouses.resolve(tx, input.warehouseId)
-      : await this.scope.onlyWarehouse(user, tx);
+      : (await this.warehouses.vehicleOf(tx, sellerId))
+        ? null
+        : await this.scope.onlyWarehouse(user, tx);
     if (warehouseId) {
       await this.scope.assertWarehouse(tx, user, warehouseId);
       await this.warehouses.assertSells(
