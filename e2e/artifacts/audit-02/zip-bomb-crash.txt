@@ -1,0 +1,4 @@
+2026-11-14T13:20:58.547Z
+POST /imports/CLIENTS/preview with bomb.xlsx (1092935 bytes)
+API process 86659 is gone.
+FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory
