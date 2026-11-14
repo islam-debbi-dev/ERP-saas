@@ -1,0 +1,101 @@
+{
+  "totals": {
+    "total": 15,
+    "passed": 8,
+    "failed": 0,
+    "blocked": 0,
+    "info": 7
+  },
+  "results": [
+    {
+      "area": "B4. Mass assignment",
+      "durationMs": 0,
+      "name": "76 create routes replayed with id, tenantId, createdAt, updatedAt, createdBy, number, status, balance, role, isFree, edition, deletedAt, totalTtc, avgCost, permissionGrants: statuses {\"200\":7,\"201\":31,\"400\":3,\"404\":1,\"409\":34}; PATCH /tenant/settings with plan fields: 400",
+      "status": "INFO"
+    },
+    {
+      "area": "B4. Mass assignment",
+      "durationMs": 264,
+      "name": "no row took the id, the date, the number or the author sent by the client",
+      "status": "PASS"
+    },
+    {
+      "area": "B4. Mass assignment",
+      "durationMs": 8,
+      "name": "a body cannot change the plan of the company or grant itself a permission",
+      "status": "PASS"
+    },
+    {
+      "area": "B4. Query strings and raw bodies",
+      "durationMs": 0,
+      "name": "malformed 400, 2 MB 413, 20 000 levels 400, __proto__ 201, XML 400",
+      "status": "INFO"
+    },
+    {
+      "area": "B4. Query strings and raw bodies",
+      "durationMs": 34,
+      "name": "a malformed, a huge and a deeply nested body are refused cleanly",
+      "status": "PASS"
+    },
+    {
+      "area": "B4. Verdict of the sweeps",
+      "durationMs": 0,
+      "name": "1658 hostile requests: 52 amount or quantity fields × 15 values (780), 51 text fields × 9 values, 91 list routes",
+      "status": "INFO"
+    },
+    {
+      "area": "B4. Verdict of the sweeps",
+      "durationMs": 0,
+      "name": "no hostile value answers 5xx",
+      "status": "PASS"
+    },
+    {
+      "area": "B4. Verdict of the sweeps",
+      "durationMs": 0,
+      "name": "no error shows a stack trace, a file path or an SQL message",
+      "status": "PASS"
+    },
+    {
+      "area": "B4. Verdict of the sweeps",
+      "durationMs": 1,
+      "name": "no amount is accepted as NaN, Infinity, an exponent, a JSON number or with too many decimals",
+      "status": "PASS"
+    },
+    {
+      "area": "B4. Verdict of the sweeps",
+      "durationMs": 0,
+      "name": "negative values accepted (read one by one in the report): POST /stock/adjustments lines[].qty = negative → 201  ; POST /clients/:id/adjustments amount = negative → 201  ; PATCH /suppliers/:id phone = negative → 200 ",
+      "status": "INFO"
+    },
+    {
+      "area": "B4. Verdict of the sweeps",
+      "durationMs": 0,
+      "name": "text accepted with a NUL byte or a lone surrogate: 3 field(s)",
+      "status": "INFO"
+    },
+    {
+      "area": "B4. Stored markup, where it is shown",
+      "durationMs": 0,
+      "name": "BL PDF 142461 bytes, relevé PDF 200; requests received by the canary server: 0; text printed: the tag as text",
+      "status": "INFO"
+    },
+    {
+      "area": "B4. Stored markup, where it is shown",
+      "durationMs": 3964,
+      "name": "markup in a product, a client and a note is printed as text: the PDF loads nothing and reads no file",
+      "status": "PASS"
+    },
+    {
+      "area": "B4. Stored markup, where it is shown",
+      "durationMs": 0,
+      "name": "exports that carry the hostile client name: 2; stored as formula: 0",
+      "status": "INFO"
+    },
+    {
+      "area": "B4. Stored markup, where it is shown",
+      "durationMs": 242,
+      "name": "a client name starting with = + - @ is not a formula in the Excel exports",
+      "status": "PASS"
+    }
+  ]
+}

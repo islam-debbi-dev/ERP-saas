@@ -1,6 +1,6 @@
 # scenario
 
-Total 89 · PASS 87 · FAIL 2 · BLOCKED 0
+Total 89 · PASS 88 · FAIL 1 · BLOCKED 0
 
 | Area | Check | Result | Expected | Actual |
 |---|---|---|---|---|
@@ -31,7 +31,7 @@ Total 89 · PASS 87 · FAIL 2 · BLOCKED 0
 | 9. Import: landed costs, close, sale, late cost | a règlement in USD lowers both balances and leaves the bank in DZD | PASS |  |  |
 | 9. Import: landed costs, close, sale, late cost | the BR got its number at validation and the dossier keeps its own | PASS |  |  |
 | 10. Dépôts, camion, tournée | a transfer and a chargement move the goods between dépôts, not the CUMP | PASS |  |  |
-| 10. Dépôts, camion, tournée | a seller's sale with no dépôt chosen leaves from his truck (domain.md, phase 15) | FAIL | truck 20, dépôt principal 66 | the SALE movement is on the dépôt principal, not on the truck: camion=24.000 (4 pièces physically left it), dépôt principal=62.000 |
+| 10. Dépôts, camion, tournée | a seller's sale with no dépôt chosen leaves from his truck (domain.md, phase 15) | PASS | truck 20, dépôt principal 66 |  |
 | 10. Dépôts, camion, tournée | the sale itself is right: total, credit, company stock | PASS |  |  |
 | 10. Dépôts, camion, tournée | stock is judged per dépôt: more than the truck holds is refused in BLOCK mode | PASS |  |  |
 | 10. Dépôts, camion, tournée | a confirmed order is numbered and touches neither stock nor the account | PASS |  |  |
@@ -92,4 +92,4 @@ Total 89 · PASS 87 · FAIL 2 · BLOCKED 0
 | 16. RH et paie: pointage, congé, avance, paie approuvée et payée | paying a run that is already paid, with a new key, pays nothing and says so | FAIL | 409 or 422: nothing left to pay | nothing was left to pay, no dépense was written, and the API answered 201 as if it had paid |
 | 16. RH et paie: pointage, congé, avance, paie approuvée et payée | a paid run cannot be cancelled | PASS |  |  |
 | 16. RH et paie: pointage, congé, avance, paie approuvée et payée | the employee ledger adds up to both balances | PASS |  |  |
-| Scenario | scenario completed | PASS | the whole sale/payment/return/cancel chain holds | tenant db4af486-608d-4f87-857b-1d5699b5f4fb |
+| Scenario | scenario completed | PASS | the whole sale/payment/return/cancel chain holds | tenant 664d1691-1600-4e05-ad4c-1f391ac106bf |

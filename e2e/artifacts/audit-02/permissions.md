@@ -1,0 +1,20 @@
+# permissions
+
+Total 14 · PASS 10 · FAIL 2 · BLOCKED 0
+
+| Area | Check | Result | Expected | Actual |
+|---|---|---|---|---|
+| B2. Permissions: every route a role must not reach answers 403 | MANAGER: 49 forbidden routes all answer 403 | PASS |  |  |
+| B2. Permissions: every route a role must not reach answers 403 | SELLER: 222 forbidden routes all answer 403 | PASS |  |  |
+| B2. Permissions: every route a role must not reach answers 403 | STOREKEEPER: 240 forbidden routes all answer 403 | PASS |  |  |
+| B2. Permissions: every route a role must not reach answers 403 | SUPERVISOR: 203 forbidden routes all answer 403 | PASS |  |  |
+| B2. Permissions: every route a role must not reach answers 403 | LIVREUR: 242 forbidden routes all answer 403 | PASS |  |  |
+| B2. Permissions: every route a role must not reach answers 403 | routes with neither @Roles nor @RequirePermission (38): GET /assistant/status, POST /auth/password, POST /auth/logout, GET /auth/me, GET /auth/sessions, DELETE /auth/sessions/:id, GET /sessions, DELETE /sessions/:id, GET /tenant/subscription, GET /location-requests, GET /attendance/me, POST /attendance/check-in, POST /attendance/check-out, POST /leave-requests, POST /leave-requests/:id/cancel, GET /me/objectives, GET /me/payslips, GET /me/payslips/:id/pdf, GET /documents/:type/:id/pdf, GET /clients/:id/packaging/pdf, GET /dashboard, GET /dashboard/todo, GET /sectors, POST /stock/adjustments, POST /inventories/:id/validate, GET /warehouses, GET /warehouses/:id, GET /tenant/settings, GET /routes, GET /routes/:id, GET /me/today, GET /visits, GET /visits/:id, GET /orders, GET /orders/:id, GET /cash-accounts, GET /users/me/dashboard-layout, PATCH /users/me/dashboard-layout | INFO |  |  |
+| B2. Permissions: every route a role must not reach answers 403 | a permission revoked from one user closes its routes at once (CLIENTS_VIEW, SALES_VIEW) | PASS |  |  |
+| B2. Permissions: every route a role must not reach answers 403 | a MANAGER cannot grant a permission he does not hold, nor edit the owner | PASS |  |  |
+| B2. Permissions: every route a role must not reach answers 403 | a user granted USERS_MANAGE cannot give himself or another more than he has | PASS |  |  |
+| B2. Permissions: every route a role must not reach answers 403 | a SUPERVISOR granted USERS_MANAGE cannot create or take over an account with more rights than his own | PASS |  |  |
+| B2. Permissions: cost, margin and salary figures in what a role can read | 6790 answers read as a non-owner role in 8 companies | INFO |  |  |
+| B2. Permissions: cost, margin and salary figures in what a role can read | no cost or margin figure is shown to a role without VIEW_COST_AND_MARGIN | FAIL |  | 1 route(s): GET /purchases/:id → lines.unitCost [SELLER, STOREKEEPER, SUPERVISOR, LIVREUR] |
+| B2. Permissions: cost, margin and salary figures in what a role can read | no supplier balance is shown to a role without SUPPLIERS_ACCOUNT | FAIL |  | SELLER: GET /suppliers items.balance, GET /suppliers/:id balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balanceCurrency ; STOREKEEPER: GET /suppliers items.balance, GET /suppliers/:id balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balanceCurrency ; SUPERVISOR: GET /suppliers items.balance, GET /suppliers/:id balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balanceCurrency ; LIVREUR: GET /suppliers items.balance, GET /suppliers/:id balance, GET /suppliers items.balanceCurrency, GET /suppliers/:id balanceCurrency |
+| B2. Permissions: cost, margin and salary figures in what a role can read | no salary figure is shown to a role without SALARY_VIEW | PASS |  |  |

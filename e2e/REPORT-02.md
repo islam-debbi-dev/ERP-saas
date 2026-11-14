@@ -17,6 +17,10 @@ its own database `erp_audit02`, the built API on `http://localhost:3003` connect
 | D. Availability | not started |
 | E. The web from outside | not started |
 
+**Fix batch 1** (branch `fix/audit-02-batch-1`, 2026-11-14) fixed A-1, B-1, B-2, B-3, B-4 with
+01-#2, and 01-#4. Sections 1 to 22 are the audit as it was run on `c469e9a` and are left as
+written; what changed since is section 23.
+
 No request of any kind was sent to production. `apps/` and `packages/` are untouched
 (`git diff --stat origin/main -- apps packages` is empty).
 
@@ -660,3 +664,106 @@ B-7 before an owner gives accounts to staff he does not fully trust.
 
 Changes outside the new files: `lib/http.ts` gained a recorder hook that is off unless
 `record.ts` sets it; `e2e/package.json` gained the script `audit02:b`. No dependency was added.
+
+
+---
+
+# Fix batch 1
+
+Branch `fix/audit-02-batch-1`, 2026-11-14. Six findings fixed, each with a test in the
+repository that failed before the fix, then parts A and B run again on the same database.
+
+## 23. What was fixed
+
+| # | Fix | Test that failed before |
+|---|---|---|
+| A-1 | With no dépôt chosen, a sale draft no longer takes the user's only dépôt when its seller drives a truck; validation then takes the truck (`sales.service.ts`). | `warehouses.int-spec.ts`: its sellers are now invited through `POST /users/invite` |
+| B-2 | The API and the SSR no longer read request bodies for Sentry; one scrubber for the API, the browser and the SSR (`packages/shared/src/sentry-privacy.ts`, on the walker of `position-privacy.ts`) drops bodies, cookies, `Authorization` and the token of `/s/…` and invitation links from errors, transactions, spans and breadcrumbs. | `sentry-privacy.test.ts`; `secrets.ts` |
+| B-1 | An `.xlsx` is measured before exceljs parses it (`imports/xlsx-guard.ts`): at most 500 parts, 50 MB inflated (real bytes, zlib stops at the limit), 10 sheets, 20 000 rows and 400 000 cells over all sheets. A CSV has the same cell limit. | `xlsx-guard.spec.ts` (the Jest worker ran out of heap), `imports.int-spec.ts` |
+| B-3 | A non-owner cannot invite, edit, promote, deactivate, reactivate, change the permissions of or reset the password of a user of his own role, or of one who holds (or would hold) a permission he lacks: `403 ACCESS_ABOVE_GRANTER`. | `users.int-spec.ts`, "a delegated USERS_MANAGE…" |
+| B-4, 01-#2 | Amounts are at most 9 999 999 999,99 and quantities 99 999 999,999 in every shared schema; the filter answers 400 for PostgreSQL 22003 / 22P05; a body with a lone surrogate is refused before any schema; `normalizeDecimal` no longer throws after a failed refine. | `hostile-input.int-spec.ts`, `schemas/common.test.ts` |
+| 01-#4 | `TRUST_PROXY` (proxies in front of the API): unset means 1 on Vercel, 0 elsewhere, where `X-Forwarded-For` is ignored. The VPS compose sets 1. | `forwarded-for.int-spec.ts` |
+
+`pnpm lint && pnpm typecheck && pnpm test` on Node 22 before each commit; at the end: shared
+552, web 59, API 901 tests in 69 suites, all green.
+
+## 24. Parts A and B, run again
+
+| Suite | Before | After | What is left |
+|---|---|---|---|
+| Business scenario | 87 / 89 | **88 / 89** | A-2 |
+| Attack suite | 44 pass, 2 fail | **45 pass, 1 fail** | 01-#1. The two 01-#4 checks now assert that a forged address is ignored, and pass; 01-#3 is still proven open. |
+| Concurrency | 14 / 14 | 14 / 14 | |
+| Database invariants | 68 / 70 | 68 / 70 | 01-#1, A-3 |
+| Reconcile | no difference | no difference | |
+| Web | 12 / 12 | 12 / 12 | |
+| B1 Isolation | 28 / 28 | 28 / 28 | |
+| B2 Permissions | 9 pass, 3 fail | **10 pass, 2 fail** | B-7 |
+| B2 Scopes | 24 pass, 5 fail | 24 pass, 5 fail | B-5, B-6, B-14 |
+| B3 Auth | 21 pass, 6 fail | 21 pass, 6 fail | B-8, B-10, B-11, B-12 |
+| B4 Input | 7 pass, 1 fail | **8 pass, 0 fail** | |
+| B5 Files | 14 pass, 3 fail | **15 pass, 2 fail** | B-13 |
+| B6 Assistant | 17 pass, 1 fail | 17 pass, 1 fail | B-15 |
+| B7 Secrets | 4 pass, 3 fail | **6 pass, 1 fail** | B-9 |
+| Invariants after B | 67 / 70 | **68 / 70** | 01-#1, A-3 |
+
+The zip bomb: `HTTP 400 IMPORT_TOO_MANY_ROWS` after 0.1 s, API memory 274 MB → peak 326 MB,
+`/health` answered in 15 ms during the read, the process alive. Every remaining failure is a
+finding this batch was told not to touch (A-2, A-3, 01-#1, 01-#3, 01-#5, B-5 to B-15).
+
+Changes to the suites, none weakening a check:
+
+- `attacks.ts`: the two 01-#4 checks passed by proving the bypass; they now fail if it comes back.
+- `secrets.ts` provoked its 500 with an amount too large (01-#2), now a 400. It makes the
+  database refuse one versement instead (a trigger on the audit database, for its own company,
+  dropped right after), so "what a 500 sends to Sentry" is still proven on a real 500.
+- `map-stack.sh` passes `TRUST_PROXY`. Part A runs on an API reached directly; part B needs
+  `TRUST_PROXY=1`, because `auth.ts` and `secrets.ts` give each login its own address (the
+  limiter allows ten a minute per address): there the suites stand in for the proxy.
+- `sql/invariants.sql`: a sale worth 0 DA is not expected to have a ledger line (below).
+
+Limit of the Sentry proof: traces are sampled one request in ten, and no span was sampled in
+the last run. The error event is proven clean on a real 500; the span shapes are covered by
+`sentry-privacy.test.ts` (copied from the envelopes of the audit) and the SDK no longer reads
+the body at all.
+
+## 25. Decisions
+
+- **The three sales at 0 DA with no ledger line are correct.** `docs/domain.md`: the client
+  account is the ledger of "sales on credit (+), versements (−), returns/avoirs (−)", and
+  nothing is owed on a sale worth 0 DA. `sale-workflow.service.ts` writes the `SALE` entry
+  only when total + timbre is not zero, on purpose: a line of 0 would change no balance and
+  no aging bucket, and would only add a row to the relevé. The sale still has its number, its
+  stock movements (the goods left, at the CUMP) and its audit row, and the reconcile finds no
+  difference. The invariant was too strict and now says so. Not decided here: whether an owner
+  may sell at a price of 0 outside a promotion (section 18); the code is unchanged on that.
+- **B-3, "at or above his own".** No ranking of roles exists, so it is defined from what the
+  roles can do: an account is below the actor when its role differs from his and every
+  permission it holds (role defaults, plus grants, minus revokes) is one he holds. A supervisor
+  with `USERS_MANAGE` can therefore manage sellers and livreurs, and not storekeepers (they
+  receive goods, he does not), supervisors or managers. Deactivating, reactivating and changing
+  permissions follow the same rule, beyond the four actions asked: they were the same hole
+  (a supervisor could deactivate the manager). Editing one's own account is unchanged.
+- **B-4, the maximum.** 9 999 999 999,99 DA per amount and 99 999 999,999 per quantity: two
+  digits under what the columns hold, because totals and balances are computed from what is
+  sent. A product of two valid values can still overflow (price × quantity); the database
+  refuses it, the transaction rolls back and the filter answers 400. Arabic digits in a number
+  are refused (400), as before for every other field.
+- **B-1, the answer.** Too many rows, cells or inflated bytes answer `IMPORT_TOO_MANY_ROWS`
+  (400), the message the user already has ("split the file"); too many sheets and a broken zip
+  answer `IMPORT_FILE_INVALID` (400). No new dependency: the zip directory is read by hand.
+  The row limit before parsing is 20 000 `<row>` elements (empty formatted rows count), twice
+  the 10 000 data rows an import may hold, which is still checked after parsing.
+- **01-#4, the default.** Unset, `TRUST_PROXY` is 0: safe when the API is exposed directly,
+  and behind a proxy every user would share the proxy's address and its login limit until the
+  variable is set. So `infra/deploy/compose.yml` sets 1 (Caddy replaces a client's own
+  header), and Vercel keeps 1 as before. **To check before deploying elsewhere**, and in
+  parts D and E: that what stands in front of the API really overwrites `X-Forwarded-For`.
+- **A-1, orders.** A bon de commande keeps taking the only dépôt of whoever writes it: its
+  delivery leaves from the order's dépôt, else the livreur's truck, "never the seller's truck"
+  (`orders.service.ts`), a different rule that the scenario finds correct. Not changed.
+
+## 26. Still open
+
+A-2, A-3, 01-#1, 01-#3, 01-#5 and B-5 to B-15, as described above. If a Sentry DSN was ever
+live in production, its project may hold request bodies from before this fix (B-2): purge it.

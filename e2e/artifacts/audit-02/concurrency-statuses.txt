@@ -6,6 +6,6 @@ one sale cancelled 20 times: {"200":1,"409 SALE_NOT_VALIDATED":19}
 20 versements of 100 DA: {"201":20}
 one key, 20 identical POST /payments: {"201":1,"409 IDEMPOTENCY_REQUEST_IN_PROGRESS":19}
 caisse of 1 000 DA, 20 transfers of 100 DA: {"201":10,"409 CASH_INSUFFICIENT":10}
-20 transfers, both directions: {"201":17,"409 CASH_INSUFFICIENT":3}
+20 transfers, both directions: {"201":15,"409 CASH_INSUFFICIENT":5}
 one run approved 20 times: {"200":1,"409 PAYROLL_RUN_STATUS":19}
 the run paid 20 times (20 keys): {"201":20}

@@ -9,7 +9,7 @@
   "results": [
     {
       "area": "C1. Two sellers, the last unit (20 at once)",
-      "durationMs": 10,
+      "durationMs": 12,
       "name": "BLOCK: exactly one sale wins, the 19 others are refused cleanly",
       "status": "PASS"
     },
@@ -21,7 +21,7 @@
     },
     {
       "area": "C1. Two sellers, the last unit (20 at once)",
-      "durationMs": 2,
+      "durationMs": 4,
       "name": "WARN: the 20 sales pass and the stock is exactly -20, equal to its ledger",
       "status": "PASS"
     },
@@ -39,7 +39,7 @@
     },
     {
       "area": "C1. Two sellers, the last unit (20 at once)",
-      "durationMs": 1,
+      "durationMs": 2,
       "name": "a sale cancelled 20 times at once is reversed once",
       "status": "PASS"
     },
@@ -75,7 +75,7 @@
     },
     {
       "area": "C3. Transfers out of one cash account (20 at once)",
-      "durationMs": 2,
+      "durationMs": 1,
       "name": "transfers in both directions never deadlock and the money stays 1 000 DA",
       "status": "PASS"
     },

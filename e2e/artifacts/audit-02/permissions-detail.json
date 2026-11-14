@@ -1,0 +1,7576 @@
+{
+ "matrix": [
+  {
+   "role": "MANAGER",
+   "route": "GET /assistant/config",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "PUT /assistant/config",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /assistant/config/test",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /clients/reconcile",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /employees/:id/salaries",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /employees/:id/salaries",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /employees/:id/ledger",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /employees/:id/advances",
+   "why": "ADVANCE_PAY",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /payroll-settings",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "PUT /payroll-settings",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /payroll-rates",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /payroll-rates",
+   "why": "PAYROLL_RATES_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /payroll-rates/:id/accept",
+   "why": "PAYROLL_RATES_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /payroll-rates/:id/keep-own",
+   "why": "PAYROLL_RATES_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /pay-item-types",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /pay-item-types",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "PUT /pay-item-types/:id",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "DELETE /pay-item-types/:id",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /employees/:id/pay-items",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /employees/:id/pay-items",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /employees/:id/payslips",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /payroll-runs/das.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /payroll-runs/payslips/:id/pdf",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /payroll-runs/:id/pdf",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /payroll-runs/:id/livre-de-paie.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /payroll-runs/:id/etat-cnas.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /payroll-runs/:id/recap-irg.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /payroll-runs",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /payroll-runs/:id",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /payroll-runs",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /payroll-runs/:id/recompute",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "PATCH /payroll-runs/:id",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /payroll-runs/:id/approve",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /payroll-runs/:id/cancel",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /payroll-runs/:id/payments",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /dashboard/onboarding/dismiss",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /stock/reconcile",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /cash-accounts",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "PATCH /cash-accounts/:id",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "DELETE /cash-accounts/:id",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /cash-accounts/:id/opening",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "GET /treasury/reconcile",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /users/invite",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "PUT /users/:id",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "PUT /users/:id/permissions",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "PUT /users/:id/access",
+   "why": "WAREHOUSE_ACCESS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /users/:id/deactivate",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /users/:id/reactivate",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "MANAGER",
+   "route": "POST /users/:id/reset-password",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /assistant/config",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /assistant/config",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /assistant/config/test",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /audit-logs",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /audit-logs/facets",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /units",
+   "why": "PRODUCTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PATCH /price-levels/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /categories",
+   "why": "PRODUCTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PATCH /categories/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "DELETE /categories/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /brands",
+   "why": "PRODUCTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PATCH /brands/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "DELETE /brands/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /products",
+   "why": "PRODUCTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PATCH /products/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /products/:id/archive",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /products/:id/restore",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /location-requests/:id/approve",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /location-requests/:id/reject",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PATCH /clients/bulk-assign",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /clients/to-remind",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /clients/reconcile",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "DELETE /clients/:id",
+   "why": "CLIENTS_ARCHIVE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /clients/:id/opening-balance",
+   "why": "CLIENTS_BALANCE_ADJUST",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /clients/:id/adjustments",
+   "why": "CLIENTS_BALANCE_ADJUST",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /expense-categories",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /expense-categories",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /expense-categories/:id",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "DELETE /expense-categories/:id",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /expense-categories/:id/restore",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /expenses",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /expenses/:id",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /expenses",
+   "why": "EXPENSES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /expenses/:id/cancel",
+   "why": "EXPENSE_CANCEL",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /rent-contracts",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /rent-contracts/:id",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /rent-contracts/:id/schedule",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /rent-contracts",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PATCH /rent-contracts/:id",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /rent-contracts/:id/close",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /geo-checks",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /geo-checks/report",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /geo-checks/:id",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /geo-checks/:id/review",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /employees",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /employees/:id",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /employees",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /employees/:id",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "DELETE /employees/:id",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /employees/:id/restore",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /employees/:id/salaries",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /employees/:id/salaries",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /employees/:id/ledger",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /employees/:id/leave-balance",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /employees/:id/leave-entries",
+   "why": "LEAVE_APPROVE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /employees/:id/advances",
+   "why": "ADVANCE_PAY",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /attendance/day",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /attendance/today",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /attendance/month",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /attendance/month/export.xlsx",
+   "why": "EXPORT_DATA",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /attendance/events",
+   "why": "ATTENDANCE_MARK",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /attendance/corrections",
+   "why": "ATTENDANCE_CORRECT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /leave-requests",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /leave-requests/:id/approve",
+   "why": "LEAVE_APPROVE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /leave-requests/:id/reject",
+   "why": "LEAVE_APPROVE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /hr-settings",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /hr-settings",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /public-holidays",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /public-holidays",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /public-holidays/:id",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "DELETE /public-holidays/:id",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /import-files",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /import-files/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /import-files/:id/preview",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /import-files",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /import-files/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /import-files/:id/cancel",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /import-files/:id/purchases",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "DELETE /import-files/:id/purchases/:purchaseId",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /import-files/:id/costs",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /import-files/:id/costs/:costId/cancel",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /import-files/:id/close",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /import-files/:id/late-cost",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /imports",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /imports/templates/:type",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /imports/:type/preview",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /imports/:id/confirm",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /sales-targets",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /sales-targets/bulk",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /incentive-plans",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /incentive-plans",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /incentive-plans/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PATCH /incentive-plans/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /incentive-plans/:id/rules",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /incentive-plans/:id/rules/:ruleId",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "DELETE /incentive-plans/:id/rules/:ruleId",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /incentive-plans/:id/activate",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /incentive-plans/:id/new-version",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /incentive-plans/:id/archive",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /incentive-runs",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /incentive-runs",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /incentive-runs/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /incentive-runs/:id/approve",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /incentive-runs/:id/export.xlsx",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /packaging-types",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /packaging-types/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "DELETE /packaging-types/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /products/:id/packaging",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /payments/:id/bounce",
+   "why": "PAYMENTS_BOUNCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /payroll-settings",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /payroll-settings",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /payroll-rates",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /payroll-rates",
+   "why": "PAYROLL_RATES_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /payroll-rates/:id/accept",
+   "why": "PAYROLL_RATES_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /payroll-rates/:id/keep-own",
+   "why": "PAYROLL_RATES_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /pay-item-types",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /pay-item-types",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /pay-item-types/:id",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "DELETE /pay-item-types/:id",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /employees/:id/pay-items",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /employees/:id/pay-items",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /employees/:id/payslips",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /payroll-runs/das.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /payroll-runs/payslips/:id/pdf",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /payroll-runs/:id/pdf",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /payroll-runs/:id/livre-de-paie.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /payroll-runs/:id/etat-cnas.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /payroll-runs/:id/recap-irg.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /payroll-runs",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /payroll-runs/:id",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /payroll-runs",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /payroll-runs/:id/recompute",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PATCH /payroll-runs/:id",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /payroll-runs/:id/approve",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /payroll-runs/:id/cancel",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /payroll-runs/:id/payments",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /suppliers/:id/statement/pdf",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /promotions",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /promotions/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "DELETE /promotions/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /suppliers/balances",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /suppliers/:id/ledger",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /suppliers/:id/statement",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /suppliers",
+   "why": "SUPPLIERS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PATCH /suppliers/:id",
+   "why": "SUPPLIERS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "DELETE /suppliers/:id",
+   "why": "SUPPLIERS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /purchases",
+   "why": "PURCHASES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /purchases/:id",
+   "why": "PURCHASES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /purchases/:id/validate",
+   "why": "PURCHASES_VALIDATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /purchases/:id/cancel",
+   "why": "PURCHASES_CANCEL",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /purchases/:id/returns",
+   "why": "PURCHASES_CANCEL",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /supplier-payments",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /supplier-payments/:id",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /supplier-payments",
+   "why": "SUPPLIERS_PAY",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /supplier-payments/:id/cancel",
+   "why": "SUPPLIERS_PAY",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /dashboard/onboarding",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /dashboard/onboarding/dismiss",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /reports/overview",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /reports/overview/export.xlsx",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /reports/aging",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /reports/supplier-aging",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /reports/aging/export.xlsx",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /reports/supplier-aging/export.xlsx",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /reports/charges",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /reports/charges/export.xlsx",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /reports/sell-out",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /reports/sell-out/export.xlsx",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /sectors",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PATCH /sectors/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "DELETE /sectors/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /sales/:id/returns",
+   "why": "SALES_RETURN",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /stock/reconcile",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /stock/opening",
+   "why": "STOCK_ADJUST",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /inventories",
+   "why": "STOCK_COUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /inventories/:id/lines",
+   "why": "STOCK_COUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /inventories/:id/cancel",
+   "why": "STOCK_ADJUST",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /warehouses",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PATCH /warehouses/:id",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /warehouses/:id/brands",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /warehouses/:id/categories",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "DELETE /warehouses/:id",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /stock-transfers",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /stock-transfers/:id",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /stock-transfers",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /stock-transfers/:id",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /stock-transfers/:id/validate",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /stock-transfers/:id/cancel",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PATCH /tenant/settings",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /routes",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PATCH /routes/:id",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /routes/:id/stops",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "DELETE /routes/:id",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /orders/deliverers",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PATCH /orders/:id/livreur",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /seller-sessions",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /seller-sessions/:id",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /seller-sessions",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /seller-sessions/:id/close",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /seller-sessions/:id/adjust",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /cash-accounts",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /cash-accounts/:id",
+   "why": "TREASURY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PATCH /cash-accounts/:id",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "DELETE /cash-accounts/:id",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /cash-accounts/:id/movements",
+   "why": "TREASURY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /cash-accounts/:id/opening",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /cash-accounts/:id/counts",
+   "why": "TREASURY_OPERATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /treasury/summary",
+   "why": "TREASURY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /treasury/reconcile",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /treasury/transfers",
+   "why": "TREASURY_OPERATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /treasury/transfers/:id/cancel",
+   "why": "TREASURY_OPERATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /users",
+   "why": "USERS_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /users/invite",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /users/sellers",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /users/team",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /users/:id",
+   "why": "USERS_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /users/:id",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /users/:id/permissions",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "GET /users/:id/access",
+   "why": "USERS_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "PUT /users/:id/access",
+   "why": "WAREHOUSE_ACCESS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /users/:id/deactivate",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /users/:id/reactivate",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SELLER",
+   "route": "POST /users/:id/reset-password",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /assistant/config",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /assistant/config",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /assistant/config/test",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /audit-logs",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /audit-logs/facets",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /units",
+   "why": "PRODUCTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /price-levels/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /categories",
+   "why": "PRODUCTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /categories/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "DELETE /categories/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /brands",
+   "why": "PRODUCTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /brands/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "DELETE /brands/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /products",
+   "why": "PRODUCTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /products/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /products/:id/archive",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /products/:id/restore",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /clients/:id/location",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER,LIVREUR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /clients/:id/location-requests",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER,LIVREUR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /location-requests/:id/approve",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /location-requests/:id/reject",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /clients/bulk-assign",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /clients/to-remind",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /clients/reconcile",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /clients",
+   "why": "CLIENTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /clients/:id",
+   "why": "CLIENTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "DELETE /clients/:id",
+   "why": "CLIENTS_ARCHIVE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /clients/:id/opening-balance",
+   "why": "CLIENTS_BALANCE_ADJUST",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /clients/:id/adjustments",
+   "why": "CLIENTS_BALANCE_ADJUST",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /expense-categories",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /expense-categories",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /expense-categories/:id",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "DELETE /expense-categories/:id",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /expense-categories/:id/restore",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /expenses",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /expenses/:id",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /expenses",
+   "why": "EXPENSES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /expenses/:id/cancel",
+   "why": "EXPENSE_CANCEL",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /rent-contracts",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /rent-contracts/:id",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /rent-contracts/:id/schedule",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /rent-contracts",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /rent-contracts/:id",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /rent-contracts/:id/close",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /geo-checks",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /geo-checks/report",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /geo-checks/:id",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /geo-checks/:id/review",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /employees",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /employees/:id",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /employees",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /employees/:id",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "DELETE /employees/:id",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /employees/:id/restore",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /employees/:id/salaries",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /employees/:id/salaries",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /employees/:id/ledger",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /employees/:id/leave-balance",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /employees/:id/leave-entries",
+   "why": "LEAVE_APPROVE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /employees/:id/advances",
+   "why": "ADVANCE_PAY",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /attendance/day",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /attendance/today",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /attendance/month",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /attendance/month/export.xlsx",
+   "why": "EXPORT_DATA",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /attendance/events",
+   "why": "ATTENDANCE_MARK",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /attendance/corrections",
+   "why": "ATTENDANCE_CORRECT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /leave-requests",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /leave-requests/:id/approve",
+   "why": "LEAVE_APPROVE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /leave-requests/:id/reject",
+   "why": "LEAVE_APPROVE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /hr-settings",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /hr-settings",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /public-holidays",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /public-holidays",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /public-holidays/:id",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "DELETE /public-holidays/:id",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /import-files",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /import-files/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /import-files/:id/preview",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /import-files",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /import-files/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /import-files/:id/cancel",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /import-files/:id/purchases",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "DELETE /import-files/:id/purchases/:purchaseId",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /import-files/:id/costs",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /import-files/:id/costs/:costId/cancel",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /import-files/:id/close",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /import-files/:id/late-cost",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /imports",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /imports/templates/:type",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /imports/:type/preview",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /imports/:id/confirm",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /sales-targets",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /sales-targets/bulk",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /incentive-plans",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /incentive-plans",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /incentive-plans/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /incentive-plans/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /incentive-plans/:id/rules",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /incentive-plans/:id/rules/:ruleId",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "DELETE /incentive-plans/:id/rules/:ruleId",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /incentive-plans/:id/activate",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /incentive-plans/:id/new-version",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /incentive-plans/:id/archive",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /incentive-runs",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /incentive-runs",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /incentive-runs/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /incentive-runs/:id/approve",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /incentive-runs/:id/export.xlsx",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /packaging-types",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /packaging-types/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "DELETE /packaging-types/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /clients/:id/packaging",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER,LIVREUR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /products/:id/packaging",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /packaging-movements",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER,LIVREUR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /payments/:id/collector",
+   "why": "PAYMENTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /payments",
+   "why": "PAYMENTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /payments/:id/cancel",
+   "why": "PAYMENTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /payments/:id/bounce",
+   "why": "PAYMENTS_BOUNCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /payroll-settings",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /payroll-settings",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /payroll-rates",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /payroll-rates",
+   "why": "PAYROLL_RATES_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /payroll-rates/:id/accept",
+   "why": "PAYROLL_RATES_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /payroll-rates/:id/keep-own",
+   "why": "PAYROLL_RATES_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /pay-item-types",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /pay-item-types",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /pay-item-types/:id",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "DELETE /pay-item-types/:id",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /employees/:id/pay-items",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /employees/:id/pay-items",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /employees/:id/payslips",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /payroll-runs/das.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /payroll-runs/payslips/:id/pdf",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /payroll-runs/:id/pdf",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /payroll-runs/:id/livre-de-paie.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /payroll-runs/:id/etat-cnas.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /payroll-runs/:id/recap-irg.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /payroll-runs",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /payroll-runs/:id",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /payroll-runs",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /payroll-runs/:id/recompute",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /payroll-runs/:id",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /payroll-runs/:id/approve",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /payroll-runs/:id/cancel",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /payroll-runs/:id/payments",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /suppliers/:id/statement/pdf",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /share-links",
+   "why": "@Roles(OWNER,MANAGER,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "DELETE /share-links/:id",
+   "why": "@Roles(OWNER,MANAGER,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /promotions",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER,LIVREUR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /promotions/:id",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER,LIVREUR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /promotions",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /promotions/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "DELETE /promotions/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /pricing/preview",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER,LIVREUR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /suppliers/balances",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /suppliers/:id/ledger",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /suppliers/:id/statement",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /suppliers",
+   "why": "SUPPLIERS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /suppliers/:id",
+   "why": "SUPPLIERS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "DELETE /suppliers/:id",
+   "why": "SUPPLIERS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /purchases/:id/validate",
+   "why": "PURCHASES_VALIDATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /purchases/:id/cancel",
+   "why": "PURCHASES_CANCEL",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /purchases/:id/returns",
+   "why": "PURCHASES_CANCEL",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /supplier-payments",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /supplier-payments/:id",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /supplier-payments",
+   "why": "SUPPLIERS_PAY",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /supplier-payments/:id/cancel",
+   "why": "SUPPLIERS_PAY",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /dashboard/onboarding",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /dashboard/onboarding/dismiss",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /reports/overview",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /reports/overview/export.xlsx",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /reports/aging",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /reports/supplier-aging",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /reports/aging/export.xlsx",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /reports/supplier-aging/export.xlsx",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /reports/charges",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /reports/charges/export.xlsx",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /reports/sell-out",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /reports/sell-out/export.xlsx",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /sectors",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /sectors/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "DELETE /sectors/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /sales/:id/seller",
+   "why": "SALES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /sales",
+   "why": "SALES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /sales/quick",
+   "why": "SALES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /sales/:id",
+   "why": "SALES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /sales/:id/validate",
+   "why": "SALES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /sales/:id/cancel",
+   "why": "SALES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /sales/:id/returns",
+   "why": "SALES_RETURN",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /invoices/from-bls",
+   "why": "SALES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /stock/reconcile",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /stock/opening",
+   "why": "STOCK_ADJUST",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /inventories/:id/cancel",
+   "why": "STOCK_ADJUST",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /warehouses",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /warehouses/:id",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /warehouses/:id/brands",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /warehouses/:id/categories",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "DELETE /warehouses/:id",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /tenant/settings",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /routes",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /routes/:id",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /routes/:id/stops",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "DELETE /routes/:id",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /visits",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /orders/deliverers",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /orders",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /orders/:id",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /orders/:id/confirm",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /orders/:id/cancel",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /orders/:id/livreur",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /orders/:id/deliver",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER,LIVREUR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /seller-sessions",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /seller-sessions/:id",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /seller-sessions",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /seller-sessions/:id/close",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /seller-sessions/:id/adjust",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /tournees/reports",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /cash-accounts",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /cash-accounts/:id",
+   "why": "TREASURY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PATCH /cash-accounts/:id",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "DELETE /cash-accounts/:id",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /cash-accounts/:id/movements",
+   "why": "TREASURY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /cash-accounts/:id/opening",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /cash-accounts/:id/counts",
+   "why": "TREASURY_OPERATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /treasury/summary",
+   "why": "TREASURY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /treasury/reconcile",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /treasury/transfers",
+   "why": "TREASURY_OPERATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /treasury/transfers/:id/cancel",
+   "why": "TREASURY_OPERATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /users",
+   "why": "USERS_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /users/invite",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /users/sellers",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /users/team",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /users/:id",
+   "why": "USERS_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /users/:id",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /users/:id/permissions",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "GET /users/:id/access",
+   "why": "USERS_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "PUT /users/:id/access",
+   "why": "WAREHOUSE_ACCESS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /users/:id/deactivate",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /users/:id/reactivate",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "STOREKEEPER",
+   "route": "POST /users/:id/reset-password",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /assistant/config",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /assistant/config",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /assistant/config/test",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /audit-logs",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /audit-logs/facets",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /units",
+   "why": "PRODUCTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PATCH /price-levels/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /categories",
+   "why": "PRODUCTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PATCH /categories/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "DELETE /categories/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /brands",
+   "why": "PRODUCTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PATCH /brands/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "DELETE /brands/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /products",
+   "why": "PRODUCTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PATCH /products/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /products/:id/archive",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /products/:id/restore",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PATCH /clients/bulk-assign",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /clients/to-remind",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /clients/reconcile",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "DELETE /clients/:id",
+   "why": "CLIENTS_ARCHIVE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /clients/:id/opening-balance",
+   "why": "CLIENTS_BALANCE_ADJUST",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /clients/:id/adjustments",
+   "why": "CLIENTS_BALANCE_ADJUST",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /expense-categories",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /expense-categories",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /expense-categories/:id",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "DELETE /expense-categories/:id",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /expense-categories/:id/restore",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /expenses",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /expenses/:id",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /expenses",
+   "why": "EXPENSES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /expenses/:id/cancel",
+   "why": "EXPENSE_CANCEL",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /rent-contracts",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /rent-contracts/:id",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /rent-contracts/:id/schedule",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /rent-contracts",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PATCH /rent-contracts/:id",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /rent-contracts/:id/close",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /geo-checks/:id/review",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /employees",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /employees/:id",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /employees",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /employees/:id",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "DELETE /employees/:id",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /employees/:id/restore",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /employees/:id/salaries",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /employees/:id/salaries",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /employees/:id/ledger",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /employees/:id/leave-balance",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /employees/:id/leave-entries",
+   "why": "LEAVE_APPROVE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /employees/:id/advances",
+   "why": "ADVANCE_PAY",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /attendance/day",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /attendance/today",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /attendance/month",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /attendance/month/export.xlsx",
+   "why": "EXPORT_DATA",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /attendance/events",
+   "why": "ATTENDANCE_MARK",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /attendance/corrections",
+   "why": "ATTENDANCE_CORRECT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /leave-requests",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /leave-requests/:id/approve",
+   "why": "LEAVE_APPROVE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /leave-requests/:id/reject",
+   "why": "LEAVE_APPROVE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /hr-settings",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /hr-settings",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /public-holidays",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /public-holidays",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /public-holidays/:id",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "DELETE /public-holidays/:id",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /import-files",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /import-files/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /import-files/:id/preview",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /import-files",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /import-files/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /import-files/:id/cancel",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /import-files/:id/purchases",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "DELETE /import-files/:id/purchases/:purchaseId",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /import-files/:id/costs",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /import-files/:id/costs/:costId/cancel",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /import-files/:id/close",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /import-files/:id/late-cost",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /imports",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /imports/templates/:type",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /imports/:type/preview",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /imports/:id/confirm",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /sales-targets/bulk",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /incentive-plans",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /incentive-plans",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /incentive-plans/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PATCH /incentive-plans/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /incentive-plans/:id/rules",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /incentive-plans/:id/rules/:ruleId",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "DELETE /incentive-plans/:id/rules/:ruleId",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /incentive-plans/:id/activate",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /incentive-plans/:id/new-version",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /incentive-plans/:id/archive",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /incentive-runs",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /incentive-runs",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /incentive-runs/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /incentive-runs/:id/approve",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /incentive-runs/:id/export.xlsx",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /packaging-types",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /packaging-types/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "DELETE /packaging-types/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /products/:id/packaging",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /payments/:id/bounce",
+   "why": "PAYMENTS_BOUNCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /payroll-settings",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /payroll-settings",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /payroll-rates",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /payroll-rates",
+   "why": "PAYROLL_RATES_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /payroll-rates/:id/accept",
+   "why": "PAYROLL_RATES_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /payroll-rates/:id/keep-own",
+   "why": "PAYROLL_RATES_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /pay-item-types",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /pay-item-types",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /pay-item-types/:id",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "DELETE /pay-item-types/:id",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /employees/:id/pay-items",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /employees/:id/pay-items",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /employees/:id/payslips",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /payroll-runs/das.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /payroll-runs/payslips/:id/pdf",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /payroll-runs/:id/pdf",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /payroll-runs/:id/livre-de-paie.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /payroll-runs/:id/etat-cnas.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /payroll-runs/:id/recap-irg.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /payroll-runs",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /payroll-runs/:id",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /payroll-runs",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /payroll-runs/:id/recompute",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PATCH /payroll-runs/:id",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /payroll-runs/:id/approve",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /payroll-runs/:id/cancel",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /payroll-runs/:id/payments",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /suppliers/:id/statement/pdf",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /share-links",
+   "why": "@Roles(OWNER,MANAGER,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "DELETE /share-links/:id",
+   "why": "@Roles(OWNER,MANAGER,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /promotions",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /promotions/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "DELETE /promotions/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /suppliers/balances",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /suppliers/:id/ledger",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /suppliers/:id/statement",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /suppliers",
+   "why": "SUPPLIERS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PATCH /suppliers/:id",
+   "why": "SUPPLIERS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "DELETE /suppliers/:id",
+   "why": "SUPPLIERS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /purchases",
+   "why": "PURCHASES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /purchases/:id",
+   "why": "PURCHASES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /purchases/:id/validate",
+   "why": "PURCHASES_VALIDATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /purchases/:id/cancel",
+   "why": "PURCHASES_CANCEL",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /purchases/:id/returns",
+   "why": "PURCHASES_CANCEL",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /supplier-payments",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /supplier-payments/:id",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /supplier-payments",
+   "why": "SUPPLIERS_PAY",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /supplier-payments/:id/cancel",
+   "why": "SUPPLIERS_PAY",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /dashboard/onboarding",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /dashboard/onboarding/dismiss",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /reports/overview",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /reports/overview/export.xlsx",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /reports/aging",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /reports/supplier-aging",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /reports/aging/export.xlsx",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /reports/supplier-aging/export.xlsx",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /reports/charges",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /reports/charges/export.xlsx",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /sectors",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PATCH /sectors/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "DELETE /sectors/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /sales/:id/returns",
+   "why": "SALES_RETURN",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /stock/reconcile",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /stock/opening",
+   "why": "STOCK_ADJUST",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /inventories",
+   "why": "STOCK_COUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /inventories/:id/lines",
+   "why": "STOCK_COUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /inventories/:id/cancel",
+   "why": "STOCK_ADJUST",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /warehouses",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PATCH /warehouses/:id",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /warehouses/:id/brands",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /warehouses/:id/categories",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "DELETE /warehouses/:id",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /stock-transfers",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /stock-transfers/:id",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /stock-transfers",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /stock-transfers/:id",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /stock-transfers/:id/validate",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /stock-transfers/:id/cancel",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PATCH /tenant/settings",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /cash-accounts",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /cash-accounts/:id",
+   "why": "TREASURY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PATCH /cash-accounts/:id",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "DELETE /cash-accounts/:id",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /cash-accounts/:id/movements",
+   "why": "TREASURY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /cash-accounts/:id/opening",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /cash-accounts/:id/counts",
+   "why": "TREASURY_OPERATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /treasury/summary",
+   "why": "TREASURY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /treasury/reconcile",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /treasury/transfers",
+   "why": "TREASURY_OPERATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /treasury/transfers/:id/cancel",
+   "why": "TREASURY_OPERATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /users",
+   "why": "USERS_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /users/invite",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /users/:id",
+   "why": "USERS_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /users/:id",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /users/:id/permissions",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "GET /users/:id/access",
+   "why": "USERS_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "PUT /users/:id/access",
+   "why": "WAREHOUSE_ACCESS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /users/:id/deactivate",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /users/:id/reactivate",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "SUPERVISOR",
+   "route": "POST /users/:id/reset-password",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /assistant/config",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /assistant/config",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /assistant/config/test",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /audit-logs",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /audit-logs/facets",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /units",
+   "why": "PRODUCTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /price-levels/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /categories",
+   "why": "PRODUCTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /categories/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "DELETE /categories/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /brands",
+   "why": "PRODUCTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /brands/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "DELETE /brands/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /products",
+   "why": "PRODUCTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /products/:id",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /products/:id/archive",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /products/:id/restore",
+   "why": "PRODUCTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /location-requests/:id/approve",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /location-requests/:id/reject",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /clients/bulk-assign",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /clients/to-remind",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /clients/reconcile",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /clients",
+   "why": "CLIENTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /clients/:id",
+   "why": "CLIENTS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "DELETE /clients/:id",
+   "why": "CLIENTS_ARCHIVE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /clients/:id/opening-balance",
+   "why": "CLIENTS_BALANCE_ADJUST",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /clients/:id/adjustments",
+   "why": "CLIENTS_BALANCE_ADJUST",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /expense-categories",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /expense-categories",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /expense-categories/:id",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "DELETE /expense-categories/:id",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /expense-categories/:id/restore",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /expenses",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /expenses/:id",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /expenses",
+   "why": "EXPENSES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /expenses/:id/cancel",
+   "why": "EXPENSE_CANCEL",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /rent-contracts",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /rent-contracts/:id",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /rent-contracts/:id/schedule",
+   "why": "EXPENSES_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /rent-contracts",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /rent-contracts/:id",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /rent-contracts/:id/close",
+   "why": "RENT_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /geo-checks",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /geo-checks/report",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /geo-checks/:id",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /geo-checks/:id/review",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /employees",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /employees/:id",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /employees",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /employees/:id",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "DELETE /employees/:id",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /employees/:id/restore",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /employees/:id/salaries",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /employees/:id/salaries",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /employees/:id/ledger",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /employees/:id/leave-balance",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /employees/:id/leave-entries",
+   "why": "LEAVE_APPROVE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /employees/:id/advances",
+   "why": "ADVANCE_PAY",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /attendance/day",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /attendance/today",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /attendance/month",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /attendance/month/export.xlsx",
+   "why": "EXPORT_DATA",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /attendance/events",
+   "why": "ATTENDANCE_MARK",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /attendance/corrections",
+   "why": "ATTENDANCE_CORRECT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /leave-requests",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /leave-requests/:id/approve",
+   "why": "LEAVE_APPROVE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /leave-requests/:id/reject",
+   "why": "LEAVE_APPROVE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /hr-settings",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /hr-settings",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /public-holidays",
+   "why": "HR_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /public-holidays",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /public-holidays/:id",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "DELETE /public-holidays/:id",
+   "why": "HR_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /import-files",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /import-files/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /import-files/:id/preview",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /import-files",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /import-files/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /import-files/:id/cancel",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /import-files/:id/purchases",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "DELETE /import-files/:id/purchases/:purchaseId",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /import-files/:id/costs",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /import-files/:id/costs/:costId/cancel",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /import-files/:id/close",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /import-files/:id/late-cost",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /imports",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /imports/templates/:type",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /imports/:type/preview",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /imports/:id/confirm",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /sales-targets",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /sales-targets/bulk",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /incentive-plans",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /incentive-plans",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /incentive-plans/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /incentive-plans/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /incentive-plans/:id/rules",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /incentive-plans/:id/rules/:ruleId",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "DELETE /incentive-plans/:id/rules/:ruleId",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /incentive-plans/:id/activate",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /incentive-plans/:id/new-version",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /incentive-plans/:id/archive",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /incentive-runs",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /incentive-runs",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /incentive-runs/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /incentive-runs/:id/approve",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /incentive-runs/:id/export.xlsx",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /packaging-types",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /packaging-types/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "DELETE /packaging-types/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /products/:id/packaging",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /payments/:id/collector",
+   "why": "PAYMENTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /payments",
+   "why": "PAYMENTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /payments/:id/cancel",
+   "why": "PAYMENTS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /payments/:id/bounce",
+   "why": "PAYMENTS_BOUNCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /payroll-settings",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /payroll-settings",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /payroll-rates",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /payroll-rates",
+   "why": "PAYROLL_RATES_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /payroll-rates/:id/accept",
+   "why": "PAYROLL_RATES_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /payroll-rates/:id/keep-own",
+   "why": "PAYROLL_RATES_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /pay-item-types",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /pay-item-types",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /pay-item-types/:id",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "DELETE /pay-item-types/:id",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /employees/:id/pay-items",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /employees/:id/pay-items",
+   "why": "PAYROLL_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /employees/:id/payslips",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /payroll-runs/das.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /payroll-runs/payslips/:id/pdf",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /payroll-runs/:id/pdf",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /payroll-runs/:id/livre-de-paie.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /payroll-runs/:id/etat-cnas.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /payroll-runs/:id/recap-irg.xlsx",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /payroll-runs",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /payroll-runs/:id",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /payroll-runs",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /payroll-runs/:id/recompute",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /payroll-runs/:id",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /payroll-runs/:id/approve",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /payroll-runs/:id/cancel",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /payroll-runs/:id/payments",
+   "why": "SALARY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /suppliers/:id/statement/pdf",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /share-links",
+   "why": "@Roles(OWNER,MANAGER,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "DELETE /share-links/:id",
+   "why": "@Roles(OWNER,MANAGER,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /promotions",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /promotions/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "DELETE /promotions/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /suppliers/balances",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /suppliers/:id/ledger",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /suppliers/:id/statement",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /suppliers",
+   "why": "SUPPLIERS_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /suppliers/:id",
+   "why": "SUPPLIERS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "DELETE /suppliers/:id",
+   "why": "SUPPLIERS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /purchases",
+   "why": "PURCHASES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /purchases/:id",
+   "why": "PURCHASES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /purchases/:id/validate",
+   "why": "PURCHASES_VALIDATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /purchases/:id/cancel",
+   "why": "PURCHASES_CANCEL",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /purchases/:id/returns",
+   "why": "PURCHASES_CANCEL",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /supplier-payments",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /supplier-payments/:id",
+   "why": "SUPPLIERS_ACCOUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /supplier-payments",
+   "why": "SUPPLIERS_PAY",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /supplier-payments/:id/cancel",
+   "why": "SUPPLIERS_PAY",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /dashboard/onboarding",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /dashboard/onboarding/dismiss",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /reports/overview",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /reports/overview/export.xlsx",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /reports/aging",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /reports/supplier-aging",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /reports/aging/export.xlsx",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /reports/supplier-aging/export.xlsx",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /reports/charges",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /reports/charges/export.xlsx",
+   "why": "REPORTS_FINANCE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /reports/sell-out",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /reports/sell-out/export.xlsx",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /sectors",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /sectors/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "DELETE /sectors/:id",
+   "why": "@Roles(OWNER,MANAGER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /sales/:id/seller",
+   "why": "SALES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /sales",
+   "why": "SALES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /sales/quick",
+   "why": "SALES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /sales/:id",
+   "why": "SALES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /sales/:id/validate",
+   "why": "SALES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /sales/:id/cancel",
+   "why": "SALES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /sales/:id/returns",
+   "why": "SALES_RETURN",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /invoices/from-bls",
+   "why": "SALES_CREATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /stock/reconcile",
+   "why": "@Roles(OWNER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /stock/opening",
+   "why": "STOCK_ADJUST",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /inventories",
+   "why": "STOCK_COUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /inventories/:id/lines",
+   "why": "STOCK_COUNT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /inventories/:id/cancel",
+   "why": "STOCK_ADJUST",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /warehouses",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /warehouses/:id",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /warehouses/:id/brands",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /warehouses/:id/categories",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "DELETE /warehouses/:id",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /stock-transfers",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /stock-transfers/:id",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /stock-transfers",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /stock-transfers/:id",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /stock-transfers/:id/validate",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /stock-transfers/:id/cancel",
+   "why": "STOCK_TRANSFER",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /tenant/settings",
+   "why": "SETTINGS_EDIT",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /routes",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /routes/:id",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /routes/:id/stops",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "DELETE /routes/:id",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /visits",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /orders/deliverers",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /orders",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /orders/:id",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /orders/:id/confirm",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /orders/:id/cancel",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /orders/:id/livreur",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /seller-sessions",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /seller-sessions/:id",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /seller-sessions",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /seller-sessions/:id/close",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /seller-sessions/:id/adjust",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /tournees/reports",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR,SELLER)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /cash-accounts",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /cash-accounts/:id",
+   "why": "TREASURY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PATCH /cash-accounts/:id",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "DELETE /cash-accounts/:id",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /cash-accounts/:id/movements",
+   "why": "TREASURY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /cash-accounts/:id/opening",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /cash-accounts/:id/counts",
+   "why": "TREASURY_OPERATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /treasury/summary",
+   "why": "TREASURY_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /treasury/reconcile",
+   "why": "TREASURY_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /treasury/transfers",
+   "why": "TREASURY_OPERATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /treasury/transfers/:id/cancel",
+   "why": "TREASURY_OPERATE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /users",
+   "why": "USERS_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /users/invite",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /users/sellers",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /users/team",
+   "why": "@Roles(OWNER,MANAGER,SUPERVISOR)",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /users/:id",
+   "why": "USERS_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /users/:id",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /users/:id/permissions",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "GET /users/:id/access",
+   "why": "USERS_VIEW",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "PUT /users/:id/access",
+   "why": "WAREHOUSE_ACCESS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /users/:id/deactivate",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /users/:id/reactivate",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  },
+  {
+   "role": "LIVREUR",
+   "route": "POST /users/:id/reset-password",
+   "why": "USERS_MANAGE",
+   "status": 403,
+   "code": "FORBIDDEN"
+  }
+ ],
+ "open": [
+  "GET /assistant/status",
+  "POST /auth/password",
+  "POST /auth/logout",
+  "GET /auth/me",
+  "GET /auth/sessions",
+  "DELETE /auth/sessions/:id",
+  "GET /sessions",
+  "DELETE /sessions/:id",
+  "GET /tenant/subscription",
+  "GET /location-requests",
+  "GET /attendance/me",
+  "POST /attendance/check-in",
+  "POST /attendance/check-out",
+  "POST /leave-requests",
+  "POST /leave-requests/:id/cancel",
+  "GET /me/objectives",
+  "GET /me/payslips",
+  "GET /me/payslips/:id/pdf",
+  "GET /documents/:type/:id/pdf",
+  "GET /clients/:id/packaging/pdf",
+  "GET /dashboard",
+  "GET /dashboard/todo",
+  "GET /sectors",
+  "POST /stock/adjustments",
+  "POST /inventories/:id/validate",
+  "GET /warehouses",
+  "GET /warehouses/:id",
+  "GET /tenant/settings",
+  "GET /routes",
+  "GET /routes/:id",
+  "GET /me/today",
+  "GET /visits",
+  "GET /visits/:id",
+  "GET /orders",
+  "GET /orders/:id",
+  "GET /cash-accounts",
+  "GET /users/me/dashboard-layout",
+  "PATCH /users/me/dashboard-layout"
+ ],
+ "shown": [
+  {
+   "company": "core",
+   "role": "SELLER",
+   "route": "GET /purchases/:id",
+   "kind": "cost",
+   "keys": [
+    "lines[].unitCost"
+   ],
+   "path": "/purchases/eb6360aa-c773-4f76-a183-29083161619b"
+  },
+  {
+   "company": "core",
+   "role": "STOREKEEPER",
+   "route": "GET /purchases/:id",
+   "kind": "cost",
+   "keys": [
+    "lines[].unitCost"
+   ],
+   "path": "/purchases/eb6360aa-c773-4f76-a183-29083161619b"
+  },
+  {
+   "company": "core",
+   "role": "SUPERVISOR",
+   "route": "GET /purchases/:id",
+   "kind": "cost",
+   "keys": [
+    "lines[].unitCost"
+   ],
+   "path": "/purchases/eb6360aa-c773-4f76-a183-29083161619b"
+  },
+  {
+   "company": "core",
+   "role": "LIVREUR",
+   "route": "GET /purchases/:id",
+   "kind": "cost",
+   "keys": [
+    "lines[].unitCost"
+   ],
+   "path": "/purchases/eb6360aa-c773-4f76-a183-29083161619b"
+  },
+  {
+   "company": "import",
+   "role": "SELLER",
+   "route": "GET /purchases/:id",
+   "kind": "cost",
+   "keys": [
+    "lines[].unitCost"
+   ],
+   "path": "/purchases/4806809d-860d-405e-aa47-5a0a5b251da6"
+  },
+  {
+   "company": "import",
+   "role": "STOREKEEPER",
+   "route": "GET /purchases/:id",
+   "kind": "cost",
+   "keys": [
+    "lines[].unitCost"
+   ],
+   "path": "/purchases/4806809d-860d-405e-aa47-5a0a5b251da6"
+  },
+  {
+   "company": "import",
+   "role": "SUPERVISOR",
+   "route": "GET /purchases/:id",
+   "kind": "cost",
+   "keys": [
+    "lines[].unitCost"
+   ],
+   "path": "/purchases/4806809d-860d-405e-aa47-5a0a5b251da6"
+  },
+  {
+   "company": "import",
+   "role": "LIVREUR",
+   "route": "GET /purchases/:id",
+   "kind": "cost",
+   "keys": [
+    "lines[].unitCost"
+   ],
+   "path": "/purchases/4806809d-860d-405e-aa47-5a0a5b251da6"
+  },
+  {
+   "company": "credit",
+   "role": "SELLER",
+   "route": "GET /purchases/:id",
+   "kind": "cost",
+   "keys": [
+    "lines[].unitCost"
+   ],
+   "path": "/purchases/420a4cdb-456b-44dd-b881-46f61039720a"
+  },
+  {
+   "company": "credit",
+   "role": "STOREKEEPER",
+   "route": "GET /purchases/:id",
+   "kind": "cost",
+   "keys": [
+    "lines[].unitCost"
+   ],
+   "path": "/purchases/420a4cdb-456b-44dd-b881-46f61039720a"
+  },
+  {
+   "company": "credit",
+   "role": "SUPERVISOR",
+   "route": "GET /purchases/:id",
+   "kind": "cost",
+   "keys": [
+    "lines[].unitCost"
+   ],
+   "path": "/purchases/420a4cdb-456b-44dd-b881-46f61039720a"
+  },
+  {
+   "company": "credit",
+   "role": "LIVREUR",
+   "route": "GET /purchases/:id",
+   "kind": "cost",
+   "keys": [
+    "lines[].unitCost"
+   ],
+   "path": "/purchases/420a4cdb-456b-44dd-b881-46f61039720a"
+  },
+  {
+   "company": "treasury",
+   "role": "SELLER",
+   "route": "GET /purchases/:id",
+   "kind": "cost",
+   "keys": [
+    "lines[].unitCost"
+   ],
+   "path": "/purchases/e496c6a6-e2c2-4560-b537-07062594e34d"
+  },
+  {
+   "company": "treasury",
+   "role": "STOREKEEPER",
+   "route": "GET /purchases/:id",
+   "kind": "cost",
+   "keys": [
+    "lines[].unitCost"
+   ],
+   "path": "/purchases/e496c6a6-e2c2-4560-b537-07062594e34d"
+  },
+  {
+   "company": "treasury",
+   "role": "SUPERVISOR",
+   "route": "GET /purchases/:id",
+   "kind": "cost",
+   "keys": [
+    "lines[].unitCost"
+   ],
+   "path": "/purchases/e496c6a6-e2c2-4560-b537-07062594e34d"
+  },
+  {
+   "company": "treasury",
+   "role": "LIVREUR",
+   "route": "GET /purchases/:id",
+   "kind": "cost",
+   "keys": [
+    "lines[].unitCost"
+   ],
+   "path": "/purchases/e496c6a6-e2c2-4560-b537-07062594e34d"
+  }
+ ],
+ "figures": {
+  "MANAGER": [
+   "GET /cash-accounts balance",
+   "GET /cash-accounts/:id balance",
+   "GET /cash-accounts/:id/movements items.amount",
+   "GET /cash-accounts/:id/movements items.runningBalance",
+   "GET /clients items.balance",
+   "GET /clients/:id balance",
+   "GET /clients/:id debtByWarehouse.balance",
+   "GET /clients/:id/packaging balances.depositValue",
+   "GET /clients/:id/statement closingBalance",
+   "GET /clients/:id/statement entries.amount",
+   "GET /clients/:id/statement entries.runningBalance",
+   "GET /clients/:id/statement totalCredit",
+   "GET /clients/:id/statement totalDebit",
+   "GET /clients/:id/unpaid-documents paid",
+   "GET /clients/:id/unpaid-documents remaining",
+   "GET /clients/:id/unpaid-documents returned",
+   "GET /clients/:id/unpaid-documents totalTtc",
+   "GET /clients/debtors balance",
+   "GET /clients/map points.balance",
+   "GET /clients/to-remind items.balance",
+   "GET /dashboard cash.byMode.total",
+   "GET /dashboard cash.total",
+   "GET /dashboard credit.topDebtors.balance",
+   "GET /dashboard credit.total",
+   "GET /dashboard net.charges",
+   "GET /dashboard net.margin",
+   "GET /dashboard net.result",
+   "GET /dashboard sales.current.ttc",
+   "GET /dashboard sales.margin",
+   "GET /dashboard sales.month.ttc",
+   "GET /dashboard sales.today.ttc",
+   "GET /dashboard stock.value",
+   "GET /dashboard top.clients.ttc",
+   "GET /dashboard top.products.qty",
+   "GET /dashboard top.products.ttc",
+   "GET /dashboard treasury.banques",
+   "GET /dashboard treasury.caisses",
+   "GET /dashboard/todo items.amount",
+   "GET /expenses items.amount",
+   "GET /expenses/:id amount",
+   "GET /import-files items.totalLanded",
+   "GET /import-files/:id costs.allocated",
+   "GET /import-files/:id costs.amount",
+   "GET /import-files/:id purchases.totalCurrency",
+   "GET /import-files/:id purchases.totalTtc",
+   "GET /import-files/:id totalCosts",
+   "GET /import-files/:id totalGoods",
+   "GET /import-files/:id totalLanded",
+   "GET /import-files/:id/preview costs.allocated",
+   "GET /import-files/:id/preview lines.landedTotal",
+   "GET /import-files/:id/preview lines.qtyBase",
+   "GET /import-files/:id/preview lines.value",
+   "GET /import-files/:id/preview lines.valueCurrency",
+   "GET /import-files/:id/preview totalCosts",
+   "GET /import-files/:id/preview totalGoods",
+   "GET /import-files/:id/preview totalLanded",
+   "GET /incentive-runs total",
+   "GET /incentive-runs/:id total",
+   "GET /incentive-runs/:id users.lines.amount",
+   "GET /incentive-runs/:id users.lines.explanation.achieved",
+   "GET /incentive-runs/:id users.lines.explanation.amount",
+   "GET /incentive-runs/:id users.lines.explanation.base",
+   "GET /incentive-runs/:id users.lines.explanation.gross",
+   "GET /incentive-runs/:id users.total",
+   "GET /inventories/:id lines.countedQtyBase",
+   "GET /inventories/:id lines.diffQtyBase",
+   "GET /inventories/:id lines.expectedQtyBase",
+   "GET /orders items.totalTtc",
+   "GET /orders/:id lines.availableBase",
+   "GET /orders/:id lines.factorToBase",
+   "GET /orders/:id lines.lineHt",
+   "GET /orders/:id lines.qty",
+   "GET /orders/:id lines.qtyBase",
+   "GET /orders/:id lines.qtyDelivered",
+   "GET /orders/:id lines.qtyNotDelivered",
+   "GET /orders/:id lines.tvaRate",
+   "GET /orders/:id lines.unitPriceHt",
+   "GET /orders/:id totalHt",
+   "GET /orders/:id totalTtc",
+   "GET /orders/:id totalTva",
+   "GET /packaging-types depositValue",
+   "GET /payments items.allocations.amount",
+   "GET /payments items.amount",
+   "GET /payments/:id allocations.amount",
+   "GET /payments/:id amount",
+   "GET /products items.prices.priceHt",
+   "GET /products items.tvaRate",
+   "GET /products items.units.factorToBase",
+   "GET /products/:id prices.priceHt",
+   "GET /products/:id tvaRate",
+   "GET /products/:id units.factorToBase",
+   "GET /products/:id/packaging qtyBasePerPackaging",
+   "GET /purchases items.totalCurrency",
+   "GET /purchases items.totalTtc",
+   "GET /purchases/:id lines.factorToBase",
+   "GET /purchases/:id lines.lineHt",
+   "GET /purchases/:id lines.qty",
+   "GET /purchases/:id lines.qtyBase",
+   "GET /purchases/:id lines.returnedQtyBase",
+   "GET /purchases/:id lines.tvaRate",
+   "GET /purchases/:id paidAmount",
+   "GET /purchases/:id returns.lines.lineHt",
+   "GET /purchases/:id returns.lines.qty",
+   "GET /purchases/:id returns.lines.qtyBase",
+   "GET /purchases/:id returns.totalHt",
+   "GET /purchases/:id returns.totalTtc",
+   "GET /purchases/:id returns.totalTva",
+   "GET /purchases/:id totalCurrency",
+   "GET /purchases/:id totalHt",
+   "GET /purchases/:id totalTtc",
+   "GET /purchases/:id totalTva",
+   "GET /purchases/:id tvaByRate.baseHt",
+   "GET /purchases/:id tvaByRate.rate",
+   "GET /purchases/:id tvaByRate.tva",
+   "GET /rent-contracts amount",
+   "GET /rent-contracts amountDue",
+   "GET /rent-contracts/:id amount",
+   "GET /rent-contracts/:id amountDue",
+   "GET /rent-contracts/:id/schedule contract.amount",
+   "GET /rent-contracts/:id/schedule contract.amountDue",
+   "GET /rent-contracts/:id/schedule slots.amount",
+   "GET /reports/aging rows.balance",
+   "GET /reports/aging rows.buckets.d0_30",
+   "GET /reports/aging rows.buckets.d31_60",
+   "GET /reports/aging totals.balance",
+   "GET /reports/aging totals.buckets.d0_30",
+   "GET /reports/aging totals.buckets.d31_60",
+   "GET /reports/charges byCategory.expenses",
+   "GET /reports/charges byCategory.rent",
+   "GET /reports/charges byCategory.total",
+   "GET /reports/charges byWarehouse.expenses",
+   "GET /reports/charges byWarehouse.rent",
+   "GET /reports/charges byWarehouse.total",
+   "GET /reports/charges expenses",
+   "GET /reports/charges payroll",
+   "GET /reports/charges rent",
+   "GET /reports/charges total",
+   "GET /reports/margin rows.values.cost",
+   "GET /reports/margin rows.values.margin",
+   "GET /reports/margin rows.values.marginPct",
+   "GET /reports/margin rows.values.netHt",
+   "GET /reports/margin rows.values.qty",
+   "GET /reports/margin totals.cost",
+   "GET /reports/margin totals.margin",
+   "GET /reports/margin totals.marginPct",
+   "GET /reports/margin totals.netHt",
+   "GET /reports/overview total.balances.banques",
+   "GET /reports/overview total.balances.caisses",
+   "GET /reports/overview total.cashIn",
+   "GET /reports/overview total.cashOut.expenses",
+   "GET /reports/overview total.cashOut.importCosts",
+   "GET /reports/overview total.cashOut.supplierPayments",
+   "GET /reports/overview total.cashOut.total",
+   "GET /reports/overview total.charges",
+   "GET /reports/overview total.credit.total",
+   "GET /reports/overview total.margin",
+   "GET /reports/overview total.netCash",
+   "GET /reports/overview total.netResult",
+   "GET /reports/overview total.sales.ttc",
+   "GET /reports/overview total.stock.value",
+   "GET /reports/overview total.topSeller.ttc",
+   "GET /reports/overview warehouses.balances.banques",
+   "GET /reports/overview warehouses.balances.caisses",
+   "GET /reports/overview warehouses.cashIn",
+   "GET /reports/overview warehouses.cashOut.expenses",
+   "GET /reports/overview warehouses.cashOut.importCosts",
+   "GET /reports/overview warehouses.cashOut.supplierPayments",
+   "GET /reports/overview warehouses.cashOut.total",
+   "GET /reports/overview warehouses.charges",
+   "GET /reports/overview warehouses.credit.total",
+   "GET /reports/overview warehouses.margin",
+   "GET /reports/overview warehouses.netCash",
+   "GET /reports/overview warehouses.netResult",
+   "GET /reports/overview warehouses.sales.ttc",
+   "GET /reports/overview warehouses.stock.value",
+   "GET /reports/overview warehouses.topSeller.ttc",
+   "GET /reports/payments rows.values.total",
+   "GET /reports/payments totals.total",
+   "GET /reports/purchases rows.values.grossHt",
+   "GET /reports/purchases rows.values.netHt",
+   "GET /reports/purchases rows.values.netTtc",
+   "GET /reports/purchases rows.values.returnsHt",
+   "GET /reports/purchases totals.grossHt",
+   "GET /reports/purchases totals.netHt",
+   "GET /reports/purchases totals.netTtc",
+   "GET /reports/purchases totals.returnsHt",
+   "GET /reports/sales rows.values.grossHt",
+   "GET /reports/sales rows.values.netHt",
+   "GET /reports/sales rows.values.netTtc",
+   "GET /reports/sales rows.values.returnsHt",
+   "GET /reports/sales totals.grossHt",
+   "GET /reports/sales totals.netHt",
+   "GET /reports/sales totals.netTtc",
+   "GET /reports/sales totals.returnsHt",
+   "GET /reports/sell-out rows.netHt",
+   "GET /reports/sell-out rows.qtyNet",
+   "GET /reports/sell-out rows.qtyReturned",
+   "GET /reports/sell-out rows.qtySold",
+   "GET /reports/sell-out rows.returnsHt",
+   "GET /reports/sell-out rows.salesHt",
+   "GET /reports/sell-out totals.netHt",
+   "GET /reports/sell-out totals.qtyNet",
+   "GET /reports/sell-out totals.qtyReturned",
+   "GET /reports/sell-out totals.qtySold",
+   "GET /reports/sell-out totals.returnsHt",
+   "GET /reports/sell-out totals.salesHt",
+   "GET /reports/supplier-aging rows.balance",
+   "GET /reports/supplier-aging rows.buckets.d0_30",
+   "GET /reports/supplier-aging totals.balance",
+   "GET /reports/supplier-aging totals.buckets.d0_30",
+   "GET /sales items.paidAmount",
+   "GET /sales items.totalTtc",
+   "GET /sales/:id lines.factorToBase",
+   "GET /sales/:id lines.lineHt",
+   "GET /sales/:id lines.listPriceHt",
+   "GET /sales/:id lines.qty",
+   "GET /sales/:id lines.qtyBase",
+   "GET /sales/:id lines.returnedQtyBase",
+   "GET /sales/:id lines.tvaRate",
+   "GET /sales/:id lines.unitPriceHt",
+   "GET /sales/:id paidAmount",
+   "GET /sales/:id payments.amount",
+   "GET /sales/:id returns.lines.lineHt",
+   "GET /sales/:id returns.lines.qty",
+   "GET /sales/:id returns.lines.qtyBase",
+   "GET /sales/:id returns.lines.tvaRate",
+   "GET /sales/:id returns.lines.unitPriceHt",
+   "GET /sales/:id returns.totalHt",
+   "GET /sales/:id returns.totalTtc",
+   "GET /sales/:id returns.totalTva",
+   "GET /sales/:id totalHt",
+   "GET /sales/:id totalTtc",
+   "GET /sales/:id totalTva",
+   "GET /sales/:id tvaByRate.baseHt",
+   "GET /sales/:id tvaByRate.rate",
+   "GET /sales/:id tvaByRate.tva",
+   "GET /sales/price-preview priceHt",
+   "GET /seller-sessions expected.fromSales",
+   "GET /seller-sessions expected.fromVersements",
+   "GET /seller-sessions expected.total",
+   "GET /seller-sessions session.ecart",
+   "GET /seller-sessions session.expected.fromSales",
+   "GET /seller-sessions session.expected.fromVersements",
+   "GET /seller-sessions session.expected.total",
+   "GET /seller-sessions session.handedCash",
+   "GET /seller-sessions/:id ecart",
+   "GET /seller-sessions/:id expected.fromSales",
+   "GET /seller-sessions/:id expected.fromVersements",
+   "GET /seller-sessions/:id expected.total",
+   "GET /seller-sessions/:id handedCash",
+   "GET /stock items.byWarehouse.qtyBase",
+   "GET /stock items.packaging.factorToBase",
+   "GET /stock items.qtyBase",
+   "GET /stock items.value",
+   "GET /stock summary.totalValue",
+   "GET /stock-transfers/:id lines.qty",
+   "GET /stock-transfers/:id lines.qtyBase",
+   "GET /stock/:id byWarehouse.qtyBase",
+   "GET /stock/:id packaging.factorToBase",
+   "GET /stock/:id qtyBase",
+   "GET /stock/:id value",
+   "GET /stock/:id/movements items.balanceAfter",
+   "GET /stock/:id/movements items.qtyBase",
+   "GET /stock/:id/movements items.warehouseBalanceAfter",
+   "GET /supplier-payments items.amount",
+   "GET /supplier-payments items.amountCurrency",
+   "GET /supplier-payments/:id amount",
+   "GET /supplier-payments/:id amountCurrency",
+   "GET /suppliers items.balance",
+   "GET /suppliers items.balanceCurrency",
+   "GET /suppliers/:id balance",
+   "GET /suppliers/:id balanceCurrency",
+   "GET /suppliers/:id/ledger balance",
+   "GET /suppliers/:id/ledger balanceCurrency",
+   "GET /suppliers/:id/ledger items.amount",
+   "GET /suppliers/:id/ledger items.amountCurrency",
+   "GET /suppliers/:id/ledger items.runningBalance",
+   "GET /suppliers/:id/ledger items.runningBalanceCurrency",
+   "GET /suppliers/:id/statement closingBalance",
+   "GET /suppliers/:id/statement closingBalanceCurrency",
+   "GET /suppliers/:id/statement entries.amount",
+   "GET /suppliers/:id/statement entries.amountCurrency",
+   "GET /suppliers/:id/statement entries.runningBalance",
+   "GET /suppliers/:id/statement entries.runningBalanceCurrency",
+   "GET /suppliers/:id/statement totalCredit",
+   "GET /suppliers/:id/statement totalDebit",
+   "GET /suppliers/balances items.balance",
+   "GET /suppliers/balances totalOwed",
+   "GET /tenant/settings cashCountAlertThreshold",
+   "GET /tenant/subscription edition.monthlySupplement",
+   "GET /tenant/subscription plan.monthlyPrice",
+   "GET /tournees/reports rows.deliveredTtc",
+   "GET /tournees/reports rows.ecart",
+   "GET /tournees/reports rows.ordersTtc",
+   "GET /treasury/summary accounts.balance",
+   "GET /treasury/summary accounts.cashIn",
+   "GET /treasury/summary accounts.cashOut",
+   "GET /treasury/summary byWarehouse.balance",
+   "GET /treasury/summary totals.banques",
+   "GET /treasury/summary totals.caisses",
+   "GET /treasury/summary totals.cashIn",
+   "GET /treasury/summary totals.cashOut"
+  ],
+  "SELLER": [
+   "GET /clients items.balance",
+   "GET /clients/:id balance",
+   "GET /clients/:id debtByWarehouse.balance",
+   "GET /clients/:id/packaging balances.depositValue",
+   "GET /clients/:id/statement closingBalance",
+   "GET /clients/:id/statement entries.amount",
+   "GET /clients/:id/statement entries.runningBalance",
+   "GET /clients/:id/statement totalCredit",
+   "GET /clients/:id/statement totalDebit",
+   "GET /clients/:id/unpaid-documents paid",
+   "GET /clients/:id/unpaid-documents remaining",
+   "GET /clients/:id/unpaid-documents returned",
+   "GET /clients/:id/unpaid-documents totalTtc",
+   "GET /clients/debtors balance",
+   "GET /clients/map points.balance",
+   "GET /inventories/:id lines.countedQtyBase",
+   "GET /inventories/:id lines.diffQtyBase",
+   "GET /inventories/:id lines.expectedQtyBase",
+   "GET /packaging-types depositValue",
+   "GET /payments items.allocations.amount",
+   "GET /payments items.amount",
+   "GET /payments/:id allocations.amount",
+   "GET /payments/:id amount",
+   "GET /products items.prices.priceHt",
+   "GET /products items.tvaRate",
+   "GET /products items.units.factorToBase",
+   "GET /products/:id prices.priceHt",
+   "GET /products/:id tvaRate",
+   "GET /products/:id units.factorToBase",
+   "GET /products/:id/packaging qtyBasePerPackaging",
+   "GET /purchases items.totalCurrency",
+   "GET /purchases items.totalTtc",
+   "GET /purchases/:id lines.factorToBase",
+   "GET /purchases/:id lines.lineHt",
+   "GET /purchases/:id lines.qty",
+   "GET /purchases/:id lines.qtyBase",
+   "GET /purchases/:id lines.returnedQtyBase",
+   "GET /purchases/:id lines.tvaRate",
+   "GET /purchases/:id paidAmount",
+   "GET /purchases/:id returns.lines.lineHt",
+   "GET /purchases/:id returns.lines.qty",
+   "GET /purchases/:id returns.lines.qtyBase",
+   "GET /purchases/:id returns.totalHt",
+   "GET /purchases/:id returns.totalTtc",
+   "GET /purchases/:id returns.totalTva",
+   "GET /purchases/:id totalCurrency",
+   "GET /purchases/:id totalHt",
+   "GET /purchases/:id totalTtc",
+   "GET /purchases/:id totalTva",
+   "GET /purchases/:id tvaByRate.baseHt",
+   "GET /purchases/:id tvaByRate.rate",
+   "GET /purchases/:id tvaByRate.tva",
+   "GET /sales items.paidAmount",
+   "GET /sales items.totalTtc",
+   "GET /sales/:id lines.factorToBase",
+   "GET /sales/:id lines.lineHt",
+   "GET /sales/:id lines.listPriceHt",
+   "GET /sales/:id lines.qty",
+   "GET /sales/:id lines.qtyBase",
+   "GET /sales/:id lines.returnedQtyBase",
+   "GET /sales/:id lines.tvaRate",
+   "GET /sales/:id lines.unitPriceHt",
+   "GET /sales/:id paidAmount",
+   "GET /sales/:id payments.amount",
+   "GET /sales/:id returns.lines.lineHt",
+   "GET /sales/:id returns.lines.qty",
+   "GET /sales/:id returns.lines.qtyBase",
+   "GET /sales/:id returns.lines.tvaRate",
+   "GET /sales/:id returns.lines.unitPriceHt",
+   "GET /sales/:id returns.totalHt",
+   "GET /sales/:id returns.totalTtc",
+   "GET /sales/:id returns.totalTva",
+   "GET /sales/:id totalHt",
+   "GET /sales/:id totalTtc",
+   "GET /sales/:id totalTva",
+   "GET /sales/:id tvaByRate.baseHt",
+   "GET /sales/:id tvaByRate.rate",
+   "GET /sales/:id tvaByRate.tva",
+   "GET /sales/price-preview priceHt",
+   "GET /stock items.byWarehouse.qtyBase",
+   "GET /stock items.packaging.factorToBase",
+   "GET /stock items.qtyBase",
+   "GET /stock/:id byWarehouse.qtyBase",
+   "GET /stock/:id packaging.factorToBase",
+   "GET /stock/:id qtyBase",
+   "GET /stock/:id/movements items.balanceAfter",
+   "GET /stock/:id/movements items.qtyBase",
+   "GET /stock/:id/movements items.warehouseBalanceAfter",
+   "GET /suppliers items.balance",
+   "GET /suppliers items.balanceCurrency",
+   "GET /suppliers/:id balance",
+   "GET /suppliers/:id balanceCurrency",
+   "GET /tenant/settings cashCountAlertThreshold",
+   "GET /tenant/subscription edition.monthlySupplement",
+   "GET /tenant/subscription plan.monthlyPrice"
+  ],
+  "STOREKEEPER": [
+   "GET /clients items.balance",
+   "GET /clients/:id balance",
+   "GET /clients/:id debtByWarehouse.balance",
+   "GET /clients/:id/statement closingBalance",
+   "GET /clients/:id/statement entries.amount",
+   "GET /clients/:id/statement entries.runningBalance",
+   "GET /clients/:id/statement totalCredit",
+   "GET /clients/:id/statement totalDebit",
+   "GET /clients/:id/unpaid-documents paid",
+   "GET /clients/:id/unpaid-documents remaining",
+   "GET /clients/:id/unpaid-documents returned",
+   "GET /clients/:id/unpaid-documents totalTtc",
+   "GET /clients/debtors balance",
+   "GET /clients/map points.balance",
+   "GET /inventories/:id lines.countedQtyBase",
+   "GET /inventories/:id lines.diffQtyBase",
+   "GET /inventories/:id lines.expectedQtyBase",
+   "GET /orders items.totalTtc",
+   "GET /orders/:id lines.availableBase",
+   "GET /orders/:id lines.factorToBase",
+   "GET /orders/:id lines.lineHt",
+   "GET /orders/:id lines.qty",
+   "GET /orders/:id lines.qtyBase",
+   "GET /orders/:id lines.qtyDelivered",
+   "GET /orders/:id lines.qtyNotDelivered",
+   "GET /orders/:id lines.tvaRate",
+   "GET /orders/:id lines.unitPriceHt",
+   "GET /orders/:id totalHt",
+   "GET /orders/:id totalTtc",
+   "GET /orders/:id totalTva",
+   "GET /packaging-types depositValue",
+   "GET /payments items.allocations.amount",
+   "GET /payments items.amount",
+   "GET /payments/:id allocations.amount",
+   "GET /payments/:id amount",
+   "GET /products items.prices.priceHt",
+   "GET /products items.tvaRate",
+   "GET /products items.units.factorToBase",
+   "GET /products/:id prices.priceHt",
+   "GET /products/:id tvaRate",
+   "GET /products/:id units.factorToBase",
+   "GET /products/:id/packaging qtyBasePerPackaging",
+   "GET /purchases items.totalCurrency",
+   "GET /purchases items.totalTtc",
+   "GET /purchases/:id lines.factorToBase",
+   "GET /purchases/:id lines.lineHt",
+   "GET /purchases/:id lines.qty",
+   "GET /purchases/:id lines.qtyBase",
+   "GET /purchases/:id lines.returnedQtyBase",
+   "GET /purchases/:id lines.tvaRate",
+   "GET /purchases/:id paidAmount",
+   "GET /purchases/:id returns.lines.lineHt",
+   "GET /purchases/:id returns.lines.qty",
+   "GET /purchases/:id returns.lines.qtyBase",
+   "GET /purchases/:id returns.totalHt",
+   "GET /purchases/:id returns.totalTtc",
+   "GET /purchases/:id returns.totalTva",
+   "GET /purchases/:id totalCurrency",
+   "GET /purchases/:id totalHt",
+   "GET /purchases/:id totalTtc",
+   "GET /purchases/:id totalTva",
+   "GET /purchases/:id tvaByRate.baseHt",
+   "GET /purchases/:id tvaByRate.rate",
+   "GET /purchases/:id tvaByRate.tva",
+   "GET /sales items.paidAmount",
+   "GET /sales items.totalTtc",
+   "GET /sales/:id lines.factorToBase",
+   "GET /sales/:id lines.lineHt",
+   "GET /sales/:id lines.listPriceHt",
+   "GET /sales/:id lines.qty",
+   "GET /sales/:id lines.qtyBase",
+   "GET /sales/:id lines.returnedQtyBase",
+   "GET /sales/:id lines.tvaRate",
+   "GET /sales/:id lines.unitPriceHt",
+   "GET /sales/:id paidAmount",
+   "GET /sales/:id payments.amount",
+   "GET /sales/:id returns.lines.lineHt",
+   "GET /sales/:id returns.lines.qty",
+   "GET /sales/:id returns.lines.qtyBase",
+   "GET /sales/:id returns.lines.tvaRate",
+   "GET /sales/:id returns.lines.unitPriceHt",
+   "GET /sales/:id returns.totalHt",
+   "GET /sales/:id returns.totalTtc",
+   "GET /sales/:id returns.totalTva",
+   "GET /sales/:id totalHt",
+   "GET /sales/:id totalTtc",
+   "GET /sales/:id totalTva",
+   "GET /sales/:id tvaByRate.baseHt",
+   "GET /sales/:id tvaByRate.rate",
+   "GET /sales/:id tvaByRate.tva",
+   "GET /sales/price-preview priceHt",
+   "GET /stock items.byWarehouse.qtyBase",
+   "GET /stock items.packaging.factorToBase",
+   "GET /stock items.qtyBase",
+   "GET /stock-transfers/:id lines.qty",
+   "GET /stock-transfers/:id lines.qtyBase",
+   "GET /stock/:id byWarehouse.qtyBase",
+   "GET /stock/:id packaging.factorToBase",
+   "GET /stock/:id qtyBase",
+   "GET /stock/:id/movements items.balanceAfter",
+   "GET /stock/:id/movements items.qtyBase",
+   "GET /stock/:id/movements items.warehouseBalanceAfter",
+   "GET /suppliers items.balance",
+   "GET /suppliers items.balanceCurrency",
+   "GET /suppliers/:id balance",
+   "GET /suppliers/:id balanceCurrency",
+   "GET /tenant/settings cashCountAlertThreshold",
+   "GET /tenant/subscription edition.monthlySupplement",
+   "GET /tenant/subscription plan.monthlyPrice"
+  ],
+  "SUPERVISOR": [
+   "GET /clients items.balance",
+   "GET /clients/:id balance",
+   "GET /clients/:id debtByWarehouse.balance",
+   "GET /clients/:id/packaging balances.depositValue",
+   "GET /clients/:id/statement closingBalance",
+   "GET /clients/:id/statement entries.amount",
+   "GET /clients/:id/statement entries.runningBalance",
+   "GET /clients/:id/statement totalCredit",
+   "GET /clients/:id/statement totalDebit",
+   "GET /clients/:id/unpaid-documents paid",
+   "GET /clients/:id/unpaid-documents remaining",
+   "GET /clients/:id/unpaid-documents returned",
+   "GET /clients/:id/unpaid-documents totalTtc",
+   "GET /clients/debtors balance",
+   "GET /clients/map points.balance",
+   "GET /inventories/:id lines.countedQtyBase",
+   "GET /inventories/:id lines.diffQtyBase",
+   "GET /inventories/:id lines.expectedQtyBase",
+   "GET /packaging-types depositValue",
+   "GET /products items.prices.priceHt",
+   "GET /products items.tvaRate",
+   "GET /products items.units.factorToBase",
+   "GET /products/:id prices.priceHt",
+   "GET /products/:id tvaRate",
+   "GET /products/:id units.factorToBase",
+   "GET /products/:id/packaging qtyBasePerPackaging",
+   "GET /purchases items.totalCurrency",
+   "GET /purchases items.totalTtc",
+   "GET /purchases/:id lines.factorToBase",
+   "GET /purchases/:id lines.lineHt",
+   "GET /purchases/:id lines.qty",
+   "GET /purchases/:id lines.qtyBase",
+   "GET /purchases/:id lines.returnedQtyBase",
+   "GET /purchases/:id lines.tvaRate",
+   "GET /purchases/:id paidAmount",
+   "GET /purchases/:id returns.lines.lineHt",
+   "GET /purchases/:id returns.lines.qty",
+   "GET /purchases/:id returns.lines.qtyBase",
+   "GET /purchases/:id returns.totalHt",
+   "GET /purchases/:id returns.totalTtc",
+   "GET /purchases/:id returns.totalTva",
+   "GET /purchases/:id totalCurrency",
+   "GET /purchases/:id totalHt",
+   "GET /purchases/:id totalTtc",
+   "GET /purchases/:id totalTva",
+   "GET /purchases/:id tvaByRate.baseHt",
+   "GET /purchases/:id tvaByRate.rate",
+   "GET /purchases/:id tvaByRate.tva",
+   "GET /sales/price-preview priceHt",
+   "GET /stock items.byWarehouse.qtyBase",
+   "GET /stock items.packaging.factorToBase",
+   "GET /stock items.qtyBase",
+   "GET /stock/:id byWarehouse.qtyBase",
+   "GET /stock/:id packaging.factorToBase",
+   "GET /stock/:id qtyBase",
+   "GET /stock/:id/movements items.balanceAfter",
+   "GET /stock/:id/movements items.qtyBase",
+   "GET /stock/:id/movements items.warehouseBalanceAfter",
+   "GET /suppliers items.balance",
+   "GET /suppliers items.balanceCurrency",
+   "GET /suppliers/:id balance",
+   "GET /suppliers/:id balanceCurrency",
+   "GET /tenant/settings cashCountAlertThreshold",
+   "GET /tenant/subscription edition.monthlySupplement",
+   "GET /tenant/subscription plan.monthlyPrice"
+  ],
+  "LIVREUR": [
+   "GET /clients items.balance",
+   "GET /clients/:id balance",
+   "GET /clients/:id debtByWarehouse.balance",
+   "GET /clients/:id/packaging balances.depositValue",
+   "GET /clients/:id/statement closingBalance",
+   "GET /clients/:id/statement entries.amount",
+   "GET /clients/:id/statement entries.runningBalance",
+   "GET /clients/:id/statement totalCredit",
+   "GET /clients/:id/statement totalDebit",
+   "GET /clients/:id/unpaid-documents paid",
+   "GET /clients/:id/unpaid-documents remaining",
+   "GET /clients/:id/unpaid-documents returned",
+   "GET /clients/:id/unpaid-documents totalTtc",
+   "GET /clients/debtors balance",
+   "GET /clients/map points.balance",
+   "GET /inventories/:id lines.countedQtyBase",
+   "GET /inventories/:id lines.diffQtyBase",
+   "GET /inventories/:id lines.expectedQtyBase",
+   "GET /packaging-types depositValue",
+   "GET /payments items.allocations.amount",
+   "GET /payments items.amount",
+   "GET /payments/:id allocations.amount",
+   "GET /payments/:id amount",
+   "GET /products items.prices.priceHt",
+   "GET /products items.tvaRate",
+   "GET /products items.units.factorToBase",
+   "GET /products/:id prices.priceHt",
+   "GET /products/:id tvaRate",
+   "GET /products/:id units.factorToBase",
+   "GET /products/:id/packaging qtyBasePerPackaging",
+   "GET /purchases items.totalCurrency",
+   "GET /purchases items.totalTtc",
+   "GET /purchases/:id lines.factorToBase",
+   "GET /purchases/:id lines.lineHt",
+   "GET /purchases/:id lines.qty",
+   "GET /purchases/:id lines.qtyBase",
+   "GET /purchases/:id lines.returnedQtyBase",
+   "GET /purchases/:id lines.tvaRate",
+   "GET /purchases/:id paidAmount",
+   "GET /purchases/:id returns.lines.lineHt",
+   "GET /purchases/:id returns.lines.qty",
+   "GET /purchases/:id returns.lines.qtyBase",
+   "GET /purchases/:id returns.totalHt",
+   "GET /purchases/:id returns.totalTtc",
+   "GET /purchases/:id returns.totalTva",
+   "GET /purchases/:id totalCurrency",
+   "GET /purchases/:id totalHt",
+   "GET /purchases/:id totalTtc",
+   "GET /purchases/:id totalTva",
+   "GET /purchases/:id tvaByRate.baseHt",
+   "GET /purchases/:id tvaByRate.rate",
+   "GET /purchases/:id tvaByRate.tva",
+   "GET /sales items.paidAmount",
+   "GET /sales items.totalTtc",
+   "GET /sales/:id lines.factorToBase",
+   "GET /sales/:id lines.lineHt",
+   "GET /sales/:id lines.listPriceHt",
+   "GET /sales/:id lines.qty",
+   "GET /sales/:id lines.qtyBase",
+   "GET /sales/:id lines.returnedQtyBase",
+   "GET /sales/:id lines.tvaRate",
+   "GET /sales/:id lines.unitPriceHt",
+   "GET /sales/:id paidAmount",
+   "GET /sales/:id payments.amount",
+   "GET /sales/:id returns.lines.lineHt",
+   "GET /sales/:id returns.lines.qty",
+   "GET /sales/:id returns.lines.qtyBase",
+   "GET /sales/:id returns.lines.tvaRate",
+   "GET /sales/:id returns.lines.unitPriceHt",
+   "GET /sales/:id returns.totalHt",
+   "GET /sales/:id returns.totalTtc",
+   "GET /sales/:id returns.totalTva",
+   "GET /sales/:id totalHt",
+   "GET /sales/:id totalTtc",
+   "GET /sales/:id totalTva",
+   "GET /sales/:id tvaByRate.baseHt",
+   "GET /sales/:id tvaByRate.rate",
+   "GET /sales/:id tvaByRate.tva",
+   "GET /sales/price-preview priceHt",
+   "GET /stock items.byWarehouse.qtyBase",
+   "GET /stock items.packaging.factorToBase",
+   "GET /stock items.qtyBase",
+   "GET /stock/:id byWarehouse.qtyBase",
+   "GET /stock/:id packaging.factorToBase",
+   "GET /stock/:id qtyBase",
+   "GET /stock/:id/movements items.balanceAfter",
+   "GET /stock/:id/movements items.qtyBase",
+   "GET /stock/:id/movements items.warehouseBalanceAfter",
+   "GET /suppliers items.balance",
+   "GET /suppliers items.balanceCurrency",
+   "GET /suppliers/:id balance",
+   "GET /suppliers/:id balanceCurrency",
+   "GET /tenant/settings cashCountAlertThreshold",
+   "GET /tenant/subscription edition.monthlySupplement",
+   "GET /tenant/subscription plan.monthlyPrice"
+  ]
+ }
+}

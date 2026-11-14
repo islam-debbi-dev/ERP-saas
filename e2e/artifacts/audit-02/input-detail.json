@@ -1,0 +1,310 @@
+{
+ "fiveHundreds": [],
+ "internals": [],
+ "accepted": [
+  {
+   "route": "PATCH /tenant/settings",
+   "where": "maxDiscountPct = comma",
+   "value": "1,5",
+   "status": 200,
+   "code": "",
+   "sample": "{\"tenantId\":\"c233e47c-78a2-4299-a1ae-ac9bd86930ca\",\"name\":\"A2 Core a2mwgrdtwi1d\",\"updatedAt\":\"2026-11-14T18:53:11.643Z\",\"raisonSociale\":\"A2 Core a2mwgrdtwi1d\",\"adresse\":null,\"telephone\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"rib\":null,\"assujettiTva\":true,\"creditLimitMode\":\"WARN\",\"negativeSt"
+  },
+  {
+   "route": "PATCH /tenant/settings",
+   "where": "cashCountAlertThreshold = comma",
+   "value": "1,5",
+   "status": 200,
+   "code": "",
+   "sample": "{\"tenantId\":\"c233e47c-78a2-4299-a1ae-ac9bd86930ca\",\"name\":\"A2 Core a2mwgrdtwi1d\",\"updatedAt\":\"2026-11-14T18:53:11.751Z\",\"raisonSociale\":\"A2 Core a2mwgrdtwi1d\",\"adresse\":null,\"telephone\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"rib\":null,\"assujettiTva\":true,\"creditLimitMode\":\"WARN\",\"negativeSt"
+  },
+  {
+   "route": "POST /stock/adjustments",
+   "where": "lines[].qty = negative",
+   "value": "-1",
+   "status": 201,
+   "code": "",
+   "sample": "{\"movements\":1,\"warnings\":[]}"
+  },
+  {
+   "route": "POST /clients/:id/adjustments",
+   "where": "amount = negative",
+   "value": "-1",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"b47c6d63-a06b-4e1a-8452-5ae444cb00bd\",\"code\":\"C-mwgrdub21j\",\"name\":\"Client core mwgrdub21k\",\"type\":\"PARTICULIER\",\"phone\":null,\"phone2\":null,\"address\":null,\"wilaya\":null,\"commune\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"priceLevelId\":null,\"creditLimit\":null,\"sector\":null,\"assignedSelle"
+  },
+  {
+   "route": "POST /clients/:id/adjustments",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"b47c6d63-a06b-4e1a-8452-5ae444cb00bd\",\"code\":\"C-mwgrdub21j\",\"name\":\"Client core mwgrdub21k\",\"type\":\"PARTICULIER\",\"phone\":null,\"phone2\":null,\"address\":null,\"wilaya\":null,\"commune\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"priceLevelId\":null,\"creditLimit\":null,\"sector\":null,\"assignedSelle"
+  },
+  {
+   "route": "POST /sales",
+   "where": "lines[].unitPriceHt = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"5b64bf44-da4d-499f-a17b-53a2e90be2a8\",\"type\":\"BL\",\"number\":null,\"status\":\"DRAFT\",\"client\":{\"id\":\"b47c6d63-a06b-4e1a-8452-5ae444cb00bd\",\"code\":\"C-mwgrdub21j\",\"name\":\"Client core mwgrdub21k\"},\"clientSnapshot\":null,\"documentDate\":\"2026-11-14\",\"note\":null,\"priceLevelId\":\"b4b08627-206c-4fc6-93a0-f"
+  },
+  {
+   "route": "POST /sales/quick",
+   "where": "paidAmount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"sale\":{\"id\":\"4e4d33d8-a7cc-4c35-b577-290aa7469ab2\",\"type\":\"BL\",\"number\":\"BL-2026-000006\",\"status\":\"VALIDATED\",\"client\":{\"id\":\"b47c6d63-a06b-4e1a-8452-5ae444cb00bd\",\"code\":\"C-mwgrdub21j\",\"name\":\"Client core mwgrdub21k\"},\"clientSnapshot\":{\"ai\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"code\":\"C-mwgrdub21"
+  },
+  {
+   "route": "POST /sales/quick",
+   "where": "lines[].unitPriceHt = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"sale\":{\"id\":\"9ae29c9c-d646-4851-ba79-03f7653654cf\",\"type\":\"BL\",\"number\":\"BL-2026-000010\",\"status\":\"VALIDATED\",\"client\":{\"id\":\"b47c6d63-a06b-4e1a-8452-5ae444cb00bd\",\"code\":\"C-mwgrdub21j\",\"name\":\"Client core mwgrdub21k\"},\"clientSnapshot\":{\"ai\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"code\":\"C-mwgrdub21"
+  },
+  {
+   "route": "POST /payments",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"0da97bea-2804-4e1f-b831-e64735be839f\",\"number\":\"VER-2026-000007\",\"client\":{\"id\":\"b47c6d63-a06b-4e1a-8452-5ae444cb00bd\",\"code\":\"C-mwgrdub21j\",\"name\":\"Client core mwgrdub21k\"},\"sale\":null,\"amount\":\"1.50\",\"mode\":\"ESPECES\",\"status\":\"VALID\",\"reference\":null,\"bank\":null,\"dueDate\":null,\"note\":null,\""
+  },
+  {
+   "route": "POST /purchases",
+   "where": "lines[].unitCost = 3 decimals",
+   "value": "0.001",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"292f2ff6-baca-4e11-acc2-aca6a0e8f884\",\"number\":null,\"status\":\"DRAFT\",\"supplier\":{\"id\":\"2a6b4dc3-5190-4063-a69e-bc6ceea68662\",\"name\":\"Fournisseur mwgrdu4p1g\"},\"warehouse\":null,\"documentDate\":\"2026-11-14\",\"supplierRef\":null,\"note\":null,\"totalHt\":\"0.01\",\"totalTva\":\"0.00\",\"totalTtc\":\"0.01\",\"tvaBy"
+  },
+  {
+   "route": "POST /purchases",
+   "where": "lines[].unitCost = 4 decimals",
+   "value": "1.0001",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"1f4cb371-f104-482a-a9fc-40ceb950f64a\",\"number\":null,\"status\":\"DRAFT\",\"supplier\":{\"id\":\"2a6b4dc3-5190-4063-a69e-bc6ceea68662\",\"name\":\"Fournisseur mwgrdu4p1g\"},\"warehouse\":null,\"documentDate\":\"2026-11-14\",\"supplierRef\":null,\"note\":null,\"totalHt\":\"10.00\",\"totalTva\":\"1.90\",\"totalTtc\":\"11.90\",\"tva"
+  },
+  {
+   "route": "POST /purchases",
+   "where": "lines[].unitCost = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"33c47603-52ef-4bc7-90c4-d2920cee8f1d\",\"number\":null,\"status\":\"DRAFT\",\"supplier\":{\"id\":\"2a6b4dc3-5190-4063-a69e-bc6ceea68662\",\"name\":\"Fournisseur mwgrdu4p1g\"},\"warehouse\":null,\"documentDate\":\"2026-11-14\",\"supplierRef\":null,\"note\":null,\"totalHt\":\"15.00\",\"totalTva\":\"2.85\",\"totalTtc\":\"17.85\",\"tva"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = negative",
+   "value": "-1",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"2a6b4dc3-5190-4063-a69e-bc6ceea68662\",\"code\":null,\"name\":\"Fournisseur mwgrdu4p1g\",\"phone\":\"-1\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = 3 decimals",
+   "value": "0.001",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"2a6b4dc3-5190-4063-a69e-bc6ceea68662\",\"code\":null,\"name\":\"Fournisseur mwgrdu4p1g\",\"phone\":\"0.001\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = 4 decimals",
+   "value": "1.0001",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"2a6b4dc3-5190-4063-a69e-bc6ceea68662\",\"code\":null,\"name\":\"Fournisseur mwgrdu4p1g\",\"phone\":\"1.0001\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = exponent",
+   "value": "1e5",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"2a6b4dc3-5190-4063-a69e-bc6ceea68662\",\"code\":null,\"name\":\"Fournisseur mwgrdu4p1g\",\"phone\":\"1e5\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = NaN",
+   "value": "NaN",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"2a6b4dc3-5190-4063-a69e-bc6ceea68662\",\"code\":null,\"name\":\"Fournisseur mwgrdu4p1g\",\"phone\":\"NaN\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = Infinity",
+   "value": "Infinity",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"2a6b4dc3-5190-4063-a69e-bc6ceea68662\",\"code\":null,\"name\":\"Fournisseur mwgrdu4p1g\",\"phone\":\"Infinity\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = arabic digits",
+   "value": "١٢٣",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"2a6b4dc3-5190-4063-a69e-bc6ceea68662\",\"code\":null,\"name\":\"Fournisseur mwgrdu4p1g\",\"phone\":\"١٢٣\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = comma",
+   "value": "1,5",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"2a6b4dc3-5190-4063-a69e-bc6ceea68662\",\"code\":null,\"name\":\"Fournisseur mwgrdu4p1g\",\"phone\":\"1,5\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = hex",
+   "value": "0x10",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"2a6b4dc3-5190-4063-a69e-bc6ceea68662\",\"code\":null,\"name\":\"Fournisseur mwgrdu4p1g\",\"phone\":\"0x10\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "POST /import-files/:id/late-cost",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"3a3ee101-94e4-40fa-990b-2bac1797826d\",\"number\":\"DI-2026-000001\",\"status\":\"CLOSED\",\"reference\":\"BL-MSKU-1\",\"containerNo\":\"MSKU1234567\",\"arrivalDate\":null,\"purchaseCount\":1,\"totalLanded\":\"187501.50\",\"createdAt\":\"2026-11-14T18:48:22.264Z\",\"closedAt\":\"2026-11-14T18:48:22.465Z\",\"note\":null,\"versio"
+  },
+  {
+   "route": "POST /supplier-payments",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"d550ec9b-a373-430c-a8c5-e036d2bbafb2\",\"number\":\"RGF-2026-000003\",\"supplier\":{\"id\":\"f4f64760-2a45-4e91-8bc6-82d3da0a5b85\",\"code\":null,\"name\":\"Yiwu Trading mwgrdwom1o\"},\"amount\":\"210.00\",\"currency\":\"USD\",\"amountCurrency\":\"1.50\",\"exchangeRate\":\"140\",\"mode\":\"VIREMENT\",\"status\":\"VALID\",\"reference\""
+  },
+  {
+   "route": "POST /supplier-payments",
+   "where": "exchangeRate = 3 decimals",
+   "value": "0.001",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"e22b3faa-768c-41d0-bd34-3debd619ab5b\",\"number\":\"RGF-2026-000005\",\"supplier\":{\"id\":\"f4f64760-2a45-4e91-8bc6-82d3da0a5b85\",\"code\":null,\"name\":\"Yiwu Trading mwgrdwom1o\"},\"amount\":\"0.40\",\"currency\":\"USD\",\"amountCurrency\":\"400.00\",\"exchangeRate\":\"0.001\",\"mode\":\"VIREMENT\",\"status\":\"VALID\",\"referenc"
+  },
+  {
+   "route": "POST /supplier-payments",
+   "where": "exchangeRate = 4 decimals",
+   "value": "1.0001",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"6acb6427-619a-495b-a53a-4e0207ca004c\",\"number\":\"RGF-2026-000006\",\"supplier\":{\"id\":\"f4f64760-2a45-4e91-8bc6-82d3da0a5b85\",\"code\":null,\"name\":\"Yiwu Trading mwgrdwom1o\"},\"amount\":\"400.04\",\"currency\":\"USD\",\"amountCurrency\":\"400.00\",\"exchangeRate\":\"1.0001\",\"mode\":\"VIREMENT\",\"status\":\"VALID\",\"refer"
+  },
+  {
+   "route": "POST /supplier-payments",
+   "where": "exchangeRate = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"65d71fe0-3778-4f0a-9919-8ff6f473e424\",\"number\":\"RGF-2026-000007\",\"supplier\":{\"id\":\"f4f64760-2a45-4e91-8bc6-82d3da0a5b85\",\"code\":null,\"name\":\"Yiwu Trading mwgrdwom1o\"},\"amount\":\"600.00\",\"currency\":\"USD\",\"amountCurrency\":\"400.00\",\"exchangeRate\":\"1.5\",\"mode\":\"VIREMENT\",\"status\":\"VALID\",\"referenc"
+  },
+  {
+   "route": "PUT /products/:id/packaging",
+   "where": "[].qtyBasePerPackaging = 3 decimals",
+   "value": "0.001",
+   "status": 200,
+   "code": "",
+   "sample": "[{\"packagingTypeId\":\"724cb6d8-8b99-4bb1-b79f-18925869386f\",\"name\":\"Casier 24\",\"qtyBasePerPackaging\":\"0.001\"}]"
+  },
+  {
+   "route": "PUT /products/:id/packaging",
+   "where": "[].qtyBasePerPackaging = comma",
+   "value": "1,5",
+   "status": 200,
+   "code": "",
+   "sample": "[{\"packagingTypeId\":\"724cb6d8-8b99-4bb1-b79f-18925869386f\",\"name\":\"Casier 24\",\"qtyBasePerPackaging\":\"1.500\"}]"
+  },
+  {
+   "route": "POST /purchases",
+   "where": "paidAmount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"d99c7803-8a69-4b84-b64d-c4fb3a1fe91d\",\"number\":null,\"status\":\"DRAFT\",\"supplier\":{\"id\":\"28824706-4c1b-458e-ae3b-0d8fe8e16e83\",\"name\":\"Grossiste Sétif mwgrdy9425\"},\"warehouse\":null,\"documentDate\":\"2026-11-14\",\"supplierRef\":null,\"note\":null,\"totalHt\":\"20000.00\",\"totalTva\":\"3800.00\",\"totalTtc\":\"2"
+  },
+  {
+   "route": "POST /rent-contracts",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"4fb4a3e4-b3fe-4183-9d0a-c397c4c9b29a\",\"warehouse\":{\"id\":\"1f3ecf0c-59ea-4720-bc70-6b16e54f6d01\",\"name\":\"Dépôt principal\"},\"landlordName\":\"Bailleur Audit\",\"landlordPhone\":null,\"amount\":\"1.50\",\"period\":\"MONTHLY\",\"startDate\":\"2026-11-01\",\"endDate\":null,\"note\":null,\"locked\":false,\"ended\":false,\"pa"
+  },
+  {
+   "route": "POST /expenses",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"eebf7e9f-4956-4f25-b55c-c6a26d6da410\",\"number\":\"DEP-2026-000005\",\"date\":\"2026-11-14\",\"warehouse\":{\"id\":\"1f3ecf0c-59ea-4720-bc70-6b16e54f6d01\",\"name\":\"Dépôt principal\"},\"category\":{\"id\":\"ab7654eb-1ad2-411b-862e-83f28db9c84d\",\"name\":\"Électricité / eau\",\"key\":\"UTILITIES\"},\"amount\":\"1.50\",\"mode\":"
+  },
+  {
+   "route": "POST /treasury/transfers",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"7afb1573-8739-4a41-86b1-30a9c682fa13\",\"number\":\"TRF-2026-000003\",\"from\":{\"id\":\"9259d97a-275e-4372-aa15-37a841019492\",\"name\":\"Caisse principale\"},\"to\":{\"id\":\"95b53284-cc9d-4f68-97a7-1d1dc14aac7a\",\"name\":\"Banque principale\"},\"amount\":\"1.50\",\"date\":\"2026-11-14\",\"note\":\"Dépôt en banque\",\"status\":"
+  },
+  {
+   "route": "POST /cash-accounts/:id/counts",
+   "where": "counted = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"5fb7d9b6-c9f6-4525-a1e3-ad12ab47ea49\",\"cashAccountId\":\"9259d97a-275e-4372-aa15-37a841019492\",\"counted\":\"1.50\",\"expected\":\"69486.50\",\"ecart\":\"-69485.00\",\"reason\":\"Erreur de rendu monnaie\",\"alert\":true,\"createdAt\":\"2026-11-14T18:53:23.481Z\"}"
+  },
+  {
+   "route": "POST /employees/:id/salaries",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "[{\"id\":\"d204b1c9-2432-4106-a835-a3c79acce94b\",\"amount\":\"1.50\",\"payType\":\"MONTHLY\",\"effectiveFrom\":\"2025-08-27\",\"reason\":null,\"createdBy\":{\"id\":\"d618c699-d7a4-4228-811b-2223dd5c5e8d\",\"fullName\":\"Owner Paie\"},\"createdAt\":\"2026-11-14T18:53:23.855Z\"},{\"id\":\"ea358b5c-8673-4106-8b05-f273d76e1319\",\"amount\""
+  },
+  {
+   "route": "POST /employees/:id/advances",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"dbfe31a8-ac19-44f4-9294-ce8ed83371d2\",\"type\":\"ADVANCE\",\"amount\":\"1.50\",\"balanceAfter\":\"5001.50\",\"expenseId\":\"1068a203-d0c4-412b-85e4-eeb0905873cb\",\"expenseNumber\":\"DEP-2026-000004\",\"note\":null,\"createdAt\":\"2026-11-14T18:53:24.475Z\"}"
+  },
+  {
+   "route": "PATCH /sales/:id/seller",
+   "where": "reason = NUL byte",
+   "value": "NUL byte",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"e20bdf39-e4c7-4639-96bc-4e054a6bf851\",\"type\":\"BL\",\"number\":\"BL-2026-000001\",\"status\":\"VALIDATED\",\"client\":{\"id\":\"b47c6d63-a06b-4e1a-8452-5ae444cb00bd\",\"code\":\"C-mwgrdub21j\",\"name\":\"Client core mwgrdub21k\"},\"clientSnapshot\":{\"ai\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"code\":\"C-mwgrdub21j\",\"name"
+  },
+  {
+   "route": "PATCH /payments/:id/collector",
+   "where": "reason = NUL byte",
+   "value": "NUL byte",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"7f31156d-2bfd-4e88-882e-2decfb6ea976\",\"number\":\"VER-2026-000002\",\"client\":{\"id\":\"b47c6d63-a06b-4e1a-8452-5ae444cb00bd\",\"code\":\"C-mwgrdub21j\",\"name\":\"Client core mwgrdub21k\"},\"sale\":null,\"amount\":\"500.00\",\"mode\":\"ESPECES\",\"status\":\"VALID\",\"reference\":null,\"bank\":null,\"dueDate\":null,\"note\":null"
+  },
+  {
+   "route": "POST /purchases/:id/returns",
+   "where": "reason = NUL byte",
+   "value": "NUL byte",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"eb6360aa-c773-4f76-a183-29083161619b\",\"number\":\"BR-2026-000001\",\"status\":\"VALIDATED\",\"supplier\":{\"id\":\"2a6b4dc3-5190-4063-a69e-bc6ceea68662\",\"name\":\"Fournisseur mwgrdu4p1g\"},\"warehouse\":{\"id\":\"115f269d-64c7-4962-98d0-3e7b5683c26f\",\"name\":\"Dépôt principal\"},\"documentDate\":\"2026-11-14\",\"supplie"
+  }
+ ]
+}

@@ -1,0 +1,2351 @@
+{
+ "worlds": {
+  "T1": [
+   "5ea657c8-973a-4c31-8d63-ed506e03b3be",
+   "f008844c-fadf-4284-b271-b09b132e3948",
+   "ef62fa0e-971e-488c-bc45-634307041c8c",
+   "808debe0-703c-4957-b18c-29c81cbf5d69",
+   "05319dbb-bd03-4fd4-94c9-9b6f0ccdc190",
+   "99872216-8e6a-4835-be2d-b9a880470532",
+   "a5368134-1b93-4514-94b1-fb6778f95f4d",
+   "7f138d6b-8507-4cc7-960b-c854f2ad8916"
+  ],
+  "T2": [
+   "c233e47c-78a2-4299-a1ae-ac9bd86930ca",
+   "ca375c5c-dc56-41f8-82a8-7116caa704db",
+   "5f61d21d-f049-4733-828c-88095574acac",
+   "17859f4d-962e-43b7-9fe2-94d5d782fce6",
+   "fa4f54c0-ce78-45be-bd1b-c31a737fa203",
+   "f1d7cfdd-524f-4584-a700-ffa2d33a6216",
+   "88c22fb9-641a-4049-8804-cc7aea72272d",
+   "98c4f6f2-c7ca-4089-9ce3-f0b5a38cb5c4"
+  ]
+ },
+ "tables": 101,
+ "ownedIds": 1000,
+ "probes": [
+  {
+   "kind": "body",
+   "route": "POST /categories",
+   "where": "body.parentId",
+   "table": "categories",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Category not found\",\"requestId\":\"e8370d9d-a341-4e55-819b-217615ea7389\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PATCH /categories/:id",
+   "where": "path#0",
+   "table": "categories",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Category not found\",\"requestId\":\"4ccdea1f-dd59-495e-bc37-b53369885985\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /brands",
+   "where": "body.supplierId",
+   "table": "suppliers",
+   "status": 409,
+   "code": "BRAND_NAME_TAKEN",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"BRAND_NAME_TAKEN\",\"message\":\"Brand name already used\",\"requestId\":\"1b6eb925-99ee-400a-9405-3c3cea5424c4\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PATCH /brands/:id",
+   "where": "path#0",
+   "table": "brands",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Brand not found\",\"requestId\":\"c22dc768-2796-4d6d-92ff-6700b48d95dd\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PATCH /brands/:id",
+   "where": "body.supplierId",
+   "table": "suppliers",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown supplier\",\"requestId\":\"85e8ae06-44d1-4b35-bb6d-e1aed6bb1c22\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PATCH /price-levels/:id",
+   "where": "path#0",
+   "table": "price_levels",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Price level not found\",\"requestId\":\"a6da46f1-7808-488b-afd0-82151217bf60\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PATCH /sectors/:id",
+   "where": "path#0",
+   "table": "sectors",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"b13b2077-a493-4e06-922a-33901abf067c\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /products",
+   "where": "body.baseUnitId",
+   "table": "units",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Invalid input\",\"details\":{\"issues\":[{\"path\":\"units\",\"code\":\"custom\",\"message\":\"base_unit_missing\"}]},\"requestId\":\"3f1405cd-35ac-42c0-b45c-9217cde24be9\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /products",
+   "where": "body.brandId",
+   "table": "brands",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown brand\",\"requestId\":\"326c1c30-cc71-4142-9ea8-8a46cdbd9d1a\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /products",
+   "where": "body.units[0].unitId",
+   "table": "units",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Invalid input\",\"details\":{\"issues\":[{\"path\":\"units\",\"code\":\"custom\",\"message\":\"base_unit_missing\"},{\"path\":\"prices.0.unitId\",\"code\":\"custom\",\"message\":\"price_unknown_unit\"},{\"path\":\"prices.1.unitId\",\"code\":\"custom\",\"message\":\"price_unknown_unit\"},{\"path\":\"price"
+  },
+  {
+   "kind": "body",
+   "route": "POST /products",
+   "where": "body.prices[0].unitId",
+   "table": "units",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Invalid input\",\"details\":{\"issues\":[{\"path\":\"prices.0.unitId\",\"code\":\"custom\",\"message\":\"price_unknown_unit\"}]},\"requestId\":\"6e462bdb-8231-4c1d-acb6-d1742dbe9830\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /products",
+   "where": "body.prices[0].priceLevelId",
+   "table": "price_levels",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown price level\",\"details\":{\"priceLevelId\":\"f3a6f262-34a4-4d21-969a-61217f1c15e7\"},\"requestId\":\"f2f85d36-8fb6-4c41-a349-fae51a352799\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /products/:id",
+   "where": "path#0",
+   "table": "products",
+   "status": 404,
+   "code": "PRODUCT_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"f2c8b29d-b73f-4591-aeb2-b1b895e5b220\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /products/:id/archive",
+   "where": "path#0",
+   "table": "products",
+   "status": 404,
+   "code": "PRODUCT_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"8164d3d8-9ce1-4e53-acf0-efd509657294\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /products/:id/restore",
+   "where": "path#0",
+   "table": "products",
+   "status": 404,
+   "code": "PRODUCT_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"b46281b6-afd6-40ae-9687-48f3bd0f429e\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /stock/opening",
+   "where": "body.lines[0].productId",
+   "table": "products",
+   "status": 400,
+   "code": "INVALID_PRODUCT_UNITS",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"f58af221-3654-4b3f-bb67-2d76568dda97\"},\"requestId\":\"e7439d9e-e180-4b05-8c3e-ac2a674777ee\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /stock/opening",
+   "where": "body.lines[0].unitId",
+   "table": "units",
+   "status": 400,
+   "code": "INVALID_PRODUCT_UNITS",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"84250b67-27c3-408a-bf84-291df3432ee1\"},\"requestId\":\"7ab0cb22-d0eb-4be7-a5eb-45370680184a\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /stock/:id",
+   "where": "path#0",
+   "table": "products",
+   "status": 404,
+   "code": "PRODUCT_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"40c1a6c1-d89c-4530-afba-db29a6d07ce7\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /stock/:id/movements",
+   "where": "path#0",
+   "table": "products",
+   "status": 404,
+   "code": "PRODUCT_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"12164f12-12f9-4e7b-a5a8-d289049b4b56\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /stock/adjustments",
+   "where": "body.lines[0].productId",
+   "table": "products",
+   "status": 400,
+   "code": "INVALID_PRODUCT_UNITS",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"f58af221-3654-4b3f-bb67-2d76568dda97\"},\"requestId\":\"18bf6656-fc59-4375-be62-80d4be2c2d84\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /stock/adjustments",
+   "where": "body.lines[0].unitId",
+   "table": "units",
+   "status": 400,
+   "code": "INVALID_PRODUCT_UNITS",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"84250b67-27c3-408a-bf84-291df3432ee1\"},\"requestId\":\"5f8f5c77-2eaa-4dfc-be17-11fba9f7136a\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /clients",
+   "where": "body.sectorId",
+   "table": "sectors",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"3e898f3c-01e1-463d-88f6-b50d4ba54068\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /clients",
+   "where": "body.sellerId",
+   "table": "users",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"e5887abf-06cb-4f3f-8976-47ea61cde21a\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /clients/:id",
+   "where": "path#0",
+   "table": "clients",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"d6638fdd-6425-49dc-8a42-730e21774648\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PATCH /clients/bulk-assign",
+   "where": "body.clientIds[0]",
+   "table": "clients",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"b1db3c01-76cc-471a-8ab3-9278ad4a6b5e\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PATCH /clients/bulk-assign",
+   "where": "body.assignedSellerId",
+   "table": "users",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"d8c762f7-1fd6-44dd-a684-cdeef0607cb6\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PATCH /clients/bulk-assign",
+   "where": "body.sectorId",
+   "table": "sectors",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"0d22512f-a676-49f6-a737-45f5e15d5b86\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /clients/:id/opening-balance",
+   "where": "path#0",
+   "table": "clients",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"1e3b5b4f-c126-49be-8117-106062689767\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /clients/:id/adjustments",
+   "where": "path#0",
+   "table": "clients",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"aaba9332-40ee-46aa-82ea-f858da9c9b5a\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /clients/:id/statement",
+   "where": "path#0",
+   "table": "clients",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"e203ce8e-a4fc-4169-91ba-bafa77baaf31\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /clients/:id/unpaid-documents",
+   "where": "path#0",
+   "table": "clients",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"ef0cb7d3-d648-4315-8058-4020440de2cb\"}"
+  },
+  {
+   "kind": "query",
+   "route": "GET /sales/price-preview",
+   "where": "?clientId",
+   "table": "clients",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"1ef50cf9-2b0c-41a3-9120-16fa5e4654b7\"}"
+  },
+  {
+   "kind": "query",
+   "route": "GET /sales/price-preview",
+   "where": "?productUnitId",
+   "table": "product_units",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Product unit not found\",\"requestId\":\"a158e435-9294-40ac-8f76-be7c74f39db4\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /pricing/preview",
+   "where": "body.clientId",
+   "table": "clients",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"9b4d3ce2-69a1-4c66-8bfa-60416dac48d0\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /pricing/preview",
+   "where": "body.lines[0].productId",
+   "table": "products",
+   "status": 400,
+   "code": "INVALID_PRODUCT_UNITS",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"f58af221-3654-4b3f-bb67-2d76568dda97\"},\"requestId\":\"27c60980-1c3c-4461-bca3-e296ce203e0d\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /pricing/preview",
+   "where": "body.lines[0].unitId",
+   "table": "units",
+   "status": 400,
+   "code": "INVALID_PRODUCT_UNITS",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"84250b67-27c3-408a-bf84-291df3432ee1\"},\"requestId\":\"61bcb381-d504-4b1d-9f4c-874577bef354\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /sales",
+   "where": "body.clientId",
+   "table": "clients",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown client\",\"details\":{\"field\":\"clientId\"},\"requestId\":\"71f9055e-1109-41f3-97af-6fe5ade5dd45\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /sales",
+   "where": "body.lines[0].productId",
+   "table": "products",
+   "status": 400,
+   "code": "INVALID_PRODUCT_UNITS",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"f58af221-3654-4b3f-bb67-2d76568dda97\"},\"requestId\":\"690b1991-dca2-4a29-b9a0-7edae61b7bea\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /sales",
+   "where": "body.lines[0].unitId",
+   "table": "units",
+   "status": 400,
+   "code": "INVALID_PRODUCT_UNITS",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"84250b67-27c3-408a-bf84-291df3432ee1\"},\"requestId\":\"7ad744e0-7c3e-4b5a-97b1-832508f142e6\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PUT /sales/:id",
+   "where": "path#0",
+   "table": "sales",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"51afb32b-bf55-4fea-8ddc-21ee7ccf256b\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PUT /sales/:id",
+   "where": "body.clientId",
+   "table": "clients",
+   "status": 409,
+   "code": "SALE_NOT_DRAFT",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"SALE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"c808224a-db69-49ae-8443-2914cd607a9d\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PUT /sales/:id",
+   "where": "body.lines[0].productId",
+   "table": "products",
+   "status": 409,
+   "code": "SALE_NOT_DRAFT",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"SALE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"6bf749bc-7416-4e2f-84a0-4d9ce5b7e8a7\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PUT /sales/:id",
+   "where": "body.lines[0].unitId",
+   "table": "units",
+   "status": 409,
+   "code": "SALE_NOT_DRAFT",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"SALE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"5d5ee8f2-d259-488c-8ab7-a2f593e470c5\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /sales/:id/validate",
+   "where": "path#0",
+   "table": "sales",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"2962da96-2592-479e-a898-54433a997073\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /sales/:id/validate",
+   "where": "body.cashAccountId",
+   "table": "cash_accounts",
+   "status": 409,
+   "code": "SALE_NOT_DRAFT",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"SALE_NOT_DRAFT\",\"message\":\"Only a draft can be validated\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"a586dbbf-2559-42aa-b55c-7295be04b40d\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /sales/:id",
+   "where": "path#0",
+   "table": "sales",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"c3829473-9dd6-4a9d-973e-112c531cb980\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PATCH /sales/:id/seller",
+   "where": "path#0",
+   "table": "sales",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"506d760d-fe54-4e42-8aa5-b57f00c39005\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PATCH /sales/:id/seller",
+   "where": "body.sellerId",
+   "table": "users",
+   "status": 422,
+   "code": "SELLER_NOT_ALLOWED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"SELLER_NOT_ALLOWED\",\"message\":\"This user cannot be the seller\",\"details\":{\"userId\":\"d8485070-0819-49cd-a922-1b70b2d691c7\"},\"requestId\":\"ca2a3c2d-0747-4387-aa72-2b87c5a2e831\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /sales/:id/returns",
+   "where": "path#0",
+   "table": "sales",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"25b55a95-13eb-4fb6-9d26-9f62399bb363\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /sales/:id/returns",
+   "where": "body.lines[0].saleLineId",
+   "table": "sale_lines",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown or repeated sale line\",\"details\":{\"saleLineId\":\"2dafba1d-08e5-49c1-a0e4-e656531081c5\"},\"requestId\":\"67ba5504-d25a-4e37-ab3e-e16dbe1e9936\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /sales/quick",
+   "where": "body.clientId",
+   "table": "clients",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown client\",\"details\":{\"field\":\"clientId\"},\"requestId\":\"e038d26a-4079-48f1-a275-8b317083c3df\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /sales/quick",
+   "where": "body.lines[0].productId",
+   "table": "products",
+   "status": 400,
+   "code": "INVALID_PRODUCT_UNITS",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"f58af221-3654-4b3f-bb67-2d76568dda97\"},\"requestId\":\"9c01cc56-94ef-4b2e-94d0-9613fb049b6a\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /sales/quick",
+   "where": "body.lines[0].unitId",
+   "table": "units",
+   "status": 400,
+   "code": "INVALID_PRODUCT_UNITS",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"84250b67-27c3-408a-bf84-291df3432ee1\"},\"requestId\":\"78dfe3ec-eacf-476b-b5ae-d1aa3b729924\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /invoices/from-bls",
+   "where": "body.saleIds[0]",
+   "table": "sales",
+   "status": 409,
+   "code": "INVOICE_SOURCES_INVALID",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"INVOICE_SOURCES_INVALID\",\"message\":\"BLs cannot be invoiced together\",\"details\":{\"saleIds\":[\"da7f0248-cb89-4104-befe-4b4e81462500\",\"6f5d5520-25c2-4ed3-9f97-8c8748a22783\"]},\"requestId\":\"8811ec23-000f-43f9-bb7a-c0ecb21f8e6e\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /sales/:id/cancel",
+   "where": "path#0",
+   "table": "sales",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"b01f2047-6aa6-4b09-9525-0e452ec58d77\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /payments",
+   "where": "body.clientId",
+   "table": "clients",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown client\",\"details\":{\"field\":\"clientId\"},\"requestId\":\"aa2550af-d6b0-4573-acf5-382ff4dbeeb8\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /payments",
+   "where": "body.cashAccountId",
+   "table": "cash_accounts",
+   "status": 404,
+   "code": "CASH_ACCOUNT_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"d17ad239-c8e8-4b32-a0e2-ee4b58e07816\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /payments/:id",
+   "where": "path#0",
+   "table": "payments",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payment not found\",\"requestId\":\"96726468-5d03-4386-88b4-4f7492d34931\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PATCH /payments/:id/collector",
+   "where": "path#0",
+   "table": "payments",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payment not found\",\"requestId\":\"4fc2e1b2-d526-403f-9a6d-20e09cdf06ba\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PATCH /payments/:id/collector",
+   "where": "body.collectedBy",
+   "table": "users",
+   "status": 422,
+   "code": "SELLER_NOT_ALLOWED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"SELLER_NOT_ALLOWED\",\"message\":\"This user cannot be the seller\",\"details\":{\"userId\":\"d8485070-0819-49cd-a922-1b70b2d691c7\"},\"requestId\":\"73045bfb-73a5-4792-9e67-fd2af2571e24\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /payments/:id/cancel",
+   "where": "path#0",
+   "table": "payments",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payment not found\",\"requestId\":\"7044aabb-f99b-4d89-92da-c34cc47fef28\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /documents/BL/:id/pdf",
+   "where": "path#0",
+   "table": "sales",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"b4cac0fc-280a-4551-a577-4a94caaa1875\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /documents/FAC/:id/pdf",
+   "where": "path#0",
+   "table": "sales",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"c518b2f5-b46e-4cbc-85f6-c8f47c56dcd0\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /payments/:id/receipt.pdf",
+   "where": "path#0",
+   "table": "payments",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payment not found\",\"requestId\":\"b24189b6-2328-43dd-bed1-76c244deedbf\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /clients/:id/statement/pdf",
+   "where": "path#0",
+   "table": "clients",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"50d16296-a0b7-4548-bc3a-33a031f040fa\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /suppliers/:id/statement/pdf",
+   "where": "path#0",
+   "table": "suppliers",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier not found\",\"requestId\":\"a2f9c9e6-a431-482c-8208-b07b2129fdce\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /share-links",
+   "where": "body.docId",
+   "table": "sales",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sale not found\",\"requestId\":\"e5cb381e-b153-4eae-badc-a13e0d00e7c3\"}"
+  },
+  {
+   "kind": "path",
+   "route": "DELETE /share-links/:id",
+   "where": "path#0",
+   "table": "share_links",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Share link not found\",\"requestId\":\"365532c0-37d2-4505-8770-50786e80f899\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /purchases",
+   "where": "body.supplierId",
+   "table": "suppliers",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown supplier\",\"details\":{\"field\":\"supplierId\"},\"requestId\":\"3b7be693-93fa-41fb-a40b-0f4af957b75a\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /purchases",
+   "where": "body.lines[0].productId",
+   "table": "products",
+   "status": 400,
+   "code": "INVALID_PRODUCT_UNITS",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"f58af221-3654-4b3f-bb67-2d76568dda97\"},\"requestId\":\"af770a63-11b7-48f1-9922-7aa954c7e961\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /purchases",
+   "where": "body.lines[0].unitId",
+   "table": "units",
+   "status": 400,
+   "code": "INVALID_PRODUCT_UNITS",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"84250b67-27c3-408a-bf84-291df3432ee1\"},\"requestId\":\"a519e12b-bc2f-4e57-84e4-40c193313282\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PUT /purchases/:id",
+   "where": "path#0",
+   "table": "purchases",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Purchase not found\",\"requestId\":\"de9d5661-f50a-436c-ae27-0df5cbd5a77f\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PUT /purchases/:id",
+   "where": "body.supplierId",
+   "table": "suppliers",
+   "status": 409,
+   "code": "PURCHASE_NOT_DRAFT",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"PURCHASE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"19e3b901-d3d5-4df1-9531-33e00814e9e7\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PUT /purchases/:id",
+   "where": "body.lines[0].productId",
+   "table": "products",
+   "status": 409,
+   "code": "PURCHASE_NOT_DRAFT",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"PURCHASE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"5317e9ea-5c4e-4210-8a09-159f9f1a98c7\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PUT /purchases/:id",
+   "where": "body.lines[0].unitId",
+   "table": "units",
+   "status": 409,
+   "code": "PURCHASE_NOT_DRAFT",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"PURCHASE_NOT_DRAFT\",\"message\":\"Only a draft can be edited\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"ca9d2b71-cefc-4f53-ad93-e49b45f56bca\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /purchases/:id/validate",
+   "where": "path#0",
+   "table": "purchases",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Purchase not found\",\"requestId\":\"e1767ed6-34a7-43f7-b489-86a7dc7a7f14\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /purchases/:id",
+   "where": "path#0",
+   "table": "purchases",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Purchase not found\",\"requestId\":\"c30206d2-ebc5-4bf1-945a-9a2411ccd2b9\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /purchases/:id/returns",
+   "where": "path#0",
+   "table": "purchases",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Purchase not found\",\"requestId\":\"00374ea6-7717-442e-9814-083ea579ed39\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /purchases/:id/returns",
+   "where": "body.lines[0].purchaseLineId",
+   "table": "purchase_lines",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown or repeated purchase line\",\"details\":{\"purchaseLineId\":\"5e3cf9be-5c84-4d53-90b9-205ad207340e\"},\"requestId\":\"84aed094-40bd-4a6f-87fe-effd3fa825f2\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /suppliers/:id",
+   "where": "path#0",
+   "table": "suppliers",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier not found\",\"requestId\":\"6fba3358-61ad-4ddb-a925-4906534d47f6\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /suppliers/:id/ledger",
+   "where": "path#0",
+   "table": "suppliers",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier not found\",\"requestId\":\"d57f98af-24b0-4c17-9c78-0aa959690fcf\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /suppliers/:id/statement",
+   "where": "path#0",
+   "table": "suppliers",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier not found\",\"requestId\":\"d0f2882f-6e59-460f-b58a-b5244ba1d6e2\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PATCH /suppliers/:id",
+   "where": "path#0",
+   "table": "suppliers",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier not found\",\"requestId\":\"1234c6ce-84f4-4f5e-af64-f9fe98c8e320\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /inventories/:id",
+   "where": "path#0",
+   "table": "inventories",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Inventory not found\",\"requestId\":\"8ef5be81-635d-479d-8d7a-66f99f2daa4a\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PUT /inventories/:id/lines",
+   "where": "path#0",
+   "table": "inventories",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Inventory not found\",\"requestId\":\"bc920151-2107-4b96-ac5f-38449ef9a372\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PUT /inventories/:id/lines",
+   "where": "body.lines[0].productId",
+   "table": "products",
+   "status": 409,
+   "code": "INVENTORY_CLOSED",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"INVENTORY_CLOSED\",\"message\":\"Inventory is closed\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"15be55f0-36c3-49ad-b897-0c238a5e26c5\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PUT /inventories/:id/lines",
+   "where": "body.lines[0].unitId",
+   "table": "units",
+   "status": 409,
+   "code": "INVENTORY_CLOSED",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"INVENTORY_CLOSED\",\"message\":\"Inventory is closed\",\"details\":{\"status\":\"VALIDATED\"},\"requestId\":\"d87f988f-decf-4398-9939-fcce94666057\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /inventories/:id/validate",
+   "where": "path#0",
+   "table": "inventories",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Inventory not found\",\"requestId\":\"8ed685a7-c88f-4eee-be6a-944abb7c10fd\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /inventories/:id/cancel",
+   "where": "path#0",
+   "table": "inventories",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Inventory not found\",\"requestId\":\"68a00a7e-bff5-4ac0-bb24-06808a0a34da\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /warehouses/:id",
+   "where": "path#0",
+   "table": "warehouses",
+   "status": 404,
+   "code": "WAREHOUSE_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"30f3a3c1-00ca-4079-bbe7-1a884470b7ad\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PATCH /warehouses/:id",
+   "where": "path#0",
+   "table": "warehouses",
+   "status": 404,
+   "code": "WAREHOUSE_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"7a3bb4c3-1dee-47f5-9909-9671e3589f1c\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PUT /warehouses/:id/brands",
+   "where": "path#0",
+   "table": "warehouses",
+   "status": 404,
+   "code": "WAREHOUSE_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"2b6967c3-b67c-4fa9-ad9e-0d997cbb1df3\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PUT /warehouses/:id/brands",
+   "where": "body.brandIds[0]",
+   "table": "brands",
+   "status": 404,
+   "code": "WAREHOUSE_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"981b8509-69a0-44d1-bfac-78a20a07a3bc\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PUT /warehouses/:id/categories",
+   "where": "path#0",
+   "table": "warehouses",
+   "status": 404,
+   "code": "WAREHOUSE_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"3ff8665c-168c-4492-bb56-c2c7e778f87b\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PUT /warehouses/:id/categories",
+   "where": "body.categoryIds[0]",
+   "table": "categories",
+   "status": 404,
+   "code": "WAREHOUSE_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"ad0403e7-f2fa-4bd4-ae6f-0855ced2581f\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /users/:id",
+   "where": "path#0",
+   "table": "users",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"9be6361d-1dfd-4345-be89-2edf41f2787b\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /users/:id/access",
+   "where": "path#0",
+   "table": "users",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"a6fa36f8-718e-40b1-befa-43a0b471c25c\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PUT /users/:id/access",
+   "where": "path#0",
+   "table": "users",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"f9b319df-ad93-4f84-9039-bfbeabbe3cfb\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PUT /users/:id/access",
+   "where": "body.access[0].warehouseId",
+   "table": "warehouses",
+   "status": 422,
+   "code": "WAREHOUSE_ACCESS_INVALID",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"WAREHOUSE_ACCESS_INVALID\",\"message\":\"Access is given on a dépôt, not on a truck\",\"details\":{\"warehouseIds\":[\"6e81e976-70bc-424c-a312-7b760d57b1af\"]},\"requestId\":\"0f4894e5-2c44-4cb5-876c-bf181c9da216\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PUT /users/:id/permissions",
+   "where": "path#0",
+   "table": "users",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"de40f610-ed2b-42ac-84f1-030d75f66777\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PUT /users/:id",
+   "where": "path#0",
+   "table": "users",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"eb16f2e6-ae6f-4bee-b035-e2094ae242e3\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /users/:id/reset-password",
+   "where": "path#0",
+   "table": "users",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"93d1a71e-7fc5-4a0b-9ef1-79e1787138d0\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /users/:id/deactivate",
+   "where": "path#0",
+   "table": "users",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"98148c8a-2ee7-4af2-99aa-0ce8be1b985b\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /users/:id/reactivate",
+   "where": "path#0",
+   "table": "users",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"User not found\",\"requestId\":\"06a7f8e2-552b-42e3-802d-8c1f0801e24c\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PATCH /clients/:id/location",
+   "where": "path#0",
+   "table": "clients",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"d2bba344-6080-49c3-9fb9-6a9f0913f91d\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /visits",
+   "where": "body.clientId",
+   "table": "clients",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"3c646f77-40b3-42e1-aa4d-ef9edbf67ad8\"}"
+  },
+  {
+   "kind": "query",
+   "route": "GET /sales",
+   "where": "?clientId",
+   "table": "clients",
+   "status": 200,
+   "code": "",
+   "leaked": [],
+   "verdict": "empty",
+   "sample": "{\"items\":[],\"nextCursor\":null}"
+  },
+  {
+   "kind": "query",
+   "route": "GET /sales",
+   "where": "?sellerId",
+   "table": "users",
+   "status": 200,
+   "code": "",
+   "leaked": [],
+   "verdict": "empty",
+   "sample": "{\"items\":[],\"nextCursor\":null}"
+  },
+  {
+   "kind": "query",
+   "route": "GET /payments",
+   "where": "?clientId",
+   "table": "clients",
+   "status": 200,
+   "code": "",
+   "leaked": [],
+   "verdict": "empty",
+   "sample": "{\"items\":[],\"nextCursor\":null}"
+  },
+  {
+   "kind": "query",
+   "route": "GET /purchases",
+   "where": "?supplierId",
+   "table": "suppliers",
+   "status": 200,
+   "code": "",
+   "leaked": [],
+   "verdict": "empty",
+   "sample": "{\"items\":[],\"nextCursor\":null}"
+  },
+  {
+   "kind": "query",
+   "route": "GET /supplier-payments",
+   "where": "?supplierId",
+   "table": "suppliers",
+   "status": 200,
+   "code": "",
+   "leaked": [],
+   "verdict": "empty",
+   "sample": "{\"items\":[],\"nextCursor\":null}"
+  },
+  {
+   "kind": "query",
+   "route": "GET /stock",
+   "where": "?warehouseId",
+   "table": "warehouses",
+   "status": 200,
+   "code": "",
+   "leaked": [],
+   "verdict": "empty",
+   "sample": "{\"items\":[],\"nextCursor\":null,\"summary\":{\"totalValue\":\"0.00\",\"lowStockCount\":0,\"productCount\":0}}"
+  },
+  {
+   "kind": "query",
+   "route": "GET /products",
+   "where": "?categoryId",
+   "table": "categories",
+   "status": 200,
+   "code": "",
+   "leaked": [],
+   "verdict": "empty",
+   "sample": "{\"items\":[],\"nextCursor\":null}"
+  },
+  {
+   "kind": "query",
+   "route": "GET /products",
+   "where": "?brandId",
+   "table": "brands",
+   "status": 200,
+   "code": "",
+   "leaked": [],
+   "verdict": "empty",
+   "sample": "{\"items\":[],\"nextCursor\":null}"
+  },
+  {
+   "kind": "query",
+   "route": "GET /clients",
+   "where": "?sectorId",
+   "table": "sectors",
+   "status": 200,
+   "code": "",
+   "leaked": [],
+   "verdict": "empty",
+   "sample": "{\"items\":[],\"nextCursor\":null}"
+  },
+  {
+   "kind": "query",
+   "route": "GET /clients",
+   "where": "?sellerId",
+   "table": "users",
+   "status": 200,
+   "code": "",
+   "leaked": [],
+   "verdict": "empty",
+   "sample": "{\"items\":[],\"nextCursor\":null}"
+  },
+  {
+   "kind": "query",
+   "route": "GET /audit-logs",
+   "where": "?userId",
+   "table": "users",
+   "status": 200,
+   "code": "",
+   "leaked": [],
+   "verdict": "empty",
+   "sample": "{\"items\":[],\"nextCursor\":null}"
+  },
+  {
+   "kind": "query",
+   "route": "GET /reports/sales",
+   "where": "?sellerId",
+   "table": "users",
+   "status": 200,
+   "code": "",
+   "leaked": [],
+   "verdict": "empty",
+   "sample": "{\"name\":\"sales\",\"groupBy\":\"day\",\"from\":\"2026-10-15\",\"to\":\"2026-11-14\",\"columns\":[{\"key\":\"day\",\"kind\":\"day\"},{\"key\":\"count\",\"kind\":\"count\"},{\"key\":\"grossHt\",\"kind\":\"money\"},{\"key\":\"returnsHt\",\"kind\":\"money\"},{\"key\":\"netHt\",\"kind\":\"money\"},{\"key\":\"netTtc\",\"kind\":\"money\"}],\"rows\":[],\"totals\":{\"count\":\""
+  },
+  {
+   "kind": "query",
+   "route": "GET /reports/sales",
+   "where": "?brandId",
+   "table": "brands",
+   "status": 200,
+   "code": "",
+   "leaked": [],
+   "verdict": "empty",
+   "sample": "{\"name\":\"sales\",\"groupBy\":\"day\",\"from\":\"2026-10-15\",\"to\":\"2026-11-14\",\"columns\":[{\"key\":\"day\",\"kind\":\"day\"},{\"key\":\"count\",\"kind\":\"count\"},{\"key\":\"grossHt\",\"kind\":\"money\"},{\"key\":\"returnsHt\",\"kind\":\"money\"},{\"key\":\"netHt\",\"kind\":\"money\"},{\"key\":\"netTtc\",\"kind\":\"money\"}],\"rows\":[],\"totals\":{\"count\":\""
+  },
+  {
+   "kind": "query",
+   "route": "GET /reports/sales",
+   "where": "?warehouseId",
+   "table": "warehouses",
+   "status": 200,
+   "code": "",
+   "leaked": [],
+   "verdict": "empty",
+   "sample": "{\"name\":\"sales\",\"groupBy\":\"day\",\"from\":\"2026-10-15\",\"to\":\"2026-11-14\",\"columns\":[{\"key\":\"day\",\"kind\":\"day\"},{\"key\":\"count\",\"kind\":\"count\"},{\"key\":\"grossHt\",\"kind\":\"money\"},{\"key\":\"returnsHt\",\"kind\":\"money\"},{\"key\":\"netHt\",\"kind\":\"money\"},{\"key\":\"netTtc\",\"kind\":\"money\"}],\"rows\":[],\"totals\":{\"count\":\""
+  },
+  {
+   "kind": "query",
+   "route": "GET /reports/margin",
+   "where": "?teamOf",
+   "table": "users",
+   "status": 200,
+   "code": "",
+   "leaked": [],
+   "verdict": "empty",
+   "sample": "{\"name\":\"margin\",\"groupBy\":\"product\",\"from\":\"2026-10-15\",\"to\":\"2026-11-14\",\"columns\":[{\"key\":\"reference\",\"kind\":\"text\"},{\"key\":\"designation\",\"kind\":\"text\"},{\"key\":\"unit\",\"kind\":\"text\"},{\"key\":\"qty\",\"kind\":\"qty\"},{\"key\":\"netHt\",\"kind\":\"money\"},{\"key\":\"cost\",\"kind\":\"money\"},{\"key\":\"margin\",\"kind\":\"mon"
+  },
+  {
+   "kind": "path",
+   "route": "GET /cash-accounts/:id",
+   "where": "path#0",
+   "table": "cash_accounts",
+   "status": 404,
+   "code": "CASH_ACCOUNT_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"eed4a605-be85-4e52-9be1-28ab07faf44a\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /cash-accounts/:id/movements",
+   "where": "path#0",
+   "table": "cash_accounts",
+   "status": 404,
+   "code": "CASH_ACCOUNT_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"8f70297f-a1fd-4932-9112-1eede1550c9d\"}"
+  },
+  {
+   "kind": "query",
+   "route": "GET /expenses",
+   "where": "?cashAccountId",
+   "table": "cash_accounts",
+   "status": 200,
+   "code": "",
+   "leaked": [],
+   "verdict": "empty",
+   "sample": "{\"items\":[],\"nextCursor\":null}"
+  },
+  {
+   "kind": "path",
+   "route": "DELETE /clients/:id",
+   "where": "path#0",
+   "table": "clients",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"94429a95-05e1-464e-a336-f66f1fdc581a\"}"
+  },
+  {
+   "kind": "path",
+   "route": "DELETE /sectors/:id",
+   "where": "path#0",
+   "table": "sectors",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Sector not found\",\"requestId\":\"a5939aa5-9631-4465-ab67-9e282a38e46d\"}"
+  },
+  {
+   "kind": "path",
+   "route": "DELETE /warehouses/:id",
+   "where": "path#0",
+   "table": "warehouses",
+   "status": 404,
+   "code": "WAREHOUSE_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"210cbe9c-5d92-41d2-84bf-72ca615c42eb\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /cash-accounts/:id/opening",
+   "where": "path#0",
+   "table": "cash_accounts",
+   "status": 404,
+   "code": "CASH_ACCOUNT_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"68a4bcf4-84a6-4409-a339-0c8aa154ef25\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /purchases",
+   "where": "body.importFileId",
+   "table": "import_files",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown import file\",\"details\":{\"field\":\"importFileId\"},\"requestId\":\"f55d40a1-1f2e-4a9e-a43d-3500f7dbb6ea\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /import-files/:id/costs",
+   "where": "path#0",
+   "table": "import_files",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Import file not found\",\"requestId\":\"0e87b5f8-4d49-4567-b4ec-96851af3a5aa\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /import-files/:id/costs",
+   "where": "body.supplierId",
+   "table": "suppliers",
+   "status": 409,
+   "code": "IMPORT_FILE_NOT_OPEN",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"IMPORT_FILE_NOT_OPEN\",\"message\":\"The dossier is not open\",\"details\":{\"status\":\"CLOSED\"},\"requestId\":\"3eee10bc-32e1-44e4-8a15-d14b22774feb\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /import-files/:id/close",
+   "where": "path#0",
+   "table": "import_files",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Import file not found\",\"requestId\":\"f113e36f-fbf4-4fd8-ab78-a77dfe521889\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /import-files/:id/late-cost",
+   "where": "path#0",
+   "table": "import_files",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Import file not found\",\"requestId\":\"ebe8d812-9709-4619-91c7-9c136598c770\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /import-files/:id/late-cost",
+   "where": "body.supplierId",
+   "table": "suppliers",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown supplier\",\"details\":{\"field\":\"supplierId\"},\"requestId\":\"4795e904-e266-4456-b61e-ba7924b98b33\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /supplier-payments",
+   "where": "body.supplierId",
+   "table": "suppliers",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown supplier\",\"details\":{\"field\":\"supplierId\"},\"requestId\":\"fc33bee7-85bb-4c37-99c8-8de017c91b64\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /warehouses",
+   "where": "body.assignedUserId",
+   "table": "users",
+   "status": 422,
+   "code": "SELLER_NOT_ALLOWED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"SELLER_NOT_ALLOWED\",\"message\":\"This user cannot drive a truck\",\"details\":{\"field\":\"assignedUserId\"},\"requestId\":\"c5d6527c-1ca3-4b36-91b4-b110e06f7475\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /stock-transfers",
+   "where": "body.fromWarehouseId",
+   "table": "warehouses",
+   "status": 404,
+   "code": "WAREHOUSE_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"278d7911-9084-4589-9073-3324352b970c\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /stock-transfers",
+   "where": "body.toWarehouseId",
+   "table": "warehouses",
+   "status": 404,
+   "code": "WAREHOUSE_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"bd017605-d0ac-40db-91b4-0863eabb1571\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /stock-transfers",
+   "where": "body.lines[0].productId",
+   "table": "products",
+   "status": 400,
+   "code": "INVALID_PRODUCT_UNITS",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"6d4d2f28-96d0-4aaf-a48d-55c97212f711\"},\"requestId\":\"310a58f7-3ce5-4758-bd57-e3495a37a0a4\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /stock-transfers",
+   "where": "body.lines[0].unitId",
+   "table": "units",
+   "status": 400,
+   "code": "INVALID_PRODUCT_UNITS",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"8dc644c5-5cf3-4b89-847e-35f2213d1c66\"},\"requestId\":\"ddc49b1e-9913-466e-a042-e298892e2232\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /stock-transfers/:id/validate",
+   "where": "path#0",
+   "table": "stock_transfers",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Transfer not found\",\"requestId\":\"b9053c25-7081-4abe-b0aa-f8554ae69352\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /stock-transfers/:id",
+   "where": "path#0",
+   "table": "stock_transfers",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Transfer not found\",\"requestId\":\"9b1a8b65-df64-40c0-b6c3-d56deda3009e\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /routes",
+   "where": "body.sellerId",
+   "table": "users",
+   "status": 422,
+   "code": "SELLER_NOT_ALLOWED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"SELLER_NOT_ALLOWED\",\"message\":\"This user cannot be the seller\",\"details\":{\"userId\":\"c88fe2a0-68b8-4fb5-9a43-247caeb986bd\"},\"requestId\":\"d496a0ce-3100-4010-9921-6836125208c3\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PUT /routes/:id/stops",
+   "where": "path#0",
+   "table": "routes",
+   "status": 404,
+   "code": "ROUTE_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"ROUTE_NOT_FOUND\",\"message\":\"Route not found\",\"requestId\":\"f33edd0a-353a-4381-99a2-86fa723ed1ec\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PUT /routes/:id/stops",
+   "where": "body.clientIds[0]",
+   "table": "clients",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown client on the route\",\"details\":{\"field\":\"clientIds\"},\"requestId\":\"88197cba-fa2a-4be4-bbad-117afccf4233\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /orders",
+   "where": "body.clientId",
+   "table": "clients",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown client\",\"details\":{\"field\":\"clientId\"},\"requestId\":\"963931da-36da-4de4-8fa2-ca1997c4b525\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /orders",
+   "where": "body.warehouseId",
+   "table": "warehouses",
+   "status": 404,
+   "code": "WAREHOUSE_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"4b87d7cb-fe04-4d93-a910-2e09d90dd871\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /orders",
+   "where": "body.lines[0].productId",
+   "table": "products",
+   "status": 400,
+   "code": "INVALID_PRODUCT_UNITS",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"6d4d2f28-96d0-4aaf-a48d-55c97212f711\"},\"requestId\":\"6a55f70f-8be1-48d5-a251-90d301e7d1db\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /orders",
+   "where": "body.lines[0].unitId",
+   "table": "units",
+   "status": 400,
+   "code": "INVALID_PRODUCT_UNITS",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"INVALID_PRODUCT_UNITS\",\"message\":\"Unit not defined for this product\",\"details\":{\"rule\":\"unit_not_on_product\",\"productId\":\"8dc644c5-5cf3-4b89-847e-35f2213d1c66\"},\"requestId\":\"63432f82-a896-45c5-b186-3e0acc9cdbdd\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /orders/:id/confirm",
+   "where": "path#0",
+   "table": "orders",
+   "status": 404,
+   "code": "ORDER_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"ORDER_NOT_FOUND\",\"message\":\"Order not found\",\"requestId\":\"360102d2-95fd-411c-9767-890a7d57deaf\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PATCH /orders/:id/livreur",
+   "where": "path#0",
+   "table": "orders",
+   "status": 404,
+   "code": "ORDER_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"ORDER_NOT_FOUND\",\"message\":\"Order not found\",\"requestId\":\"f10ba80e-8825-4ae3-a6be-037e1b4d66ef\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PATCH /orders/:id/livreur",
+   "where": "body.livreurId",
+   "table": "users",
+   "status": 409,
+   "code": "ORDER_NOT_CONFIRMED",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"ORDER_NOT_CONFIRMED\",\"message\":\"Only a confirmed order\",\"details\":{\"status\":\"DELIVERED\"},\"requestId\":\"2b4392d6-6131-446a-b008-12ebf02723ca\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /orders/:id/deliver",
+   "where": "path#0",
+   "table": "orders",
+   "status": 404,
+   "code": "ORDER_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"ORDER_NOT_FOUND\",\"message\":\"Order not found\",\"requestId\":\"99937f67-82ca-44f3-8d88-b48257f881b8\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /orders/:id/deliver",
+   "where": "body.lines[0].orderLineId",
+   "table": "order_lines",
+   "status": 409,
+   "code": "ORDER_ALREADY_DELIVERED",
+   "leaked": [],
+   "verdict": "state-first",
+   "sample": "{\"code\":\"ORDER_ALREADY_DELIVERED\",\"message\":\"Already delivered\",\"details\":{\"saleId\":\"1afbe8ba-3a4b-402e-8560-b893eb99f66e\"},\"requestId\":\"ee231bbe-02d3-4e76-ae53-258f65c2f619\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /seller-sessions",
+   "where": "body.sellerId",
+   "table": "users",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Seller not found\",\"requestId\":\"38508404-07eb-40cc-a75a-717768bed3c8\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /seller-sessions/:id/close",
+   "where": "path#0",
+   "table": "seller_sessions",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Session not found\",\"requestId\":\"5e7cbd0b-df1d-4047-b2e4-a6b65b456943\"}"
+  },
+  {
+   "kind": "path",
+   "route": "PUT /products/:id/packaging",
+   "where": "path#0",
+   "table": "products",
+   "status": 404,
+   "code": "PRODUCT_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"PRODUCT_NOT_FOUND\",\"message\":\"Product not found\",\"requestId\":\"fd987f0b-d660-4654-85cd-7da1639b096d\"}"
+  },
+  {
+   "kind": "body",
+   "route": "PUT /products/:id/packaging",
+   "where": "body.[0].packagingTypeId",
+   "table": "packaging_types",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown packaging type\",\"details\":{\"field\":\"packagingTypeId\"},\"requestId\":\"c3686100-e442-4319-a882-789b4d866851\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /sales/quick",
+   "where": "body.warehouseId",
+   "table": "warehouses",
+   "status": 404,
+   "code": "WAREHOUSE_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"d8b83adf-c19c-47fa-bde5-8c5072ed071f\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /sales/quick",
+   "where": "body.packagingReturned[0].packagingTypeId",
+   "table": "packaging_types",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown packaging type\",\"details\":{\"field\":\"packagingTypeId\"},\"requestId\":\"6a9e487f-168b-47ee-b2dd-9b6cd9b7bd45\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /packaging-movements",
+   "where": "body.clientId",
+   "table": "clients",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Client not found\",\"requestId\":\"973ebefa-600c-4aac-8a84-376a02110631\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /packaging-movements",
+   "where": "body.packagingTypeId",
+   "table": "packaging_types",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown packaging type\",\"details\":{\"field\":\"packagingTypeId\"},\"requestId\":\"3215a1d4-60dc-4902-9468-606187351fd3\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /supplier-payments/:id/cancel",
+   "where": "path#0",
+   "table": "supplier_payments",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Supplier payment not found\",\"requestId\":\"7e9ee263-02f0-4cd2-a644-ad5a95a5fcc2\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /payments/:id/bounce",
+   "where": "path#0",
+   "table": "payments",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payment not found\",\"requestId\":\"fd347b94-0bc2-4873-9e79-d32c04385b85\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /expenses",
+   "where": "body.categoryId",
+   "table": "expense_categories",
+   "status": 400,
+   "code": "VALIDATION_FAILED",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"VALIDATION_FAILED\",\"message\":\"Unknown category\",\"details\":{\"field\":\"categoryId\"},\"requestId\":\"fe39d97e-d87a-43d5-8b97-9ad24d4f50bb\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /expenses",
+   "where": "body.rentContractId",
+   "table": "rent_contracts",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Rent contract not found\",\"requestId\":\"ac6d1789-7366-42b3-ab9d-52820b457dc4\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /expenses/:id/cancel",
+   "where": "path#0",
+   "table": "expenses",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Expense not found\",\"requestId\":\"426fa563-1990-4071-900f-d7d4613eb26c\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /treasury/transfers",
+   "where": "body.fromAccountId",
+   "table": "cash_accounts",
+   "status": 404,
+   "code": "CASH_ACCOUNT_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"15f8edcb-0b09-472e-9256-66effd596180\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /treasury/transfers",
+   "where": "body.toAccountId",
+   "table": "cash_accounts",
+   "status": 404,
+   "code": "CASH_ACCOUNT_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"2a0c12b8-eac9-48c1-bb94-8ea061eba801\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /cash-accounts/:id/counts",
+   "where": "path#0",
+   "table": "cash_accounts",
+   "status": 404,
+   "code": "CASH_ACCOUNT_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"CASH_ACCOUNT_NOT_FOUND\",\"message\":\"Cash account not found\",\"requestId\":\"a6730dbe-6bf8-4077-aa4a-200cc20a021a\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /purchases/:id/cancel",
+   "where": "path#0",
+   "table": "purchases",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Purchase not found\",\"requestId\":\"f161acad-0f5d-4739-82e5-2f47f5db1e45\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /treasury/transfers/:id/cancel",
+   "where": "path#0",
+   "table": "cash_transfers",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Transfer not found\",\"requestId\":\"24a056f9-0f24-4e1d-aa8a-51984e92f536\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /incentive-plans/:id/rules",
+   "where": "path#0",
+   "table": "incentive_plans",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Plan not found\",\"requestId\":\"e259a5cc-10d9-4090-89ef-7ee21c752dc2\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /incentive-plans/:id/activate",
+   "where": "path#0",
+   "table": "incentive_plans",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Plan not found\",\"requestId\":\"43c7ff2f-b3a1-432e-a7e6-0246d4d5f0ad\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /incentive-runs",
+   "where": "body.planId",
+   "table": "incentive_plans",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Plan not found\",\"requestId\":\"f90b47b2-2994-43a2-b4c0-fbcee13d85f2\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /incentive-runs/:id/approve",
+   "where": "path#0",
+   "table": "incentive_runs",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Run not found\",\"requestId\":\"83f4fec6-d46b-4790-bbce-017340b9639f\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /incentive-runs/:id",
+   "where": "path#0",
+   "table": "incentive_runs",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Run not found\",\"requestId\":\"f6439608-c7dc-4340-915c-48267d99feac\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /employees",
+   "where": "body.warehouseId",
+   "table": "warehouses",
+   "status": 404,
+   "code": "WAREHOUSE_NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"WAREHOUSE_NOT_FOUND\",\"message\":\"Warehouse not found\",\"requestId\":\"305f5f0b-507c-4894-ae3c-08b8f6a8bed4\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /employees/:id/salaries",
+   "where": "path#0",
+   "table": "employees",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"3f448b82-810d-4a5d-ada5-1fa0f21b3db9\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /employees/:id/leave-entries",
+   "where": "path#0",
+   "table": "employees",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"836ff2e6-9856-407e-b030-770d0ca35eaf\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /leave-requests",
+   "where": "body.employeeId",
+   "table": "employees",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"e22805cf-2dc3-4a68-bd84-45bfb9a3d019\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /leave-requests/:id/approve",
+   "where": "path#0",
+   "table": "leave_requests",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Leave request not found\",\"requestId\":\"5ee04a86-42e9-47b7-b602-3e9bf63166db\"}"
+  },
+  {
+   "kind": "path",
+   "route": "GET /employees/:id/leave-balance",
+   "where": "path#0",
+   "table": "employees",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"75d004ad-8d1c-430e-a3a9-4b085842b543\"}"
+  },
+  {
+   "kind": "body",
+   "route": "POST /attendance/events",
+   "where": "body.marks[0].employeeId",
+   "table": "employees",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"bf457e76-653f-4393-aab7-94ee329cdb96\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /employees/:id/advances",
+   "where": "path#0",
+   "table": "employees",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Employee not found\",\"requestId\":\"f76b1a31-7a8c-4e3e-8ddc-188d78f9de9f\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /payroll-runs/:id/approve",
+   "where": "path#0",
+   "table": "payroll_runs",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payroll run not found\",\"requestId\":\"f143aedf-eb4a-4438-abea-170bd3cc1b6f\"}"
+  },
+  {
+   "kind": "path",
+   "route": "POST /payroll-runs/:id/payments",
+   "where": "path#0",
+   "table": "payroll_runs",
+   "status": 404,
+   "code": "NOT_FOUND",
+   "leaked": [],
+   "verdict": "refused",
+   "sample": "{\"code\":\"NOT_FOUND\",\"message\":\"Payroll run not found\",\"requestId\":\"7bace950-3257-4d91-906a-0dc48eb0c1de\"}"
+  }
+ ],
+ "brute": {
+  "DELETE /assistant/conversations/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "DELETE /auth/sessions/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "DELETE /brands/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "DELETE /cash-accounts/:id": {
+   "404 CASH_ACCOUNT_NOT_FOUND refused": 85
+  },
+  "DELETE /categories/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "DELETE /employees/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "DELETE /expense-categories/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "DELETE /import-files/:id/purchases/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "DELETE /incentive-plans/:id/rules/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "DELETE /packaging-types/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "DELETE /pay-item-types/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "DELETE /promotions/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "DELETE /public-holidays/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "DELETE /routes/:id": {
+   "404 ROUTE_NOT_FOUND refused": 85
+  },
+  "DELETE /sessions/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "DELETE /suppliers/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /assistant/conversations/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /clients/:id/packaging": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /clients/:id/packaging/pdf": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /documents/:type/:id/pdf": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /employees/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /employees/:id/ledger": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /employees/:id/pay-items": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /employees/:id/payslips": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /employees/:id/salaries": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /expenses/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /geo-checks/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /import-files/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /import-files/:id/preview": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /incentive-plans/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /incentive-runs/:id/export.xlsx": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /me/payslips/:id/pdf": {
+   "404 EMPLOYEE_NOT_LINKED refused": 85
+  },
+  "GET /orders/:id": {
+   "404 ORDER_NOT_FOUND refused": 85
+  },
+  "GET /payroll-runs/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /payroll-runs/:id/etat-cnas.xlsx": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /payroll-runs/:id/livre-de-paie.xlsx": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /payroll-runs/:id/pdf": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /payroll-runs/:id/recap-irg.xlsx": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /payroll-runs/payslips/:id/pdf": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /products/:id/packaging": {
+   "200  empty": 85
+  },
+  "GET /promotions/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /rent-contracts/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /rent-contracts/:id/schedule": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /routes/:id": {
+   "404 ROUTE_NOT_FOUND refused": 85
+  },
+  "GET /seller-sessions/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /supplier-payments/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "GET /visits/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "PATCH /cash-accounts/:id": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "PATCH /clients/:id": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "PATCH /incentive-plans/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "PATCH /payroll-runs/:id": {
+   "404 NOT_FOUND refused": 85
+  },
+  "PATCH /products/:id": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "PATCH /rent-contracts/:id": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "PATCH /routes/:id": {
+   "404 ROUTE_NOT_FOUND refused": 85
+  },
+  "POST /assistant/messages/:id/feedback": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "POST /clients/:id/location-requests": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "POST /employees/:id/pay-items": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "POST /employees/:id/restore": {
+   "404 NOT_FOUND refused": 85
+  },
+  "POST /expense-categories/:id/restore": {
+   "404 NOT_FOUND refused": 85
+  },
+  "POST /geo-checks/:id/review": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "POST /import-files/:id/cancel": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "POST /import-files/:id/costs/:id/cancel": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "POST /import-files/:id/purchases": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "POST /imports/:id/confirm": {
+   "404 NOT_FOUND refused": 85
+  },
+  "POST /incentive-plans/:id/archive": {
+   "404 NOT_FOUND refused": 85
+  },
+  "POST /incentive-plans/:id/new-version": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "POST /leave-requests/:id/cancel": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "POST /leave-requests/:id/reject": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "POST /location-requests/:id/approve": {
+   "404 NOT_FOUND refused": 85
+  },
+  "POST /location-requests/:id/reject": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "POST /orders/:id/cancel": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "POST /payroll-rates/:id/accept": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "POST /payroll-rates/:id/keep-own": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "POST /payroll-runs/:id/cancel": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "POST /payroll-runs/:id/recompute": {
+   "404 NOT_FOUND refused": 85
+  },
+  "POST /rent-contracts/:id/close": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "POST /seller-sessions/:id/adjust": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "POST /stock-transfers/:id/cancel": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "PUT /employees/:id": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "PUT /expense-categories/:id": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "PUT /import-files/:id": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "PUT /incentive-plans/:id/rules/:id": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "PUT /orders/:id": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "PUT /packaging-types/:id": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "PUT /pay-item-types/:id": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "PUT /promotions/:id": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "PUT /public-holidays/:id": {
+   "400 VALIDATION_FAILED state-first": 85
+  },
+  "PUT /stock-transfers/:id": {
+   "400 VALIDATION_FAILED state-first": 85
+  }
+ }
+}
