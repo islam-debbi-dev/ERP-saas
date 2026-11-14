@@ -1,0 +1,703 @@
+{
+ "fiveHundreds": [
+  {
+   "route": "PATCH /tenant/settings",
+   "where": "cashCountAlertThreshold = 16 digits",
+   "value": "9999999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"9d19d679-2f8f-4c3f-94d0-59c5e5e1b781\"}"
+  },
+  {
+   "route": "POST /products",
+   "where": "units[].factorToBase = arabic digits",
+   "value": "١٢٣",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"f46fd460-e327-4419-880a-2a1656e3860d\"}"
+  },
+  {
+   "route": "POST /products",
+   "where": "units[].factorToBase = empty",
+   "value": "",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"bf39174b-07ba-4ffe-ae71-0b5733e22e3b\"}"
+  },
+  {
+   "route": "POST /clients/:id/adjustments",
+   "where": "amount = 16 digits",
+   "value": "9999999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"39a6745d-af70-4bcd-a16f-4185103919ea\"}"
+  },
+  {
+   "route": "POST /clients/:id/adjustments",
+   "where": "amount = 12 digits",
+   "value": "999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"98df6a04-5d78-46e3-84cd-34947bb98bc6\"}"
+  },
+  {
+   "route": "POST /sales",
+   "where": "lines[].unitPriceHt = 16 digits",
+   "value": "9999999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"7d171355-fc0f-4d73-88ee-a48a29a5af5f\"}"
+  },
+  {
+   "route": "POST /sales",
+   "where": "lines[].unitPriceHt = 12 digits",
+   "value": "999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"4a388a55-7908-4f96-b37b-563d877d6cfe\"}"
+  },
+  {
+   "route": "POST /sales/quick",
+   "where": "lines[].unitPriceHt = 16 digits",
+   "value": "9999999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"a0389ad9-3261-42e0-a0ae-251c3d291dd2\"}"
+  },
+  {
+   "route": "POST /sales/quick",
+   "where": "lines[].unitPriceHt = 12 digits",
+   "value": "999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"bc69738d-76b3-4cbb-b455-265f5b246252\"}"
+  },
+  {
+   "route": "POST /payments",
+   "where": "amount = 16 digits",
+   "value": "9999999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"138b0f13-def5-4918-b964-361ef941f17d\"}"
+  },
+  {
+   "route": "POST /payments",
+   "where": "amount = 12 digits",
+   "value": "999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"2d085b59-5857-4ca7-abe3-92f91dfa76af\"}"
+  },
+  {
+   "route": "POST /purchases",
+   "where": "lines[].unitCost = 16 digits",
+   "value": "9999999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"fc35aead-9b84-4a83-88a7-4301ddf65cec\"}"
+  },
+  {
+   "route": "POST /purchases",
+   "where": "lines[].unitCost = 12 digits",
+   "value": "999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"8fb8c7b4-b120-483b-be9e-2581eb222200\"}"
+  },
+  {
+   "route": "POST /import-files/:id/late-cost",
+   "where": "amount = 16 digits",
+   "value": "9999999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"75294477-df23-4882-a4c9-f026a78c403d\"}"
+  },
+  {
+   "route": "POST /import-files/:id/late-cost",
+   "where": "amount = 12 digits",
+   "value": "999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"deb020ee-3ac2-4a0b-9743-b562315658df\"}"
+  },
+  {
+   "route": "POST /supplier-payments",
+   "where": "amount = 16 digits",
+   "value": "9999999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"67093e7e-94c2-4735-bd65-80a3e06a2dd7\"}"
+  },
+  {
+   "route": "POST /supplier-payments",
+   "where": "amount = 12 digits",
+   "value": "999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"c7be5aa4-7468-4ea2-afd0-9f25170bf078\"}"
+  },
+  {
+   "route": "PUT /products/:id/packaging",
+   "where": "[].qtyBasePerPackaging = 16 digits",
+   "value": "9999999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"ab8bb356-3140-418c-8f51-47c4f56d2b2b\"}"
+  },
+  {
+   "route": "PUT /products/:id/packaging",
+   "where": "[].qtyBasePerPackaging = 12 digits",
+   "value": "999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"4705dcd8-5c05-458b-84ff-750b92df634e\"}"
+  },
+  {
+   "route": "POST /cash-accounts/:id/counts",
+   "where": "counted = 16 digits",
+   "value": "9999999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"abdda153-b498-4c99-83f4-dce5f2bec3b7\"}"
+  },
+  {
+   "route": "POST /employees/:id/advances",
+   "where": "amount = 12 digits",
+   "value": "999999999999.99",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"1f38ce49-dd96-4a61-9b62-715981641dfb\"}"
+  },
+  {
+   "route": "POST /clients/:id/adjustments",
+   "where": "reason = lone surrogate",
+   "value": "lone surrogate",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"bab2f32b-981e-4f8e-9edf-9cf619f02b78\"}"
+  },
+  {
+   "route": "POST /warehouses",
+   "where": "name = lone surrogate",
+   "value": "lone surrogate",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"c75b02ea-4039-480a-8d36-16716ae93f23\"}"
+  },
+  {
+   "route": "POST /visits",
+   "where": "note = lone surrogate",
+   "value": "lone surrogate",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"7e1131ea-aed3-498f-8b52-7b079f3ba1bc\"}"
+  },
+  {
+   "route": "POST /import-files",
+   "where": "reference = lone surrogate",
+   "value": "lone surrogate",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"71975a02-29ed-44cc-8d73-7541da6761b6\"}"
+  },
+  {
+   "route": "POST /routes",
+   "where": "name = lone surrogate",
+   "value": "lone surrogate",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"2fe81007-b2bd-4497-8726-18fc6703a96a\"}"
+  },
+  {
+   "route": "POST /cash-accounts/:id/counts",
+   "where": "reason = lone surrogate",
+   "value": "lone surrogate",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"ceaac15b-305c-41a8-930c-2994bce7bd02\"}"
+  },
+  {
+   "route": "POST /incentive-plans",
+   "where": "name = lone surrogate",
+   "value": "lone surrogate",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"08cd79bc-7e68-4614-91dc-14f7172e20be\"}"
+  },
+  {
+   "route": "POST /employees",
+   "where": "fullName = lone surrogate",
+   "value": "lone surrogate",
+   "status": 500,
+   "code": "INTERNAL_ERROR",
+   "sample": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Internal server error\",\"requestId\":\"08d508f8-3d82-43f8-871b-a97ea30569ba\"}"
+  }
+ ],
+ "internals": [],
+ "accepted": [
+  {
+   "route": "PATCH /tenant/settings",
+   "where": "maxDiscountPct = comma",
+   "value": "1,5",
+   "status": 200,
+   "code": "",
+   "sample": "{\"tenantId\":\"b90af1f1-42ed-46d4-9a34-9059a885e62b\",\"name\":\"A2 Core a2mwgfh4k81d\",\"updatedAt\":\"2026-11-14T13:19:37.302Z\",\"raisonSociale\":\"A2 Core a2mwgfh4k81d\",\"adresse\":null,\"telephone\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"rib\":null,\"assujettiTva\":true,\"creditLimitMode\":\"WARN\",\"negativeSt"
+  },
+  {
+   "route": "PATCH /tenant/settings",
+   "where": "cashCountAlertThreshold = comma",
+   "value": "1,5",
+   "status": 200,
+   "code": "",
+   "sample": "{\"tenantId\":\"b90af1f1-42ed-46d4-9a34-9059a885e62b\",\"name\":\"A2 Core a2mwgfh4k81d\",\"updatedAt\":\"2026-11-14T13:19:37.380Z\",\"raisonSociale\":\"A2 Core a2mwgfh4k81d\",\"adresse\":null,\"telephone\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"rib\":null,\"assujettiTva\":true,\"creditLimitMode\":\"WARN\",\"negativeSt"
+  },
+  {
+   "route": "POST /stock/adjustments",
+   "where": "lines[].qty = negative",
+   "value": "-1",
+   "status": 201,
+   "code": "",
+   "sample": "{\"movements\":1,\"warnings\":[]}"
+  },
+  {
+   "route": "POST /clients/:id/adjustments",
+   "where": "amount = negative",
+   "value": "-1",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"06afa1cd-c0ca-4b79-a09a-d6c238b77cc3\",\"code\":\"C-mwgfh4yo1j\",\"name\":\"Client core mwgfh4yo1k\",\"type\":\"PARTICULIER\",\"phone\":null,\"phone2\":null,\"address\":null,\"wilaya\":null,\"commune\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"priceLevelId\":null,\"creditLimit\":null,\"sector\":null,\"assignedSelle"
+  },
+  {
+   "route": "POST /clients/:id/adjustments",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"06afa1cd-c0ca-4b79-a09a-d6c238b77cc3\",\"code\":\"C-mwgfh4yo1j\",\"name\":\"Client core mwgfh4yo1k\",\"type\":\"PARTICULIER\",\"phone\":null,\"phone2\":null,\"address\":null,\"wilaya\":null,\"commune\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"priceLevelId\":null,\"creditLimit\":null,\"sector\":null,\"assignedSelle"
+  },
+  {
+   "route": "POST /sales",
+   "where": "lines[].unitPriceHt = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"5f4d1a85-3e21-474a-b60c-3f1fcedca3af\",\"type\":\"BL\",\"number\":null,\"status\":\"DRAFT\",\"client\":{\"id\":\"06afa1cd-c0ca-4b79-a09a-d6c238b77cc3\",\"code\":\"C-mwgfh4yo1j\",\"name\":\"Client core mwgfh4yo1k\"},\"clientSnapshot\":null,\"documentDate\":\"2026-11-14\",\"note\":null,\"priceLevelId\":\"f8d2fb26-4d62-4bf2-bd7c-8"
+  },
+  {
+   "route": "POST /sales/quick",
+   "where": "paidAmount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"sale\":{\"id\":\"9c254a7f-038c-4433-9187-24b15975f669\",\"type\":\"BL\",\"number\":\"BL-2026-000008\",\"status\":\"VALIDATED\",\"client\":{\"id\":\"06afa1cd-c0ca-4b79-a09a-d6c238b77cc3\",\"code\":\"C-mwgfh4yo1j\",\"name\":\"Client core mwgfh4yo1k\"},\"clientSnapshot\":{\"ai\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"code\":\"C-mwgfh4yo1"
+  },
+  {
+   "route": "POST /sales/quick",
+   "where": "lines[].unitPriceHt = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"sale\":{\"id\":\"010d7556-086e-4300-acf1-7916d3bba2c0\",\"type\":\"BL\",\"number\":\"BL-2026-000012\",\"status\":\"VALIDATED\",\"client\":{\"id\":\"06afa1cd-c0ca-4b79-a09a-d6c238b77cc3\",\"code\":\"C-mwgfh4yo1j\",\"name\":\"Client core mwgfh4yo1k\"},\"clientSnapshot\":{\"ai\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"code\":\"C-mwgfh4yo1"
+  },
+  {
+   "route": "POST /payments",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"f9cf8d90-4bce-4a78-b2da-65b871af7657\",\"number\":\"VER-2026-000009\",\"client\":{\"id\":\"06afa1cd-c0ca-4b79-a09a-d6c238b77cc3\",\"code\":\"C-mwgfh4yo1j\",\"name\":\"Client core mwgfh4yo1k\"},\"sale\":null,\"amount\":\"1.50\",\"mode\":\"ESPECES\",\"status\":\"VALID\",\"reference\":null,\"bank\":null,\"dueDate\":null,\"note\":null,\""
+  },
+  {
+   "route": "POST /purchases",
+   "where": "lines[].unitCost = 3 decimals",
+   "value": "0.001",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"53fce75c-8e98-465a-b760-48ea9e39c75e\",\"number\":null,\"status\":\"DRAFT\",\"supplier\":{\"id\":\"9b77f686-7196-4cd0-b958-6eee1363f98d\",\"name\":\"Fournisseur mwgfh4qu1g\"},\"warehouse\":null,\"documentDate\":\"2026-11-14\",\"supplierRef\":null,\"note\":null,\"totalHt\":\"0.01\",\"totalTva\":\"0.00\",\"totalTtc\":\"0.01\",\"tvaBy"
+  },
+  {
+   "route": "POST /purchases",
+   "where": "lines[].unitCost = 4 decimals",
+   "value": "1.0001",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"988583d5-886a-40da-a066-32723c206496\",\"number\":null,\"status\":\"DRAFT\",\"supplier\":{\"id\":\"9b77f686-7196-4cd0-b958-6eee1363f98d\",\"name\":\"Fournisseur mwgfh4qu1g\"},\"warehouse\":null,\"documentDate\":\"2026-11-14\",\"supplierRef\":null,\"note\":null,\"totalHt\":\"10.00\",\"totalTva\":\"1.90\",\"totalTtc\":\"11.90\",\"tva"
+  },
+  {
+   "route": "POST /purchases",
+   "where": "lines[].unitCost = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"d36bdded-0519-440e-8578-db9740d6f15a\",\"number\":null,\"status\":\"DRAFT\",\"supplier\":{\"id\":\"9b77f686-7196-4cd0-b958-6eee1363f98d\",\"name\":\"Fournisseur mwgfh4qu1g\"},\"warehouse\":null,\"documentDate\":\"2026-11-14\",\"supplierRef\":null,\"note\":null,\"totalHt\":\"15.00\",\"totalTva\":\"2.85\",\"totalTtc\":\"17.85\",\"tva"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = negative",
+   "value": "-1",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"9b77f686-7196-4cd0-b958-6eee1363f98d\",\"code\":null,\"name\":\"Fournisseur mwgfh4qu1g\",\"phone\":\"-1\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = 3 decimals",
+   "value": "0.001",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"9b77f686-7196-4cd0-b958-6eee1363f98d\",\"code\":null,\"name\":\"Fournisseur mwgfh4qu1g\",\"phone\":\"0.001\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = 4 decimals",
+   "value": "1.0001",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"9b77f686-7196-4cd0-b958-6eee1363f98d\",\"code\":null,\"name\":\"Fournisseur mwgfh4qu1g\",\"phone\":\"1.0001\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = exponent",
+   "value": "1e5",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"9b77f686-7196-4cd0-b958-6eee1363f98d\",\"code\":null,\"name\":\"Fournisseur mwgfh4qu1g\",\"phone\":\"1e5\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = NaN",
+   "value": "NaN",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"9b77f686-7196-4cd0-b958-6eee1363f98d\",\"code\":null,\"name\":\"Fournisseur mwgfh4qu1g\",\"phone\":\"NaN\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = Infinity",
+   "value": "Infinity",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"9b77f686-7196-4cd0-b958-6eee1363f98d\",\"code\":null,\"name\":\"Fournisseur mwgfh4qu1g\",\"phone\":\"Infinity\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = arabic digits",
+   "value": "١٢٣",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"9b77f686-7196-4cd0-b958-6eee1363f98d\",\"code\":null,\"name\":\"Fournisseur mwgfh4qu1g\",\"phone\":\"١٢٣\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = comma",
+   "value": "1,5",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"9b77f686-7196-4cd0-b958-6eee1363f98d\",\"code\":null,\"name\":\"Fournisseur mwgfh4qu1g\",\"phone\":\"1,5\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "PATCH /suppliers/:id",
+   "where": "phone = hex",
+   "value": "0x10",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"9b77f686-7196-4cd0-b958-6eee1363f98d\",\"code\":null,\"name\":\"Fournisseur mwgfh4qu1g\",\"phone\":\"0x10\",\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"5355.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "POST /import-files/:id/late-cost",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"d023b1f5-d758-4d14-850a-ab950d772329\",\"number\":\"DI-2026-000001\",\"status\":\"CLOSED\",\"reference\":\"BL-MSKU-1\",\"containerNo\":\"MSKU1234567\",\"arrivalDate\":null,\"purchaseCount\":1,\"totalLanded\":\"187501.50\",\"createdAt\":\"2026-11-14T13:15:00.329Z\",\"closedAt\":\"2026-11-14T13:15:00.554Z\",\"note\":null,\"versio"
+  },
+  {
+   "route": "POST /supplier-payments",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"925ae7e3-e938-44d6-95c6-eedfe5467331\",\"number\":\"RGF-2026-000003\",\"supplier\":{\"id\":\"279014eb-91d0-4247-ae00-3afb2bedde42\",\"code\":null,\"name\":\"Yiwu Trading mwgfh73i1o\"},\"amount\":\"210.00\",\"currency\":\"USD\",\"amountCurrency\":\"1.50\",\"exchangeRate\":\"140\",\"mode\":\"VIREMENT\",\"status\":\"VALID\",\"reference\""
+  },
+  {
+   "route": "POST /supplier-payments",
+   "where": "exchangeRate = 3 decimals",
+   "value": "0.001",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"8e32a6c2-48a9-4208-9d09-f12286d3a1cc\",\"number\":\"RGF-2026-000005\",\"supplier\":{\"id\":\"279014eb-91d0-4247-ae00-3afb2bedde42\",\"code\":null,\"name\":\"Yiwu Trading mwgfh73i1o\"},\"amount\":\"0.40\",\"currency\":\"USD\",\"amountCurrency\":\"400.00\",\"exchangeRate\":\"0.001\",\"mode\":\"VIREMENT\",\"status\":\"VALID\",\"referenc"
+  },
+  {
+   "route": "POST /supplier-payments",
+   "where": "exchangeRate = 4 decimals",
+   "value": "1.0001",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"8b455875-6c34-481a-8331-549ee04de058\",\"number\":\"RGF-2026-000006\",\"supplier\":{\"id\":\"279014eb-91d0-4247-ae00-3afb2bedde42\",\"code\":null,\"name\":\"Yiwu Trading mwgfh73i1o\"},\"amount\":\"400.04\",\"currency\":\"USD\",\"amountCurrency\":\"400.00\",\"exchangeRate\":\"1.0001\",\"mode\":\"VIREMENT\",\"status\":\"VALID\",\"refer"
+  },
+  {
+   "route": "POST /supplier-payments",
+   "where": "exchangeRate = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"6a6d2b38-bd68-4216-a9af-699767f7f29f\",\"number\":\"RGF-2026-000007\",\"supplier\":{\"id\":\"279014eb-91d0-4247-ae00-3afb2bedde42\",\"code\":null,\"name\":\"Yiwu Trading mwgfh73i1o\"},\"amount\":\"600.00\",\"currency\":\"USD\",\"amountCurrency\":\"400.00\",\"exchangeRate\":\"1.5\",\"mode\":\"VIREMENT\",\"status\":\"VALID\",\"referenc"
+  },
+  {
+   "route": "PUT /products/:id/packaging",
+   "where": "[].qtyBasePerPackaging = 3 decimals",
+   "value": "0.001",
+   "status": 200,
+   "code": "",
+   "sample": "[{\"packagingTypeId\":\"7c36094f-b77b-44f1-bd6d-1be9caa5bdd7\",\"name\":\"Casier 24\",\"qtyBasePerPackaging\":\"0.001\"}]"
+  },
+  {
+   "route": "PUT /products/:id/packaging",
+   "where": "[].qtyBasePerPackaging = comma",
+   "value": "1,5",
+   "status": 200,
+   "code": "",
+   "sample": "[{\"packagingTypeId\":\"7c36094f-b77b-44f1-bd6d-1be9caa5bdd7\",\"name\":\"Casier 24\",\"qtyBasePerPackaging\":\"1.500\"}]"
+  },
+  {
+   "route": "POST /purchases",
+   "where": "paidAmount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"71f1803f-e144-4a37-b991-1faac0d3f7f2\",\"number\":null,\"status\":\"DRAFT\",\"supplier\":{\"id\":\"a9302e87-0344-49d3-85ff-da02344aba87\",\"name\":\"Grossiste Sétif mwgfh8q525\"},\"warehouse\":null,\"documentDate\":\"2026-11-14\",\"supplierRef\":null,\"note\":null,\"totalHt\":\"20000.00\",\"totalTva\":\"3800.00\",\"totalTtc\":\"2"
+  },
+  {
+   "route": "POST /rent-contracts",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"642da473-0b3e-497d-8207-d0e861a3ceec\",\"warehouse\":{\"id\":\"4776cd28-02be-4e50-875b-4be688ac9dcf\",\"name\":\"Dépôt principal\"},\"landlordName\":\"Bailleur Audit\",\"landlordPhone\":null,\"amount\":\"1.50\",\"period\":\"MONTHLY\",\"startDate\":\"2026-11-01\",\"endDate\":null,\"note\":null,\"locked\":false,\"ended\":false,\"pa"
+  },
+  {
+   "route": "POST /expenses",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"47a95e09-e9d3-4cba-923a-67f46f340c6c\",\"number\":\"DEP-2026-000006\",\"date\":\"2026-11-14\",\"warehouse\":{\"id\":\"4776cd28-02be-4e50-875b-4be688ac9dcf\",\"name\":\"Dépôt principal\"},\"category\":{\"id\":\"61d30847-b5cf-4891-9cc5-0c939a50c98c\",\"name\":\"Électricité / eau\",\"key\":\"UTILITIES\"},\"amount\":\"1.50\",\"mode\":"
+  },
+  {
+   "route": "POST /treasury/transfers",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"d56d9b47-95ee-4a9a-8e05-9c6cf8e359b5\",\"number\":\"TRF-2026-000003\",\"from\":{\"id\":\"2c9c121c-4424-41ad-b506-0677f141bd08\",\"name\":\"Caisse principale\"},\"to\":{\"id\":\"d8fed361-7243-447e-a42a-c256ef24f31c\",\"name\":\"Banque principale\"},\"amount\":\"1.50\",\"date\":\"2026-11-14\",\"note\":\"Dépôt en banque\",\"status\":"
+  },
+  {
+   "route": "POST /cash-accounts/:id/counts",
+   "where": "counted = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"e6e3be83-1e9a-4aed-a31c-79782cdc50a9\",\"cashAccountId\":\"2c9c121c-4424-41ad-b506-0677f141bd08\",\"counted\":\"1.50\",\"expected\":\"999999999999.99\",\"ecart\":\"-999999999998.49\",\"reason\":\"Erreur de rendu monnaie\",\"alert\":true,\"createdAt\":\"2026-11-14T13:19:49.352Z\"}"
+  },
+  {
+   "route": "POST /employees/:id/salaries",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "[{\"id\":\"9a68b63f-d34c-4575-9d6c-30a44c343d79\",\"amount\":\"1.50\",\"payType\":\"MONTHLY\",\"effectiveFrom\":\"2025-08-27\",\"reason\":null,\"createdBy\":{\"id\":\"b96c20e3-60b4-47e8-a8dd-7d552f7ee200\",\"fullName\":\"Owner Paie\"},\"createdAt\":\"2026-11-14T13:19:49.918Z\"},{\"id\":\"f749e87b-95ca-4a4d-a0e0-d7ff740defcc\",\"amount\""
+  },
+  {
+   "route": "POST /employees/:id/advances",
+   "where": "amount = comma",
+   "value": "1,5",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"2dffb4e4-dd3b-4d4b-b516-79a3c1174ec2\",\"type\":\"ADVANCE\",\"amount\":\"1.50\",\"balanceAfter\":\"5001.50\",\"expenseId\":\"5c735fc6-7a95-42eb-bd2a-dbd1a26395be\",\"expenseNumber\":\"DEP-2026-000004\",\"note\":null,\"createdAt\":\"2026-11-14T13:19:50.182Z\"}"
+  },
+  {
+   "route": "PATCH /tenant/settings",
+   "where": "raisonSociale = lone surrogate",
+   "value": "lone surrogate",
+   "status": 200,
+   "code": "",
+   "sample": "{\"tenantId\":\"b90af1f1-42ed-46d4-9a34-9059a885e62b\",\"name\":\"A2 Core a2mwgfh4k81d\",\"updatedAt\":\"2026-11-14T13:19:50.268Z\",\"raisonSociale\":\"bad�end\",\"adresse\":null,\"telephone\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"rib\":null,\"assujettiTva\":true,\"creditLimitMode\":\"WARN\",\"negativeStockMode\":\"WAR"
+  },
+  {
+   "route": "PATCH /tenant/settings",
+   "where": "tvaMention = lone surrogate",
+   "value": "lone surrogate",
+   "status": 200,
+   "code": "",
+   "sample": "{\"tenantId\":\"b90af1f1-42ed-46d4-9a34-9059a885e62b\",\"name\":\"A2 Core a2mwgfh4k81d\",\"updatedAt\":\"2026-11-14T13:19:50.357Z\",\"raisonSociale\":\"A2 Core a2mwgfh4k81d\",\"adresse\":null,\"telephone\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"rib\":null,\"assujettiTva\":true,\"creditLimitMode\":\"WARN\",\"negativeSt"
+  },
+  {
+   "route": "POST /suppliers",
+   "where": "name = lone surrogate",
+   "value": "lone surrogate",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"7797c4e3-8869-4d94-942c-49596998f6de\",\"code\":null,\"name\":\"bad�end\",\"phone\":null,\"address\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"ai\":null,\"notes\":null,\"archivedAt\":null,\"balance\":\"0.00\",\"currency\":\"DZD\",\"balanceCurrency\":\"0.00\",\"hasOpening\":false}"
+  },
+  {
+   "route": "POST /categories",
+   "where": "name = lone surrogate",
+   "value": "lone surrogate",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"9f38e9f5-14d6-4274-9a5f-219e1e1041f6\",\"name\":\"bad�end\",\"parentId\":null,\"children\":[]}"
+  },
+  {
+   "route": "POST /brands",
+   "where": "name = lone surrogate",
+   "value": "lone surrogate",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"e1156a8e-d8c6-47ce-89ce-f5cb0f980823\",\"name\":\"bad�end\",\"supplierId\":\"9b77f686-7196-4cd0-b958-6eee1363f98d\",\"supplierName\":\"Fournisseur mwgfh4qu1g\",\"productCount\":0}"
+  },
+  {
+   "route": "POST /units",
+   "where": "name = lone surrogate",
+   "value": "lone surrogate",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"0abd160f-903c-4446-bf6f-a1df83e7d70a\",\"code\":\"CUSTOM-1208F58F\",\"name\":\"bad�end\",\"allowsDecimal\":false}"
+  },
+  {
+   "route": "PATCH /price-levels/:id",
+   "where": "name = lone surrogate",
+   "value": "lone surrogate",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"f8d2fb26-4d62-4bf2-bd7c-8700c6f55fb1\",\"position\":1,\"name\":\"bad�end\"}"
+  },
+  {
+   "route": "POST /sectors",
+   "where": "name = lone surrogate",
+   "value": "lone surrogate",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"1b5b4d00-1c9e-46b9-ba75-da168066adb3\",\"name\":\"bad�end\",\"wilaya\":\"Alger\",\"communes\":[\"Kouba\"],\"clientCount\":0}"
+  },
+  {
+   "route": "POST /products",
+   "where": "reference = lone surrogate",
+   "value": "lone surrogate",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"dc3e79c9-6023-4b9f-a10e-5f4097bb01d9\",\"reference\":\"bad�end\",\"designation\":\"Article mwgfh4u61i\",\"categoryId\":null,\"brandId\":\"559d66db-6bc7-4762-bca1-648fb33fe912\",\"brandName\":\"Marque A\",\"baseUnitId\":\"1124cb3f-9eaa-43ad-b00a-404fbbd0832c\",\"tvaRate\":\"19.00\",\"minStock\":\"0.000\",\"weightKg\":null,\"vo"
+  },
+  {
+   "route": "PATCH /sales/:id/seller",
+   "where": "reason = NUL byte",
+   "value": "NUL byte",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"36793c95-3b5f-46e3-a95c-b005446fc5e5\",\"type\":\"BL\",\"number\":\"BL-2026-000001\",\"status\":\"VALIDATED\",\"client\":{\"id\":\"06afa1cd-c0ca-4b79-a09a-d6c238b77cc3\",\"code\":\"C-mwgfh4yo1j\",\"name\":\"Client core mwgfh4yo1k\"},\"clientSnapshot\":{\"ai\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"code\":\"C-mwgfh4yo1j\",\"name"
+  },
+  {
+   "route": "PATCH /sales/:id/seller",
+   "where": "reason = lone surrogate",
+   "value": "lone surrogate",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"36793c95-3b5f-46e3-a95c-b005446fc5e5\",\"type\":\"BL\",\"number\":\"BL-2026-000001\",\"status\":\"VALIDATED\",\"client\":{\"id\":\"06afa1cd-c0ca-4b79-a09a-d6c238b77cc3\",\"code\":\"C-mwgfh4yo1j\",\"name\":\"Client core mwgfh4yo1k\"},\"clientSnapshot\":{\"ai\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"code\":\"C-mwgfh4yo1j\",\"name"
+  },
+  {
+   "route": "POST /sales/:id/returns",
+   "where": "reason = lone surrogate",
+   "value": "lone surrogate",
+   "status": 201,
+   "code": "",
+   "sample": "{\"sale\":{\"id\":\"36793c95-3b5f-46e3-a95c-b005446fc5e5\",\"type\":\"BL\",\"number\":\"BL-2026-000001\",\"status\":\"VALIDATED\",\"client\":{\"id\":\"06afa1cd-c0ca-4b79-a09a-d6c238b77cc3\",\"code\":\"C-mwgfh4yo1j\",\"name\":\"Client core mwgfh4yo1k\"},\"clientSnapshot\":{\"ai\":null,\"rc\":null,\"nif\":null,\"nis\":null,\"code\":\"C-mwgfh4yo1"
+  },
+  {
+   "route": "PATCH /payments/:id/collector",
+   "where": "reason = NUL byte",
+   "value": "NUL byte",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"5c87703d-b3aa-4322-be29-3852c0defa97\",\"number\":\"VER-2026-000002\",\"client\":{\"id\":\"06afa1cd-c0ca-4b79-a09a-d6c238b77cc3\",\"code\":\"C-mwgfh4yo1j\",\"name\":\"Client core mwgfh4yo1k\"},\"sale\":null,\"amount\":\"500.00\",\"mode\":\"ESPECES\",\"status\":\"VALID\",\"reference\":null,\"bank\":null,\"dueDate\":null,\"note\":null"
+  },
+  {
+   "route": "PATCH /payments/:id/collector",
+   "where": "reason = lone surrogate",
+   "value": "lone surrogate",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"5c87703d-b3aa-4322-be29-3852c0defa97\",\"number\":\"VER-2026-000002\",\"client\":{\"id\":\"06afa1cd-c0ca-4b79-a09a-d6c238b77cc3\",\"code\":\"C-mwgfh4yo1j\",\"name\":\"Client core mwgfh4yo1k\"},\"sale\":null,\"amount\":\"500.00\",\"mode\":\"ESPECES\",\"status\":\"VALID\",\"reference\":null,\"bank\":null,\"dueDate\":null,\"note\":null"
+  },
+  {
+   "route": "POST /purchases/:id/returns",
+   "where": "reason = NUL byte",
+   "value": "NUL byte",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"8a6f2efc-a0f3-49dd-b5f8-f503ffcd650f\",\"number\":\"BR-2026-000001\",\"status\":\"VALIDATED\",\"supplier\":{\"id\":\"9b77f686-7196-4cd0-b958-6eee1363f98d\",\"name\":\"Fournisseur mwgfh4qu1g\"},\"warehouse\":{\"id\":\"35d40fcc-6662-40c9-8558-eab853af2acb\",\"name\":\"Dépôt principal\"},\"documentDate\":\"2026-11-14\",\"supplie"
+  },
+  {
+   "route": "POST /purchases/:id/returns",
+   "where": "reason = lone surrogate",
+   "value": "lone surrogate",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"8a6f2efc-a0f3-49dd-b5f8-f503ffcd650f\",\"number\":\"BR-2026-000001\",\"status\":\"VALIDATED\",\"supplier\":{\"id\":\"9b77f686-7196-4cd0-b958-6eee1363f98d\",\"name\":\"Fournisseur mwgfh4qu1g\"},\"warehouse\":{\"id\":\"35d40fcc-6662-40c9-8558-eab853af2acb\",\"name\":\"Dépôt principal\"},\"documentDate\":\"2026-11-14\",\"supplie"
+  },
+  {
+   "route": "POST /inventories",
+   "where": "note = lone surrogate",
+   "value": "lone surrogate",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"e4e04e73-46c8-441b-9e14-0951cf229d7c\",\"number\":\"INV-2026-000005\",\"status\":\"OPEN\",\"warehouseId\":\"35d40fcc-6662-40c9-8558-eab853af2acb\",\"note\":\"bad�end\",\"createdAt\":\"2026-11-14T13:19:54.281Z\",\"validatedAt\":null,\"cancelledAt\":null,\"lines\":[]}"
+  },
+  {
+   "route": "PUT /users/:id",
+   "where": "fullName = lone surrogate",
+   "value": "lone surrogate",
+   "status": 200,
+   "code": "",
+   "sample": "{\"id\":\"cbcc12a3-3222-40d5-8245-854996365bb0\",\"fullName\":\"bad�end\",\"email\":\"umwgfh4na1e@audit.local\",\"phone\":null,\"role\":\"SELLER\",\"managerId\":null,\"managerName\":null,\"permissions\":[\"SALE_CANCEL\",\"PRODUCTS_VIEW\",\"STOCK_VIEW\",\"PURCHASES_VIEW\",\"SUPPLIERS_VIEW\",\"CLIENTS_VIEW\",\"CLIENTS_CREATE\",\"CLIENTS_ED"
+  },
+  {
+   "route": "POST /supplier-payments",
+   "where": "reference = lone surrogate",
+   "value": "lone surrogate",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"12098756-b6ef-41ef-9780-fdfe95d809a0\",\"number\":\"RGF-2026-000010\",\"supplier\":{\"id\":\"279014eb-91d0-4247-ae00-3afb2bedde42\",\"code\":null,\"name\":\"Yiwu Trading mwgfh73i1o\"},\"amount\":\"56000.00\",\"currency\":\"USD\",\"amountCurrency\":\"400.00\",\"exchangeRate\":\"140\",\"mode\":\"VIREMENT\",\"status\":\"VALID\",\"refere"
+  },
+  {
+   "route": "POST /payments",
+   "where": "reference = lone surrogate",
+   "value": "lone surrogate",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"526ea25d-1131-4b85-9f5b-d7d15744e0e0\",\"number\":\"VER-2026-000006\",\"client\":{\"id\":\"663344b0-3d04-47e9-9fd8-fa542820aad0\",\"code\":\"C-mwgfh7xr1z\",\"name\":\"Epicerie mwgfh7xr20\"},\"sale\":null,\"amount\":\"300.00\",\"mode\":\"CHEQUE\",\"status\":\"VALID\",\"reference\":\"bad�end\",\"bank\":null,\"dueDate\":null,\"note\":nul"
+  },
+  {
+   "route": "POST /packaging-types",
+   "where": "name = lone surrogate",
+   "value": "lone surrogate",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"6b09acbb-6144-4772-a8cd-94b6f96f41b1\",\"name\":\"bad�end\",\"depositValue\":\"300.00\",\"productCount\":0}"
+  },
+  {
+   "route": "POST /rent-contracts",
+   "where": "landlordName = lone surrogate",
+   "value": "lone surrogate",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"442bdf55-c955-4d12-93d8-a641e7710b5e\",\"warehouse\":{\"id\":\"4776cd28-02be-4e50-875b-4be688ac9dcf\",\"name\":\"Dépôt principal\"},\"landlordName\":\"bad�end\",\"landlordPhone\":null,\"amount\":\"60000.00\",\"period\":\"MONTHLY\",\"startDate\":\"2026-11-01\",\"endDate\":null,\"note\":null,\"locked\":false,\"ended\":false,\"paidU"
+  },
+  {
+   "route": "POST /expenses",
+   "where": "payee = lone surrogate",
+   "value": "lone surrogate",
+   "status": 201,
+   "code": "",
+   "sample": "{\"id\":\"a2d270ce-9551-4d81-9043-c0188f96d37a\",\"number\":\"DEP-2026-000009\",\"date\":\"2026-11-14\",\"warehouse\":{\"id\":\"4776cd28-02be-4e50-875b-4be688ac9dcf\",\"name\":\"Dépôt principal\"},\"category\":{\"id\":\"61d30847-b5cf-4891-9cc5-0c939a50c98c\",\"name\":\"Électricité / eau\",\"key\":\"UTILITIES\"},\"amount\":\"9000.00\",\"mod"
+  }
+ ]
+}
