@@ -91,6 +91,8 @@ services:
       # erp_app: row-level security applies to it (apps/api/prisma/migrations/*_row_level_security).
       DATABASE_URL: postgresql://erp_app:${APP_DB_PASSWORD:?}@db:5432/erp?schema=public
       PUBLIC_PATH_PREFIX: /api
+      # Caddy is the one proxy in front; it replaces any X-Forwarded-For a client sends.
+      TRUST_PROXY: 1
       COOKIE_SECURE: 'true'
     depends_on:
       db: { condition: service_healthy }

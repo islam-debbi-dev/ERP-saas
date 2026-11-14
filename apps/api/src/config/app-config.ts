@@ -40,6 +40,14 @@ const envSchema = z.object({
     .string()
     .regex(/^(\/[\w-]+)*$/, 'PUBLIC_PATH_PREFIX looks like /api, or empty')
     .default(''),
+  /**
+   * How many reverse proxies stand in front of the API, each one appending the address it
+   * saw to `X-Forwarded-For`. The client address (login limiter, rate limits, audit log) is
+   * read that many hops from the right. Unset: 1 on Vercel, else 0 = the header is ignored
+   * and the socket address is used. It was always 1: reached directly, a caller chose his
+   * own address, one per attempt (audit 01 #4). Set it to 1 behind Caddy (infra/deploy).
+   */
+  TRUST_PROXY: z.preprocess(emptyIsUnset, z.coerce.number().int().min(0).max(5).optional()),
   /** Chromium used to render PDFs; unset = the browser puppeteer downloaded. */
   CHROMIUM_PATH: z.string().min(1).optional(),
   /**

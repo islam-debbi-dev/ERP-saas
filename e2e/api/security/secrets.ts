@@ -25,7 +25,7 @@ const LOG = `${OUT}api-secrets.log`;
 const sink = await startSink(3098);
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 const api = spawn('sh', [`${root}e2e/map-stack.sh`, 'api'], {
-  env: { ...process.env, AUDIT_DB: new URL(DB).pathname.slice(1), API_PORT: String(PORT), SENTRY_DSN: 'http://audit02@localhost:3098/1', LOG_LEVEL: 'debug' },
+  env: { ...process.env, AUDIT_DB: new URL(DB).pathname.slice(1), API_PORT: String(PORT), SENTRY_DSN: 'http://audit02@localhost:3098/1', LOG_LEVEL: 'debug', TRUST_PROXY: '1' },
 });
 const out = createWriteStream(LOG);
 api.stdout.pipe(out);

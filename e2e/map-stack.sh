@@ -10,6 +10,10 @@
 # are raised because the suites send thousands of requests from one address, and the access
 # token lives 12 h so a suite does not have to log in again (the login limiter allows ten
 # logins a minute per address).
+#
+# TRUST_PROXY is unset by default: the API is reached directly and ignores X-Forwarded-For,
+# which is what part A's attack suite checks. The suites that give each login its own
+# address (part B) stand in for the reverse proxy and need TRUST_PROXY=1.
 set -eu
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DBNAME="${AUDIT_DB:-erp_t35}"
@@ -26,6 +30,7 @@ case "${1:-}" in
     ACCESS_TOKEN_TTL_SECONDS=43200 \
     COOKIE_SECURE=false \
     SENTRY_DSN="${SENTRY_DSN:-}" \
+    TRUST_PROXY="${TRUST_PROXY:-}" \
     PUBLIC_PATH_PREFIX="${PUBLIC_PATH_PREFIX:-}" \
     NODE_ENV=production \
     exec node dist/main.js

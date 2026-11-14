@@ -4,10 +4,15 @@
 # Before (see part-a.sh for the database and the build), start the API with a stub model
 # behind the assistant, so no real provider key is used:
 #
-#   AUDIT_DB=erp_audit02 AI_PROVIDER=OPENAI_COMPATIBLE AI_MODEL=audit-stub \
+#   AUDIT_DB=erp_audit02 TRUST_PROXY=1 AI_PROVIDER=OPENAI_COMPATIBLE AI_MODEL=audit-stub \
 #   AI_BASE_URL=http://127.0.0.1:3999/v1 AI_API_KEY=sk-AUDIT02-CANARY-KEY-do-not-leak \
 #     e2e/map-stack.sh api > e2e/artifacts/audit-02/api-b.log 2>&1 &
 #   e2e/map-stack.sh web &
+#
+# TRUST_PROXY=1: auth.ts and secrets.ts give each login its own address in X-Forwarded-For
+# (the login limiter allows ten a minute per address). Since the fix of 01-#4 the API
+# believes that header only behind a declared proxy, so here the suites stand in for it.
+# Part A runs on an API without it (attacks.ts checks that a forged address is ignored).
 #
 # Then:  bash e2e/audit-02/part-b.sh
 #

@@ -580,7 +580,9 @@ async function main(): Promise<void> {
       `HTTP ${other.status} ${code(other.body)} - the other account was not locked out`,
     );
   });
-  await check('the login rate limit is bypassed with a forged X-Forwarded-For', async () => {
+  // Finding 01-#4, fixed: the API of this suite is reached directly (TRUST_PROXY unset), so
+  // X-Forwarded-For is not believed. Until audit 02 both checks proved the opposite.
+  await check('a forged X-Forwarded-For does not bypass the login rate limit', async () => {
     await sleep(61_000);
     const codes: string[] = [];
     for (let i = 0; i < 11; i += 1) {
@@ -592,28 +594,33 @@ async function main(): Promise<void> {
       codes.push(`${res.status}:${code(res.body)}`);
     }
     assert(
-      !codes.some((c) => c.includes('TOO_MANY_REQUESTS')),
-      `the forged IPs were rate limited: ${codes.join(',')}`,
+      codes[10]?.includes('TOO_MANY_REQUESTS') === true,
+      `eleven logins with eleven forged addresses were not rate limited: ${codes.join(',')}`,
     );
   });
-  await check('the forged IP is what the audit trail records', async () => {
+  await check('a forged X-Forwarded-For is not what the audit trail records', async () => {
+    await sleep(61_000);
     const email = uniq('ip') + '@audit.local';
     await call('/users/invite', {
       method: 'POST',
       token: owner.token,
       body: { fullName: 'Ip audit', email, role: 'SELLER', mode: 'PASSWORD', password: 'Temp1234!' },
     });
-    await request('/auth/login', {
+    const res = await request('/auth/login', {
       method: 'POST',
       headers: { 'X-Client-Type': 'native', 'X-Forwarded-For': '198.51.100.42' },
       body: { identifier: email, password: 'Wrong1234!' },
     });
     const rows = await query<{ after: { ip: string | null } | null }>(
       `SELECT after FROM audit_logs WHERE action = 'LOGIN_FAILED' AND after->>'ip' IS NOT NULL
+          AND "createdAt" > now() - interval '30 seconds'
         ORDER BY "createdAt" DESC LIMIT 1`,
     );
-    assert(rows.length === 1, 'no LOGIN_FAILED audit row');
-    assert(rows[0].after?.ip === '198.51.100.42', `the audit trail says ip=${rows[0].after?.ip}`);
+    assert(rows.length === 1, `no LOGIN_FAILED audit row (login answered HTTP ${res.status})`);
+    assert(
+      rows[0].after?.ip !== '198.51.100.42',
+      `the audit trail records the forged address: ip=${rows[0].after?.ip}`,
+    );
   });
 
   // ==================================================================== G. state machine
