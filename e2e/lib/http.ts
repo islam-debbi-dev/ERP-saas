@@ -27,6 +27,19 @@ export class ApiError extends Error {
   }
 }
 
+/** One request as it was sent, for the record-and-replay sweeps of audit 02 part B. */
+export interface Recorded {
+  method: string;
+  path: string;
+  body?: unknown;
+  token: string | null;
+  idempotent: boolean;
+  status: number;
+  response: string;
+}
+/** Set by api/security/record.ts; null everywhere else (nothing is kept). */
+export const recorder: { sink: ((r: Recorded) => void) | null } = { sink: null };
+
 /** Low-level fetch wrapper that never throws on 4xx (the caller inspects). */
 export async function request<T = unknown>(path: string, opts: RequestOptions = {}): Promise<ApiResponse<T>> {
   const headers: Record<string, string> = { ...(opts.headers ?? {}) };
@@ -43,6 +56,15 @@ export async function request<T = unknown>(path: string, opts: RequestOptions = 
   });
   const buf = Buffer.from(await res.arrayBuffer());
   const raw = buf.toString('utf8');
+  recorder.sink?.({
+    method: opts.method ?? 'GET',
+    path,
+    body: opts.body,
+    token: opts.token ?? null,
+    idempotent: !!opts.idempotencyKey,
+    status: res.status,
+    response: raw.length > 200_000 ? raw.slice(0, 200_000) : raw,
+  });
   let body: unknown = raw;
   if (!opts.raw) {
     const ct = res.headers.get('content-type') ?? '';
