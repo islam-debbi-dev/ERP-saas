@@ -99,6 +99,7 @@ export class UsersService {
 
   async invite(input: InviteUserInput, actor: CurrentUserInfo): Promise<InviteResultDto> {
     if (input.role === Role.OWNER) assertOwnerActor(actor);
+    assertBelowActor(actor, { id: null, role: input.role });
     const passwordHash =
       input.mode === 'PASSWORD' && input.password
         ? await hashPassword(input.password)
@@ -152,7 +153,12 @@ export class UsersService {
       this.prisma.db.$transaction(async (tx) => {
         const before = await this.lockUser(tx, id);
         if (before.role === Role.OWNER || input.role === Role.OWNER) assertOwnerActor(actor);
-        if (input.role !== before.role) await this.checkRoleChange(tx, before, actor);
+        // Neither the account as it is nor the account as it would be (audit 02, B-3).
+        assertBelowActor(actor, before);
+        if (input.role !== before.role) {
+          await this.checkRoleChange(tx, before, actor);
+          assertBelowActor(actor, { ...before, role: input.role });
+        }
         if (
           input.managerId !== undefined &&
           input.managerId !== before.managerId &&
@@ -194,6 +200,7 @@ export class UsersService {
           rule: 'owner_has_all',
         });
       }
+      assertBelowActor(actor, before);
       // A new grant must be a right the actor has himself (the owner has them all).
       const above = input.grants.filter(
         (g) => !before.permissionGrants.includes(g) && !actor.permissions.includes(g),
@@ -234,6 +241,7 @@ export class UsersService {
           rule: 'owner_protected',
         });
       }
+      assertBelowActor(actor, user);
       if (user.deletedAt) return;
       const now = new Date();
       await tx.user.update({ where: { id }, data: { deletedAt: now } });
@@ -260,6 +268,7 @@ export class UsersService {
     await this.prisma.db.$transaction(async (tx) => {
       const user = await this.lockUser(tx, id);
       if (user.role === Role.OWNER) assertOwnerActor(actor);
+      assertBelowActor(actor, user);
       if (!user.deletedAt) return;
       await this.assertUserSlot(tx);
       await tx.user.update({
@@ -301,6 +310,8 @@ export class UsersService {
           rule: 'owner_protected',
         });
       }
+      // Choosing someone's password is taking his account (audit 02, B-3).
+      assertBelowActor(actor, user);
       const now = new Date();
       await tx.user.update({
         where: { id },
@@ -533,6 +544,33 @@ function pick(u: User) {
 }
 
 /** Owner accounts and the OWNER role are the owner's business only (phase 24). */
+/**
+ * A user who manages users never touches an account at or above his own (audit 02, B-3;
+ * docs/domain.md, phase 24): not one of his own role, and not one that holds a permission
+ * he does not hold. Without it a SUPERVISOR granted USERS_MANAGE invited a MANAGER with a
+ * password of his choice, promoted a livreur, or reset a manager's password and logged in
+ * as him. The owner is above everyone; anyone may still edit his own account (his role and
+ * his own grants have their own rules).
+ */
+function assertBelowActor(
+  actor: CurrentUserInfo,
+  target: {
+    id: string | null;
+    role: Role;
+    permissionGrants?: readonly string[];
+    permissionRevokes?: readonly string[];
+  },
+): void {
+  if (actor.role === Role.OWNER || target.id === actor.id) return;
+  const held = effectivePermissions(target.role, target.permissionGrants, target.permissionRevokes);
+  if (target.role !== actor.role && held.every((p) => actor.permissions.includes(p))) return;
+  throw new AppException(
+    ErrorCode.ACCESS_ABOVE_GRANTER,
+    'This account is not below your own: only an owner can do this',
+    { rule: 'account_not_below' },
+  );
+}
+
 function assertOwnerActor(actor: CurrentUserInfo): void {
   if (actor.role === Role.OWNER) return;
   throw new AppException(ErrorCode.FORBIDDEN, 'Only an owner can do this to an owner account', {

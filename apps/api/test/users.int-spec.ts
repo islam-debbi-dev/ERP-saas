@@ -92,7 +92,10 @@ describe('users, permissions, sessions and audit', () => {
       .send({ identifier, password });
 
   /** Invited with a temporary password, logged in and password changed: ready to work. */
-  const staff = async (role: 'MANAGER' | 'SELLER' | 'STOREKEEPER', owner = a): Promise<Staff> => {
+  const staff = async (
+    role: 'MANAGER' | 'SELLER' | 'STOREKEEPER' | 'SUPERVISOR' | 'LIVREUR',
+    owner = a,
+  ): Promise<Staff> => {
     const phone = newPhone();
     const invited = (
       await as(owner)
@@ -507,6 +510,98 @@ describe('users, permissions, sessions and audit', () => {
           role: 'MANAGER',
         })
         .expect(200);
+    });
+  });
+
+  // ---------------------------------------------------------------- delegated user management
+
+  // Audit 02, B-3: with USERS_MANAGE a supervisor made himself a manager's account, three ways.
+  describe('a delegated USERS_MANAGE never reaches an account at or above its holder', () => {
+    let sup: Staff;
+    let manager: Staff;
+    let livreur: Staff;
+    const above = async (req: PromiseLike<{ status: number; body: unknown }>) => {
+      const res = await req;
+      expect(res.status).toBe(403);
+      expect((res.body as { code: string }).code).toBe(ErrorCode.ACCESS_ABOVE_GRANTER);
+    };
+    const invitation = (role: string) => ({
+      fullName: `Invité ${role}`,
+      phone: newPhone(),
+      role,
+      mode: 'PASSWORD',
+      password: 'Chosen-by-him1!',
+    });
+
+    beforeAll(async () => {
+      sup = await staff('SUPERVISOR');
+      manager = await staff('MANAGER');
+      livreur = await staff('LIVREUR');
+      await grant(sup.user.id, [Permission.USERS_MANAGE, Permission.USERS_VIEW]);
+    });
+
+    it('he cannot invite a manager, a role with rights he lacks, or his own role', async () => {
+      await above(as(sup).post('/users/invite', invitation('MANAGER')));
+      // A storekeeper receives goods and counts stock: a supervisor does not.
+      await above(as(sup).post('/users/invite', invitation('STOREKEEPER')));
+      await above(as(sup).post('/users/invite', invitation('SUPERVISOR')));
+      await as(sup).post('/users/invite', invitation('OWNER')).expect(403);
+      // Below him: allowed, which is what the owner delegated.
+      await as(sup).post('/users/invite', invitation('LIVREUR')).expect(201);
+      await as(sup).post('/users/invite', invitation('SELLER')).expect(201);
+    });
+
+    it('he cannot promote anyone to such a role, nor edit or deactivate who holds one', async () => {
+      const edit = (who: Staff, role: string, fullName = who.user.fullName) =>
+        as(sup).put(`/users/${who.user.id}`, { fullName, phone: who.email, role });
+      await above(edit(livreur, 'MANAGER'));
+      await above(edit(livreur, 'SUPERVISOR'));
+      await above(edit(manager, 'MANAGER', 'Renommé'));
+      await above(edit(manager, 'LIVREUR'));
+      await above(as(sup).post(`/users/${manager.user.id}/deactivate`));
+      await above(
+        as(sup).put(`/users/${manager.user.id}/permissions`, {
+          grants: [],
+          revokes: [Permission.SALES_CREATE],
+        }),
+      );
+      const users = (await as(a).get('/users').expect(200)).body as UserDto[];
+      expect(users.find((u) => u.id === livreur.user.id)?.role).toBe('LIVREUR');
+      expect(users.find((u) => u.id === manager.user.id)).toMatchObject({
+        role: 'MANAGER',
+        fullName: manager.user.fullName,
+        active: true,
+      });
+      // A livreur is below him: renamed, and made a seller (nothing he lacks).
+      await edit(livreur, 'LIVREUR', 'Livreur renommé').expect(200);
+      await edit(livreur, 'SELLER').expect(200);
+      await as(a)
+        .put(`/users/${livreur.user.id}`, {
+          fullName: 'Livreur',
+          phone: livreur.email,
+          role: 'LIVREUR',
+        })
+        .expect(200);
+    });
+
+    it('he cannot reset the password of a manager, of a peer, or of a user granted more than he has', async () => {
+      const reset = (id: string) =>
+        as(sup).post(`/users/${id}/reset-password`, {
+          mode: 'PASSWORD',
+          password: 'Stolen-by-him1!',
+        });
+      await above(reset(manager.user.id));
+      await login(manager.email, 'Stolen-by-him1!').expect(401);
+      await login(manager.email).expect(200);
+      const peer = await staff('SUPERVISOR');
+      await above(reset(peer.user.id));
+      // A livreur the owner trusted with the pay figures is no longer below the supervisor.
+      await grant(livreur.user.id, [Permission.SALARY_VIEW]);
+      await above(reset(livreur.user.id));
+      await grant(livreur.user.id, []);
+      await reset(livreur.user.id).expect(200);
+      // The owner is still above everyone.
+      await as(a).post(`/users/${manager.user.id}/reset-password`, { mode: 'LINK' }).expect(200);
     });
   });
 
