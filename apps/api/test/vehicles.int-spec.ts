@@ -960,6 +960,14 @@ describe('distribution par véhicule (phase 36)', () => {
       await as(l1).get(`/orders/${order.id}`).expect(404);
       const seen = (await as(l2).get(`/orders/${order.id}`).expect(200)).body as OrderDto;
       expect(seen.livreur?.id).toBe(l2.id);
+      // "Mes livraisons" (the livreur filter) follows the truck too.
+      const deliveriesOf = async (who: Member) =>
+        (
+          (await as(d).get(`/orders?status=CONFIRMED&livreurId=${who.id}`).expect(200))
+            .body as OrderPage
+        ).items.map((o) => o.id);
+      expect(await deliveriesOf(l2)).toEqual([order.id]);
+      expect(await deliveriesOf(l1)).toEqual([]);
       const body = { lines: [{ orderLineId: order.lines[0]!.id, qty: '2' }] };
       const key = randomUUID();
       const res = (await as(l2).post(`/orders/${order.id}/deliver`, body, key).expect(200))

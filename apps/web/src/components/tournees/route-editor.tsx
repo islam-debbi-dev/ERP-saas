@@ -55,7 +55,9 @@ import { api } from '@/lib/api-client';
 import { useFeature } from '@/lib/auth';
 import { useSellers } from '@/lib/sales-force';
 import { tourneeKeys, useRoute } from '@/lib/tournees';
+import { vehicleLabel } from '@/components/vehicles/vehicle-code';
 import { useErrorMessage } from '@/lib/use-error-message';
+import { useVehicles } from '@/lib/vehicles';
 import { type Stop, RouteMapSheet } from './route-map-sheet';
 import { WeekdayPicker } from './weekdays';
 
@@ -100,6 +102,10 @@ function Loaded({ route }: { route: RouteDto }) {
   const sellers = useSellers();
   const [name, setName] = useState(route.name);
   const [sellerId, setSellerId] = useState(route.seller?.id ?? '');
+  // A vehicle route (phase 36) is moved to another truck, never back to a person here.
+  const [vehicleId, setVehicleId] = useState(route.vehicle?.id ?? '');
+  const vehicles = useVehicles();
+  const tv = useTranslations('vehicles');
   const [weekdays, setWeekdays] = useState(route.weekdays);
   const [active, setActive] = useState(route.active);
   const [stops, setStops] = useState<Stop[]>(route.stops.map((s) => s.client));
@@ -119,6 +125,7 @@ function Loaded({ route }: { route: RouteDto }) {
   const headerDirty =
     name !== route.name ||
     sellerId !== (route.seller?.id ?? '') ||
+    vehicleId !== (route.vehicle?.id ?? '') ||
     active !== route.active ||
     weekdays.join() !== route.weekdays.join();
   const stopsDirty = stops.map((s) => s.id).join() !== route.stops.map((s) => s.client.id).join();
@@ -130,7 +137,12 @@ function Loaded({ route }: { route: RouteDto }) {
     mutationFn: async () => {
       let next = route;
       if (headerDirty) {
-        const body: UpdateRouteInput = { name: name.trim(), sellerId, weekdays, active };
+        const body: UpdateRouteInput = {
+          name: name.trim(),
+          ...(route.vehicle ? { vehicleId } : { sellerId }),
+          weekdays,
+          active,
+        };
         next = await api.request<RouteDto>(`/routes/${route.id}`, { method: 'PATCH', body });
       }
       if (stopsDirty) {
@@ -209,20 +221,44 @@ function Loaded({ route }: { route: RouteDto }) {
               onChange={(e) => setName(e.target.value)}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="route-seller">{t('seller')}</Label>
-            <NativeSelect
-              id="route-seller"
-              value={sellerId}
-              onChange={(e) => setSellerId(e.target.value)}
-            >
-              {(sellers.data ?? (route.seller ? [route.seller] : [])).map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.fullName}
-                </option>
-              ))}
-            </NativeSelect>
-          </div>
+          {route.vehicle ? (
+            <div className="space-y-2">
+              <Label htmlFor="route-vehicle">{tv('routeVehicle')}</Label>
+              <NativeSelect
+                id="route-vehicle"
+                value={vehicleId}
+                onChange={(e) => setVehicleId(e.target.value)}
+              >
+                {(
+                  vehicles.data?.filter((v) => v.active || v.id === route.vehicle?.id) ?? [
+                    route.vehicle,
+                  ]
+                ).map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {vehicleLabel(v)}
+                  </option>
+                ))}
+              </NativeSelect>
+              <p className="text-xs text-muted-foreground">
+                {tv('driver')} : {route.vehicle.driver?.fullName ?? tv('noDriver')}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="route-seller">{t('seller')}</Label>
+              <NativeSelect
+                id="route-seller"
+                value={sellerId}
+                onChange={(e) => setSellerId(e.target.value)}
+              >
+                {(sellers.data ?? (route.seller ? [route.seller] : [])).map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.fullName}
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
+          )}
           <WeekdayPicker value={weekdays} onChange={setWeekdays} />
           <div className="flex min-h-11 items-center gap-3 self-end">
             <Switch id="route-active" checked={active} onCheckedChange={setActive} />

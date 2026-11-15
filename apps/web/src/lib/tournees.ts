@@ -34,6 +34,8 @@ export const tourneeKeys = {
 export interface OrderFilters {
   status?: OrderStatus;
   livreurId?: string;
+  /** The truck that delivers (phase 36). */
+  deliveryVehicleId?: string;
 }
 
 export function useRoutes() {
@@ -71,6 +73,7 @@ export function useOrderPages(filters: OrderFilters = {}) {
       const params = new URLSearchParams({ limit: '50' });
       if (filters.status) params.set('status', filters.status);
       if (filters.livreurId) params.set('livreurId', filters.livreurId);
+      if (filters.deliveryVehicleId) params.set('deliveryVehicleId', filters.deliveryVehicleId);
       if (warehouseId) params.set('warehouseId', warehouseId);
       if (pageParam) params.set('cursor', pageParam);
       return api.request<OrderPage>(`/orders?${params.toString()}`, { signal });

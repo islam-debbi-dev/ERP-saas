@@ -563,7 +563,8 @@ export class OrdersService {
           where,
           query.status ? { status: query.status } : {},
           query.sellerId ? { sellerId: query.sellerId } : {},
-          query.livreurId ? { livreurId: query.livreurId } : {},
+          // "His deliveries" include the confirmed orders on the truck he drives now.
+          query.livreurId ? { OR: await this.deliveredBy(query.livreurId) } : {},
           query.vehicleId ? { vehicleId: query.vehicleId } : {},
           query.deliveryVehicleId ? { deliveryVehicleId: query.deliveryVehicleId } : {},
           query.clientId ? { clientId: query.clientId } : {},

@@ -48,6 +48,7 @@ import { Switch } from '@/components/ui/switch';
 import { useFeature, usePermission } from '@/lib/auth';
 import { useSellers } from '@/lib/sales-force';
 import { useArchiveWarehouse, useSaveWarehouse, useWarehouses } from '@/lib/stock';
+import { VehicleCode } from '@/components/vehicles/vehicle-code';
 import { useErrorMessage } from '@/lib/use-error-message';
 
 interface Editing {
@@ -73,6 +74,7 @@ export function WarehousesManager() {
 function Warehouses() {
   const t = useTranslations('warehouses');
   const tc = useTranslations('common');
+  const tv = useTranslations('vehicles');
   const errorMessage = useErrorMessage();
   const tu = useTranslations('multiUnit');
   // Phase 24: dépôts are company settings (SETTINGS_EDIT, owner and manager by default).
@@ -148,6 +150,7 @@ function Warehouses() {
           ) : undefined
         }
         more={[
+          { label: tv('title'), icon: Truck, href: '/stock/vehicules' },
           { label: t('transfers'), icon: ArrowLeftRight, href: '/stock/transferts' },
           { label: t('back'), icon: ArrowLeft, flipIcon: true, tone: 'ghost', href: '/stock' },
         ]}
@@ -189,6 +192,12 @@ function Warehouses() {
                         </Link>
                       ) : (
                         <p className="truncate font-medium" title={w.name}>
+                          {w.code ? (
+                            <>
+                              <VehicleCode code={w.code} />
+                              <span className="text-muted-foreground"> · </span>
+                            </>
+                          ) : null}
                           {w.name}
                         </p>
                       )}

@@ -16,6 +16,8 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import {
+  type AssignLivreurInput,
+  DELIVERY_ACTIVITIES,
   Feature,
   type OrderDto,
   OFFICE_ROLES,
@@ -49,11 +51,13 @@ import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api-client';
-import { useAuth } from '@/lib/auth';
+import { useAuth, useFeature } from '@/lib/auth';
 import { findProductByCode, useUnitLabel } from '@/lib/catalog';
 import { formatQty } from '@/lib/stock';
 import { saveOrder, tourneeKeys, useDeliverers, useOrder } from '@/lib/tournees';
+import { VehicleName, vehicleLabel } from '@/components/vehicles/vehicle-code';
 import { useErrorMessage } from '@/lib/use-error-message';
+import { useVehicles } from '@/lib/vehicles';
 import { DeliverDialog } from './deliver-dialog';
 import { OrderStatusBadge } from './order-status-badge';
 
@@ -83,6 +87,10 @@ function View({ id, backHref }: { id: string; backHref: string }) {
   const role = useAuth().state.user?.role;
   const planner = !!role && OFFICE_ROLES.includes(role);
   const deliverers = useDeliverers(planner);
+  // Phase 36: an order can be put on a delivery truck; it then follows the truck.
+  const tv = useTranslations('vehicles');
+  const trucksOn = useFeature(Feature.WAREHOUSES);
+  const vehicles = useVehicles();
   const scanRef = useRef<HTMLInputElement>(null);
   const qtyRef = useRef<HTMLInputElement>(null);
   const [code, setCode] = useState('');
@@ -93,6 +101,12 @@ function View({ id, backHref }: { id: string; backHref: string }) {
   const [keys] = useState(() => ({ confirm: crypto.randomUUID(), cancel: crypto.randomUUID() }));
 
   const o = order.data;
+  // Trucks that deliver (DELIVERY / MIXED), and the one already on the order.
+  const deliveryTrucks = (vehicles.data ?? []).filter(
+    (v) =>
+      v.id === o?.deliveryVehicle?.id ||
+      (v.active && !!v.vehicleType && DELIVERY_ACTIVITIES.includes(v.vehicleType.activity)),
+  );
   const draft = o?.status === 'DRAFT';
   const canDeliver = o?.status === 'CONFIRMED' && role !== 'STOREKEEPER';
 
@@ -155,11 +169,13 @@ function View({ id, backHref }: { id: string; backHref: string }) {
   });
 
   const assign = useMutation({
-    mutationFn: (livreurId: string | null) =>
-      api.request<OrderDto>(`/orders/${id}/livreur`, { method: 'PATCH', body: { livreurId } }),
-    onSuccess: (next) => {
+    mutationFn: (body: AssignLivreurInput) =>
+      api.request<OrderDto>(`/orders/${id}/livreur`, { method: 'PATCH', body }),
+    onSuccess: (next, body) => {
       store(next);
-      toast.success(t('livreurSaved'));
+      toast.success(
+        body.deliveryVehicleId !== undefined ? tv('deliveryVehicleSaved') : t('livreurSaved'),
+      );
     },
     onError: (err) => toast.error(errorMessage(err)),
   });
@@ -286,10 +302,14 @@ function View({ id, backHref }: { id: string; backHref: string }) {
               <NativeSelect
                 id="order-livreur"
                 value={o.livreur?.id ?? ''}
-                disabled={assign.isPending}
-                onChange={(e) => assign.mutate(e.target.value || null)}
+                disabled={assign.isPending || o.deliveryVehicle !== null}
+                onChange={(e) => assign.mutate({ livreurId: e.target.value || null })}
               >
                 <option value="">{t('noLivreur')}</option>
+                {/* The driver of a truck may be someone the list does not hold. */}
+                {o.livreur && !(deliverers.data ?? []).some((u) => u.id === o.livreur?.id) ? (
+                  <option value={o.livreur.id}>{o.livreur.fullName}</option>
+                ) : null}
                 {(deliverers.data ?? []).map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.fullName}
@@ -301,6 +321,32 @@ function View({ id, backHref }: { id: string; backHref: string }) {
             <div className="space-y-1 text-sm">
               <p className="text-muted-foreground">{t('livreur')}</p>
               <p className="font-medium">{o.livreur.fullName}</p>
+            </div>
+          ) : null}
+          {o.status === 'CONFIRMED' && planner && trucksOn && deliveryTrucks.length > 0 ? (
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="order-delivery-vehicle">{tv('deliveryVehicle')}</Label>
+              <NativeSelect
+                id="order-delivery-vehicle"
+                value={o.deliveryVehicle?.id ?? ''}
+                disabled={assign.isPending}
+                onChange={(e) => assign.mutate({ deliveryVehicleId: e.target.value || null })}
+              >
+                <option value="">{tv('noDeliveryVehicle')}</option>
+                {deliveryTrucks.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {`${vehicleLabel(v)} · ${v.assignedUser?.fullName ?? tv('noDriver')}`}
+                  </option>
+                ))}
+              </NativeSelect>
+              <p className="text-xs text-muted-foreground">{tv('deliveryVehicleHint')}</p>
+            </div>
+          ) : o.deliveryVehicle ? (
+            <div className="space-y-1 text-sm">
+              <p className="text-muted-foreground">{tv('deliveryVehicle')}</p>
+              <p className="font-medium">
+                <VehicleName vehicle={o.deliveryVehicle} />
+              </p>
             </div>
           ) : null}
         </CardContent>
