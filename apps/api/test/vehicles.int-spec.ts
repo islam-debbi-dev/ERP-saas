@@ -991,6 +991,126 @@ describe('distribution par véhicule (phase 36)', () => {
       await as(l1).get(`/orders/${order.id}`).expect(404);
     });
 
+    it('the BL of an order put on a delivery truck leaves the truck, not the dépôt the order names', async () => {
+      // Test-36 A-2: load, deliver, unload. The truck ends empty and the dépôt is short of
+      // exactly what was delivered.
+      const liv = await member(d, 'LIVREUR');
+      const v = await truck(d, { assignedUserId: liv.id, code: `LIV ${++seq}` });
+      const main = ((await as(d).get('/warehouses').expect(200)).body as WarehouseDto[]).find(
+        (w) => w.isDefault,
+      )!;
+      const [c, p] = [await client(), await product()];
+      const levels = async () => {
+        const rows = await asTenant(d.tenantId, () =>
+          t.prisma.db.warehouseStock.findMany({
+            where: { productId: p.id, warehouseId: { in: [v.id, main.id] } },
+            select: { warehouseId: true, qtyBase: true },
+          }),
+        );
+        const of = (id: string) => Number(rows.find((r) => r.warehouseId === id)?.qtyBase ?? 0);
+        return { truck: of(v.id), main: of(main.id) };
+      };
+      await load(v.id, p, '5');
+      expect(await levels()).toEqual({ truck: 120, main: 120 });
+      // The order names the dépôt principal, as a seller who works there gets on every order.
+      const order = async (cartons: string, on = { truckId: v.id, clientId: c.id, item: p }) => {
+        const draft = (
+          await as(d)
+            .post('/orders', {
+              clientId: on.clientId,
+              warehouseId: main.id,
+              lines: [{ productId: on.item.id, unitId: on.item.carton, qty: cartons }],
+            })
+            .expect(201)
+        ).body as OrderDto;
+        await as(d).post(`/orders/${draft.id}/confirm`).expect(200);
+        return (
+          await as(d)
+            .patch(`/orders/${draft.id}/livreur`, { deliveryVehicleId: on.truckId })
+            .expect(200)
+        ).body as OrderDto;
+      };
+      const first = await order('2');
+      expect(first.warehouse?.id).toBe(main.id);
+      // The availability shown on the order is the truck's: 5 cartons, not the dépôt's.
+      expect(first.lines[0]!.availableBase).toBe('120.000');
+      const res = (
+        await as(liv)
+          .post(`/orders/${first.id}/deliver`, {
+            lines: [{ orderLineId: first.lines[0]!.id, qty: '2' }],
+          })
+          .expect(200)
+      ).body as DeliverOrderResultDto;
+      expect(res.order).toMatchObject({ warehouse: { id: v.id }, deliveryVehicle: { id: v.id } });
+      expect(await levels()).toEqual({ truck: 72, main: 120 });
+      const sale = await asTenant(d.tenantId, () =>
+        t.prisma.db.sale.findUniqueOrThrow({
+          where: { id: res.sale.id },
+          select: { warehouseId: true },
+        }),
+      );
+      expect(sale.warehouseId).toBe(v.id);
+
+      // More than the truck carries: the company's setting decides, for the truck. BLOCK
+      // refuses although the dépôt has the goods; nothing leaves either place.
+      const big = await order('4');
+      await as(d).patch('/tenant/settings', { negativeStockMode: 'BLOCK' }).expect(200);
+      try {
+        const refused = await as(liv).post(`/orders/${big.id}/deliver`, {
+          lines: [{ orderLineId: big.lines[0]!.id, qty: '4' }],
+        });
+        expect(refused.status).toBe(409);
+        expect(errorOf(refused).code).toBe(ErrorCode.STOCK_INSUFFICIENT);
+        expect(await levels()).toEqual({ truck: 72, main: 120 });
+      } finally {
+        await as(d).patch('/tenant/settings', { negativeStockMode: 'WARN' }).expect(200);
+      }
+      // WARN (the default): it goes, with a warning that names the truck, and the truck
+      // goes negative. The dépôt is not touched.
+      const warned = (
+        await as(liv)
+          .post(`/orders/${big.id}/deliver`, {
+            lines: [{ orderLineId: big.lines[0]!.id, qty: '4' }],
+          })
+          .expect(200)
+      ).body as DeliverOrderResultDto;
+      expect(warned.warnings).toHaveLength(1);
+      expect(warned.warnings[0]).toMatchObject({ warehouseId: v.id });
+      expect(await levels()).toEqual({ truck: -24, main: 120 });
+
+      // A second truck for the clean cycle: load 5, deliver 2, unload the 3 left.
+      const v2 = await truck(d, { assignedUserId: null, code: `LIV ${++seq}` });
+      await drive(d, v2.id, liv.id).expect(200);
+      const [c2, p2] = [await client(), await product()];
+      await load(v2.id, p2, '5');
+      const clean = await order('2', { truckId: v2.id, clientId: c2.id, item: p2 });
+      await as(liv)
+        .post(`/orders/${clean.id}/deliver`, {
+          lines: [{ orderLineId: clean.lines[0]!.id, qty: '2' }],
+        })
+        .expect(200);
+      const back = (
+        await as(d)
+          .post('/stock-transfers', {
+            type: 'UNLOAD',
+            fromWarehouseId: v2.id,
+            toWarehouseId: main.id,
+            lines: [{ productId: p2.id, unitId: p2.carton, qty: '3' }],
+          })
+          .expect(201)
+      ).body as { id: string };
+      await as(d).post(`/stock-transfers/${back.id}/validate`).expect(200);
+      const end = await asTenant(d.tenantId, () =>
+        t.prisma.db.warehouseStock.findMany({
+          where: { productId: p2.id, warehouseId: { in: [v2.id, main.id] } },
+          select: { warehouseId: true, qtyBase: true },
+        }),
+      );
+      expect(Number(end.find((r) => r.warehouseId === v2.id)?.qtyBase ?? 0)).toBe(0);
+      // 240 at the start, minus the 2 cartons (48 pièces) delivered.
+      expect(Number(end.find((r) => r.warehouseId === main.id)?.qtyBase ?? 0)).toBe(192);
+    });
+
     it('a person named alone takes the order off its truck; a truck out of reach is refused', async () => {
       const [l1, l2] = [await member(d, 'LIVREUR'), await member(d, 'LIVREUR')];
       const v = await truck(d, { assignedUserId: l1.id });
