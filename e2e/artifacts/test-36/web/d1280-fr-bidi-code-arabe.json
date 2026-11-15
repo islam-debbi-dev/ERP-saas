@@ -1,0 +1,60 @@
+{
+  "typed1": "VAN شاحنة 01",
+  "drawn1": "VAN 01 شاحنة",
+  "typed2": "VAN 01 شاحنة",
+  "drawn2": "VAN 01 شاحنة",
+  "one": [
+    {
+      "where": "p > bdi",
+      "parts": [
+        {
+          "text": "VAN",
+          "left": 955.7,
+          "top": 956
+        },
+        {
+          "text": "شاحنة",
+          "left": 1032.6,
+          "top": 956
+        },
+        {
+          "text": "01",
+          "left": 1001.8,
+          "top": 956
+        }
+      ],
+      "ordered": false,
+      "wrapped": false,
+      "clipped": false,
+      "cut": false,
+      "isolated": true
+    }
+  ],
+  "two": [
+    {
+      "where": "p > bdi",
+      "parts": [
+        {
+          "text": "VAN",
+          "left": 626.3,
+          "top": 956
+        },
+        {
+          "text": "01",
+          "left": 672.5,
+          "top": 956
+        },
+        {
+          "text": "شاحنة",
+          "left": 702.3,
+          "top": 956
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": false,
+      "cut": false,
+      "isolated": true
+    }
+  ]
+}
