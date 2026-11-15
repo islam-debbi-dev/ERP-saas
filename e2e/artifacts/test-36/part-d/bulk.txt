@@ -1,0 +1,25 @@
+Timing is on.
+BEGIN
+Time: 0.079 ms
+SELECT 1
+Time: 3.534 ms
+DO
+Time: 1.000 ms
+INSERT 0 25000
+Time: 653.204 ms
+INSERT 0 25000
+Time: 643.251 ms
+INSERT 0 50000
+Time: 1759.226 ms (00:01.759)
+COMMIT
+Time: 1.751 ms
+ANALYZE
+Time: 50.894 ms
+ANALYZE
+Time: 54.157 ms
+ visits | orders | routes | warehouses 
+--------+--------+--------+------------
+  50007 |  50005 |      2 |          9
+(1 row)
+
+Time: 6.546 ms

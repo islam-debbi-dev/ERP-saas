@@ -5,8 +5,9 @@
 **Prompt:** [`docs/prompts/test-36-vehicle-first.md`](../docs/prompts/test-36-vehicle-first.md). **Spec:** [`phase-36-vehicle-first-distribution.md`](../docs/prompts/phase-36-vehicle-first-distribution.md).
 **Rule of the pass:** find and prove, do not fix. Nothing under `apps/` or `packages/` is changed.
 
-**This report covers the baseline, the seed, parts A, B and C** (part B is section 10, part C
-section 11). Parts D and E are not done (section 7). The verdict at the end is therefore provisional.
+**This report covers the baseline, the seed, parts A, B, C and D** (part B is section 10, part C
+section 11, part D section 12). Part E is not done (section 7). The verdict at the end is therefore
+provisional on the screens.
 
 ## Status (read this first when resuming)
 
@@ -16,9 +17,9 @@ section 11). Parts D and E are not done (section 7). The verdict at the end is t
 | A. API correctness | done: 109 lines (90 pass, 12 fail on 8 findings, 7 notes) | `e2e/api/vehicles.ts`, `e2e/sql/vehicles-history.sql` |
 | B. Scope, isolation and security | done: 117 lines (101 pass, 7 fail on 5 findings, 9 notes) + 1 low from notes | `e2e/api/vehicles-scope.ts`, section 10 |
 | C. Concurrency | done: 18 lines (12 pass, 2 fail on 2 findings, 4 notes) | `e2e/api/vehicles-race.ts`, section 11 |
-| D. Backfill and upgrade | not done (the seed already writes its history and the expected trucks) | |
+| D. Backfill and upgrade | done: 36 backfill checks (34 pass, 0 fail, 2 info), 4 upgrade runs; 4 findings | `e2e/test-36/part-d.sh`, `e2e/sql/vehicles-backfill.sql`, section 12 |
 | E. Web and phone | not done | |
-| Final go / no-go, fix plan | provisional, on parts A to C | sections 8 and 9 |
+| Final go / no-go, fix plan | provisional, on parts A to D | sections 8 and 9 |
 
 Findings of part A: **1 critical, 1 high, 3 medium, 3 low.** A-2 is critical by the owner's
 decision of 2026-11-15: every truck, delivery trucks included, is loaded by chargement each day
@@ -29,10 +30,15 @@ owner's decision of 2026-11-15.
 
 Findings of part C: **0 critical, 0 high, 1 medium, 1 low** (section 11.4).
 
+Findings of part D: **0 critical, 1 high, 2 medium, 1 low** (section 12.4). The backfill itself is
+right: it writes only facts, never today's driver, and its second run changes 0 rows. What fails is
+the deploy order the runbook gives (D-1) and the commands it gives for Neon (D-2).
+
 To resume: start the stack (section 2), run `pnpm test:vehicles:seed` again if
 `e2e/.auth/vehicles-fixture.json` is gone or older than 12 h (it makes new companies), go on
-with part D. Parts B and C make their own companies on each run and need no seed. The data stays in
-the local database `erp_t36`.
+with part E. Parts B and C make their own companies on each run and need no seed. The data stays in
+the local database `erp_t36`. Part D runs on its own database (`erp_t36_base`, dropped and made
+again by `e2e/test-36/part-d.sh`) and needs the old worktree of section 12.1.
 
 ## 1. What was tested
 
@@ -42,6 +48,7 @@ the local database `erp_t36`.
 | 0 | `e2e/api/vehicles-seed.ts` | Three companies through the real API, every user invited with `POST /users/invite` and accepting his invitation. A (Distribution): owner, manager, supervisor with two sellers, a seller outside the team, two livreurs, a storekeeper; dépôt principal + "Dépôt Batna" (`CDD BATNA 05`); five trucks over the two dépôts (`VAN-28 MXT 01` CASH_VAN, `PRV05-DD01` PRESALE, `LIV 28 MIX` DELIVERY, `VAN34-SELF/MT` MIXED, one without type or code); five types (three with `codePrefix`, one without, `HRC` archived). B: the same type codes and truck codes. E: Essentiel. Plus the history part D needs, with the truck the backfill must find for each row (`history` in the fixture): two old seller routes, a vehicle route, two visits linked to van sales, an order whose BL left a truck, an order put on a truck whose BL left the dépôt, an order delivered from the dépôt principal, two visits with neither. |
 | A | `e2e/api/vehicles.ts` | Nine areas, each in its own new company: vehicle types; truck identity (API and CHECK constraints written as the app role); driver change (every path, forced rollback, sessions); `driverAt` / `vehicleAt` called on the compiled service, the worker history and both paginations; append-only as both database roles; tournées per vehicle, convert one and bulk; the truck frozen on visits and orders, the order that follows its delivery truck; stock and cash after a driver change; livreurs and activities. |
 | A | `e2e/sql/vehicles-history.sql` | 17 rules read with SQL over the whole database after the scenario (driver = last history row, one truck per driver, frozen trucks, truck stock = its movements…), then the repo's own `reconcile` CLI. |
+| D | `e2e/test-36/part-d.sh` | A pre-36 database made by the pre-36 code (`93afa56`) through its API, 50 000 visits / orders added, the phase 36 migration timed with its locks, `db:backfill-vehicles` twice against the truth SQL `e2e/sql/vehicles-backfill.sql`, reconcile; each API version on each schema; the old web against the new API (section 12). |
 
 Everything runs against the **real** built API and the **real** PostgreSQL, on a local database
 made for this pass, with the API connected as `erp_app` (row-level security applies). No mock,
@@ -69,6 +76,10 @@ pnpm test:vehicles:api      # part A, about 15 s; T36_ONLY=driver,stock runs som
 pnpm test:vehicles:scope    # part B, about 20 s; its own companies; T36_ONLY=isolation,scope,permissions,gate,hostile,idempotency
 PROD_API=https://erp-saas-pi.vercel.app pnpm test:vehicles:scope   # adds the 3 anonymous GETs on production
 pnpm test:vehicles:race     # part C, about 15 s; its own companies; T36_ONLY=same,cross,sale,convert; T36_ROUNDS=20
+
+# part D, about 2 min: drops and remakes erp_t36_base, needs a built worktree of main before #72
+# (section 12.1) and ports 3003 / 3005 free. OLD_WEB=0 skips the two old-web runs.
+OLD=../erp-main bash e2e/test-36/part-d.sh       # or: cd e2e && OLD=../../erp-main pnpm test:vehicles:backfill
 ```
 
 - The suites refuse any database that is not a local `erp_t36*` (`lib/vehicles-fixture.ts`).
@@ -295,9 +306,11 @@ A-2 (below, after A-1, where it was first written) is critical by the owner's de
 
 ### 5.6 Suspected, not proven
 
-- `deliveryVehicleId` of a pre-36 order delivered by a truck but booked on the dépôt will stay
-  null after the backfill, while the same flow today stores the truck (see A-2). The seed holds
-  one such row (`order_on_truck_bl_from_depot`); part D has to run the backfill to prove it.
+- ~~`deliveryVehicleId` of a pre-36 order delivered by a truck but booked on the dépôt will stay
+  null after the backfill.~~ Answered by part D (12.2): before phase 36 no order could be
+  delivered by a truck other than the BL's dépôt (no delivery truck on an order, livreurs drove
+  nothing), so on pre-36 rows "the BL's truck" is the whole truth. The two rules only disagree on
+  rows written after phase 36, which is A-2.
 
 ## 6. What holds up well
 
@@ -328,11 +341,10 @@ A-2 (below, after A-1, where it was first written) is critical by the owner's de
 
 ## 7. What was not tested, and why
 
-- **Parts D and E** were not asked in these sessions: the backfill and the migration lock
-  time, every screen and the bidi screenshots, the wilaya names. The seed already
-  holds what they need (company B with A's codes, the Essentiel company, the manager and
-  supervisor limited to "Dépôt Batna", the history with its expected trucks). Part B's own gaps
-  are in 10.7, part C's in 11.6.
+- **Part E** was not asked in these sessions: every screen and the bidi screenshots, the wilaya
+  names. The seed already holds what it needs (company B with A's codes, the Essentiel company,
+  the manager and supervisor limited to "Dépôt Batna"). Part B's own gaps are in 10.7, part C's
+  in 11.6, part D's in 12.6.
 - **Production:** only the three anonymous `GET`s of the ground rules were sent, in part B (all
   401). Nothing else.
 - **`driverAt` / `vehicleAt` through HTTP:** they have no route. They were called on the compiled
@@ -341,7 +353,7 @@ A-2 (below, after A-1, where it was first written) is critical by the owner's de
 - **Known, left out by PR #72** (not findings): the per-vehicle report screen, Lighthouse
   Performance.
 
-## 8. Go / no-go for phase 37 (provisional, parts A to C)
+## 8. Go / no-go for phase 37 (provisional, parts A to D)
 
 **No-go until A-2 is fixed. After that, no-go yet for two columns; go for the rest.**
 
@@ -364,8 +376,17 @@ A-2 (below, after A-1, where it was first written) is critical by the owner's de
   breaks is the same column as A-1: the visit of a sale can name the other truck (C-1).
 - B-4 (high by the owner): a replayed driver change undoes a later one. It must be fixed
   before phase 37, together with B-1 and B-2.
-- Parts D and E are not done. The backfill (D) decides whether history before phase 36 can be
-  trusted at all.
+- **History before phase 36 can be trusted** (part D): the backfill writes the truck only where a
+  sale or a BL left one, never today's driver, leaves the rest null, is exact on 50 000 rows and
+  changes nothing on a second run; the driver history starts with one correct row per truck.
+  Phase 37 must show the null rows as "Véhicule inconnu" and not count them per truck.
+- **Before any further deploy, fix the runbook (D-1, D-2), and the owner confirms Neon.** Done
+  in the order the phase 36 block gives, the new API answers 500 on the dépôts, tournées,
+  orders, visits and "aujourd'hui" until `db:deploy` runs, and the commands as written migrate
+  and backfill the local database instead of Neon. Production answers 401 on `/vehicle-types`, so
+  the phase 36 API is live there; whether the migration and the backfill ran on Neon is not
+  confirmed in this pass (12.5).
+- Part E is not done.
 
 ## 9. Fix plan (small PRs, in order; none is opened)
 
@@ -380,8 +401,10 @@ A-2 (below, after A-1, where it was first written) is critical by the owner's de
 | 7 | Truck history read by planners and the driver only | B-3 | The B2 check "truck history…". |
 | 8 | Codes and plates: refuse C0 controls, bidi controls and zero-width characters; codes compared as text (`lower(code) =`), search escaped | B-5, A-5, A-7 | The two B5 checks, the two "compared as text" checks and the search check. |
 | 9 | `VEHICLE_FIELDS_ON_DEPOT` at creation; code helper past 99; one reach rule for a supervisor's team trucks; the route edit locks its row before reading it | A-6, A-8, B-6, C-2 | The two A2 checks, the B2 INFO line on VAN turned into an assertion, the C4 check "bulk convert racing a move…". |
+| 0 | Docs only, first: the phase 36 runbook block and README line say "migrate **before** the API deploys" (as `Migrations on Neon` already does), name `DATABASE_URL_MIGRATE` / `DATABASE_URL` on every command, and warn that a vehicle route breaks the tournée screens of a web still on the old version | D-1, D-2, D-3 | `e2e/test-36/part-d.sh` step 2b (new API on the pre-36 schema: 6 reads answer 500) stays as the proof of why; a docs review. |
+| 10 | The backfill's order fallback: either fill a visit from its order's dépôt when it is a truck (if the owner calls that a fact), or drop "else the order's" from the spec and the runbook | D-4 | `e2e/api/vehicles-backfill.ts`, row `visit_order_on_his_truck` turned into the chosen assertion. |
 
-PRs 1 to 5 come before phase 37 starts; 6 to 9 can go alongside it. PR 5 could ship with PR 2
+PR 0 goes first, before any other deploy. PRs 1 to 5 come before phase 37 starts; 6 to 10 can go alongside it. PR 5 could ship with PR 2
 (both make one definition of "the truck he was on").
 
 ## 10. Part B: scope, isolation and security
@@ -787,3 +810,185 @@ Part C: **0 critical, 0 high, 1 medium, 1 low.**
   A-2 (the BL does not leave the truck at all), to retest after its fix.
 - **More than one API process:** one Node process, one pool, as in production on one VPS. The
   locks are in PostgreSQL, so a second process should not change the results, but it was not run.
+
+## 12. Part D: backfill and upgrade
+
+**Script:** `e2e/test-36/part-d.sh` (section 2), about 2 minutes, local only. It drops and makes
+again the scratch database `erp_t36_base`; it never touches `erp_t36`, the dev database `erp` or
+Neon. Proofs are in `artifacts/test-36/part-d/`.
+
+### 12.1 How the pre-36 world was made
+
+A copy of a real pre-36 production database was not available, so the script builds one the way
+production got it: **with the old code**.
+
+1. **Old code.** The spare worktree `../erp-main` checked out at `93afa56` (main just before the
+   PR #72 merge, last migration `20261113130000_livreur_scope`), `pnpm install`, `pnpm build`
+   with `NEXT_PUBLIC_API_URL=http://localhost:3003`, and `apps/api/.env` copied from this checkout
+   (the JWT secret; both files are git-ignored there). `versions.txt` records both commits.
+2. **Pre-36 schema.** `erp_t36_base` migrated with the old checkout's migrations, plus the app
+   role. `GET /vehicle-types` answers 404 on that API: the script checks it is the old one.
+3. **History, through the old API** (`e2e/api/vehicles-backfill-seed.ts`, every user invited with
+   `POST /users/invite`): company P (Distribution) with five sellers and five trucks; old seller
+   routes; two visits linked to van sales (seller1 on T1); a visit linked to a sale from the dépôt
+   principal; an order on T1 delivered from T1; an order with no dépôt delivered by seller1, whose
+   BL the old rule took from **his truck** ("the order's dépôt, else the deliverer's truck");
+   the prévendeur's order on his truck T2 delivered from it, with its visit; an order on the dépôt
+   principal delivered from it, with its visit; a confirmed order never delivered; two visits with
+   neither sale nor order. Then **today's crew is made different from the history's**: seller1
+   moves to T3, T1 goes to seller3, T4 is archived with its driver, T5 is switched off with its
+   driver. A backfill that guessed from today's driver would write T3 on seller1's visits.
+   Company Q: one truck with a driver, one without.
+4. **Volume** (`e2e/sql/vehicles-backfill-bulk.sql`, as the owner role, copies of real rows):
+   25 000 visits linked to the van sale, 25 000 visits with neither, 50 000 confirmed orders on
+   the dépôt principal. In all 50 007 visits and 50 005 orders.
+
+Each row's expected truck is written in `.auth/vehicles-backfill-fixture.json` twice: what the
+spec's rule gives (`spec`) and what a person could prove from the rows (`facts`).
+
+### 12.2 Results
+
+| Step | Result | Proof |
+|---|---|---|
+| Migration lock time, 50 000 visits / orders | 37 statements, **170 ms** in one transaction (as Prisma applies it); slowest the two new indexes on `orders` (48 ms) and `visits` (41 ms). `prisma migrate deploy` for real: 1 s. | `migration-lock.txt`, `migrate-deploy.txt` |
+| Locks held until the end of that transaction | `AccessExclusiveLock` on `warehouses`, `routes`, `visits`, `orders`: a read and an insert on `visits` from a second connection wait (300 ms lock timeout hit). For 0.2 s here; it grows with the index builds. | `migration-lock.txt` |
+| Initial driver history (in the migration) | One `backfill` row for each of the 5 live trucks with a driver (T1 seller3, T2, T3 seller1, T5 switched off, Q1), naming **today's** driver, `fromAt` = the truck's `updatedAt`, `setBy` null; none for T4 (archived), Q2 (no driver), the dépôt principal. | `backfill.md` |
+| `db:backfill-vehicles` run 1 | "Visits given their truck: **25 002**. Delivered orders given their delivery truck: **3**." in 2.0 s over 2 companies. Both equal the SQL count of facts (visits whose sale left a truck, orders whose BL left one). | `backfill.txt` |
+| Each history row | 12 / 12 as the spec says: both van-sale visits get T1 (seller1 drives T3 today: **not guessed**); the three BLs from a truck give their truck, the order delivered by seller1 included; the sale from the dépôt principal, the order on the dépôt principal and its visit, the undelivered order and both visits with neither stay null. | `backfill.md` |
+| Truth SQL (`e2e/sql/vehicles-backfill.sql`) | 8 rules, 0 rows each: assignment missing / wrong / where none is due; visit truck ≠ the truck its sale left; visit truck with no fact; order delivery truck ≠ its BL's truck; delivery truck with no fact; truck of another company. | `backfill-truth.txt` |
+| Run 2 | 0 and 0, in 1.0 s; an md5 of every `visits.vehicleId`, `orders.vehicleId`, `orders.deliveryVehicleId` is the same as after run 1. | `backfill.md` |
+| `reconcile` after migration and backfill | "Ledgers reconciled: no difference". | `reconcile.txt` |
+| Old API, migrated schema (migrate first, deploy after) | 11 reads, 0 errors; the **old** Playwright desktop suite with the old web on top: **12 / 12 passed**. | `api-schema-probe.txt`, `old-web-old-api-migrated.txt` |
+| New API, pre-36 schema (deploy first, migrate after) | **6 of 11 reads answer 500**: `/warehouses`, `/warehouses/:id`, `/routes`, `/me/today`, `/orders`, `/visits` ("The column `warehouses.code` does not exist", `routes.vehicleId`, `orders.vehicleId`, `visits.vehicleId`). Finding D-1. | `api-schema-probe.txt` |
+| Old web, new API, no vehicle route yet | Old desktop suite: **12 / 12 passed**. | `old-web-new-api.txt` |
+| Old web, new API, one vehicle route in the data | `/tournees` and `/tournees/:id` **crash** ("This page couldn't load"); the five other screens tried load. Finding D-3. | `old-web-vehicle-route.txt`, `old-web-tournees.png`, `old-web-tournee-vehicule.png` |
+
+### 12.3 What the prompt asked to be said in words
+
+- **The backfill never guesses.** Seller1 drove T1 when he made his visits and drives T3 today:
+  his van-sale visits get T1 (from the sale), his visits with neither stay null, none gets T3. The
+  rule "the sale's dépôt when it is a truck, else the order's; the BL's dépôt when it is a truck"
+  is applied exactly, on 50 000 rows as on 12.
+- **The initial `vehicle_assignments` rows** follow the spec: one per live truck with a driver,
+  `reason = 'backfill'`, `fromAt` = the truck's `updatedAt`. Note: a truck switched off with its
+  driver kept (T5) gets a row too. That is the spec's wording ("every truck that has a driver
+  today"), and the same state as A-1.
+- **The migration on a live table:** every new column is nullable with no default, so adding it
+  rewrites nothing; the CHECK constraints are on `warehouses` and `routes` (small tables); the
+  cost is the four non-concurrent indexes, about 1 ms per 1 000 rows here. All locks are held for
+  the whole file, because Prisma sends it as one multi-statement query (one implicit transaction):
+  every read and write on `warehouses`, `routes`, `visits` and `orders` waits for that time. At
+  this repo's production sizes that is well under a second.
+- **Does the old web still work against the new API?** Yes as long as no route is a vehicle route:
+  the old suite passes. As soon as one exists (made by the new web, or by "Convertir"), the old
+  route list and route page crash: `Route.seller` became nullable, so the DTO change is not purely
+  additive for routes. Every other screen tried loads.
+- **README / runbook:** the Neon block is there (`docs/runbook.md` "Vehicle backfill",
+  `README.md:86`) with `db:deploy`, build, backfill twice, reconcile, and it matches the CLI's
+  output ("Visits given their truck: N…", second run 0 and 0). Two things in it are wrong: the
+  order (D-1) and the commands name no database (D-2).
+
+### 12.4 Findings
+
+Part D: **0 critical, 1 high, 2 medium, 1 low.**
+
+#### D-1 (high) The runbook deploys the API before the migration: the phase 36 API answers 500 on the dépôts, tournées, orders and visits until `db:deploy` runs
+
+- **Rerun:** `OLD=../erp-main bash e2e/test-36/part-d.sh`, step 2b; the section
+  "NEW API, pre-36 schema" of `artifacts/test-36/part-d/api-schema-probe.txt`.
+- **Path:** the new API (`c06adf0`) started on the pre-36 database, owner token:
+  `GET /warehouses`, `/warehouses/:id`, `/routes`, `/me/today`, `/orders?limit=5`, `/visits?limit=5`.
+- **Expected:** the order in `docs/runbook.md:354` ("migrations are run by hand, **before** the API
+  version that needs them goes live"), which the old API on the migrated schema shows is safe
+  (0 errors, old suite 12 / 12).
+- **Actual:** 500 `INTERNAL_ERROR` on all six ("The column `warehouses.code` does not exist", and
+  `routes.vehicleId`, `orders.vehicleId`, `visits.vehicleId`). A seller cannot open his day, take
+  an order or record a visit; the office cannot open the dépôts. Clients, products, sales and the
+  dashboard still answer.
+- **Cause:** the phase 36 block says to run it "after the merge" (`docs/runbook.md:324`), and
+  `README.md:86` "After deploying phase 36, run … `db:deploy`". Vercel builds the API on the merge
+  with no migration step (`apps/api/package.json` `build`, `apps/api/vercel.json`), and Prisma
+  selects every column of the model. The phase 36 spec itself wrote "After merge: `db:deploy` on
+  Neon" (`docs/prompts/phase-36-vehicle-first-distribution.md:60`).
+- **Fix proposal:** docs only. Phase 36 block and README: run `db:deploy` on Neon **before** the
+  merge reaches production, then build and backfill after it, as "Migrations on Neon" says.
+  Keep step 2b of part D as the reason. The owner should check `_prisma_migrations` on Neon now (12.5).
+
+#### D-2 (medium) The Neon commands of the phase 36 block name no database: as written they migrate and backfill the local one
+
+- **Rerun:** read `docs/runbook.md:326-332` and `README.md:86` next to `docs/runbook.md:361`;
+  `apps/api/prisma.config.ts:14-16`.
+- **Expected:** every command that must reach Neon names it, as the phase 35 README entry does
+  (`README.md:112-119`: `DATABASE_URL_MIGRATE='postgresql://<owner>…' pnpm … db:deploy`, owner
+  role, direct host).
+- **Actual:** `pnpm --filter @erp/api db:deploy`, `db:backfill-vehicles` and `reconcile` are given
+  bare. The runbook's own warning applies: "Without the variable on the command line it migrates
+  the **local** database and prints 'All migrations have been successfully applied'". The
+  backfill and reconcile then read `DATABASE_URL` from `apps/api/.env` (the dev database) and
+  print counts and "no difference" for it. Every step looks green and Neon is untouched; with
+  D-1 that leaves production on 500s.
+- **Fix proposal:** with D-1, in the same docs PR: write the variables on each line
+  (`DATABASE_URL_MIGRATE` owner/direct for `db:deploy`; `DATABASE_URL` for the backfill and
+  reconcile) and the `_prisma_migrations` check after.
+
+#### D-3 (medium) The web of the previous version crashes on the tournée list and the route page once a vehicle route exists
+
+- **Rerun:** `part-d.sh` step 6 (`e2e/test-36/old-web-vehicle-route.ts`);
+  `artifacts/test-36/part-d/old-web-vehicle-route.txt`, `old-web-tournees.png`,
+  `old-web-tournee-vehicule.png`.
+- **Path:** web at `93afa56` with the phase 36 API. Through the API, a truck and a route with
+  `vehicleId` (so `sellerId` null) and two stops. Open `/tournees`, then `/tournees/<route>`.
+- **Expected:** the version still running keeps working during the deploy (runbook line 114,
+  migration header "the version still running keeps working").
+- **Actual:** both pages show "This page couldn't load": `Cannot read properties of null (reading
+  'fullName')` (old `components/tournees/routes-list.tsx:97`, `r.seller.fullName`) and
+  `(reading 'id')` (old `route-editor.tsx:102`, `route.seller.id`). The other screens tried
+  (aujourd'hui, rapports, commandes, livraisons, dépôts) load.
+- **Why medium:** it lasts as long as an old web is served or an old tab stays open: from the
+  API deploy until the web deploy and a reload. One "Convertir" (bulk) turns every seller route
+  into a vehicle route at once, so the whole tournée screen of that company goes down for those
+  users. No data is touched.
+- **Fix proposal:** nothing to change in the code now that both are deployed. In the runbook:
+  deploy the web with the API, and convert seller routes only once both are live. Lock with
+  `old-web-vehicle-route.ts` for the next DTO change that makes a field nullable.
+
+#### D-4 (low) The backfill's "else the order's truck" never applies to pre-36 rows
+
+- **Rerun:** `part-d.sh`, row `visit_order_on_his_truck` of `backfill.md` and the info rule
+  `info_visits_left_null_although_their_order_names_a_truck` of `backfill-truth.txt` (1 row).
+- **Path:** the prévendeur seller2 drives T2, takes an order on T2 with a visit; the order is
+  delivered from T2. After the migration and the backfill.
+- **Expected (spec):** "`Visit.vehicleId` from the linked sale's `warehouseId` when it is a truck,
+  else from the order's".
+- **Actual:** the visit stays null. The fallback reads `orders."vehicleId"`
+  (`apps/api/src/stock/vehicle-backfill.service.ts:58`), a column phase 36 added, null on every
+  pre-36 order, and the backfill does not fill it. On pre-36 data the branch is dead: every visit
+  linked to an order stays "Véhicule inconnu", even when the order's dépôt and its BL are the truck.
+- **Why low:** nothing wrong is written; the rule "never guess" holds. Fewer rows are known than
+  could be.
+- **Fix proposal:** the owner decides whether an order's dépôt that is a truck is a fact about
+  the visit (the prévendeur's own truck). If yes, the fallback reads the order's `warehouseId`
+  when it is a truck; if no, drop "else the order's" from the spec and the runbook so nobody
+  expects it. Lock with the row above.
+
+### 12.5 Production and the owner
+
+- Nothing in part D was sent to production; the Neon block was **not** run.
+- In part B the anonymous `GET /vehicle-types` on production answered 401, so the phase 36 API is
+  deployed there. Whether the migration ran before or after it, and whether the backfill ran twice,
+  is **not confirmed by the owner in this pass**. To check, in the Neon SQL editor:
+  `SELECT migration_name, finished_at FROM _prisma_migrations ORDER BY finished_at DESC LIMIT 3;`
+  and `SELECT reason, count(*) FROM vehicle_assignments GROUP BY 1;`.
+
+### 12.6 Part D: what was not tested, and why
+
+- **A copy of production:** not available and not to be touched. The pre-36 history was made by the
+  pre-36 code through its API, so its rows have the shapes production has.
+- **Lock time at Neon scale and over the network:** measured locally on 50 000 rows; Neon's
+  storage and the real row counts are not known here.
+- **A sale or a visit written by the old API while the backfill runs:** the backfill only fills
+  null columns in one transaction per company; not raced.
+- **The old web on a phone** (mobile projects) and the old screens not listed in 12.2: only the
+  desktop suite and seven tournée / order / dépôt screens were run.
+- **The worktree `../erp-main`** is left at `93afa56` with `apps/api/.env` and an
+  `e2e/node_modules` link (both git-ignored), so part D reruns with one command.

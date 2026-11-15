@@ -1,0 +1,48 @@
+✓ Lockfile passes supply-chain policies (verified 25d ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+
+[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: esbuild@0.28.2
+
+Run "pnpm approve-builds" to pick which dependencies should be allowed to run scripts.
+[WARN] The install that runs before scripts failed, so your node_modules may be out of sync with your lockfile. Set "verifyDepsBeforeRun: false" to skip this install.
+rows: warehouses 9, routes 2, visits 50007, orders 50005
+
+37 statements, one transaction, 170 ms in all (then rolled back).
+
+slowest statements:
+      47.6 ms  CREATE INDEX "orders_tenantId_deliveryVehicleId_status_idx" ON "orders"("tenantId", "deliveryVehicleId", "stat
+      41.3 ms  CREATE INDEX "visits_tenantId_vehicleId_startedAt_idx" ON "visits"("tenantId", "vehicleId", "startedAt");
+      11.7 ms  CREATE TABLE "vehicle_types" ( "id" UUID NOT NULL, "tenantId" UUID NOT NULL, "code" VARCHAR(20) NOT NULL, "nam
+       7.5 ms  ALTER TABLE "orders" ADD CONSTRAINT "orders_vehicleId_fkey" FOREIGN KEY ("vehicleId") REFERENCES "warehouses"(
+       6.8 ms  ALTER TABLE "orders" ADD CONSTRAINT "orders_deliveryVehicleId_fkey" FOREIGN KEY ("deliveryVehicleId") REFERENC
+       5.0 ms  ALTER TABLE "visits" ADD CONSTRAINT "visits_vehicleId_fkey" FOREIGN KEY ("vehicleId") REFERENCES "warehouses"(
+       4.5 ms  CREATE TABLE "vehicle_assignments" ( "id" UUID NOT NULL, "tenantId" UUID NOT NULL, "vehicleId" UUID NOT NULL, 
+       4.2 ms  CREATE INDEX "vehicle_types_tenantId_deletedAt_idx" ON "vehicle_types"("tenantId", "deletedAt");
+       4.0 ms  CREATE INDEX "warehouses_tenantId_vehicleTypeId_idx" ON "warehouses"("tenantId", "vehicleTypeId");
+       3.7 ms  CREATE INDEX "vehicle_assignments_tenantId_userId_fromAt_idx" ON "vehicle_assignments"("tenantId", "userId", "
+
+locks held at the end, until COMMIT:
+  orders      AccessExclusiveLock
+  orders      AccessShareLock
+  orders      ShareLock
+  orders      ShareRowExclusiveLock
+  routes      AccessExclusiveLock
+  routes      AccessShareLock
+  routes      ShareLock
+  routes      ShareRowExclusiveLock
+  visits      AccessExclusiveLock
+  visits      AccessShareLock
+  visits      ShareLock
+  visits      ShareRowExclusiveLock
+  warehouses  AccessExclusiveLock
+  warehouses  AccessShareLock
+  warehouses  RowShareLock
+  warehouses  ShareLock
+  warehouses  ShareRowExclusiveLock
+
+what the running API meets meanwhile:
+  read on visits while the migration is open: BLOCKED (canceling statement due to lock timeout) after 306 ms
+  insert on visits while the migration is open: BLOCKED (canceling statement due to lock timeout) after 310 ms
+
+rolled back: vehicle_assignments exists = false

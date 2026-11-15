@@ -1,0 +1,62 @@
+## old API, pre-36 schema (control) (2026-11-15T17:56:45.798Z)
+200  GET /clients?limit=5
+200  GET /products?limit=5
+200  GET /warehouses
+200  GET /warehouses/6c36edde-0994-4be4-af50-461fb313e53f
+200  GET /routes
+200  GET /me/today
+200  GET /orders?limit=5
+200  GET /visits?limit=5
+200  GET /sales?limit=5
+400  GET /stock/movements?limit=5  {"code":"VALIDATION_FAILED","message":"Validation failed (uuid is expected)","requestId":"31c31f5e-fa96-483b-aedd-5720a15ee29e"}
+200  GET /dashboard
+11 reads, 0 answered 5xx
+
+## NEW API, pre-36 schema (deploy before db:deploy) (2026-11-15T17:56:50.518Z)
+200  GET /clients?limit=5
+200  GET /products?limit=5
+500  GET /warehouses  {"code":"INTERNAL_ERROR","message":"Internal server error","requestId":"4e573c65-17c5-4450-9795-7d826ef22ac2"}
+500  GET /warehouses/6c36edde-0994-4be4-af50-461fb313e53f  {"code":"INTERNAL_ERROR","message":"Internal server error","requestId":"65a294d3-69e7-4131-a3a0-3c5214bb05a6"}
+500  GET /routes  {"code":"INTERNAL_ERROR","message":"Internal server error","requestId":"c6bfd202-63bd-4038-8f56-085eee94c240"}
+500  GET /me/today  {"code":"INTERNAL_ERROR","message":"Internal server error","requestId":"2bbdef01-0c45-4e87-85a6-fcf0b8c4a8cd"}
+500  GET /orders?limit=5  {"code":"INTERNAL_ERROR","message":"Internal server error","requestId":"c8df50e5-0532-4ad2-aa5e-11e594d2561e"}
+500  GET /visits?limit=5  {"code":"INTERNAL_ERROR","message":"Internal server error","requestId":"b8d7847a-b78f-4f43-b5a4-d7022bb7c800"}
+200  GET /sales?limit=5
+400  GET /stock/movements?limit=5  {"code":"VALIDATION_FAILED","message":"Validation failed (uuid is expected)","requestId":"42b4c119-1f96-43b6-98c1-9497922d61fb"}
+200  GET /dashboard
+11 reads, 6 answered 5xx
+
+causes of the 5xx above, from the API log (api.log is git-ignored):
+      1 The column `orders.vehicleId` does not exist
+      1 The column `routes.vehicleId` does not exist
+      1 The column `visits.vehicleId` does not exist
+      3 The column `warehouses.code` does not exist
+
+## old API, migrated schema (2026-11-15T17:57:07.817Z)
+200  GET /clients?limit=5
+200  GET /products?limit=5
+200  GET /warehouses
+200  GET /warehouses/6c36edde-0994-4be4-af50-461fb313e53f
+200  GET /routes
+200  GET /me/today
+200  GET /orders?limit=5
+200  GET /visits?limit=5
+200  GET /sales?limit=5
+400  GET /stock/movements?limit=5  {"code":"VALIDATION_FAILED","message":"Validation failed (uuid is expected)","requestId":"36602105-fe5d-48d0-9b61-5d110cfa42ed"}
+200  GET /dashboard
+11 reads, 0 answered 5xx
+
+## new API, migrated schema (2026-11-15T17:57:11.538Z)
+200  GET /clients?limit=5
+200  GET /products?limit=5
+200  GET /warehouses
+200  GET /warehouses/6c36edde-0994-4be4-af50-461fb313e53f
+200  GET /routes
+200  GET /me/today
+200  GET /orders?limit=5
+200  GET /visits?limit=5
+200  GET /sales?limit=5
+400  GET /stock/movements?limit=5  {"code":"VALIDATION_FAILED","message":"Validation failed (uuid is expected)","requestId":"21ea5a38-675f-493e-808f-3d526651b03c"}
+200  GET /dashboard
+11 reads, 0 answered 5xx
+

@@ -1,0 +1,26 @@
+✓ Lockfile passes supply-chain policies (verified 25d ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+
+[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: esbuild@0.28.2
+
+Run "pnpm approve-builds" to pick which dependencies should be allowed to run scripts.
+[WARN] The install that runs before scripts failed, so your node_modules may be out of sync with your lockfile. Set "verifyDepsBeforeRun: false" to skip this install.
+$ tsx scripts/admin-create.ts --email audit02-admin-mwi4zab7@platform.dz
+┌─────────┬──────────────────────────────────────┬────────────┬────────────┬──────────────────────────────────────────────────────────────────────────────┐
+│ (index) │ kind                                 │ spec       │ facts      │ note                                                                         │
+├─────────┼──────────────────────────────────────┼────────────┼────────────┼──────────────────────────────────────────────────────────────────────────────┤
+│ 0       │ 'visit_van_sale'                     │ '6c36edde' │ '6c36edde' │ 'sale 31148675-3697-4642-aacc-9b57605c8b2c left T1; seller1 drives T3 today' │
+│ 1       │ 'visit_van_sale'                     │ '6c36edde' │ '6c36edde' │ 'sale 3f960829-18e1-45a3-a3e3-67f381b6aab2 left T1; seller1 drives T3 today' │
+│ 2       │ 'visit_sale_from_main'               │ null       │ null       │ 'the sale left the dépôt principal; seller3 drives T1 today'                 │
+│ 3       │ 'order_bl_from_truck'                │ '6c36edde' │ '6c36edde' │ 'order dépôt T1, BL left T1'                                                 │
+│ 4       │ 'order_no_depot_delivered_by_driver' │ '6c36edde' │ '6c36edde' │ 'order dépôt none; BL left VEHICLE 6c36edde-0994-4be4-af50-461fb313e53f'     │
+│ 5       │ 'order_prevente_bl_from_his_truck'   │ 'ed054916' │ 'ed054916' │ 'order dépôt T2, BL left T2'                                                 │
+│ 6       │ 'visit_order_on_his_truck'           │ null       │ 'ed054916' │ 'order dépôt T2, BL left T2; orders.vehicleId is null on every pre-36 row'   │
+│ 7       │ 'order_bl_from_main'                 │ null       │ null       │ 'BL left the dépôt principal'                                                │
+│ 8       │ 'visit_order_on_main'                │ null       │ null       │ 'order on the dépôt principal; seller2 drives T2 today'                      │
+│ 9       │ 'order_not_delivered'                │ null       │ null       │ 'confirmed, not delivered'                                                   │
+│ 10      │ 'visit_neither'                      │ null       │ '6c36edde' │ 'no sale, no order; seller1 drove T1 then, drives T3 today'                  │
+│ 11      │ 'visit_neither'                      │ null       │ '6c36edde' │ 'no sale, no order; seller1 drove T1 then, drives T3 today'                  │
+└─────────┴──────────────────────────────────────┴────────────┴────────────┴──────────────────────────────────────────────────────────────────────────────┘
+vehicles-backfill-seed: done in 3.9 s, fixture in /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/.auth/vehicles-backfill-fixture.json

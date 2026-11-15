@@ -1,0 +1,29 @@
+-- assignment_missing_for_a_truck_with_a_driver: 0 row(s)
+
+
+-- assignment_backfill_row_wrong: 0 row(s)
+
+
+-- assignment_for_a_truck_that_should_have_none: 0 row(s)
+
+
+-- visit_vehicle_not_the_truck_its_sale_left: 0 row(s)
+
+
+-- visit_vehicle_without_a_fact: 0 row(s)
+
+
+-- order_delivery_vehicle_not_its_bl_truck: 0 row(s)
+
+
+-- order_delivery_vehicle_without_a_fact: 0 row(s)
+
+
+-- vehicle_of_another_company: 0 row(s)
+
+
+-- info_visits_left_null_although_their_order_names_a_truck: 1 row(s)
+{"n":"1"}
+
+-- info_columns_filled: 1 row(s)
+{"visits_with_truck":"25002","visits":"50007","orders_with_delivery_truck":"3","orders_with_truck":"0","orders":"50005","assignments":"5"}

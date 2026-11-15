@@ -1,0 +1,17 @@
+$ tsx scripts/admin-create.ts --email e2e-admin-1794765436317@platform.dz
+
+Running 12 tests using 1 worker
+
+[1/12] [desktop] › web/web.spec.ts:80:3 › the login itself › an anonymous visitor is sent to the login page
+[2/12] [desktop] › web/web.spec.ts:87:3 › the login itself › a wrong password is refused and says nothing about the secret
+[3/12] [desktop] › web/web.spec.ts:102:3 › the login itself › the right credentials open the dashboard
+[4/12] [desktop] › web/web.spec.ts:114:1 › the session survives a reload (the refresh cookie is used)
+[5/12] [desktop] › web/web.spec.ts:124:1 › the token stays out of the browser storage and the cookie is httpOnly
+[6/12] [desktop] › web/web.spec.ts:140:1 › the balance of a client is shown exactly, in DA
+[7/12] [desktop] › web/web.spec.ts:149:1 › a hostile client name is shown as text, not executed
+[8/12] [desktop] › web/web.spec.ts:167:1 › a hostile id in the URL gives a message, not a crash
+[9/12] [desktop] › web/web.spec.ts:178:1 › a payment made from the screen carries an idempotency key
+[10/12] [desktop] › web/web.spec.ts:231:3 › client map and tournée stops from the map (phase 35) › picks stops on the map, saves them in tap order, orders them by distance
+[11/12] [desktop] › web/web.spec.ts:277:3 › client map and tournée stops from the map (phase 35) › refused location explains itself and the map still loads
+[12/12] [desktop] › web/web.spec.ts:288:1 › logging out ends the session for good
+  12 passed (20.3s)
