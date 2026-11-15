@@ -1,0 +1,605 @@
+✓ Lockfile passes supply-chain policies (verified 25d ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+
+[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: esbuild@0.28.2
+
+Run "pnpm approve-builds" to pick which dependencies should be allowed to run scripts.
+[WARN] The install that runs before scripts failed, so your node_modules may be out of sync with your lockfile. Set "verifyDepsBeforeRun: false" to skip this install.
+$ playwright test --config web/vehicles.playwright.config.ts
+
+Running 75 tests using 1 worker
+
+  ✓   1 [m360-ar] › web/vehicles.spec.ts:287:1 › empty company: types, vehicles and tournées say what to do, with the field examples (3.7s)
+  ✓   2 [m360-ar] › web/vehicles.spec.ts:317:1 › types de véhicules: list, form, archive refused while a truck uses the type (5.2s)
+  ✓   3 [m360-ar] › web/vehicles.spec.ts:382:1 › véhicules: cards (code big, type badge, wilaya, plate, driver of the day, "Changer") and filters (1.1s)
+  ✓   4 [m360-ar] › web/vehicles.spec.ts:444:1 › véhicules: the form proposes the next code, keeps the archived type out, and saves (3.5s)
+  ✓   5 [m360-ar] › web/vehicles.spec.ts:506:1 › véhicules: the driver sheet warns "already has a truck", moves the driver, and the history shows it (3.9s)
+  ✓   6 [m360-ar] › web/vehicles.spec.ts:557:1 › utilisateurs: "Véhicules conduits" follows the worker across trucks (3.9s)
+  ✓   7 [m360-ar] › web/vehicles.spec.ts:595:1 › tournées: grouped by vehicle, create asks "Véhicule" first, "Convertir" and the bulk banner with its count (2.4s)
+  ✓   8 [m360-ar] › web/vehicles.spec.ts:679:1 › aujourd’hui: the truck header for its driver; a seller without truck keeps his seller routes and the old message (8.7s)
+  ✓   9 [m360-ar] › web/vehicles.spec.ts:730:1 › commandes: filter by delivery truck, assign a delivery truck; the livreur of the truck sees the order (4.6s)
+  ✘  10 [m360-ar] › web/vehicles.spec.ts:790:1 › bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen (3.7s)
+  ✘  11 [m360-ar] › web/vehicles.spec.ts:816:1 › bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same (1.1s)
+  ✘  12 [m360-ar] › web/vehicles.spec.ts:843:1 › long codes: two 30-character codes that differ by their last number can be told apart on a card (982ms)
+  ✓  13 [m360-ar] › web/vehicles.spec.ts:880:1 › wilayas: the list has 69 unique numbers; 1–58 match the official list; 59–69 are written down for the owner (925ms)
+  ✓  14 [m360-ar] › web/vehicles.spec.ts:913:1 › en: no raw message key on the phase 36 screens and sheets (7.1s)
+  ✓  15 [m360-ar] › web/vehicles.spec.ts:953:1 › dépôts: the list still shows the trucks with their code (937ms)
+  ✓  16 [m360-fr] › web/vehicles.spec.ts:287:1 › empty company: types, vehicles and tournées say what to do, with the field examples (3.5s)
+  ✓  17 [m360-fr] › web/vehicles.spec.ts:317:1 › types de véhicules: list, form, archive refused while a truck uses the type (4.6s)
+  ✓  18 [m360-fr] › web/vehicles.spec.ts:382:1 › véhicules: cards (code big, type badge, wilaya, plate, driver of the day, "Changer") and filters (1.0s)
+  ✓  19 [m360-fr] › web/vehicles.spec.ts:444:1 › véhicules: the form proposes the next code, keeps the archived type out, and saves (4.0s)
+  ✓  20 [m360-fr] › web/vehicles.spec.ts:506:1 › véhicules: the driver sheet warns "already has a truck", moves the driver, and the history shows it (3.4s)
+  ✓  21 [m360-fr] › web/vehicles.spec.ts:557:1 › utilisateurs: "Véhicules conduits" follows the worker across trucks (3.9s)
+  ✓  22 [m360-fr] › web/vehicles.spec.ts:595:1 › tournées: grouped by vehicle, create asks "Véhicule" first, "Convertir" and the bulk banner with its count (2.5s)
+  ✓  23 [m360-fr] › web/vehicles.spec.ts:679:1 › aujourd’hui: the truck header for its driver; a seller without truck keeps his seller routes and the old message (8.7s)
+  ✓  24 [m360-fr] › web/vehicles.spec.ts:730:1 › commandes: filter by delivery truck, assign a delivery truck; the livreur of the truck sees the order (5.3s)
+  ✘  25 [m360-fr] › web/vehicles.spec.ts:790:1 › bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen (4.1s)
+  ✘  26 [m360-fr] › web/vehicles.spec.ts:816:1 › bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same (1.1s)
+  ✘  27 [m360-fr] › web/vehicles.spec.ts:843:1 › long codes: two 30-character codes that differ by their last number can be told apart on a card (997ms)
+  ✓  28 [m360-fr] › web/vehicles.spec.ts:880:1 › wilayas: the list has 69 unique numbers; 1–58 match the official list; 59–69 are written down for the owner (936ms)
+  ✓  29 [m360-fr] › web/vehicles.spec.ts:913:1 › en: no raw message key on the phase 36 screens and sheets (7.1s)
+  ✓  30 [m360-fr] › web/vehicles.spec.ts:953:1 › dépôts: the list still shows the trucks with their code (824ms)
+  ✓  31 [m393-ar] › web/vehicles.spec.ts:287:1 › empty company: types, vehicles and tournées say what to do, with the field examples (3.6s)
+  ✓  32 [m393-ar] › web/vehicles.spec.ts:317:1 › types de véhicules: list, form, archive refused while a truck uses the type (4.6s)
+  ✓  33 [m393-ar] › web/vehicles.spec.ts:382:1 › véhicules: cards (code big, type badge, wilaya, plate, driver of the day, "Changer") and filters (1.0s)
+  ✓  34 [m393-ar] › web/vehicles.spec.ts:444:1 › véhicules: the form proposes the next code, keeps the archived type out, and saves (3.5s)
+  ✓  35 [m393-ar] › web/vehicles.spec.ts:506:1 › véhicules: the driver sheet warns "already has a truck", moves the driver, and the history shows it (3.4s)
+  ✓  36 [m393-ar] › web/vehicles.spec.ts:557:1 › utilisateurs: "Véhicules conduits" follows the worker across trucks (4.0s)
+  ✓  37 [m393-ar] › web/vehicles.spec.ts:595:1 › tournées: grouped by vehicle, create asks "Véhicule" first, "Convertir" and the bulk banner with its count (2.5s)
+  ✓  38 [m393-ar] › web/vehicles.spec.ts:679:1 › aujourd’hui: the truck header for its driver; a seller without truck keeps his seller routes and the old message (8.5s)
+  ✓  39 [m393-ar] › web/vehicles.spec.ts:730:1 › commandes: filter by delivery truck, assign a delivery truck; the livreur of the truck sees the order (4.6s)
+  ✘  40 [m393-ar] › web/vehicles.spec.ts:790:1 › bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen (3.9s)
+  ✘  41 [m393-ar] › web/vehicles.spec.ts:816:1 › bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same (1.2s)
+  ✘  42 [m393-ar] › web/vehicles.spec.ts:843:1 › long codes: two 30-character codes that differ by their last number can be told apart on a card (1.0s)
+  ✓  43 [m393-ar] › web/vehicles.spec.ts:880:1 › wilayas: the list has 69 unique numbers; 1–58 match the official list; 59–69 are written down for the owner (926ms)
+  ✓  44 [m393-ar] › web/vehicles.spec.ts:913:1 › en: no raw message key on the phase 36 screens and sheets (7.0s)
+  ✓  45 [m393-ar] › web/vehicles.spec.ts:953:1 › dépôts: the list still shows the trucks with their code (783ms)
+  ✓  46 [m393-fr] › web/vehicles.spec.ts:287:1 › empty company: types, vehicles and tournées say what to do, with the field examples (3.6s)
+  ✓  47 [m393-fr] › web/vehicles.spec.ts:317:1 › types de véhicules: list, form, archive refused while a truck uses the type (4.6s)
+  ✓  48 [m393-fr] › web/vehicles.spec.ts:382:1 › véhicules: cards (code big, type badge, wilaya, plate, driver of the day, "Changer") and filters (1.0s)
+  ✓  49 [m393-fr] › web/vehicles.spec.ts:444:1 › véhicules: the form proposes the next code, keeps the archived type out, and saves (4.0s)
+  ✓  50 [m393-fr] › web/vehicles.spec.ts:506:1 › véhicules: the driver sheet warns "already has a truck", moves the driver, and the history shows it (3.3s)
+  ✓  51 [m393-fr] › web/vehicles.spec.ts:557:1 › utilisateurs: "Véhicules conduits" follows the worker across trucks (3.4s)
+  ✓  52 [m393-fr] › web/vehicles.spec.ts:595:1 › tournées: grouped by vehicle, create asks "Véhicule" first, "Convertir" and the bulk banner with its count (2.5s)
+  ✓  53 [m393-fr] › web/vehicles.spec.ts:679:1 › aujourd’hui: the truck header for its driver; a seller without truck keeps his seller routes and the old message (8.5s)
+  ✓  54 [m393-fr] › web/vehicles.spec.ts:730:1 › commandes: filter by delivery truck, assign a delivery truck; the livreur of the truck sees the order (4.6s)
+  ✘  55 [m393-fr] › web/vehicles.spec.ts:790:1 › bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen (3.8s)
+  ✘  56 [m393-fr] › web/vehicles.spec.ts:816:1 › bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same (1.2s)
+  ✘  57 [m393-fr] › web/vehicles.spec.ts:843:1 › long codes: two 30-character codes that differ by their last number can be told apart on a card (1.0s)
+  ✓  58 [m393-fr] › web/vehicles.spec.ts:880:1 › wilayas: the list has 69 unique numbers; 1–58 match the official list; 59–69 are written down for the owner (1.1s)
+  ✓  59 [m393-fr] › web/vehicles.spec.ts:913:1 › en: no raw message key on the phase 36 screens and sheets (7.3s)
+  ✓  60 [m393-fr] › web/vehicles.spec.ts:953:1 › dépôts: the list still shows the trucks with their code (822ms)
+  ✓  61 [d1280-fr] › web/vehicles.spec.ts:287:1 › empty company: types, vehicles and tournées say what to do, with the field examples (3.6s)
+  ✓  62 [d1280-fr] › web/vehicles.spec.ts:317:1 › types de véhicules: list, form, archive refused while a truck uses the type (3.2s)
+  ✓  63 [d1280-fr] › web/vehicles.spec.ts:382:1 › véhicules: cards (code big, type badge, wilaya, plate, driver of the day, "Changer") and filters (1.1s)
+  ✓  64 [d1280-fr] › web/vehicles.spec.ts:444:1 › véhicules: the form proposes the next code, keeps the archived type out, and saves (2.5s)
+  ✓  65 [d1280-fr] › web/vehicles.spec.ts:506:1 › véhicules: the driver sheet warns "already has a truck", moves the driver, and the history shows it (2.3s)
+  ✓  66 [d1280-fr] › web/vehicles.spec.ts:557:1 › utilisateurs: "Véhicules conduits" follows the worker across trucks (3.1s)
+  ✓  67 [d1280-fr] › web/vehicles.spec.ts:595:1 › tournées: grouped by vehicle, create asks "Véhicule" first, "Convertir" and the bulk banner with its count (2.6s)
+  ✓  68 [d1280-fr] › web/vehicles.spec.ts:679:1 › aujourd’hui: the truck header for its driver; a seller without truck keeps his seller routes and the old message (1.4m)
+  ✓  69 [d1280-fr] › web/vehicles.spec.ts:730:1 › commandes: filter by delivery truck, assign a delivery truck; the livreur of the truck sees the order (4.3s)
+  ✓  70 [d1280-fr] › web/vehicles.spec.ts:790:1 › bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen (3.9s)
+  ✘  71 [d1280-fr] › web/vehicles.spec.ts:816:1 › bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same (1.1s)
+  ✘  72 [d1280-fr] › web/vehicles.spec.ts:843:1 › long codes: two 30-character codes that differ by their last number can be told apart on a card (1.0s)
+  ✓  73 [d1280-fr] › web/vehicles.spec.ts:880:1 › wilayas: the list has 69 unique numbers; 1–58 match the official list; 59–69 are written down for the owner (1.0s)
+  ✓  74 [d1280-fr] › web/vehicles.spec.ts:913:1 › en: no raw message key on the phase 36 screens and sheets (7.3s)
+  ✓  75 [d1280-fr] › web/vehicles.spec.ts:953:1 › dépôts: the list still shows the trucks with their code (884ms)
+
+
+  1) [m360-ar] › web/vehicles.spec.ts:790:1 › bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen 
+
+    Error: /commandes: "LIV 28 MIX" in p > bdi is cut by the line that holds it
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      800 |         expect.soft(l.ordered, `${s.path}: "${code}" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);
+      801 |         expect.soft(l.isolated, `${s.path}: "${code}" in ${l.where} is not isolated from the text around it`).toBe(true);
+    > 802 |         expect.soft(l.cut, `${s.path}: "${code}" in ${l.where} is cut by the line that holds it`).toBe(false);
+          |                                                                                                   ^
+      803 |       }
+      804 |     }
+      805 |     await pageRules(page, s.path);
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99
+
+    Error: /commandes: "LIV 28 MIX" in p > bdi is cut by the line that holds it
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      800 |         expect.soft(l.ordered, `${s.path}: "${code}" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);
+      801 |         expect.soft(l.isolated, `${s.path}: "${code}" in ${l.where} is not isolated from the text around it`).toBe(true);
+    > 802 |         expect.soft(l.cut, `${s.path}: "${code}" in ${l.where} is cut by the line that holds it`).toBe(false);
+          |                                                                                                   ^
+      803 |       }
+      804 |     }
+      805 |     await pageRules(page, s.path);
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99
+
+    Error Context: test-results/vehicles/vehicles-bidi-VAN-28-MXT-0-e3da4-their-order-on-every-screen-m360-ar/error-context.md
+
+  2) [m360-ar] › web/vehicles.spec.ts:816:1 › bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same 
+
+    Error: typed "VAN شاحنة 01" (VAN, the word, 01): drawn left to right as
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "VAN شاحنة 01"
+    Received: "VAN 01 شاحنة"
+
+      831 |     JSON.stringify({ typed1: CODES.arabic, drawn1: drawn(one[0]!), typed2: CODES.arabicSwapped, drawn2: drawn(two[0]!), one, two }, null, 2),
+      832 |   );
+    > 833 |   expect.soft(drawn(one[0]!), `typed "VAN شاحنة 01" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');
+          |                                                                                                   ^
+      834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));
+      835 |   // The form shows the same text the card does: what the owner typed is what he reads back.
+      836 |   await card(page, CODES.arabic).getByRole('button').first().click();
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:833:99
+
+    Error: two different codes are drawn the same
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "VAN 01 شاحنة"
+
+      832 |   );
+      833 |   expect.soft(drawn(one[0]!), `typed "VAN شاحنة 01" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');
+    > 834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));
+          |                                                                             ^
+      835 |   // The form shows the same text the card does: what the owner typed is what he reads back.
+      836 |   await card(page, CODES.arabic).getByRole('button').first().click();
+      837 |   const dialog = page.getByRole('dialog');
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:834:77
+
+    Error Context: test-results/vehicles/vehicles-bidi-a-code-with--b00dc--codes-do-not-look-the-same-m360-ar/error-context.md
+
+  3) [m360-ar] › web/vehicles.spec.ts:843:1 › long codes: two 30-character codes that differ by their last number can be told apart on a card 
+
+    Error: the code is cut (206 px for 336 px) and the end that tells the two trucks apart is hidden
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      852 |   const full = await card(page, CODES.long1).locator('p.truncate').first().evaluate((p) => ({ title: p.getAttribute('title'), scroll: p.scrollWidth, client: p.clientWidth }));
+      853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));
+    > 854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);
+          |                                                                                                                                                          ^
+      855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);
+      856 |   await pageRules(page, 'vehicles, long codes');
+      857 | });
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:854:154
+
+    Error: a cut code has no way to be read in full (docs/ui.md rule 8)
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "VAN-28 GROS DETAIL MSILA N 001"
+    Received: null
+
+      853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));
+      854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);
+    > 855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);
+          |                                                                                                          ^
+      856 |   await pageRules(page, 'vehicles, long codes');
+      857 | });
+      858 |
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:855:106
+
+    Error Context: test-results/vehicles/vehicles-long-codes-two-30-e3cf0-can-be-told-apart-on-a-card-m360-ar/error-context.md
+
+  4) [m360-fr] › web/vehicles.spec.ts:790:1 › bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen 
+
+    Error: /commandes: "LIV 28 MIX" in p > bdi is cut by the line that holds it
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      800 |         expect.soft(l.ordered, `${s.path}: "${code}" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);
+      801 |         expect.soft(l.isolated, `${s.path}: "${code}" in ${l.where} is not isolated from the text around it`).toBe(true);
+    > 802 |         expect.soft(l.cut, `${s.path}: "${code}" in ${l.where} is cut by the line that holds it`).toBe(false);
+          |                                                                                                   ^
+      803 |       }
+      804 |     }
+      805 |     await pageRules(page, s.path);
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99
+
+    Error: /commandes: "LIV 28 MIX" in p > bdi is cut by the line that holds it
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      800 |         expect.soft(l.ordered, `${s.path}: "${code}" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);
+      801 |         expect.soft(l.isolated, `${s.path}: "${code}" in ${l.where} is not isolated from the text around it`).toBe(true);
+    > 802 |         expect.soft(l.cut, `${s.path}: "${code}" in ${l.where} is cut by the line that holds it`).toBe(false);
+          |                                                                                                   ^
+      803 |       }
+      804 |     }
+      805 |     await pageRules(page, s.path);
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99
+
+    Error Context: test-results/vehicles/vehicles-bidi-VAN-28-MXT-0-e3da4-their-order-on-every-screen-m360-fr/error-context.md
+
+  5) [m360-fr] › web/vehicles.spec.ts:816:1 › bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same 
+
+    Error: typed "VAN شاحنة 01" (VAN, the word, 01): drawn left to right as
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "VAN شاحنة 01"
+    Received: "VAN 01 شاحنة"
+
+      831 |     JSON.stringify({ typed1: CODES.arabic, drawn1: drawn(one[0]!), typed2: CODES.arabicSwapped, drawn2: drawn(two[0]!), one, two }, null, 2),
+      832 |   );
+    > 833 |   expect.soft(drawn(one[0]!), `typed "VAN شاحنة 01" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');
+          |                                                                                                   ^
+      834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));
+      835 |   // The form shows the same text the card does: what the owner typed is what he reads back.
+      836 |   await card(page, CODES.arabic).getByRole('button').first().click();
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:833:99
+
+    Error: two different codes are drawn the same
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "VAN 01 شاحنة"
+
+      832 |   );
+      833 |   expect.soft(drawn(one[0]!), `typed "VAN شاحنة 01" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');
+    > 834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));
+          |                                                                             ^
+      835 |   // The form shows the same text the card does: what the owner typed is what he reads back.
+      836 |   await card(page, CODES.arabic).getByRole('button').first().click();
+      837 |   const dialog = page.getByRole('dialog');
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:834:77
+
+    Error Context: test-results/vehicles/vehicles-bidi-a-code-with--b00dc--codes-do-not-look-the-same-m360-fr/error-context.md
+
+  6) [m360-fr] › web/vehicles.spec.ts:843:1 › long codes: two 30-character codes that differ by their last number can be told apart on a card 
+
+    Error: the code is cut (206 px for 336 px) and the end that tells the two trucks apart is hidden
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      852 |   const full = await card(page, CODES.long1).locator('p.truncate').first().evaluate((p) => ({ title: p.getAttribute('title'), scroll: p.scrollWidth, client: p.clientWidth }));
+      853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));
+    > 854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);
+          |                                                                                                                                                          ^
+      855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);
+      856 |   await pageRules(page, 'vehicles, long codes');
+      857 | });
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:854:154
+
+    Error: a cut code has no way to be read in full (docs/ui.md rule 8)
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "VAN-28 GROS DETAIL MSILA N 001"
+    Received: null
+
+      853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));
+      854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);
+    > 855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);
+          |                                                                                                          ^
+      856 |   await pageRules(page, 'vehicles, long codes');
+      857 | });
+      858 |
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:855:106
+
+    Error Context: test-results/vehicles/vehicles-long-codes-two-30-e3cf0-can-be-told-apart-on-a-card-m360-fr/error-context.md
+
+  7) [m393-ar] › web/vehicles.spec.ts:790:1 › bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen 
+
+    Error: /commandes: "LIV 28 MIX" in p > bdi is cut by the line that holds it
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      800 |         expect.soft(l.ordered, `${s.path}: "${code}" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);
+      801 |         expect.soft(l.isolated, `${s.path}: "${code}" in ${l.where} is not isolated from the text around it`).toBe(true);
+    > 802 |         expect.soft(l.cut, `${s.path}: "${code}" in ${l.where} is cut by the line that holds it`).toBe(false);
+          |                                                                                                   ^
+      803 |       }
+      804 |     }
+      805 |     await pageRules(page, s.path);
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99
+
+    Error: /commandes: "LIV 28 MIX" in p > bdi is cut by the line that holds it
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      800 |         expect.soft(l.ordered, `${s.path}: "${code}" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);
+      801 |         expect.soft(l.isolated, `${s.path}: "${code}" in ${l.where} is not isolated from the text around it`).toBe(true);
+    > 802 |         expect.soft(l.cut, `${s.path}: "${code}" in ${l.where} is cut by the line that holds it`).toBe(false);
+          |                                                                                                   ^
+      803 |       }
+      804 |     }
+      805 |     await pageRules(page, s.path);
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99
+
+    Error Context: test-results/vehicles/vehicles-bidi-VAN-28-MXT-0-e3da4-their-order-on-every-screen-m393-ar/error-context.md
+
+  8) [m393-ar] › web/vehicles.spec.ts:816:1 › bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same 
+
+    Error: typed "VAN شاحنة 01" (VAN, the word, 01): drawn left to right as
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "VAN شاحنة 01"
+    Received: "VAN 01 شاحنة"
+
+      831 |     JSON.stringify({ typed1: CODES.arabic, drawn1: drawn(one[0]!), typed2: CODES.arabicSwapped, drawn2: drawn(two[0]!), one, two }, null, 2),
+      832 |   );
+    > 833 |   expect.soft(drawn(one[0]!), `typed "VAN شاحنة 01" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');
+          |                                                                                                   ^
+      834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));
+      835 |   // The form shows the same text the card does: what the owner typed is what he reads back.
+      836 |   await card(page, CODES.arabic).getByRole('button').first().click();
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:833:99
+
+    Error: two different codes are drawn the same
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "VAN 01 شاحنة"
+
+      832 |   );
+      833 |   expect.soft(drawn(one[0]!), `typed "VAN شاحنة 01" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');
+    > 834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));
+          |                                                                             ^
+      835 |   // The form shows the same text the card does: what the owner typed is what he reads back.
+      836 |   await card(page, CODES.arabic).getByRole('button').first().click();
+      837 |   const dialog = page.getByRole('dialog');
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:834:77
+
+    Error Context: test-results/vehicles/vehicles-bidi-a-code-with--b00dc--codes-do-not-look-the-same-m393-ar/error-context.md
+
+  9) [m393-ar] › web/vehicles.spec.ts:843:1 › long codes: two 30-character codes that differ by their last number can be told apart on a card 
+
+    Error: the code is cut (239 px for 336 px) and the end that tells the two trucks apart is hidden
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      852 |   const full = await card(page, CODES.long1).locator('p.truncate').first().evaluate((p) => ({ title: p.getAttribute('title'), scroll: p.scrollWidth, client: p.clientWidth }));
+      853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));
+    > 854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);
+          |                                                                                                                                                          ^
+      855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);
+      856 |   await pageRules(page, 'vehicles, long codes');
+      857 | });
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:854:154
+
+    Error: a cut code has no way to be read in full (docs/ui.md rule 8)
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "VAN-28 GROS DETAIL MSILA N 001"
+    Received: null
+
+      853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));
+      854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);
+    > 855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);
+          |                                                                                                          ^
+      856 |   await pageRules(page, 'vehicles, long codes');
+      857 | });
+      858 |
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:855:106
+
+    Error Context: test-results/vehicles/vehicles-long-codes-two-30-e3cf0-can-be-told-apart-on-a-card-m393-ar/error-context.md
+
+  10) [m393-fr] › web/vehicles.spec.ts:790:1 › bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen 
+
+    Error: /commandes: "LIV 28 MIX" in p > bdi is cut by the line that holds it
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      800 |         expect.soft(l.ordered, `${s.path}: "${code}" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);
+      801 |         expect.soft(l.isolated, `${s.path}: "${code}" in ${l.where} is not isolated from the text around it`).toBe(true);
+    > 802 |         expect.soft(l.cut, `${s.path}: "${code}" in ${l.where} is cut by the line that holds it`).toBe(false);
+          |                                                                                                   ^
+      803 |       }
+      804 |     }
+      805 |     await pageRules(page, s.path);
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99
+
+    Error: /commandes: "LIV 28 MIX" in p > bdi is cut by the line that holds it
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      800 |         expect.soft(l.ordered, `${s.path}: "${code}" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);
+      801 |         expect.soft(l.isolated, `${s.path}: "${code}" in ${l.where} is not isolated from the text around it`).toBe(true);
+    > 802 |         expect.soft(l.cut, `${s.path}: "${code}" in ${l.where} is cut by the line that holds it`).toBe(false);
+          |                                                                                                   ^
+      803 |       }
+      804 |     }
+      805 |     await pageRules(page, s.path);
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99
+
+    Error Context: test-results/vehicles/vehicles-bidi-VAN-28-MXT-0-e3da4-their-order-on-every-screen-m393-fr/error-context.md
+
+  11) [m393-fr] › web/vehicles.spec.ts:816:1 › bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same 
+
+    Error: typed "VAN شاحنة 01" (VAN, the word, 01): drawn left to right as
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "VAN شاحنة 01"
+    Received: "VAN 01 شاحنة"
+
+      831 |     JSON.stringify({ typed1: CODES.arabic, drawn1: drawn(one[0]!), typed2: CODES.arabicSwapped, drawn2: drawn(two[0]!), one, two }, null, 2),
+      832 |   );
+    > 833 |   expect.soft(drawn(one[0]!), `typed "VAN شاحنة 01" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');
+          |                                                                                                   ^
+      834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));
+      835 |   // The form shows the same text the card does: what the owner typed is what he reads back.
+      836 |   await card(page, CODES.arabic).getByRole('button').first().click();
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:833:99
+
+    Error: two different codes are drawn the same
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "VAN 01 شاحنة"
+
+      832 |   );
+      833 |   expect.soft(drawn(one[0]!), `typed "VAN شاحنة 01" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');
+    > 834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));
+          |                                                                             ^
+      835 |   // The form shows the same text the card does: what the owner typed is what he reads back.
+      836 |   await card(page, CODES.arabic).getByRole('button').first().click();
+      837 |   const dialog = page.getByRole('dialog');
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:834:77
+
+    Error Context: test-results/vehicles/vehicles-bidi-a-code-with--b00dc--codes-do-not-look-the-same-m393-fr/error-context.md
+
+  12) [m393-fr] › web/vehicles.spec.ts:843:1 › long codes: two 30-character codes that differ by their last number can be told apart on a card 
+
+    Error: the code is cut (239 px for 336 px) and the end that tells the two trucks apart is hidden
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      852 |   const full = await card(page, CODES.long1).locator('p.truncate').first().evaluate((p) => ({ title: p.getAttribute('title'), scroll: p.scrollWidth, client: p.clientWidth }));
+      853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));
+    > 854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);
+          |                                                                                                                                                          ^
+      855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);
+      856 |   await pageRules(page, 'vehicles, long codes');
+      857 | });
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:854:154
+
+    Error: a cut code has no way to be read in full (docs/ui.md rule 8)
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "VAN-28 GROS DETAIL MSILA N 001"
+    Received: null
+
+      853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));
+      854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);
+    > 855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);
+          |                                                                                                          ^
+      856 |   await pageRules(page, 'vehicles, long codes');
+      857 | });
+      858 |
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:855:106
+
+    Error Context: test-results/vehicles/vehicles-long-codes-two-30-e3cf0-can-be-told-apart-on-a-card-m393-fr/error-context.md
+
+  13) [d1280-fr] › web/vehicles.spec.ts:816:1 › bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same 
+
+    Error: typed "VAN شاحنة 01" (VAN, the word, 01): drawn left to right as
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "VAN شاحنة 01"
+    Received: "VAN 01 شاحنة"
+
+      831 |     JSON.stringify({ typed1: CODES.arabic, drawn1: drawn(one[0]!), typed2: CODES.arabicSwapped, drawn2: drawn(two[0]!), one, two }, null, 2),
+      832 |   );
+    > 833 |   expect.soft(drawn(one[0]!), `typed "VAN شاحنة 01" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');
+          |                                                                                                   ^
+      834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));
+      835 |   // The form shows the same text the card does: what the owner typed is what he reads back.
+      836 |   await card(page, CODES.arabic).getByRole('button').first().click();
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:833:99
+
+    Error: two different codes are drawn the same
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not "VAN 01 شاحنة"
+
+      832 |   );
+      833 |   expect.soft(drawn(one[0]!), `typed "VAN شاحنة 01" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');
+    > 834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));
+          |                                                                             ^
+      835 |   // The form shows the same text the card does: what the owner typed is what he reads back.
+      836 |   await card(page, CODES.arabic).getByRole('button').first().click();
+      837 |   const dialog = page.getByRole('dialog');
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:834:77
+
+    Error Context: test-results/vehicles/vehicles-bidi-a-code-with--b00dc--codes-do-not-look-the-same-d1280-fr/error-context.md
+
+  14) [d1280-fr] › web/vehicles.spec.ts:843:1 › long codes: two 30-character codes that differ by their last number can be told apart on a card 
+
+    Error: the code is cut (203 px for 336 px) and the end that tells the two trucks apart is hidden
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      852 |   const full = await card(page, CODES.long1).locator('p.truncate').first().evaluate((p) => ({ title: p.getAttribute('title'), scroll: p.scrollWidth, client: p.clientWidth }));
+      853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));
+    > 854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);
+          |                                                                                                                                                          ^
+      855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);
+      856 |   await pageRules(page, 'vehicles, long codes');
+      857 | });
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:854:154
+
+    Error: a cut code has no way to be read in full (docs/ui.md rule 8)
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "VAN-28 GROS DETAIL MSILA N 001"
+    Received: null
+
+      853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));
+      854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);
+    > 855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);
+          |                                                                                                          ^
+      856 |   await pageRules(page, 'vehicles, long codes');
+      857 | });
+      858 |
+        at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:855:106
+
+    Error Context: test-results/vehicles/vehicles-long-codes-two-30-e3cf0-can-be-told-apart-on-a-card-d1280-fr/error-context.md
+
+  14 failed
+    [m360-ar] › web/vehicles.spec.ts:790:1 › bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen 
+    [m360-ar] › web/vehicles.spec.ts:816:1 › bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same 
+    [m360-ar] › web/vehicles.spec.ts:843:1 › long codes: two 30-character codes that differ by their last number can be told apart on a card 
+    [m360-fr] › web/vehicles.spec.ts:790:1 › bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen 
+    [m360-fr] › web/vehicles.spec.ts:816:1 › bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same 
+    [m360-fr] › web/vehicles.spec.ts:843:1 › long codes: two 30-character codes that differ by their last number can be told apart on a card 
+    [m393-ar] › web/vehicles.spec.ts:790:1 › bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen 
+    [m393-ar] › web/vehicles.spec.ts:816:1 › bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same 
+    [m393-ar] › web/vehicles.spec.ts:843:1 › long codes: two 30-character codes that differ by their last number can be told apart on a card 
+    [m393-fr] › web/vehicles.spec.ts:790:1 › bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen 
+    [m393-fr] › web/vehicles.spec.ts:816:1 › bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same 
+    [m393-fr] › web/vehicles.spec.ts:843:1 › long codes: two 30-character codes that differ by their last number can be told apart on a card 
+    [d1280-fr] › web/vehicles.spec.ts:816:1 › bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same 
+    [d1280-fr] › web/vehicles.spec.ts:843:1 › long codes: two 30-character codes that differ by their last number can be told apart on a card 
+  61 passed (6.2m)
+[ELIFECYCLE] Command failed with exit code 1.
