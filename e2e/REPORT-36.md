@@ -5,8 +5,8 @@
 **Prompt:** [`docs/prompts/test-36-vehicle-first.md`](../docs/prompts/test-36-vehicle-first.md). **Spec:** [`phase-36-vehicle-first-distribution.md`](../docs/prompts/phase-36-vehicle-first-distribution.md).
 **Rule of the pass:** find and prove, do not fix. Nothing under `apps/` or `packages/` is changed.
 
-**This report covers the baseline, the seed, part A and part B** (part B is section 10). Parts C to
-E are not done (section 7). The verdict at the end is therefore provisional.
+**This report covers the baseline, the seed, parts A, B and C** (part B is section 10, part C
+section 11). Parts D and E are not done (section 7). The verdict at the end is therefore provisional.
 
 ## Status (read this first when resuming)
 
@@ -15,20 +15,23 @@ E are not done (section 7). The verdict at the end is therefore provisional.
 | 0. Baseline and seed | done | `e2e/test-36/baseline.sh`, `e2e/api/vehicles-seed.ts` |
 | A. API correctness | done: 109 lines (90 pass, 12 fail on 8 findings, 7 notes) | `e2e/api/vehicles.ts`, `e2e/sql/vehicles-history.sql` |
 | B. Scope, isolation and security | done: 117 lines (101 pass, 7 fail on 5 findings, 9 notes) + 1 low from notes | `e2e/api/vehicles-scope.ts`, section 10 |
-| C. Concurrency | not done | |
+| C. Concurrency | done: 18 lines (12 pass, 2 fail on 2 findings, 4 notes) | `e2e/api/vehicles-race.ts`, section 11 |
 | D. Backfill and upgrade | not done (the seed already writes its history and the expected trucks) | |
 | E. Web and phone | not done | |
-| Final go / no-go, fix plan | provisional, on parts A and B | sections 8 and 9 |
+| Final go / no-go, fix plan | provisional, on parts A to C | sections 8 and 9 |
 
 Findings of part A: **1 critical, 1 high, 3 medium, 3 low.** A-2 is critical by the owner's
 decision of 2026-11-15: every truck, delivery trucks included, is loaded by chargement each day
 and unloaded back to the dépôt, so a delivery BL must take its stock from the truck.
 
-Findings of part B: **0 critical, 2 high, 3 medium, 1 low** (section 10.4).
+Findings of part B: **0 critical, 3 high, 2 medium, 1 low** (section 10.4). B-4 is high by the
+owner's decision of 2026-11-15.
+
+Findings of part C: **0 critical, 0 high, 1 medium, 1 low** (section 11.4).
 
 To resume: start the stack (section 2), run `pnpm test:vehicles:seed` again if
 `e2e/.auth/vehicles-fixture.json` is gone or older than 12 h (it makes new companies), go on
-with part C. Part B makes its own companies on each run and needs no seed. The data stays in
+with part D. Parts B and C make their own companies on each run and need no seed. The data stays in
 the local database `erp_t36`.
 
 ## 1. What was tested
@@ -65,6 +68,7 @@ pnpm test:vehicles:seed     # 3 companies, about 5 s
 pnpm test:vehicles:api      # part A, about 15 s; T36_ONLY=driver,stock runs some areas only
 pnpm test:vehicles:scope    # part B, about 20 s; its own companies; T36_ONLY=isolation,scope,permissions,gate,hostile,idempotency
 PROD_API=https://erp-saas-pi.vercel.app pnpm test:vehicles:scope   # adds the 3 anonymous GETs on production
+pnpm test:vehicles:race     # part C, about 15 s; its own companies; T36_ONLY=same,cross,sale,convert; T36_ROUNDS=20
 ```
 
 - The suites refuse any database that is not a local `erp_t36*` (`lib/vehicles-fixture.ts`).
@@ -324,11 +328,11 @@ A-2 (below, after A-1, where it was first written) is critical by the owner's de
 
 ## 7. What was not tested, and why
 
-- **Parts C, D and E** were not asked in these sessions: every race, the backfill and the
-  migration lock time, every screen and the bidi screenshots, the wilaya names. The seed already
+- **Parts D and E** were not asked in these sessions: the backfill and the migration lock
+  time, every screen and the bidi screenshots, the wilaya names. The seed already
   holds what they need (company B with A's codes, the Essentiel company, the manager and
   supervisor limited to "Dépôt Batna", the history with its expected trucks). Part B's own gaps
-  are in 10.7.
+  are in 10.7, part C's in 11.6.
 - **Production:** only the three anonymous `GET`s of the ground rules were sent, in part B (all
   401). Nothing else.
 - **`driverAt` / `vehicleAt` through HTTP:** they have no route. They were called on the compiled
@@ -337,7 +341,7 @@ A-2 (below, after A-1, where it was first written) is critical by the owner's de
 - **Known, left out by PR #72** (not findings): the per-vehicle report screen, Lighthouse
   Performance.
 
-## 8. Go / no-go for phase 37 (provisional, parts A and B)
+## 8. Go / no-go for phase 37 (provisional, parts A to C)
 
 **No-go until A-2 is fixed. After that, no-go yet for two columns; go for the rest.**
 
@@ -353,7 +357,14 @@ A-2 (below, after A-1, where it was first written) is critical by the owner's de
   limited to one dépôt can write onto trucks and routes of another dépôt (B-1, B-2). That does
   not corrupt a figure, but it moves a tournée or a driver behind the back of the dépôt that
   owns it. Fix it before phase 37 adds per-dépôt vehicle screens.
-- Parts C to E are not done. The backfill (D) decides whether history before phase 36 can be
+- **Concurrency holds where it matters** (part C): 20 rounds each of two changes on one truck,
+  one driver put on two trucks, cross moves and a three-way rotation all end in one consistent
+  state, with no deadlock, no 500, no lost or doubled history row, and reconcile clean. A sale
+  racing a driver change always empties exactly one of the driver's trucks and names it. What
+  breaks is the same column as A-1: the visit of a sale can name the other truck (C-1).
+- B-4 (high by the owner): a replayed driver change undoes a later one. It must be fixed
+  before phase 37, together with B-1 and B-2.
+- Parts D and E are not done. The backfill (D) decides whether history before phase 36 can be
   trusted at all.
 
 ## 9. Fix plan (small PRs, in order; none is opened)
@@ -363,12 +374,15 @@ A-2 (below, after A-1, where it was first written) is critical by the owner's de
 | 1 | A delivery BL leaves the delivery truck (`deliveryVehicleId` wins over `order.warehouseId`); the rule written in `docs/domain.md` | A-2 | The A7 check "the BL of an order put on a loaded delivery truck leaves that truck", plus load 100 / deliver 6 / unload as an integration test. |
 | 2 | Every way a driver stops driving goes through `assignDriver`: truck switched off, user deactivated, role that cannot drive | A-1, A-3 | The two A3 checks and the A8 check, plus the SQL rules `driver_is_a_live_user_who_may_drive` and `visit_sale_left_the_truck_frozen_on_the_visit` as an integration test. |
 | 3 | One truck reach for every planner write: the freed truck of a driver move and the target truck of a convert are checked with `assertPlanned` before anything is written | B-1, B-2 | The three B2 checks "the Batna manager puts seller1…", "…converts seller1's old route", "…bulk-converts". |
-| 4 | The driver-change guard looks at the cash since the last clôture, not at one session row | A-4 | The A8 check "cash responsibility after the move". |
-| 5 | Truck history read by planners and the driver only; `@Idempotent()` on the driver change and convert | B-3, B-4 | The B2 check "truck history…" and the B6 check "replayed … after a later change". |
-| 6 | Codes and plates: refuse C0 controls, bidi controls and zero-width characters; codes compared as text (`lower(code) =`), search escaped | B-5, A-5, A-7 | The two B5 checks, the two "compared as text" checks and the search check. |
-| 7 | `VEHICLE_FIELDS_ON_DEPOT` at creation; code helper past 99; one reach rule for a supervisor's team trucks | A-6, A-8, B-6 | The two A2 checks and the B2 INFO line on VAN turned into an assertion. |
+| 4 | `@Idempotent()` on the driver change and both converts | B-4 | The B6 check "replayed … after a later change". |
+| 5 | A visit linked to a sale freezes the truck the sale left (the history only when it has no sale) | C-1 | The C3 check "the field flow … the visit and the stock name the same truck", plus the A10 SQL rule `visit_sale_left_the_truck_frozen_on_the_visit`. |
+| 6 | The driver-change guard looks at the cash since the last clôture, not at one session row | A-4 | The A8 check "cash responsibility after the move". |
+| 7 | Truck history read by planners and the driver only | B-3 | The B2 check "truck history…". |
+| 8 | Codes and plates: refuse C0 controls, bidi controls and zero-width characters; codes compared as text (`lower(code) =`), search escaped | B-5, A-5, A-7 | The two B5 checks, the two "compared as text" checks and the search check. |
+| 9 | `VEHICLE_FIELDS_ON_DEPOT` at creation; code helper past 99; one reach rule for a supervisor's team trucks; the route edit locks its row before reading it | A-6, A-8, B-6, C-2 | The two A2 checks, the B2 INFO line on VAN turned into an assertion, the C4 check "bulk convert racing a move…". |
 
-PR 1, PR 2 and PR 3 come before phase 37 starts; 4 to 7 can go alongside it.
+PRs 1 to 5 come before phase 37 starts; 6 to 9 can go alongside it. PR 5 could ship with PR 2
+(both make one definition of "the truck he was on").
 
 ## 10. Part B: scope, isolation and security
 
@@ -402,7 +416,7 @@ Expected sets of ids come from SQL in the suite (`truthVehicles` / `truthRoutes`
 | B3 permissions (`permissions`) | 6 | 5 | 0 | 1 | |
 | B4 feature gate (`gate`) | 18 | 18 | 0 | 0 | |
 | B5 hostile input (`hostile`) | 4 | 1 | 2 | 1 | B-5 (2 checks) |
-| B6 idempotency and audit (`idempotency`) | 8 | 4 | 1 | 3 | B-4 |
+| B6 idempotency and audit (`idempotency`) | 8 | 4 | 1 | 3 | B-4 (high) |
 | B7 production, anonymous GET (`production`, with `PROD_API`) | 3 | 3 | 0 | 0 | |
 | **Total** | **117** | **101** | **7** | **9** | **6 findings** |
 
@@ -471,7 +485,8 @@ The check functions that only write an INFO line count as a pass in the "Pass" c
 
 ### 10.4 Findings
 
-Part B: **0 critical, 2 high, 3 medium, 1 low.**
+Part B: **0 critical, 3 high, 2 medium, 1 low.** B-4 is high by the owner's decision of
+2026-11-15 (it was first written as medium).
 
 #### B-1 (high) A manager limited to one dépôt takes a driver off a truck of another dépôt
 
@@ -536,7 +551,7 @@ Part B: **0 critical, 2 high, 3 medium, 1 low.**
 - **Fix proposal:** the truck history for planners in reach (`plannedVehicleIds`) and for the
   truck's current driver only. Lock with the check above.
 
-#### B-4 (medium) A driver change replayed after a later change puts the old driver back
+#### B-4 (high, by the owner) A driver change replayed after a later change puts the old driver back
 
 - **Rerun:** `T36_ONLY=idempotency pnpm test:vehicles:scope`, check "a driver change replayed with
   its Idempotency-Key after a later change…".
@@ -551,6 +566,9 @@ Part B: **0 critical, 2 high, 3 medium, 1 low.**
   (`apps/api/src/stock/warehouses.controllers.ts:79`, `apps/api/src/tournees/tournees.controllers.ts:123`, `:131`);
   the global interceptor only acts on marked routes. Convert is harmless here (a converted route
   is not converted again), the driver change is not.
+- **Owner's decision (2026-11-15):** high. A phone retrying after a lost answer is the normal
+  case on a weak network, and the result is a truck handed back to the wrong person with the
+  stock and the cash of the next sales following him.
 - **Fix proposal:** `@Idempotent()` on the driver change (and on the converts for the uniform
   answer). Lock with the check above.
 
@@ -620,3 +638,152 @@ Part B: **0 critical, 2 high, 3 medium, 1 low.**
 - **The web app's own scope** (what the screens offer to each role): part E. This part checks the
   API, which is the source of truth (AGENTS §4).
 - **The Neon / production data:** never touched; only the three anonymous GETs.
+
+## 11. Part C: concurrency
+
+**Suite:** `e2e/api/vehicles-race.ts`, run with `pnpm test:vehicles:race` (section 2), about 15 s.
+Each area makes its own company (DISTRIBUTION, every user invited with `POST /users/invite`) and
+fires the racing requests with `Promise.all`, **20 rounds** each (`T36_ROUNDS=`). The API was
+restarted fresh on `erp_t36` before the run. Each round is judged with SQL on the database, not
+on the answers: per company, (1) each truck's last `vehicle_assignments` row names its
+`assignedUserId`, (2) no user drives two live trucks, (3) no truck has two rows in a row naming
+the same person (a doubled row) and the number of rows grew by exactly the number of accepted
+changes (a lost row). PostgreSQL's own log (`docker logs erp-saas-db-1`) is read for
+`deadlock detected` / `could not serialize` after C1 and C2.
+
+Proofs: `artifacts/test-36/vehicles-race.{md,json}` (every check),
+`vehicles-race-drivers.txt` (each round of C1 and C2: answers, end drivers, row counts),
+`vehicles-race-sale.txt` (each round of C3: truck left, truck frozen),
+`vehicles-race-convert.txt` (each round of C4: answers, end route, audit), `reconcile-race.txt`.
+
+### 11.1 Results
+
+| Area (`T36_ONLY=`) | Checks | Pass | Fail | Notes | Findings |
+|---|---|---|---|---|---|
+| C1 same truck (`same`) | 4 | 4 | 0 | 0 | |
+| C2 cross moves (`cross`) | 3 | 3 | 0 | 1 | |
+| C3 sale / visit vs driver change (`sale`) | 4 | 3 | 1 | 2 | C-1 |
+| C4 bulk convert vs route edit (`convert`) | 2 | 1 | 1 | 1 | C-2 |
+| Reconcile after part C | 1 | 1 | 0 | 0 | |
+| **Total** | **18** | **12** | **2** | **4** | **2 findings** |
+
+Like the other suites the "Pass" column holds the INFO lines too (`18 checks · 12 passed · 2
+failed` on the last line, plus 4 INFO). `reconcile`: "Ledgers reconciled: no difference".
+`git diff --stat origin/main -- apps packages` is still empty.
+
+### 11.2 What the prompt asked to be said in words
+
+- **Two driver changes on one truck at once (C1, 20 rounds × 3 shapes):** both answer 200 and
+  the second one wins, each writing its row (two people with no truck); or one answers 409
+  `VEHICLE_ALREADY_ASSIGNED` (one person put on two trucks at once, with or without a truck
+  already: the partial unique index on `assignedUserId` catches the loser, mapped from P2002 at
+  `vehicles.service.ts:319`). Two drivers who each have a truck moved onto the same truck:
+  both answer 200, both old trucks are freed with their rows, the second one ends on the truck
+  and the first one drives nothing, exactly as if the two changes had been made one after the
+  other. Nobody ever drives two trucks. Every round: the last row equals
+  `assignedUserId`, rows grew by the number of accepted changes, no 500.
+- **Cross moves (C2):** A (truck 1) → truck 2 and B (truck 2) → truck 1 at once: **20 of 20
+  rounds swap**, both 200, 3 or 4 rows per round as the freed trucks require, no deadlock. A
+  three-way rotation (A→2, B→3, C→1 at once) also never deadlocks nor answers 500. The single
+  `SELECT … ORDER BY id FOR UPDATE` over the target truck and the driver's current truck
+  (`vehicles.service.ts:257-265`) does what its comment says; PostgreSQL logged no deadlock.
+- **A driver change racing a sale by the old driver (C3a):** the sale always takes exactly one
+  truck, one of his two, and `Sale.warehouseId` equals the truck its `SALE` movements left. In
+  this run the move committed first in all 20 rounds, so the sale left the new truck each time.
+  Never stock from one truck and the sale booked on the other.
+- **A driver change racing a visit start (C3b):** the visit freezes one of his two trucks, always
+  the one the history gives at its `startedAt` (checked with SQL). Consistent.
+- **The two together (C3c), the case the prompt names:** the visit is stamped `startedAt` when
+  the seller opens the client, the sale is then sent, then the visit with that `saleId`, while
+  the planner moves him: **20 of 20 rounds put the stock on one truck and the visit on the
+  other** (finding C-1).
+- **Bulk convert racing a route edit (C4):** a rename never loses the convert, nor the convert
+  the name. A move of the same route to another seller overwrites a convert that had already
+  committed, from what it read before (finding C-2).
+
+### 11.3 What holds up well
+
+- **The driver history under load.** 120 racing driver changes over C1 and C2, and not one round
+  leaves a truck whose last row disagrees with its driver, a driver on two trucks, a row lost or
+  doubled, a 500 or a deadlock.
+- **One driver, one truck** is held by the database (partial unique index), not only by the
+  service check, and the loser gets the documented 409.
+- **Stock under the race:** after C3 the dépôt principal and both trucks equal the sum of their
+  movements, nothing went negative, and the repo's `reconcile` finds no difference.
+- **Convert locks in id order** (`routes.service.ts:260-265`) and re-reads `vehicleId IS NULL`
+  under the lock: a route an edit had already put on a truck is never converted twice.
+
+### 11.4 Findings
+
+Part C: **0 critical, 0 high, 1 medium, 1 low.**
+
+#### C-1 (medium) A sale and its visit split over two trucks when the driver changes during the visit
+
+- **Rerun:** `T36_ONLY=sale pnpm test:vehicles:race`, check "the field flow (visit opened on the
+  phone, then the sale, then the visit sent with the sale) racing his move…".
+- **Path:** seller X drives `SALE 01`, `SALE 02` is free, both loaded with 200. The phone stamps
+  `startedAt`. At once: X `POST /sales/quick` (no dépôt) then `POST /visits {startedAt, outcome:
+  SALE, saleId}`, and the owner `POST /warehouses/<SALE 02>/driver {"userId": X}`.
+- **Expected (prompt, part C):** "which truck do the sale and the visit get? It must be one of the
+  two consistently, never stock from one truck and `vehicleId` of the other."
+- **Actual:** 20 of 20 rounds: the stock left the **new** truck (`Sale.warehouseId` = the new
+  truck) and `Visit.vehicleId` = the **old** truck (e.g. round 0: stock left `17998b94`, visit
+  `c0e6279e`, in `vehicles-race-sale.txt`). The race is not even needed: any move that lands
+  between the moment the seller opens the client and the moment he sells does it.
+- **Cause:** the same two definitions of "his truck" as A-1. `VisitsService.create` freezes the
+  history at `startedAt` (`vehicleOfUserAt`, `apps/api/src/tournees/visits.service.ts:88`) and
+  never looks at the linked sale; the sale takes the truck he drives at validation
+  (`currentVehicleOf` through `WarehousesService.vehicleOf`, `apps/api/src/stock/warehouses.service.ts:126`,
+  used at `apps/api/src/sales/sales.service.ts:81`).
+- **Why medium and not high:** every ledger is right (reconcile clean, each truck equals its
+  movements) and a session left open would have blocked the move (`SESSION_OPEN_ON_VEHICLE`).
+  What is wrong is the column phase 37 groups by: a per-vehicle count of visits with a sale would
+  give the old truck a sale whose goods left the new one. The A10 SQL rule
+  `visit_sale_left_the_truck_frozen_on_the_visit` of part A flags these rows.
+- **Fix proposal:** a visit linked to a sale (or an order delivered from a truck) freezes the
+  dépôt the sale left when it is a truck; the history at `startedAt` only when there is no such
+  link. Lock with the C3c check and the A10 SQL rule as an integration test.
+
+#### C-2 (low) A route edit overwrites a convert that committed under it, and its audit "before" is wrong
+
+- **Rerun:** `T36_ONLY=convert pnpm test:vehicles:race`, check "a bulk convert racing a move of the
+  same seller route to seller2…".
+- **Path:** seller route R of seller1 (who drives `CONV 01`); seller2 drives none. At once:
+  `POST /routes/convert-to-vehicle` and `PATCH /routes/R {"sellerId": seller2}`.
+- **Expected:** one decision, and an audit that tells the truth. Done one after the other, the
+  same two requests leave R **on the truck** (the edit then sees a vehicle route, and "a vehicle
+  wins over a seller", `routes.service.ts:182-188`).
+- **Actual:** 20 of 20 rounds: convert answers `{"converted": 1}` and writes `ROUTE_CONVERTED`
+  (R on `CONV 01`); then the edit lands and R ends on **seller2** with `vehicleId` null. Its
+  `ROUTE_UPDATED` row says `before.vehicleId: null`, while R was on the truck at that moment.
+  The end state depends on timing, and the audit trail shows a convert then an edit "from a
+  seller route".
+- **Cause:** `RoutesService.update` reads the route with `live()` (no lock,
+  `apps/api/src/tournees/routes.service.ts:181`), decides the owner from that read, then writes
+  (`:193`) after waiting for convert's row lock. `setStops` already takes `FOR UPDATE` before it
+  reads (`:325-328`); `update` does not.
+- **Why low:** no figure, no scope: the end state is one the planner asked for, the CHECK holds,
+  and both writes are audited. Only the "before" is false and the result depends on timing.
+- **Fix proposal:** in `update` (and `archive`), lock the route row with `SELECT … FOR UPDATE`
+  before `live()` reads it, as `setStops` does. Lock with the C4 check.
+
+### 11.5 Notes (seen, not counted as findings)
+
+- C3a: the racing sale left the new truck in 20 of 20 rounds (the driver change is the shorter
+  transaction). With the order reversed the sale would leave the old truck; both are consistent.
+- C4b: convert committed first in every round; the edit always won afterwards.
+- The driver change has no idempotency key (B-4); part C sends none, so each racing request is a
+  distinct decision.
+- C1b: when two drivers who each have a truck race for a third, both old trucks are freed and
+  the first mover ends with no truck (`vehicles-race-drivers.txt`). That is the sequential
+  result; a planner gets no warning that his change was replaced a moment later.
+
+### 11.6 Part C: what was not tested, and why
+
+- **A driver change racing a chargement / déchargement or a clôture** (seller session open/close):
+  not in the prompt's list. The guard runs inside the driver-change transaction but reads
+  `seller_sessions` without a lock; a session opened in the same instant is not proved either way.
+- **A driver change racing an order delivery** by the old livreur of a delivery truck: blocked by
+  A-2 (the BL does not leave the truck at all), to retest after its fix.
+- **More than one API process:** one Node process, one pool, as in production on one VPS. The
+  locks are in PostgreSQL, so a second process should not change the results, but it was not run.

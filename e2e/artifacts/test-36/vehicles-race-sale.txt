@@ -1,0 +1,60 @@
+C3a round 0: old c0e6279e new 17998b94 -> sale.warehouseId 17998b94, moved from 17998b94
+C3a round 1: old 17998b94 new c0e6279e -> sale.warehouseId c0e6279e, moved from c0e6279e
+C3a round 2: old c0e6279e new 17998b94 -> sale.warehouseId 17998b94, moved from 17998b94
+C3a round 3: old 17998b94 new c0e6279e -> sale.warehouseId c0e6279e, moved from c0e6279e
+C3a round 4: old c0e6279e new 17998b94 -> sale.warehouseId 17998b94, moved from 17998b94
+C3a round 5: old 17998b94 new c0e6279e -> sale.warehouseId c0e6279e, moved from c0e6279e
+C3a round 6: old c0e6279e new 17998b94 -> sale.warehouseId 17998b94, moved from 17998b94
+C3a round 7: old 17998b94 new c0e6279e -> sale.warehouseId c0e6279e, moved from c0e6279e
+C3a round 8: old c0e6279e new 17998b94 -> sale.warehouseId 17998b94, moved from 17998b94
+C3a round 9: old 17998b94 new c0e6279e -> sale.warehouseId c0e6279e, moved from c0e6279e
+C3a round 10: old c0e6279e new 17998b94 -> sale.warehouseId 17998b94, moved from 17998b94
+C3a round 11: old 17998b94 new c0e6279e -> sale.warehouseId c0e6279e, moved from c0e6279e
+C3a round 12: old c0e6279e new 17998b94 -> sale.warehouseId 17998b94, moved from 17998b94
+C3a round 13: old 17998b94 new c0e6279e -> sale.warehouseId c0e6279e, moved from c0e6279e
+C3a round 14: old c0e6279e new 17998b94 -> sale.warehouseId 17998b94, moved from 17998b94
+C3a round 15: old 17998b94 new c0e6279e -> sale.warehouseId c0e6279e, moved from c0e6279e
+C3a round 16: old c0e6279e new 17998b94 -> sale.warehouseId 17998b94, moved from 17998b94
+C3a round 17: old 17998b94 new c0e6279e -> sale.warehouseId c0e6279e, moved from c0e6279e
+C3a round 18: old c0e6279e new 17998b94 -> sale.warehouseId 17998b94, moved from 17998b94
+C3a round 19: old 17998b94 new c0e6279e -> sale.warehouseId c0e6279e, moved from c0e6279e
+C3b round 0: old c0e6279e new 17998b94 -> visit c0e6279e, history at startedAt c0e6279e
+C3b round 1: old 17998b94 new c0e6279e -> visit 17998b94, history at startedAt 17998b94
+C3b round 2: old c0e6279e new 17998b94 -> visit c0e6279e, history at startedAt c0e6279e
+C3b round 3: old 17998b94 new c0e6279e -> visit 17998b94, history at startedAt 17998b94
+C3b round 4: old c0e6279e new 17998b94 -> visit c0e6279e, history at startedAt c0e6279e
+C3b round 5: old 17998b94 new c0e6279e -> visit 17998b94, history at startedAt 17998b94
+C3b round 6: old c0e6279e new 17998b94 -> visit c0e6279e, history at startedAt c0e6279e
+C3b round 7: old 17998b94 new c0e6279e -> visit 17998b94, history at startedAt 17998b94
+C3b round 8: old c0e6279e new 17998b94 -> visit c0e6279e, history at startedAt c0e6279e
+C3b round 9: old 17998b94 new c0e6279e -> visit 17998b94, history at startedAt 17998b94
+C3b round 10: old c0e6279e new 17998b94 -> visit c0e6279e, history at startedAt c0e6279e
+C3b round 11: old 17998b94 new c0e6279e -> visit 17998b94, history at startedAt 17998b94
+C3b round 12: old c0e6279e new 17998b94 -> visit c0e6279e, history at startedAt c0e6279e
+C3b round 13: old 17998b94 new c0e6279e -> visit 17998b94, history at startedAt 17998b94
+C3b round 14: old c0e6279e new 17998b94 -> visit c0e6279e, history at startedAt c0e6279e
+C3b round 15: old 17998b94 new c0e6279e -> visit 17998b94, history at startedAt 17998b94
+C3b round 16: old c0e6279e new 17998b94 -> visit c0e6279e, history at startedAt c0e6279e
+C3b round 17: old 17998b94 new c0e6279e -> visit 17998b94, history at startedAt 17998b94
+C3b round 18: old c0e6279e new 17998b94 -> visit c0e6279e, history at startedAt c0e6279e
+C3b round 19: old 17998b94 new c0e6279e -> visit 17998b94, history at startedAt 17998b94
+C3c round 0: old c0e6279e new 17998b94 -> stock left 17998b94, visit c0e6279e
+C3c round 1: old 17998b94 new c0e6279e -> stock left c0e6279e, visit 17998b94
+C3c round 2: old c0e6279e new 17998b94 -> stock left 17998b94, visit c0e6279e
+C3c round 3: old 17998b94 new c0e6279e -> stock left c0e6279e, visit 17998b94
+C3c round 4: old c0e6279e new 17998b94 -> stock left 17998b94, visit c0e6279e
+C3c round 5: old 17998b94 new c0e6279e -> stock left c0e6279e, visit 17998b94
+C3c round 6: old c0e6279e new 17998b94 -> stock left 17998b94, visit c0e6279e
+C3c round 7: old 17998b94 new c0e6279e -> stock left c0e6279e, visit 17998b94
+C3c round 8: old c0e6279e new 17998b94 -> stock left 17998b94, visit c0e6279e
+C3c round 9: old 17998b94 new c0e6279e -> stock left c0e6279e, visit 17998b94
+C3c round 10: old c0e6279e new 17998b94 -> stock left 17998b94, visit c0e6279e
+C3c round 11: old 17998b94 new c0e6279e -> stock left c0e6279e, visit 17998b94
+C3c round 12: old c0e6279e new 17998b94 -> stock left 17998b94, visit c0e6279e
+C3c round 13: old 17998b94 new c0e6279e -> stock left c0e6279e, visit 17998b94
+C3c round 14: old c0e6279e new 17998b94 -> stock left 17998b94, visit c0e6279e
+C3c round 15: old 17998b94 new c0e6279e -> stock left c0e6279e, visit 17998b94
+C3c round 16: old c0e6279e new 17998b94 -> stock left 17998b94, visit c0e6279e
+C3c round 17: old 17998b94 new c0e6279e -> stock left c0e6279e, visit 17998b94
+C3c round 18: old c0e6279e new 17998b94 -> stock left 17998b94, visit c0e6279e
+C3c round 19: old 17998b94 new c0e6279e -> stock left c0e6279e, visit 17998b94

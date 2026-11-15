@@ -1,0 +1,100 @@
+C1a round 0: 200 / 200 -> driver bf24de06-0227-4c58-9125-d916ac4ec8d7, rows 0->0->2
+C1a round 1: 200 / 200 -> driver bf24de06-0227-4c58-9125-d916ac4ec8d7, rows 2->3->5
+C1a round 2: 200 / 200 -> driver a77ac703-a53f-4beb-b223-7b0f6cbecd1c, rows 5->6->8
+C1a round 3: 200 / 200 -> driver a77ac703-a53f-4beb-b223-7b0f6cbecd1c, rows 8->9->11
+C1a round 4: 200 / 200 -> driver a77ac703-a53f-4beb-b223-7b0f6cbecd1c, rows 11->12->14
+C1a round 5: 200 / 200 -> driver a77ac703-a53f-4beb-b223-7b0f6cbecd1c, rows 14->15->17
+C1a round 6: 200 / 200 -> driver a77ac703-a53f-4beb-b223-7b0f6cbecd1c, rows 17->18->20
+C1a round 7: 200 / 200 -> driver bf24de06-0227-4c58-9125-d916ac4ec8d7, rows 20->21->23
+C1a round 8: 200 / 200 -> driver a77ac703-a53f-4beb-b223-7b0f6cbecd1c, rows 23->24->26
+C1a round 9: 200 / 200 -> driver bf24de06-0227-4c58-9125-d916ac4ec8d7, rows 26->27->29
+C1a round 10: 200 / 200 -> driver a77ac703-a53f-4beb-b223-7b0f6cbecd1c, rows 29->30->32
+C1a round 11: 200 / 200 -> driver bf24de06-0227-4c58-9125-d916ac4ec8d7, rows 32->33->35
+C1a round 12: 200 / 200 -> driver a77ac703-a53f-4beb-b223-7b0f6cbecd1c, rows 35->36->38
+C1a round 13: 200 / 200 -> driver bf24de06-0227-4c58-9125-d916ac4ec8d7, rows 38->39->41
+C1a round 14: 200 / 200 -> driver a77ac703-a53f-4beb-b223-7b0f6cbecd1c, rows 41->42->44
+C1a round 15: 200 / 200 -> driver bf24de06-0227-4c58-9125-d916ac4ec8d7, rows 44->45->47
+C1a round 16: 200 / 200 -> driver a77ac703-a53f-4beb-b223-7b0f6cbecd1c, rows 47->48->50
+C1a round 17: 200 / 200 -> driver bf24de06-0227-4c58-9125-d916ac4ec8d7, rows 50->51->53
+C1a round 18: 200 / 200 -> driver a77ac703-a53f-4beb-b223-7b0f6cbecd1c, rows 53->54->56
+C1a round 19: 200 / 200 -> driver bf24de06-0227-4c58-9125-d916ac4ec8d7, rows 56->57->59
+C1b round 0: 200 / 200 -> {"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"a13b93bc-dd36-47a5-beaa-5084633d9cc2"}
+C1b round 1: 200 / 200 -> {"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"b4e62447-5854-4a53-9da8-88ca131da0df"}
+C1b round 2: 200 / 200 -> {"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"a13b93bc-dd36-47a5-beaa-5084633d9cc2"}
+C1b round 3: 200 / 200 -> {"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"b4e62447-5854-4a53-9da8-88ca131da0df"}
+C1b round 4: 200 / 200 -> {"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"a13b93bc-dd36-47a5-beaa-5084633d9cc2"}
+C1b round 5: 200 / 200 -> {"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"a13b93bc-dd36-47a5-beaa-5084633d9cc2"}
+C1b round 6: 200 / 200 -> {"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"a13b93bc-dd36-47a5-beaa-5084633d9cc2"}
+C1b round 7: 200 / 200 -> {"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"a13b93bc-dd36-47a5-beaa-5084633d9cc2"}
+C1b round 8: 200 / 200 -> {"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"a13b93bc-dd36-47a5-beaa-5084633d9cc2"}
+C1b round 9: 200 / 200 -> {"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"a13b93bc-dd36-47a5-beaa-5084633d9cc2"}
+C1b round 10: 200 / 200 -> {"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"a13b93bc-dd36-47a5-beaa-5084633d9cc2"}
+C1b round 11: 200 / 200 -> {"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"a13b93bc-dd36-47a5-beaa-5084633d9cc2"}
+C1b round 12: 200 / 200 -> {"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"b4e62447-5854-4a53-9da8-88ca131da0df"}
+C1b round 13: 200 / 200 -> {"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"a13b93bc-dd36-47a5-beaa-5084633d9cc2"}
+C1b round 14: 200 / 200 -> {"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"a13b93bc-dd36-47a5-beaa-5084633d9cc2"}
+C1b round 15: 200 / 200 -> {"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"a13b93bc-dd36-47a5-beaa-5084633d9cc2"}
+C1b round 16: 200 / 200 -> {"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"a13b93bc-dd36-47a5-beaa-5084633d9cc2"}
+C1b round 17: 200 / 200 -> {"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"a13b93bc-dd36-47a5-beaa-5084633d9cc2"}
+C1b round 18: 200 / 200 -> {"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"a13b93bc-dd36-47a5-beaa-5084633d9cc2"}
+C1b round 19: 200 / 200 -> {"00a5c6f6-2852-4b33-bc65-7f4292b5b420":null,"e97686bb-45df-42ea-a4c9-b54a31ae417e":null,"da331d9c-6e34-4494-a93f-35afb9a24bd3":"a13b93bc-dd36-47a5-beaa-5084633d9cc2"}
+C1c round 0: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 1: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 2: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 3: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 4: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 5: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 6: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 7: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 8: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 9: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 10: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 11: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 12: 409 VEHICLE_ALREADY_ASSIGNED / 200 -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":null,"f71ff2ae-4a10-442f-afc0-dc6223482615":"bf24de06-0227-4c58-9125-d916ac4ec8d7"}
+C1c round 13: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 14: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 15: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 16: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 17: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 18: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C1c round 19: 200 / 409 VEHICLE_ALREADY_ASSIGNED -> {"da331d9c-6e34-4494-a93f-35afb9a24bd3":null,"08366087-425c-4c13-8d9f-f7f21c6602d1":"bf24de06-0227-4c58-9125-d916ac4ec8d7","f71ff2ae-4a10-442f-afc0-dc6223482615":null}
+C2a round 0: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}, rows 2->5
+C2a round 1: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863","a1e868b1-4435-49ff-9a57-1048ea5c0589":"ef9cabf7-9336-4b2d-8765-c9dd71508528"}, rows 5->8
+C2a round 2: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}, rows 8->11
+C2a round 3: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863","a1e868b1-4435-49ff-9a57-1048ea5c0589":"ef9cabf7-9336-4b2d-8765-c9dd71508528"}, rows 11->14
+C2a round 4: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}, rows 14->17
+C2a round 5: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863","a1e868b1-4435-49ff-9a57-1048ea5c0589":"ef9cabf7-9336-4b2d-8765-c9dd71508528"}, rows 17->20
+C2a round 6: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}, rows 20->23
+C2a round 7: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863","a1e868b1-4435-49ff-9a57-1048ea5c0589":"ef9cabf7-9336-4b2d-8765-c9dd71508528"}, rows 23->26
+C2a round 8: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}, rows 26->29
+C2a round 9: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863","a1e868b1-4435-49ff-9a57-1048ea5c0589":"ef9cabf7-9336-4b2d-8765-c9dd71508528"}, rows 29->32
+C2a round 10: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}, rows 32->35
+C2a round 11: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863","a1e868b1-4435-49ff-9a57-1048ea5c0589":"ef9cabf7-9336-4b2d-8765-c9dd71508528"}, rows 35->38
+C2a round 12: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}, rows 38->41
+C2a round 13: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863","a1e868b1-4435-49ff-9a57-1048ea5c0589":"ef9cabf7-9336-4b2d-8765-c9dd71508528"}, rows 41->44
+C2a round 14: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}, rows 44->47
+C2a round 15: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863","a1e868b1-4435-49ff-9a57-1048ea5c0589":"ef9cabf7-9336-4b2d-8765-c9dd71508528"}, rows 47->50
+C2a round 16: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}, rows 50->53
+C2a round 17: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863","a1e868b1-4435-49ff-9a57-1048ea5c0589":"ef9cabf7-9336-4b2d-8765-c9dd71508528"}, rows 53->56
+C2a round 18: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}, rows 56->59
+C2a round 19: 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863","a1e868b1-4435-49ff-9a57-1048ea5c0589":"ef9cabf7-9336-4b2d-8765-c9dd71508528"}, rows 59->62
+C2b round 0: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 1: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 2: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 3: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 4: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 5: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 6: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 7: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 8: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 9: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 10: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 11: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 12: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 13: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 14: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 15: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 16: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 17: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 18: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
+C2b round 19: 200 / 200 / 200 -> {"e3b65361-8893-43c1-b5cb-c0a5dcffc6e6":"ef9cabf7-9336-4b2d-8765-c9dd71508528","a1e868b1-4435-49ff-9a57-1048ea5c0589":"bd0172b9-5890-4443-ba95-fd2eb02fb359","ad743bbe-e2a6-4bf9-8922-1cec4a10ac1c":"b10207a0-c7e1-44a5-b2b5-89a0dfb3a863"}
