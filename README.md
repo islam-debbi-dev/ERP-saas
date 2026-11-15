@@ -83,6 +83,7 @@ Sidebar help links come from the web env (`NEXT_PUBLIC_SUPPORT_WHATSAPP`, `NEXT_
 - Stock → Dépôts → a dépôt: what it sells (brands, categories), its manager, team and trucks. The header switcher filters lists, reports and the dashboard.
 - Permissions are now per module (view / create / edit / cancel); the role defaults give everyone exactly what they had before.
 - **After deploying phase 24, run the units backfill once** (`docs/runbook.md`, "Units backfill"); locally: `pnpm --filter @erp/api build && pnpm --filter @erp/api db:backfill-units`.
+- **After deploying phase 36, run the vehicle backfill** (`docs/runbook.md`, "Vehicle backfill"): `pnpm --filter @erp/api db:deploy`, then `pnpm --filter @erp/api build && pnpm --filter @erp/api db:backfill-vehicles` twice (the second run changes 0 rows), then `pnpm --filter @erp/api reconcile`.
 
 ## Dépenses et loyers (phase 25)
 

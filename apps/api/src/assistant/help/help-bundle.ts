@@ -99,7 +99,7 @@ export const HELP_ARTICLES: readonly HelpArticle[] = [
     "language": "fr",
     "title": "Dépôts et camions",
     "feature": "WAREHOUSES",
-    "body": "Gérez-les dans [Dépôts](/stock/depots). Le stock d'un produit est la somme de ses dépôts. Une vente part du dépôt choisi, sinon du camion du vendeur, sinon du dépôt principal. On n'archive un dépôt que vide ; le dépôt principal reste toujours."
+    "body": "Gérez-les dans [Dépôts](/stock/depots). Le stock d'un produit est la somme de ses dépôts. Une vente part du dépôt choisi, sinon du camion du vendeur, sinon du dépôt principal. On n'archive un dépôt que vide ; le dépôt principal reste toujours.\n\nLes camions se gèrent dans [Véhicules](/stock/vehicules) : code de votre entreprise (par exemple VAN-28 MXT 01), type, wilaya et chauffeur du jour. Vos types se créent dans [Types de véhicules](/parametres/types-vehicules). « Changer » remplace le chauffeur ; faites d'abord la clôture si sa journée sur ce camion est ouverte. Une tournée planifiée pour un véhicule suit son chauffeur du jour."
   },
   {
     "slug": "dossiers-importation",
@@ -379,7 +379,7 @@ export const HELP_ARTICLES: readonly HelpArticle[] = [
     "language": "ar",
     "title": "المستودعات والكاميونات",
     "feature": "WAREHOUSES",
-    "body": "تسيرهم في [المستودعات](/stock/depots). ستوك المنتوج هو مجموع المستودعات. البيعة تخرج من المستودع المختار، ولا كاميون البائع، ولا المستودع الرئيسي. ما يتأرشف غير الفارغ، والرئيسي يبقى دايما."
+    "body": "تسيرهم في [المستودعات](/stock/depots). ستوك المنتوج هو مجموع المستودعات. البيعة تخرج من المستودع المختار، ولا كاميون البائع، ولا المستودع الرئيسي. ما يتأرشف غير الفارغ، والرئيسي يبقى دايما.\n\nالكاميونات تسيرها في [المركبات](/stock/vehicules): رمز شركتك (مثلا VAN-28 MXT 01)، النوع، الولاية وسائق اليوم. أنواعك تنشئها في [أنواع المركبات](/parametres/types-vehicules). « تغيير » يبدل السائق؛ اغلق يومه أولا إذا كان مفتوح على هذا الكاميون. الجولة المخططة لمركبة تتبع سائق اليوم."
   },
   {
     "slug": "dossiers-importation",
@@ -599,6 +599,7 @@ export const WEB_ROUTES: readonly string[] = [
   "/parametres/import",
   "/parametres/journal",
   "/parametres/sessions",
+  "/parametres/types-vehicules",
   "/parametres/utilisateurs",
   "/primes",
   "/primes/calculs/[id]",
@@ -633,6 +634,7 @@ export const WEB_ROUTES: readonly string[] = [
   "/stock/inventaires/[id]",
   "/stock/transferts",
   "/stock/transferts/[id]",
+  "/stock/vehicules",
   "/support",
   "/tableau-de-bord",
   "/tournees",

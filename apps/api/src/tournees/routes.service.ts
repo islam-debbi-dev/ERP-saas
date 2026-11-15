@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   algiersDay,
   algiersDayBounds,
+  type ConvertRoutesResultDto,
   type CreateRouteInput,
   ErrorCode,
   type NoSaleReason,
@@ -26,10 +27,21 @@ import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
-import { assertVisible, resolveTourneeSeller, tourneeSellerIds } from './tournee-scope';
+import { VehiclesService } from '../stock/vehicles.service';
+import { resolveTourneeSeller, routeVisible, routeWhere, tourneeRouteReach } from './tournee-scope';
 
 const routeInclude = {
   seller: { select: { id: true, fullName: true } },
+  vehicle: {
+    select: {
+      id: true,
+      code: true,
+      name: true,
+      wilayaCode: true,
+      vehicleType: { select: { id: true, code: true, name: true, activity: true } },
+      assignedUser: { select: { id: true, fullName: true } },
+    },
+  },
   _count: { select: { stops: true } },
 } satisfies Prisma.RouteInclude;
 
@@ -44,6 +56,16 @@ function toDto(
     id: r.id,
     name: r.name,
     seller: r.seller,
+    vehicle: r.vehicle
+      ? {
+          id: r.vehicle.id,
+          code: r.vehicle.code,
+          name: r.vehicle.name,
+          wilayaCode: r.vehicle.wilayaCode,
+          type: r.vehicle.vehicleType,
+          driver: r.vehicle.assignedUser,
+        }
+      : null,
     weekdays: r.weekdays,
     active: r.active,
     stopCount: r._count.stops,
@@ -54,7 +76,9 @@ function toDto(
 
 /**
  * Tournées (phase 16): master data, soft-deleted. The stops are an ordered list replaced
- * as a whole. A seller reads his own routes; planners manage them (a supervisor his team's).
+ * as a whole. A tournée is planned for a truck (phase 36): whoever drives it today does it,
+ * with no edit when the driver changes. Old routes stay planned for a seller. Planners
+ * manage them within the reach written in `tournee-scope.ts`; a seller reads his own.
  */
 @Injectable()
 export class RoutesService {
@@ -63,22 +87,26 @@ export class RoutesService {
     private readonly scope: ScopeService,
     private readonly audit: AuditService,
     private readonly clock: ClockService,
+    private readonly vehicles: VehiclesService,
   ) {}
 
   async list(query: RouteListQuery, user: CurrentUserInfo): Promise<RouteDto[]> {
-    const ids = await tourneeSellerIds(this.scope, user);
+    const reach = await tourneeRouteReach(this.scope, this.vehicles, user);
     const rows = await this.prisma.db.route.findMany({
       where: {
-        deletedAt: null,
-        ...(ids ? { sellerId: { in: ids } } : {}),
-        ...(query.sellerId ? { sellerId: query.sellerId } : {}),
-        ...(query.weekday !== undefined ? { weekdays: { has: query.weekday } } : {}),
+        // A filter outside the user's reach gives nothing, never more.
+        AND: [
+          { deletedAt: null },
+          routeWhere(reach),
+          query.sellerId ? { sellerId: query.sellerId } : {},
+          query.vehicleId ? { vehicleId: query.vehicleId } : {},
+          query.weekday !== undefined ? { weekdays: { has: query.weekday } } : {},
+        ],
       },
       include: routeInclude,
       orderBy: [{ name: 'asc' }, { id: 'asc' }],
     });
-    // A sellerId filter outside the user's reach gives nothing, never more.
-    return rows.filter((r) => !ids || ids.includes(r.sellerId)).map((r) => toDto(r));
+    return rows.map((r) => toDto(r));
   }
 
   async get(id: string, user: CurrentUserInfo): Promise<RouteDto> {
@@ -104,12 +132,9 @@ export class RoutesService {
         },
       },
     });
-    if (!r) throw new AppException(ErrorCode.ROUTE_NOT_FOUND, 'Route not found');
-    assertVisible(
-      await tourneeSellerIds(this.scope, user),
-      [r.sellerId],
-      ErrorCode.ROUTE_NOT_FOUND,
-    );
+    if (!r || !routeVisible(await tourneeRouteReach(this.scope, this.vehicles, user), r)) {
+      throw new AppException(ErrorCode.ROUTE_NOT_FOUND, 'Route not found');
+    }
     return toDto(
       r,
       r.stops.map((s) => ({
@@ -120,18 +145,22 @@ export class RoutesService {
           lng: s.client.lng?.toNumber() ?? null,
         },
       })),
-      await this.scope.sellerDepotPoint(r.sellerId),
+      r.vehicleId
+        ? await this.vehicles.startPoint(r.vehicleId)
+        : r.sellerId
+          ? await this.scope.sellerDepotPoint(r.sellerId)
+          : null,
     );
   }
 
   async create(input: CreateRouteInput, user: CurrentUserInfo): Promise<RouteDto> {
     const id = await this.prisma.db.$transaction(async (tx) => {
-      const sellerId = await resolveTourneeSeller(tx, this.scope, user, input.sellerId);
+      const owner = await this.resolveOwner(tx, user, input.vehicleId, input.sellerId);
       const r = await tx.route.create({
         data: {
           tenantId: tenantContext.requireTenantId(),
           name: input.name,
-          sellerId,
+          ...owner,
           weekdays: input.weekdays,
           active: input.active,
         },
@@ -140,7 +169,7 @@ export class RoutesService {
         action: 'ROUTE_CREATED',
         entity: 'Route',
         entityId: r.id,
-        after: { ...input, sellerId },
+        after: { ...input, ...owner },
       });
       return r.id;
     });
@@ -150,15 +179,22 @@ export class RoutesService {
   async update(id: string, input: UpdateRouteInput, user: CurrentUserInfo): Promise<RouteDto> {
     await this.prisma.db.$transaction(async (tx) => {
       const before = await this.live(tx, id, user);
-      const sellerId =
-        input.sellerId !== undefined
-          ? await resolveTourneeSeller(tx, this.scope, user, input.sellerId)
-          : undefined;
+      // A vehicle wins over a seller; a route never ends up with neither.
+      const vehicleId = input.vehicleId !== undefined ? input.vehicleId : before.vehicleId;
+      const sellerId = vehicleId
+        ? null
+        : input.sellerId !== undefined
+          ? input.sellerId
+          : before.sellerId;
+      const ownerChanged = vehicleId !== before.vehicleId || sellerId !== before.sellerId;
+      const owner = ownerChanged
+        ? await this.resolveOwner(tx, user, vehicleId ?? undefined, sellerId ?? undefined)
+        : null;
       await tx.route.update({
         where: { id },
         data: {
           ...(input.name !== undefined ? { name: input.name } : {}),
-          ...(sellerId !== undefined ? { sellerId } : {}),
+          ...(owner ?? {}),
           ...(input.weekdays !== undefined ? { weekdays: input.weekdays } : {}),
           ...(input.active !== undefined ? { active: input.active } : {}),
         },
@@ -170,6 +206,7 @@ export class RoutesService {
         before: {
           name: before.name,
           sellerId: before.sellerId,
+          vehicleId: before.vehicleId,
           weekdays: before.weekdays,
           active: before.active,
         },
@@ -185,6 +222,96 @@ export class RoutesService {
       await tx.route.update({ where: { id }, data: { deletedAt: new Date(), active: false } });
       await this.audit.log(tx, { action: 'ROUTE_ARCHIVED', entity: 'Route', entityId: id });
     });
+  }
+
+  /**
+   * "Convertir en tournée véhicule": an old seller route becomes the route of the truck its
+   * seller drives now. Refused when he drives none. Converting twice changes nothing.
+   */
+  async convertToVehicle(id: string, user: CurrentUserInfo): Promise<RouteDto> {
+    await this.prisma.db.$transaction(async (tx) => {
+      await this.live(tx, id, user);
+      const done = await this.convert(tx, [id]);
+      if (done.skipped > 0) {
+        throw new AppException(ErrorCode.SELLER_HAS_NO_VEHICLE, 'This seller drives no truck');
+      }
+    });
+    return this.get(id, user);
+  }
+
+  /** Every seller route in the user's reach whose seller drives a truck. Idempotent. */
+  async convertAllToVehicle(user: CurrentUserInfo): Promise<ConvertRoutesResultDto> {
+    return this.prisma.db.$transaction(async (tx) => {
+      const reach = await tourneeRouteReach(this.scope, this.vehicles, user, tx);
+      const rows = await tx.route.findMany({
+        where: { AND: [{ deletedAt: null, vehicleId: null }, routeWhere(reach)] },
+        select: { id: true },
+      });
+      return this.convert(
+        tx,
+        rows.map((r) => r.id),
+      );
+    });
+  }
+
+  /** Under the row locks (in id order): the routes still planned for a seller get his truck. */
+  private async convert(tx: Tx, ids: string[]): Promise<ConvertRoutesResultDto> {
+    if (ids.length === 0) return { converted: 0, skipped: 0 };
+    const rows = await tx.$queryRaw<{ id: string; sellerId: string | null }[]>`
+      SELECT id, "sellerId" FROM routes
+      WHERE id = ANY(${ids}::uuid[]) AND "tenantId" = ${tenantContext.requireTenantId()}::uuid
+        AND "deletedAt" IS NULL AND "vehicleId" IS NULL
+      ORDER BY id
+      FOR UPDATE`;
+    const trucks = await this.vehicles.currentVehiclesOf(
+      [...new Set(rows.map((r) => r.sellerId).filter((s): s is string => s !== null))],
+      tx,
+    );
+    let converted = 0;
+    for (const r of rows) {
+      const truck = r.sellerId ? trucks.get(r.sellerId) : undefined;
+      if (!truck) continue;
+      await tx.route.update({
+        where: { id: r.id },
+        data: { vehicleId: truck.id, sellerId: null },
+      });
+      await this.audit.log(tx, {
+        action: 'ROUTE_CONVERTED',
+        entity: 'Route',
+        entityId: r.id,
+        before: { sellerId: r.sellerId, vehicleId: null },
+        after: { sellerId: null, vehicleId: truck.id },
+      });
+      converted += 1;
+    }
+    return { converted, skipped: rows.length - converted };
+  }
+
+  /**
+   * Who a tournée is planned for: a live truck in the planner's reach (the seller is then
+   * ignored and stored null), else a seller as before phase 36. Neither: ROUTE_NEEDS_OWNER.
+   */
+  private async resolveOwner(
+    tx: Tx,
+    user: CurrentUserInfo,
+    vehicleId: string | undefined,
+    sellerId: string | undefined,
+  ): Promise<{ vehicleId: string | null; sellerId: string | null }> {
+    if (vehicleId) {
+      await this.vehicles.assertVehicle(tx, vehicleId);
+      await this.vehicles.assertPlanned(tx, user, vehicleId);
+      return { vehicleId, sellerId: null };
+    }
+    if (!sellerId) {
+      throw new AppException(
+        ErrorCode.ROUTE_NEEDS_OWNER,
+        'A route is planned for a vehicle or for a seller',
+      );
+    }
+    return {
+      vehicleId: null,
+      sellerId: await resolveTourneeSeller(tx, this.scope, user, sellerId),
+    };
   }
 
   /**
@@ -255,14 +382,24 @@ export class RoutesService {
   }
 
   /**
-   * The caller's tournée of today (Algiers): stops of his active routes running on this
-   * weekday, in route then stop order, each client once.
+   * The caller's tournée of today (Algiers): the active routes of this weekday planned for
+   * the truck he drives now, plus his old seller routes; stops in route then stop order,
+   * each client once. A new driver sees the truck's tournée at once, with no route edit.
    */
   async today(user: CurrentUserInfo): Promise<TodayDto> {
     const day = algiersDay(this.clock.now());
     const weekday = weekdayOf(day);
+    const vehicle = await this.vehicles.currentVehicleOf(user.id);
     const routes = await this.prisma.db.route.findMany({
-      where: { sellerId: user.id, active: true, deletedAt: null, weekdays: { has: weekday } },
+      where: {
+        active: true,
+        deletedAt: null,
+        weekdays: { has: weekday },
+        OR: [
+          { vehicleId: null, sellerId: user.id },
+          ...(vehicle ? [{ vehicleId: vehicle.id }] : []),
+        ],
+      },
       orderBy: [{ name: 'asc' }, { id: 'asc' }],
       include: {
         stops: {
@@ -321,6 +458,7 @@ export class RoutesService {
     return {
       day,
       weekday,
+      vehicle,
       routes: routes.map((r) => ({ id: r.id, name: r.name })),
       stops: out,
       planned: out.length,
@@ -330,12 +468,9 @@ export class RoutesService {
 
   private async live(tx: Tx, id: string, user: CurrentUserInfo) {
     const r = await tx.route.findFirst({ where: { id, deletedAt: null } });
-    if (!r) throw new AppException(ErrorCode.ROUTE_NOT_FOUND, 'Route not found');
-    assertVisible(
-      await tourneeSellerIds(this.scope, user, tx),
-      [r.sellerId],
-      ErrorCode.ROUTE_NOT_FOUND,
-    );
+    if (!r || !routeVisible(await tourneeRouteReach(this.scope, this.vehicles, user, tx), r)) {
+      throw new AppException(ErrorCode.ROUTE_NOT_FOUND, 'Route not found');
+    }
     return r;
   }
 

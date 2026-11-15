@@ -46,7 +46,8 @@ export function AddToRouteDialog({
   const queryClient = useQueryClient();
   const routes = useRoutes();
   const list = (routes.data ?? []).filter(
-    (r) => !client.assignedSellerId || r.seller.id === client.assignedSellerId,
+    // A vehicle route (phase 36) has no seller: it is offered for every client.
+    (r) => !client.assignedSellerId || !r.seller || r.seller.id === client.assignedSellerId,
   );
 
   const add = useMutation({
@@ -113,7 +114,8 @@ export function AddToRouteDialog({
                   <span className="min-w-0">
                     <span className="block truncate font-medium">{r.name}</span>
                     <span className="block truncate text-xs text-muted-foreground">
-                      {r.seller.fullName} · {t('stopCount', { count: r.stopCount })}
+                      {r.vehicle?.code ?? r.vehicle?.name ?? r.seller?.fullName} ·{' '}
+                      {t('stopCount', { count: r.stopCount })}
                     </span>
                   </span>
                   {add.isPending && add.variables === r.id ? (

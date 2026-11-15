@@ -13,6 +13,9 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  type AssignDriverInput,
+  type AssignDriverResultDto,
+  assignDriverSchema,
   type CancelStockTransferInput,
   cancelStockTransferSchema,
   type CreateStockTransferInput,
@@ -29,31 +32,72 @@ import {
   updateStockTransferSchema,
   type UpdateWarehouseInput,
   updateWarehouseSchema,
+  type VehicleAssignmentListQuery,
+  vehicleAssignmentListQuerySchema,
+  type VehicleAssignmentPage,
   type WarehouseBrandsInput,
   warehouseBrandsSchema,
   type WarehouseCategoriesInput,
   warehouseCategoriesSchema,
   type WarehouseDetailDto,
   type WarehouseDto,
+  type WarehouseListQuery,
+  warehouseListQuerySchema,
+  Role,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
-import { CurrentUser, RequireFeature, RequirePermission } from '../auth/decorators';
+import { CurrentUser, RequireFeature, RequirePermission, Roles } from '../auth/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { Idempotent } from '../idempotency/idempotent.decorator';
 import { StockTransfersService, type TransferResult } from './stock-transfers.service';
+import { VehiclesService } from './vehicles.service';
 import { WarehousesService } from './warehouses.service';
 
 @Controller('warehouses')
 export class WarehousesController {
-  constructor(private readonly warehouses: WarehousesService) {}
+  constructor(
+    private readonly warehouses: WarehousesService,
+    private readonly vehicles: VehiclesService,
+  ) {}
 
   /**
    * Open to every role and without the module (it then lists the main dépôt only). With
    * MULTI_UNIT, only the dépôts the user works in or sees figures of (phase 24).
    */
   @Get()
-  list(@CurrentUser() user: CurrentUserInfo): Promise<WarehouseDto[]> {
-    return this.warehouses.list(user);
+  list(
+    @CurrentUser() user: CurrentUserInfo,
+    @Query(new ZodValidationPipe(warehouseListQuerySchema)) query: WarehouseListQuery,
+  ): Promise<WarehouseDto[]> {
+    return this.warehouses.list(user, query);
+  }
+
+  /**
+   * Today's driver of a truck (phase 36), in two taps: planners, for the trucks in their
+   * reach. A driver who has another truck is moved, and that truck freed, in one go.
+   */
+  @Post(':id/driver')
+  @Roles(Role.OWNER, Role.MANAGER, Role.SUPERVISOR)
+  @RequireFeature(Feature.WAREHOUSES)
+  @HttpCode(HttpStatus.OK)
+  changeDriver(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(assignDriverSchema)) body: AssignDriverInput,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<AssignDriverResultDto> {
+    return this.vehicles.changeDriver(id, body, user);
+  }
+
+  /** Who drove this truck, from when, set by whom (phase 36). Newest first. */
+  @Get(':id/assignments')
+  @RequireFeature(Feature.WAREHOUSES)
+  assignments(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query(new ZodValidationPipe(vehicleAssignmentListQuerySchema))
+    query: VehicleAssignmentListQuery,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<VehicleAssignmentPage> {
+    return this.vehicles.assignments(id, query, user);
   }
 
   /** A dépôt with its brands, categories, team and trucks (phase 24). */

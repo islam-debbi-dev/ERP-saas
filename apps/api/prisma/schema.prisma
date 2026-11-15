@@ -201,6 +201,8 @@ model Tenant {
   brands                   Brand[]
   sectors                  Sector[]
   warehouses               Warehouse[]
+  vehicleTypes             VehicleType[]
+  vehicleAssignments       VehicleAssignment[]
   warehouseStocks          WarehouseStock[]
   stockTransfers           StockTransfer[]
   stockTransferLines       StockTransferLine[]
@@ -303,6 +305,8 @@ model User {
   sales                  Sale[]                  @relation("SaleSeller")
   collected              Payment[]               @relation("PaymentCollector")
   vehicles               Warehouse[]             @relation("WarehouseDriver")
+  vehicleAssignments     VehicleAssignment[]     @relation("VehicleAssignmentUser")
+  vehicleAssignmentsSet  VehicleAssignment[]     @relation("VehicleAssignmentSetter")
   routes                 Route[]                 @relation("RouteSeller")
   visits                 Visit[]                 @relation("VisitSeller")
   orders                 Order[]                 @relation("OrderSeller")
@@ -1706,6 +1710,59 @@ enum WarehouseType {
   VEHICLE
 }
 
+/// What a truck does on the road (phase 36). Ours: screens and statistics differ by it.
+enum VehicleActivity {
+  CASH_VAN
+  PRESALE
+  DELIVERY
+  MIXED
+}
+
+/// A kind of truck the company names itself (`MXT` gros + détail, `SELF/MT`, `MIX`).
+/// Master data: archived, never deleted. Code unique per tenant among live types,
+/// case-insensitive (partial unique index in the migration).
+model VehicleType {
+  id         String          @id @default(uuid()) @db.Uuid
+  tenantId   String          @db.Uuid
+  code       String          @db.VarChar(20)
+  name       String          @db.VarChar(80)
+  /// Start of the codes the vehicle form proposes (`VAN`, `LIV`, `PRV`).
+  codePrefix String?         @db.VarChar(10)
+  activity   VehicleActivity
+  active     Boolean         @default(true)
+  deletedAt  DateTime?       @db.Timestamptz(3)
+  createdAt  DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime        @updatedAt @db.Timestamptz(3)
+
+  tenant   Tenant      @relation(fields: [tenantId], references: [id])
+  vehicles Warehouse[]
+
+  @@index([tenantId, deletedAt])
+  @@map("vehicle_types")
+}
+
+/// Who drives a truck, from when (phase 36). Append-only (DB trigger): "who had truck X
+/// at T" is the last row with fromAt <= T. A null user = the truck left without a driver.
+model VehicleAssignment {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @db.Uuid
+  vehicleId String   @db.Uuid
+  userId    String?  @db.Uuid
+  fromAt    DateTime @db.Timestamptz(3)
+  setBy     String?  @db.Uuid
+  reason    String?  @db.VarChar(120)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  tenant  Tenant    @relation(fields: [tenantId], references: [id])
+  vehicle Warehouse @relation("VehicleAssignments", fields: [vehicleId], references: [id], onDelete: Restrict)
+  user    User?     @relation("VehicleAssignmentUser", fields: [userId], references: [id], onDelete: Restrict)
+  setter  User?     @relation("VehicleAssignmentSetter", fields: [setBy], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, vehicleId, fromAt(sort: Desc)])
+  @@index([tenantId, userId, fromAt(sort: Desc)])
+  @@map("vehicle_assignments")
+}
+
 enum StockTransferType {
   /// Chargement: dépôt → camion.
   LOAD
@@ -1740,11 +1797,27 @@ model Warehouse {
   lat               Decimal?      @db.Decimal(9, 6)
   lng               Decimal?      @db.Decimal(9, 6)
   radiusM           Int?          @db.SmallInt
+  /// The company's own code (phase 36), e.g. `VAN-28 MXT 01`, `CDD BATNA 05`. Unique per
+  /// tenant among live rows, case-insensitive (partial unique index). Never parsed.
+  code              String?       @db.VarChar(30)
+  /// Trucks only (phase 36).
+  vehicleTypeId     String?       @db.Uuid
+  /// Wilaya number, 1..69 (CHECK); the name comes from `packages/shared/wilayas`.
+  wilayaCode        Int?          @db.SmallInt
+  plateNumber       String?       @db.VarChar(20)
+  /// Payload in kg (phase 37: fill rate).
+  capacityKg        Int?
   deletedAt         DateTime?     @db.Timestamptz(3)
   createdAt         DateTime      @default(now()) @db.Timestamptz(3)
   updatedAt         DateTime      @updatedAt @db.Timestamptz(3)
 
   tenant           Tenant                @relation(fields: [tenantId], references: [id])
+  vehicleType      VehicleType?          @relation(fields: [vehicleTypeId], references: [id], onDelete: Restrict)
+  assignments      VehicleAssignment[]   @relation("VehicleAssignments")
+  routes           Route[]               @relation("RouteVehicle")
+  visits           Visit[]               @relation("VisitVehicle")
+  ordersTaken      Order[]               @relation("OrderVehicle")
+  ordersDelivered  Order[]               @relation("OrderDeliveryVehicle")
   employees        Employee[]
   assignedUser     User?                 @relation("WarehouseDriver", fields: [assignedUserId], references: [id], onDelete: Restrict)
   manager          User?                 @relation("WarehouseManager", fields: [managerUserId], references: [id], onDelete: Restrict)
@@ -1775,6 +1848,7 @@ model Warehouse {
   @@unique([tenantId, name])
   @@index([tenantId, type])
   @@index([tenantId, parentWarehouseId])
+  @@index([tenantId, vehicleTypeId])
   @@map("warehouses")
 }
 
@@ -1941,12 +2015,16 @@ enum SellerSessionStatus {
   ADJUST
 }
 
-/// Tournée: the clients a seller visits, in order, on given weekdays (master data).
+/// Tournée: the clients a truck (phase 36) or, as before, a seller visits, in order, on
+/// given weekdays (master data). CHECK: a vehicle or a seller, never neither.
 model Route {
   id        String    @id @default(uuid()) @db.Uuid
   tenantId  String    @db.Uuid
   name      String    @db.VarChar(80)
-  sellerId  String    @db.Uuid
+  /// Old seller routes only; null on a vehicle route.
+  sellerId  String?   @db.Uuid
+  /// The truck the tournée is planned for: whoever drives it today does it.
+  vehicleId String?   @db.Uuid
   /// 0 = Sunday … 6 = Saturday, Africa/Algiers.
   weekdays  Int[]     @db.SmallInt
   active    Boolean   @default(true)
@@ -1954,12 +2032,14 @@ model Route {
   createdAt DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt DateTime  @updatedAt @db.Timestamptz(3)
 
-  tenant Tenant      @relation(fields: [tenantId], references: [id])
-  seller User        @relation("RouteSeller", fields: [sellerId], references: [id], onDelete: Restrict)
-  stops  RouteStop[]
-  visits Visit[]
+  tenant  Tenant      @relation(fields: [tenantId], references: [id])
+  seller  User?       @relation("RouteSeller", fields: [sellerId], references: [id], onDelete: Restrict)
+  vehicle Warehouse?  @relation("RouteVehicle", fields: [vehicleId], references: [id], onDelete: Restrict)
+  stops   RouteStop[]
+  visits  Visit[]
 
   @@index([tenantId, sellerId])
+  @@index([tenantId, vehicleId])
   @@map("routes")
 }
 
@@ -1988,6 +2068,8 @@ model Visit {
   sellerId        String        @db.Uuid
   clientId        String        @db.Uuid
   routeId         String?       @db.Uuid
+  /// The truck the seller drove at `startedAt` (phase 36), frozen; null = none / unknown.
+  vehicleId       String?       @db.Uuid
   startedAt       DateTime      @db.Timestamptz(3)
   endedAt         DateTime?     @db.Timestamptz(3)
   outcome         VisitOutcome
@@ -2000,63 +2082,72 @@ model Visit {
   createdBy       String?       @db.Uuid
   createdAt       DateTime      @default(now()) @db.Timestamptz(3)
 
-  tenant      Tenant @relation(fields: [tenantId], references: [id])
-  seller      User   @relation("VisitSeller", fields: [sellerId], references: [id], onDelete: Restrict)
-  client      Client @relation(fields: [clientId], references: [id])
-  route       Route? @relation(fields: [routeId], references: [id])
-  corrects    Visit? @relation("VisitCorrection", fields: [correctsVisitId], references: [id])
-  correctedBy Visit? @relation("VisitCorrection")
+  tenant      Tenant     @relation(fields: [tenantId], references: [id])
+  seller      User       @relation("VisitSeller", fields: [sellerId], references: [id], onDelete: Restrict)
+  client      Client     @relation(fields: [clientId], references: [id])
+  route       Route?     @relation(fields: [routeId], references: [id])
+  vehicle     Warehouse? @relation("VisitVehicle", fields: [vehicleId], references: [id], onDelete: Restrict)
+  corrects    Visit?     @relation("VisitCorrection", fields: [correctsVisitId], references: [id])
+  correctedBy Visit?     @relation("VisitCorrection")
 
   @@index([tenantId, sellerId, startedAt])
+  @@index([tenantId, vehicleId, startedAt])
   @@index([tenantId, clientId, startedAt])
   @@map("visits")
 }
 
 /// Bon de commande (pré-vente). No stock or ledger effect: delivering it creates the BL.
 model Order {
-  id            String      @id @default(uuid()) @db.Uuid
-  tenantId      String      @db.Uuid
+  id                String      @id @default(uuid()) @db.Uuid
+  tenantId          String      @db.Uuid
   /// Given at confirmation (no gaps from drafts).
-  number        String?     @db.VarChar(20)
-  status        OrderStatus @default(DRAFT)
-  clientId      String      @db.Uuid
-  sellerId      String?     @db.Uuid
+  number            String?     @db.VarChar(20)
+  status            OrderStatus @default(DRAFT)
+  clientId          String      @db.Uuid
+  sellerId          String?     @db.Uuid
   /// Dépôt to deliver from; null = the livreur's truck, else MAIN, decided at delivery.
-  warehouseId   String?     @db.Uuid
-  livreurId     String?     @db.Uuid
-  requestedDate DateTime?   @db.Date
-  priceLevelId  String?     @db.Uuid
-  note          String?     @db.VarChar(255)
-  assujettiTva  Boolean     @default(true)
-  totalHt       Decimal     @default(0) @db.Decimal(14, 2)
-  totalTva      Decimal     @default(0) @db.Decimal(14, 2)
-  totalTtc      Decimal     @default(0) @db.Decimal(14, 2)
+  warehouseId       String?     @db.Uuid
+  livreurId         String?     @db.Uuid
+  /// The prévendeur's truck when the order was taken (phase 36), frozen.
+  vehicleId         String?     @db.Uuid
+  /// The truck that delivers it (set when assigned) / delivered it (the BL's truck).
+  deliveryVehicleId String?     @db.Uuid
+  requestedDate     DateTime?   @db.Date
+  priceLevelId      String?     @db.Uuid
+  note              String?     @db.VarChar(255)
+  assujettiTva      Boolean     @default(true)
+  totalHt           Decimal     @default(0) @db.Decimal(14, 2)
+  totalTva          Decimal     @default(0) @db.Decimal(14, 2)
+  totalTtc          Decimal     @default(0) @db.Decimal(14, 2)
   /// The BL made at delivery; one order gives at most one BL.
-  saleId        String?     @unique @db.Uuid
-  version       Int         @default(1)
-  createdBy     String?     @db.Uuid
-  confirmedBy   String?     @db.Uuid
-  confirmedAt   DateTime?   @db.Timestamptz(3)
-  deliveredBy   String?     @db.Uuid
-  deliveredAt   DateTime?   @db.Timestamptz(3)
-  cancelledBy   String?     @db.Uuid
-  cancelledAt   DateTime?   @db.Timestamptz(3)
-  cancelReason  String?     @db.VarChar(255)
-  createdAt     DateTime    @default(now()) @db.Timestamptz(3)
-  updatedAt     DateTime    @updatedAt @db.Timestamptz(3)
+  saleId            String?     @unique @db.Uuid
+  version           Int         @default(1)
+  createdBy         String?     @db.Uuid
+  confirmedBy       String?     @db.Uuid
+  confirmedAt       DateTime?   @db.Timestamptz(3)
+  deliveredBy       String?     @db.Uuid
+  deliveredAt       DateTime?   @db.Timestamptz(3)
+  cancelledBy       String?     @db.Uuid
+  cancelledAt       DateTime?   @db.Timestamptz(3)
+  cancelReason      String?     @db.VarChar(255)
+  createdAt         DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime    @updatedAt @db.Timestamptz(3)
 
-  tenant    Tenant      @relation(fields: [tenantId], references: [id])
-  client    Client      @relation(fields: [clientId], references: [id])
-  seller    User?       @relation("OrderSeller", fields: [sellerId], references: [id], onDelete: Restrict)
-  livreur   User?       @relation("OrderLivreur", fields: [livreurId], references: [id], onDelete: Restrict)
-  warehouse Warehouse?  @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
-  sale      Sale?       @relation(fields: [saleId], references: [id])
-  lines     OrderLine[]
+  tenant          Tenant      @relation(fields: [tenantId], references: [id])
+  client          Client      @relation(fields: [clientId], references: [id])
+  seller          User?       @relation("OrderSeller", fields: [sellerId], references: [id], onDelete: Restrict)
+  livreur         User?       @relation("OrderLivreur", fields: [livreurId], references: [id], onDelete: Restrict)
+  warehouse       Warehouse?  @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  vehicle         Warehouse?  @relation("OrderVehicle", fields: [vehicleId], references: [id], onDelete: Restrict)
+  deliveryVehicle Warehouse?  @relation("OrderDeliveryVehicle", fields: [deliveryVehicleId], references: [id], onDelete: Restrict)
+  sale            Sale?       @relation(fields: [saleId], references: [id])
+  lines           OrderLine[]
 
   @@unique([tenantId, number])
   @@index([tenantId, status, requestedDate])
   @@index([tenantId, sellerId, createdAt])
   @@index([tenantId, livreurId, status])
+  @@index([tenantId, deliveryVehicleId, status])
   @@index([tenantId, clientId])
   @@map("orders")
 }

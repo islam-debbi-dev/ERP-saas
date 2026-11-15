@@ -7,8 +7,10 @@ import {
   type WarehouseAccessLevel,
   type WarehouseType as WarehouseTypeValue,
 } from '../enums';
+import { WILAYA_MAX, WILAYA_MIN } from '../wilayas';
 import { normalizeDecimal, quantityString } from './common';
 import { type StockWarning } from './stock';
+import { VEHICLE_ONLY_FIELDS, vehicleIdentityFields, type VehicleTypeRef } from './vehicles';
 
 const id = z.uuid();
 const name = z.string().trim().min(1).max(80);
@@ -22,10 +24,20 @@ export const createWarehouseSchema = z
     type: z.enum([WarehouseType.SECONDARY, WarehouseType.VEHICLE]),
     /** The seller driving the truck (VEHICLE only). */
     assignedUserId: id.nullable().default(null),
+    /** Identity (phase 36): a dépôt may have a code; the rest belongs to trucks. */
+    ...vehicleIdentityFields,
   })
   .refine((w) => w.assignedUserId === null || w.type === WarehouseType.VEHICLE, {
     message: 'driver_on_vehicle_only',
     path: ['assignedUserId'],
+  })
+  .superRefine((w, ctx) => {
+    if (w.type === WarehouseType.VEHICLE) return;
+    for (const field of VEHICLE_ONLY_FIELDS) {
+      if (w[field] != null) {
+        ctx.addIssue({ code: 'custom', message: 'vehicle_fields_on_depot', path: [field] });
+      }
+    }
   });
 export type CreateWarehouseInput = z.infer<typeof createWarehouseSchema>;
 
@@ -47,8 +59,22 @@ export const updateWarehouseSchema = z.object({
     })
     .nullable()
     .optional(),
+  /** Identity (phase 36). On a dépôt that is not a truck the API accepts `code` only. */
+  ...vehicleIdentityFields,
 });
 export type UpdateWarehouseInput = z.infer<typeof updateWarehouseSchema>;
+
+/** Filters of `GET /warehouses` (phase 36); without any, every dépôt in reach as before. */
+export const warehouseListQuerySchema = z.object({
+  type: z.enum([WarehouseType.MAIN, WarehouseType.SECONDARY, WarehouseType.VEHICLE]).optional(),
+  vehicleTypeId: id.optional(),
+  wilayaCode: z.coerce.number().int().min(WILAYA_MIN).max(WILAYA_MAX).optional(),
+  /** Trucks of this dépôt. */
+  parentWarehouseId: id.optional(),
+  /** On the code, the name and the plate. */
+  search: z.string().trim().max(60).optional(),
+});
+export type WarehouseListQuery = z.infer<typeof warehouseListQuerySchema>;
 
 /** What a dépôt sells (phase 24): empty = everything. Replaces the whole list. */
 export const warehouseBrandsSchema = z.object({
@@ -79,6 +105,13 @@ export interface WarehouseDto {
   manager: { id: string; fullName: string } | null;
   parent: { id: string; name: string } | null;
   location: { lat: number; lng: number; radiusM: number | null } | null;
+  /** The company's own code (phase 36), shown as typed; lists show `code · name`. */
+  code: string | null;
+  /** Trucks only (phase 36). */
+  vehicleType: VehicleTypeRef | null;
+  wilayaCode: number | null;
+  plateNumber: string | null;
+  capacityKg: number | null;
 }
 
 /** One dépôt with its team (phase 24): who works there, who sees its figures, its trucks. */
@@ -91,7 +124,12 @@ export interface WarehouseDetailDto extends WarehouseDto {
     role: Role;
     level: WarehouseAccessLevel;
   }[];
-  trucks: { id: string; name: string; assignedUser: { id: string; fullName: string } | null }[];
+  trucks: {
+    id: string;
+    name: string;
+    code: string | null;
+    assignedUser: { id: string; fullName: string } | null;
+  }[];
 }
 
 // ---------------------------------------------------------------- stock transfers

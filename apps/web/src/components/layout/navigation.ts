@@ -1,5 +1,6 @@
 import {
   BadgePercent,
+  Van,
   Banknote,
   ChartColumn,
   ClipboardList,
@@ -43,6 +44,7 @@ export type NavKey =
   | 'purchases'
   | 'importFiles'
   | 'stock'
+  | 'vehicles'
   | 'flagged'
   | 'incentives'
   | 'expenses'
@@ -155,6 +157,14 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         roles: [Role.OWNER, Role.MANAGER],
       },
       { key: 'stock', url: '/stock', icon: Warehouse },
+      // Phase 36: trucks, their identity and their driver of the day.
+      {
+        key: 'vehicles',
+        url: '/stock/vehicules',
+        icon: Van,
+        feature: Feature.WAREHOUSES,
+        roles: PLANNERS,
+      },
     ],
   },
   {

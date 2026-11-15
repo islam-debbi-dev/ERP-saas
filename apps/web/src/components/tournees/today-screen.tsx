@@ -11,11 +11,12 @@ import {
   MapPinned,
   Phone,
   ReceiptText,
+  Truck,
   UserX,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -27,6 +28,7 @@ import {
   type TodayStopDto,
   type VisitDto,
   type VisitOutcome,
+  wilayaName,
 } from '@erp/shared';
 import { BalanceAmount } from '@/components/clients/balance-amount';
 import { GeoPrivacyNotice, isGeoCancelled, useGeoSubmit } from '@/components/geo/use-geo-submit';
@@ -48,6 +50,7 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { VehicleCode } from '@/components/vehicles/vehicle-code';
 import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/lib/api-client';
 import { useFeature } from '@/lib/auth';
@@ -73,6 +76,7 @@ function Today() {
   const format = useFormatter();
   const errorMessage = useErrorMessage();
   const today = useToday();
+  const locale = useLocale();
   const dayName = useWeekdayLabels('long');
   const [visiting, setVisiting] = useState<TodayStopDto | null>(null);
   const [paying, setPaying] = useState<string | null>(null);
@@ -122,6 +126,27 @@ function Today() {
           ) : undefined
         }
       />
+
+      {day?.vehicle ? (
+        // Phase 36: the tournée is the truck's; whoever drives it today does it.
+        <p
+          className="flex min-w-0 items-center gap-2 rounded-lg border bg-card px-3 py-2.5"
+          data-testid="today-vehicle"
+        >
+          <Truck className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+          <span className="min-w-0 truncate">
+            <span className="text-lg font-semibold leading-tight">
+              {day.vehicle.code ? <VehicleCode code={day.vehicle.code} /> : day.vehicle.name}
+            </span>
+            {wilayaName(day.vehicle.wilayaCode, locale) ? (
+              <span className="text-muted-foreground">
+                {' · '}
+                {wilayaName(day.vehicle.wilayaCode, locale)}
+              </span>
+            ) : null}
+          </span>
+        </p>
+      ) : null}
 
       {day && day.planned > 0 ? (
         <div className="space-y-2" role="status">

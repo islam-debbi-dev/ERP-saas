@@ -8,6 +8,7 @@ import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import {
+  DELIVERY_ACTIVITIES,
   Feature,
   ORDER_STATUSES,
   type OrderDto,
@@ -27,6 +28,9 @@ import { useAuth } from '@/lib/auth';
 import { useOrderPages } from '@/lib/tournees';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
+import { NativeSelect } from '@/components/ui/native-select';
+import { VehicleCode, vehicleLabel } from '@/components/vehicles/vehicle-code';
+import { useVehicles } from '@/lib/vehicles';
 import { OrderStatusBadge } from './order-status-badge';
 
 /** Bons de commande (pré-vente, phase 16). */
@@ -47,7 +51,14 @@ function Orders() {
   const [key, setKey] = useState(() => crypto.randomUUID());
   const role = useAuth().state.user?.role;
   const canCreate = role !== 'STOREKEEPER' && role !== 'LIVREUR';
-  const pages = useOrderPages({ status });
+  // Phase 36: the orders of one delivery truck.
+  const tv = useTranslations('vehicles');
+  const vehicles = useVehicles();
+  const [deliveryVehicleId, setDeliveryVehicleId] = useState('');
+  const deliveryTrucks = (vehicles.data ?? []).filter(
+    (v) => v.active && !!v.vehicleType && DELIVERY_ACTIVITIES.includes(v.vehicleType.activity),
+  );
+  const pages = useOrderPages({ status, deliveryVehicleId: deliveryVehicleId || undefined });
 
   const create = useMutation({
     mutationFn: (clientId: string) =>
@@ -85,6 +96,22 @@ function Orders() {
       />
 
       <StatusFilter value={status} onChange={setStatus} />
+
+      {deliveryTrucks.length > 0 && role !== 'LIVREUR' ? (
+        <NativeSelect
+          aria-label={tv('deliveryVehicle')}
+          className="sm:max-w-xs"
+          value={deliveryVehicleId}
+          onChange={(e) => setDeliveryVehicleId(e.target.value)}
+        >
+          <option value="">{`${tv('deliveryVehicle')} : ${tv('allVehicles')}`}</option>
+          {deliveryTrucks.map((v) => (
+            <option key={v.id} value={v.id}>
+              {vehicleLabel(v)}
+            </option>
+          ))}
+        </NativeSelect>
+      ) : null}
 
       <OrderCards
         items={items}
@@ -206,6 +233,12 @@ export function OrderCards({
                       ? ` · ${t('deliverOn', { date: format.dateTime(new Date(`${o.requestedDate}T12:00:00Z`), { dateStyle: 'short' }) })}`
                       : ''}
                     {o.livreur ? ` · ${o.livreur.fullName}` : ''}
+                    {o.deliveryVehicle ? (
+                      <>
+                        {' · '}
+                        <VehicleCode code={o.deliveryVehicle.code ?? o.deliveryVehicle.name} />
+                      </>
+                    ) : null}
                   </p>
                   {o.shortLines > 0 ? (
                     <p className="mt-1 flex items-center gap-1 text-xs text-amber-700 dark:text-amber-400">

@@ -37,6 +37,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useAuth, useFeature, usePermission } from '@/lib/auth';
+import { UserVehiclesDialog } from '@/components/vehicles/user-vehicles-dialog';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { useSetActive, useUsers } from '@/lib/users';
 import {
@@ -49,7 +50,10 @@ import {
 
 type Open =
   | { kind: 'invite' }
-  | { kind: 'edit' | 'permissions' | 'access' | 'reset' | 'deactivate'; user: UserDto }
+  | {
+      kind: 'edit' | 'permissions' | 'access' | 'reset' | 'deactivate' | 'vehicles';
+      user: UserDto;
+    }
   | null;
 
 /**
@@ -67,6 +71,7 @@ export function UsersPage() {
   const canManage = usePermission(Permission.USERS_MANAGE);
   const salesForce = useFeature(Feature.SALES_FORCE);
   const multiUnit = useFeature(Feature.MULTI_UNIT);
+  const warehousesOn = useFeature(Feature.WAREHOUSES);
   const tu = useTranslations('multiUnit');
   const users = useUsers();
   const setActive = useSetActive();
@@ -198,6 +203,13 @@ export function UsersPage() {
                               {t('permissions')}
                             </DropdownMenuItem>
                           ) : null}
+                          {warehousesOn ? (
+                            <DropdownMenuItem
+                              onSelect={() => setOpen({ kind: 'vehicles', user: u })}
+                            >
+                              {t('vehiclesDriven')}
+                            </DropdownMenuItem>
+                          ) : null}
                           {multiUnit && u.role !== Role.OWNER ? (
                             <DropdownMenuItem onSelect={() => setOpen({ kind: 'access', user: u })}>
                               {tu('menuAccess')}
@@ -246,6 +258,10 @@ export function UsersPage() {
       {open?.kind === 'access' ? (
         <WarehouseAccessDialog user={open.user} open onOpenChange={close} />
       ) : null}
+      <UserVehiclesDialog
+        user={open?.kind === 'vehicles' ? open.user : null}
+        onOpenChange={close}
+      />
       {open?.kind === 'reset' ? (
         <ResetPasswordDialog user={open.user} open onOpenChange={close} />
       ) : null}

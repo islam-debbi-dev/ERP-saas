@@ -105,6 +105,8 @@ export const TENANT_SCOPED_MODELS = new Set<string>([
   'ImportFile',
   'ImportCost',
   'ImportCostAllocation',
+  'VehicleType',
+  'VehicleAssignment',
 ]);
 
 /** Append-only models: any update or delete is a bug (AGENTS.md rules 1 and 7). */
@@ -121,6 +123,7 @@ const APPEND_ONLY_MODELS = new Set<string>([
   'ClientPackagingEntry',
   'PayrollRateSet',
   'PayrollRateConfirmation',
+  'VehicleAssignment',
 ]);
 
 /** Rows with a null tenantId belong to the platform: every company reads them. */

@@ -15,6 +15,7 @@ export * from './billing';
 export * from './admin';
 export * from './credit';
 export * from './sales-force';
+export * from './vehicles';
 export * from './warehouses';
 export * from './tournees';
 export * from './treasury';

@@ -1,11 +1,11 @@
 'use client';
 
-import { Bot, History, Laptop, Users } from 'lucide-react';
+import { Bot, History, Laptop, Tags, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { Role } from '@erp/shared';
+import { Feature, Permission, Role } from '@erp/shared';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/lib/auth';
+import { useAuth, useFeature, usePermission } from '@/lib/auth';
 
 /** Entries to Paramètres > Utilisateurs, Sessions and Journal d'audit. */
 export function AdminLinksCard() {
@@ -13,12 +13,19 @@ export function AdminLinksCard() {
   const { state } = useAuth();
   const role = state.user?.role;
   const manager = role === Role.OWNER || role === Role.MANAGER;
+  // Phase 36: the company's own kinds of trucks.
+  const warehouses = useFeature(Feature.WAREHOUSES);
+  const editor = usePermission(Permission.SETTINGS_EDIT);
+  const vehicleTypes = warehouses && editor;
   const links = [
     ...(manager ? [{ href: '/parametres/utilisateurs', icon: Users, key: 'users' as const }] : []),
     { href: '/parametres/sessions', icon: Laptop, key: 'sessions' as const },
     ...(manager ? [{ href: '/parametres/journal', icon: History, key: 'audit' as const }] : []),
     ...(role === Role.OWNER
       ? [{ href: '/parametres/assistant', icon: Bot, key: 'assistant' as const }]
+      : []),
+    ...(vehicleTypes
+      ? [{ href: '/parametres/types-vehicules', icon: Tags, key: 'vehicleTypes' as const }]
       : []),
     // { href: '/parametres/abonnement', icon: CreditCard, key: 'subscription' as const },
   ];

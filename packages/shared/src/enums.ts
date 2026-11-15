@@ -43,6 +43,12 @@ export const SELLING_ROLES: readonly Role[] = [
   Role.SELLER,
 ];
 
+/**
+ * Roles that can be the driver of a truck (phase 36): whoever sells, and the livreur, who
+ * drives a delivery truck.
+ */
+export const DRIVING_ROLES: readonly Role[] = [...SELLING_ROLES, Role.LIVREUR];
+
 /** Office roles pick the seller of a sale; a SELLER always sells in his own name. */
 export const OFFICE_ROLES: readonly Role[] = [Role.OWNER, Role.MANAGER, Role.SUPERVISOR];
 
@@ -164,6 +170,28 @@ export const WarehouseType = {
 } as const;
 export type WarehouseType = (typeof WarehouseType)[keyof typeof WarehouseType];
 export const WAREHOUSE_TYPES = Object.values(WarehouseType);
+
+/**
+ * What a truck does on the road (phase 36). The company names its own vehicle types; each
+ * one points to one of these because screens and statistics differ. A hint, never a block.
+ */
+export const VehicleActivity = {
+  /** Vente directe: loads stock, sells and collects on the road. */
+  CASH_VAN: 'CASH_VAN',
+  /** Prévente: takes bons de commande, carries no stock to sell. */
+  PRESALE: 'PRESALE',
+  /** Livraison: delivers confirmed orders. */
+  DELIVERY: 'DELIVERY',
+  /** Several of the above. */
+  MIXED: 'MIXED',
+} as const;
+export type VehicleActivity = (typeof VehicleActivity)[keyof typeof VehicleActivity];
+export const VEHICLE_ACTIVITIES = Object.values(VehicleActivity);
+/** The activities of a truck that delivers orders. */
+export const DELIVERY_ACTIVITIES: readonly VehicleActivity[] = [
+  VehicleActivity.DELIVERY,
+  VehicleActivity.MIXED,
+];
 
 /**
  * A user's reach in one dépôt (phase 24, MULTI_UNIT). OPERATE: he works there (sells,

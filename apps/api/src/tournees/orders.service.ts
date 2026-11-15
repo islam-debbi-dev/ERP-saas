@@ -21,6 +21,7 @@ import {
   toMoneyString,
   toQtyString,
   type UpdateOrderInput,
+  WarehouseType,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import { type CurrentUserInfo } from '../auth/auth.types';
@@ -37,6 +38,7 @@ import { SaleWorkflowService } from '../sales/sale-workflow.service';
 import { SalesService } from '../sales/sales.service';
 import { ScopeService } from '../sales-force/scope.service';
 import { StockService } from '../stock/stock.service';
+import { VehiclesService } from '../stock/vehicles.service';
 import { WarehousesService } from '../stock/warehouses.service';
 
 const orderInclude = {
@@ -44,6 +46,8 @@ const orderInclude = {
   seller: { select: { id: true, fullName: true } },
   livreur: { select: { id: true, fullName: true } },
   warehouse: { select: { id: true, name: true } },
+  vehicle: { select: { id: true, code: true, name: true } },
+  deliveryVehicle: { select: { id: true, code: true, name: true } },
   sale: { select: { id: true, number: true } },
   lines: { orderBy: { position: 'asc' }, include: { product: { select: { reference: true } } } },
 } satisfies Prisma.OrderInclude;
@@ -58,6 +62,11 @@ const DELIVERING_ROLES: readonly Role[] = [Role.LIVREUR, Role.SELLER];
  * the prices (same rules as a sale) and freezes the lines and the BC number. An order
  * never moves stock or touches the client account: delivering it creates the BL through
  * the normal sale path, in the same transaction, and one order gives at most one BL.
+ *
+ * Trucks (phase 36): an order freezes the prévendeur's truck when it is taken. A confirmed
+ * order can be put on a delivery truck instead of a person: it then follows the truck (its
+ * driver of the day sees it, delivers it and holds the cash), and at delivery the truck the
+ * BL left from is frozen as the delivery truck.
  *
  * Lock order on delivery: the order row, then what the sale takes (stock rows by
  * productId, then client balances). Nothing else locks orders, so no deadlock.
@@ -75,6 +84,7 @@ export class OrdersService {
     private readonly audit: AuditService,
     private readonly clock: ClockService,
     private readonly pricing: PricingService,
+    private readonly vehicles: VehiclesService,
   ) {}
 
   // ---------------------------------------------------------------- drafts
@@ -89,6 +99,8 @@ export class OrdersService {
           tenantId,
           clientId: input.clientId,
           sellerId: header.sellerId ?? null,
+          // Frozen: the truck the prévendeur drives now (phase 36).
+          vehicleId: (await this.vehicles.currentVehicleOf(header.sellerId, tx))?.id ?? null,
           warehouseId: header.warehouseId,
           requestedDate: input.requestedDate ? fromIsoDate(input.requestedDate) : null,
           note: input.note,
@@ -303,27 +315,38 @@ export class OrdersService {
           status: current.status,
         });
       }
-      if (input.livreurId) {
-        const u = await tx.user.findFirst({
-          where: { id: input.livreurId, deletedAt: null, role: { in: [...DELIVERING_ROLES] } },
-          select: { id: true },
-        });
-        if (!u) {
-          throw new AppException(ErrorCode.SELLER_NOT_ALLOWED, 'This user cannot deliver', {
-            userId: input.livreurId,
+      // A delivery truck wins over a person: the livreur is whoever drives it.
+      let livreurId = input.livreurId;
+      let deliveryVehicleId = input.deliveryVehicleId;
+      if (deliveryVehicleId) {
+        const truck = await this.vehicles.assertVehicle(tx, deliveryVehicleId);
+        await this.scope.assertWarehouse(tx, user, deliveryVehicleId);
+        livreurId = truck.assignedUserId;
+      } else {
+        // A person named alone takes the order off its truck.
+        if (livreurId !== undefined && deliveryVehicleId === undefined) deliveryVehicleId = null;
+        if (livreurId) {
+          const u = await tx.user.findFirst({
+            where: { id: livreurId, deletedAt: null, role: { in: [...DELIVERING_ROLES] } },
+            select: { id: true },
           });
+          if (!u) {
+            throw new AppException(ErrorCode.SELLER_NOT_ALLOWED, 'This user cannot deliver', {
+              userId: livreurId,
+            });
+          }
         }
       }
       await tx.order.update({
         where: { id },
-        data: { livreurId: input.livreurId, version: { increment: 1 } },
+        data: { livreurId, deliveryVehicleId, version: { increment: 1 } },
       });
       await this.audit.log(tx, {
         action: 'ORDER_LIVREUR_ASSIGNED',
         entity: 'Order',
         entityId: id,
-        before: { livreurId: current.livreurId },
-        after: input,
+        before: { livreurId: current.livreurId, deliveryVehicleId: current.deliveryVehicleId },
+        after: { livreurId, deliveryVehicleId },
       });
     });
     return this.get(id, user);
@@ -420,7 +443,23 @@ export class OrdersService {
         (await this.warehouses.defaultId(tx));
       await this.scope.assertWarehouse(tx, user, warehouseId);
       // The cash is with the assigned livreur, even when the office records the delivery.
-      const collectedBy = order.livreurId ?? user.id;
+      // An order on a delivery truck follows the truck: its driver of today, not the one
+      // it had when the order was assigned (phase 36).
+      const truckDriver = order.deliveryVehicleId
+        ? (await this.vehicles.driversOf([order.deliveryVehicleId], tx)).get(
+            order.deliveryVehicleId,
+          )?.id
+        : undefined;
+      const collectedBy = order.deliveryVehicleId
+        ? (truckDriver ?? user.id)
+        : (order.livreurId ?? user.id);
+      // Frozen: the truck the BL leaves from, else the truck the order was put on.
+      const blWarehouse = await tx.warehouse.findFirst({
+        where: { id: warehouseId },
+        select: { type: true },
+      });
+      const deliveryVehicleId =
+        blWarehouse?.type === WarehouseType.VEHICLE ? warehouseId : order.deliveryVehicleId;
       const { saleId, warnings, change } = await this.workflow.deliverOrderInTx(
         tx,
         {
@@ -456,6 +495,8 @@ export class OrdersService {
           status: OrderStatus.DELIVERED,
           saleId,
           warehouseId,
+          deliveryVehicleId,
+          ...(order.deliveryVehicleId ? { livreurId: collectedBy } : {}),
           deliveredAt: new Date(),
           deliveredBy: user.id,
           version: { increment: 1 },
@@ -468,6 +509,7 @@ export class OrdersService {
         after: {
           saleId,
           warehouseId,
+          deliveryVehicleId,
           collectedBy,
           lines: split.map((s) => ({
             orderLineId: s.line.id,
@@ -503,7 +545,11 @@ export class OrdersService {
     });
     if (!o) throw new AppException(ErrorCode.ORDER_NOT_FOUND, 'Order not found');
     const available = await this.available([o]);
-    return this.toDto(o, available.get(o.id) ?? new Map<string, string>());
+    return this.toDto(
+      o,
+      available.get(o.id) ?? new Map<string, string>(),
+      await this.truckDrivers([o]),
+    );
   }
 
   async list(query: OrderListQuery, user: CurrentUserInfo): Promise<OrderPage> {
@@ -517,7 +563,10 @@ export class OrdersService {
           where,
           query.status ? { status: query.status } : {},
           query.sellerId ? { sellerId: query.sellerId } : {},
-          query.livreurId ? { livreurId: query.livreurId } : {},
+          // "His deliveries" include the confirmed orders on the truck he drives now.
+          query.livreurId ? { OR: await this.deliveredBy(query.livreurId) } : {},
+          query.vehicleId ? { vehicleId: query.vehicleId } : {},
+          query.deliveryVehicleId ? { deliveryVehicleId: query.deliveryVehicleId } : {},
           query.clientId ? { clientId: query.clientId } : {},
           query.warehouseId ? { warehouseId: query.warehouseId } : {},
           query.from || query.to ? { requestedDate } : {},
@@ -530,6 +579,7 @@ export class OrdersService {
     });
     const page = rows.slice(0, query.limit);
     const available = await this.available(page.filter((o) => o.status === OrderStatus.CONFIRMED));
+    const drivers = await this.truckDrivers(page);
     return {
       items: page.map((o) => {
         const stock = available.get(o.id);
@@ -539,7 +589,8 @@ export class OrdersService {
           status: o.status,
           client: { id: o.client.id, code: o.client.code, name: o.client.name },
           seller: o.seller,
-          livreur: o.livreur,
+          livreur: this.livreurOf(o, drivers),
+          deliveryVehicle: o.deliveryVehicle,
           requestedDate: o.requestedDate ? toIsoDate(o.requestedDate) : null,
           totalTtc: toMoneyString(o.totalTtc.toString()),
           lineCount: o.lines.length,
@@ -610,13 +661,55 @@ export class OrdersService {
       case Role.STOREKEEPER:
         return {};
       case Role.LIVREUR:
-        return { livreurId: user.id };
+        return { OR: await this.deliveredBy(user.id, db) };
       case Role.SUPERVISOR:
         return { sellerId: { in: await this.scope.teamIds(user.id, db) } };
       default:
         // A seller also delivers the orders put on him.
-        return { OR: [{ sellerId: user.id }, { livreurId: user.id }] };
+        return { OR: [{ sellerId: user.id }, ...(await this.deliveredBy(user.id, db))] };
     }
+  }
+
+  /**
+   * The orders a user delivers: those put on him, and (phase 36) the confirmed orders put
+   * on the truck he drives now. An order on a truck follows the truck: once its driver
+   * changes, the previous one no longer has it; a delivered one stays with who delivered.
+   */
+  private async deliveredBy(userId: string, db?: Tx): Promise<Prisma.OrderWhereInput[]> {
+    const truck = await this.vehicles.currentVehicleOf(userId, db);
+    return [
+      { livreurId: userId, deliveryVehicleId: null },
+      {
+        livreurId: userId,
+        deliveryVehicleId: { not: null },
+        status: { not: OrderStatus.CONFIRMED },
+      },
+      ...(truck ? [{ deliveryVehicleId: truck.id, status: OrderStatus.CONFIRMED }] : []),
+    ];
+  }
+
+  /** Today's drivers of the delivery trucks of confirmed orders. */
+  private async truckDrivers(
+    orders: { status: string; deliveryVehicleId: string | null }[],
+  ): Promise<Map<string, { id: string; fullName: string }>> {
+    return this.vehicles.driversOf([
+      ...new Set(
+        orders
+          .filter((o) => o.status === OrderStatus.CONFIRMED && o.deliveryVehicleId)
+          .map((o) => o.deliveryVehicleId!),
+      ),
+    ]);
+  }
+
+  /** Who delivers: the driver of today of the order's truck while it waits, else the livreur. */
+  private livreurOf(
+    o: Pick<OrderRow, 'status' | 'deliveryVehicleId' | 'livreur'>,
+    drivers: Map<string, { id: string; fullName: string }>,
+  ): { id: string; fullName: string } | null {
+    if (o.status === OrderStatus.CONFIRMED && o.deliveryVehicleId) {
+      return drivers.get(o.deliveryVehicleId) ?? null;
+    }
+    return o.livreur;
   }
 
   /** Locks the order row (after checking the user may see it). */
@@ -630,10 +723,11 @@ export class OrdersService {
         version: number;
         sellerId: string | null;
         livreurId: string | null;
+        deliveryVehicleId: string | null;
         saleId: string | null;
       }[]
     >`
-      SELECT status, version, "sellerId", "livreurId", "saleId" FROM orders
+      SELECT status, version, "sellerId", "livreurId", "deliveryVehicleId", "saleId" FROM orders
       WHERE id = ${id}::uuid AND "tenantId" = ${tenantContext.requireTenantId()}::uuid
       FOR UPDATE`;
     const row = rows[0];
@@ -706,7 +800,11 @@ export class OrdersService {
     return out;
   }
 
-  private toDto(o: OrderRow, available: Map<string, string>): OrderDto {
+  private toDto(
+    o: OrderRow,
+    available: Map<string, string>,
+    drivers: Map<string, { id: string; fullName: string }>,
+  ): OrderDto {
     const q = (d: Prisma.Decimal | null) => (d === null ? null : toQtyString(d.toString()));
     return {
       id: o.id,
@@ -714,7 +812,9 @@ export class OrdersService {
       status: o.status,
       client: o.client,
       seller: o.seller,
-      livreur: o.livreur,
+      livreur: this.livreurOf(o, drivers),
+      vehicle: o.vehicle,
+      deliveryVehicle: o.deliveryVehicle,
       warehouse: o.warehouse,
       requestedDate: o.requestedDate ? toIsoDate(o.requestedDate) : null,
       note: o.note,
