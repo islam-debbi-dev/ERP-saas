@@ -13,7 +13,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { makeSale, uniq, type Fixture } from '../api/fixture.ts';
-import { call, idemKey } from '../lib/http.ts';
+import { call, idemKey, login as apiLogin } from '../lib/http.ts';
 
 const WEB = process.env['WEB'] ?? 'http://localhost:3005';
 const PASSWORD = 'Audit1234!';
@@ -237,6 +237,8 @@ test.describe('client map and tournée stops from the map (phase 35)', () => {
     await open(page, '/tournees');
     await page.getByRole('button', { name: 'New route' }).first().click();
     await page.locator('#route-name').fill(uniq('Oran '));
+    // Phase 36: the form asks for a vehicle first; this route is planned for a person.
+    await page.getByRole('button', { name: 'Route for a seller (no vehicle)' }).click();
     await page.locator('#route-seller').selectOption(shared().session.userId);
     await page.locator('[role="dialog"] button[aria-pressed]').first().click();
     await page.getByRole('button', { name: 'Create route' }).click();
@@ -283,6 +285,159 @@ test.describe('client map and tournée stops from the map (phase 35)', () => {
     await expect(page.getByText(/Location refused/)).toBeVisible();
     await expect(page.locator('.leaflet-container')).toBeVisible();
   });
+});
+
+/**
+ * Phase 36: the truck is the unit of distribution. The owner creates his own type, a truck
+ * with the proposed code, plans a tournée for the truck, then changes its driver: the
+ * tournée follows the truck, with no route edit.
+ */
+test('a tournée planned for a truck follows its driver of the day (phase 36)', async ({ page }) => {
+  test.setTimeout(5 * 60_000);
+  const f = shared();
+  const token = f.session.token;
+  // The login limiter counts every login of the suite: wait out a refusal once.
+  const patientLogin = async (email: string, password: string) => {
+    try {
+      return await apiLogin(email, password);
+    } catch (err) {
+      if (!String(err).includes('429')) throw err;
+      await new Promise((r) => setTimeout(r, 61_000));
+      return apiLogin(email, password);
+    }
+  };
+  // Driver A is the owner (he may drive, and the suite already holds his session); driver
+  // B is one invited seller: the plan of the fixture allows five users for the whole run.
+  const a = { id: f.session.userId, fullName: /Owner/, token };
+  const b = await (async () => {
+    const email = `${uniq('driver-').toLowerCase()}@audit.test`;
+    const fullName = uniq('Driver B ');
+    const res = await call<{ user: { id: string } }>('/users/invite', {
+      method: 'POST',
+      token,
+      body: { fullName, email, role: 'SELLER', mode: 'PASSWORD', password: 'Temp1234!' },
+    });
+    // An invited user sets his own password before anything else.
+    const first = await patientLogin(email, 'Temp1234!');
+    await call('/auth/password', {
+      method: 'POST',
+      token: first.token,
+      body: { currentPassword: 'Temp1234!', newPassword: PASSWORD },
+    });
+    const session = await patientLogin(email, PASSWORD);
+    return { id: res.body.user.id, fullName, token: session.token };
+  })();
+  const typeCode = uniq('T').slice(-6).toUpperCase();
+  interface Today {
+    vehicle: { code: string | null } | null;
+    stops: { client: { id: string } }[];
+  }
+  const todayOf = async (who: { token: string }): Promise<Today> =>
+    (await call<Today>('/me/today', { token: who.token })).body;
+  const stopsOf = (t: Today) => t.stops.map((x) => x.client.id);
+
+  await useEnglish(page);
+  try {
+    await test.step('the owner creates his own vehicle type', async () => {
+      await open(page, '/parametres/types-vehicules');
+      await page.getByRole('button', { name: 'New type', exact: true }).click();
+      await page.locator('#type-code').fill(typeCode);
+      await page.locator('#type-prefix').fill('VAN');
+      await page.locator('#type-name').fill('Gros + détail');
+      await page.getByRole('radio', { name: /Van sales/ }).check();
+      await page.getByRole('button', { name: 'Save', exact: true }).click();
+      await expect(page.getByText('Type created').first()).toBeVisible();
+      await expect(page.getByText(typeCode, { exact: true }).first()).toBeVisible();
+    });
+
+    const code = `VAN-28 ${typeCode} 01`;
+    await test.step('a truck takes the proposed code and its driver', async () => {
+      await open(page, '/stock/vehicules');
+      await page.getByRole('button', { name: 'New vehicle', exact: true }).click();
+      const typeId = await page
+        .locator('#vehicle-type option', { hasText: typeCode })
+        .getAttribute('value');
+      await page.locator('#vehicle-type').selectOption(typeId);
+      await page.locator('#vehicle-wilaya').selectOption('28');
+      await page.getByRole('button', { name: 'Suggest a code' }).click();
+      await expect(page.locator('#vehicle-code')).toHaveValue(code);
+      await page.locator('#vehicle-name').fill(uniq('Camion E2E '));
+      await page.locator('#vehicle-driver').selectOption(a.id);
+      await page.getByRole('button', { name: 'Save', exact: true }).click();
+      await expect(page.getByText('Vehicle created').first()).toBeVisible();
+      const card = page.locator('[data-testid="vehicle-cards"] li', { hasText: code });
+      await expect(card.locator('[data-testid="vehicle-driver"]')).toHaveText(a.fullName);
+    });
+
+    const routeName = uniq('Route E2E ');
+    await test.step('a tournée is planned for the truck', async () => {
+      await open(page, '/tournees');
+      await page.getByRole('button', { name: 'New route', exact: true }).click();
+      const dialog = page.getByRole('dialog');
+      const vehicleId = await dialog
+        .locator('#route-vehicle option', { hasText: code })
+        .getAttribute('value');
+      await dialog.locator('#route-vehicle').selectOption(vehicleId);
+      await dialog.locator('#route-name').fill(routeName);
+      // Every day: each press takes one button out of the unpressed set.
+      const unpressed = dialog.locator('button[aria-pressed="false"]');
+      while ((await unpressed.count()) > 0) await unpressed.first().click();
+      await dialog.locator('button[type="submit"]').click();
+      await page.waitForURL(/\/tournees\/[0-9a-f-]{36}$/);
+      const routeId = page.url().split('/').pop()!;
+      await call(`/routes/${routeId}/stops`, {
+        method: 'PUT',
+        token,
+        body: { clientIds: [f.clientId] },
+      });
+    });
+
+    await test.step('driver A has the tournée today, driver B does not', async () => {
+      const forA = await todayOf(a);
+      expect(forA.vehicle?.code).toBe(code);
+      expect(stopsOf(forA)).toContain(f.clientId);
+      expect((await todayOf(b)).stops).toEqual([]);
+    });
+
+    await test.step('the owner changes the driver from the tournées page', async () => {
+      await open(page, '/tournees');
+      const group = page.locator('[data-testid="vehicle-routes"]', { hasText: code });
+      await expect(group.locator('[data-testid="route-driver"]')).toHaveText(a.fullName);
+      await expect(group.getByText(routeName)).toBeVisible();
+      await group.getByRole('button', { name: 'Who drives today?' }).click();
+      await page.locator('#driver-user').selectOption(b.id);
+      await page.getByRole('dialog').locator('button[type="submit"]').click();
+      await expect(page.getByText('Driver saved').first()).toBeVisible();
+      await expect(group.locator('[data-testid="route-driver"]')).toHaveText(b.fullName);
+    });
+
+    await test.step('now B has it and A no longer does', async () => {
+      const forB = await todayOf(b);
+      expect(forB.vehicle?.code).toBe(code);
+      expect(stopsOf(forB)).toEqual([f.clientId]);
+      // The owner keeps his own seller routes, without the truck's stop.
+      const forA = await todayOf(a);
+      expect(forA.vehicle).toBeNull();
+      expect(stopsOf(forA)).not.toContain(f.clientId);
+    });
+  } finally {
+    // Nobody stays on the truck: the owner's later sales would leave from it.
+    const mine = (
+      await call<{ id: string; code: string | null; assignedUser: { id: string } | null }[]>(
+        '/warehouses?type=VEHICLE',
+        { token },
+      )
+    ).body.find((w) => w.code === `VAN-28 ${typeCode} 01`);
+    if (mine?.assignedUser) {
+      await call(`/warehouses/${mine.id}/driver`, {
+        method: 'POST',
+        token,
+        body: { userId: null },
+      });
+    }
+    // The plan of the fixture allows five users, and the phone projects need the seats.
+    await call(`/users/${b.id}/deactivate`, { method: 'POST', token });
+  }
 });
 
 test('logging out ends the session for good', async ({ page }) => {

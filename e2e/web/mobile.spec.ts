@@ -63,6 +63,42 @@ const MAP_POINTS = [
   { lat: 36.7552, lng: 3.0601 },
   { lat: 36.7511, lng: 3.0562 },
 ];
+/** Phase 36: a code as an owner types it; in Arabic its parts must keep this order. */
+const VEHICLE_CODE = 'VAN-28 MXT 01';
+
+/**
+ * The code reads left to right on screen, as typed: inside right-to-left text a code
+ * without isolation shows as "01 VAN-28 MXT". Compares where its first and last
+ * characters are painted.
+ */
+async function expectCodeInOrder(page: Page, selector: string): Promise<void> {
+  const order = await page
+    .locator(selector)
+    .filter({ hasText: VEHICLE_CODE })
+    .first()
+    .evaluate((el) => {
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      let node = walker.nextNode();
+      while (node && !node.textContent?.includes('VAN-28')) node = walker.nextNode();
+      if (!node?.textContent) return null;
+      const text = node.textContent;
+      const at = (i: number) => {
+        const range = document.createRange();
+        range.setStart(node, i);
+        range.setEnd(node, i + 1);
+        return range.getBoundingClientRect().left;
+      };
+      const start = text.indexOf('VAN-28');
+      return { first: at(start), last: at(start + 'VAN-28 MXT 01'.length - 1) };
+    });
+  expect.soft(order, `${selector} shows the code`).not.toBeNull();
+  if (order) {
+    expect
+      .soft(order.first, `${VEHICLE_CODE} keeps its order in ${selector}`)
+      .toBeLessThan(order.last);
+  }
+}
+
 /** A 1×1 transparent PNG served for every map tile: CI never hits the tile server. */
 const TILE_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
@@ -125,6 +161,8 @@ interface Ids {
   inventoryId: string;
   transferId: string;
   routeId: string;
+  /** Phase 36: a truck with the company's own code, and the tournée planned for it. */
+  vehicleId: string;
   orderId: string;
   planId: string;
   draftPlanId: string;
@@ -229,7 +267,7 @@ async function prepareIds(f: Fixture): Promise<Ids> {
   ).body;
   // ...and a seller, whose row on the users page has the Dépôts action.
   const sellerName = uniq('Vendeur dépôts ');
-  await call('/users/invite', {
+  const invited = await call<{ user: { id: string } }>('/users/invite', {
     method: 'POST',
     token,
     body: {
@@ -240,6 +278,53 @@ async function prepareIds(f: Fixture): Promise<Ids> {
       password: 'Audit1234!',
     },
   });
+  // Phase 36: the company's own type and truck code, once per tenant (both phone projects
+  // share it and a code is unique), driven by the seller, with a tournée planned for it.
+  const vehicleTypes = (await call<{ id: string; code: string }[]>('/vehicle-types', { token }))
+    .body;
+  const vehicleType =
+    vehicleTypes.find((x) => x.code === 'MXT') ??
+    (
+      await call<{ id: string; code: string }>('/vehicle-types', {
+        method: 'POST',
+        token,
+        body: { code: 'MXT', name: 'Gros + détail', codePrefix: 'VAN', activity: 'MIXED' },
+      })
+    ).body;
+  const trucks = (
+    await call<{ id: string; code: string | null }[]>('/warehouses?type=VEHICLE', { token })
+  ).body;
+  let vehicle = trucks.find((w) => w.code === VEHICLE_CODE);
+  if (!vehicle) {
+    vehicle = (
+      await call<{ id: string; code: string | null }>('/warehouses', {
+        method: 'POST',
+        token,
+        body: {
+          name: 'Camion de la tournée de M’sila centre et environs',
+          type: 'VEHICLE',
+          code: VEHICLE_CODE,
+          vehicleTypeId: vehicleType.id,
+          wilayaCode: 28,
+          plateNumber: '01234 120 28',
+          capacityKg: 3500,
+          assignedUserId: invited.body.user.id,
+        },
+      })
+    ).body;
+    const vehicleRoute = (
+      await call<{ id: string }>('/routes', {
+        method: 'POST',
+        token,
+        body: { name: 'M’sila centre', vehicleId: vehicle.id, weekdays: [0, 1, 2, 3, 4, 5, 6] },
+      })
+    ).body;
+    await call(`/routes/${vehicleRoute.id}/stops`, {
+      method: 'PUT',
+      token,
+      body: { clientIds: [client.id] },
+    });
+  }
   // Phase 31 (HR): 15 workers for the pointage, the first with a long name, one pending
   // leave, one avance, self check-in on. The owner gets a file for "Mon pointage" (only
   // once: both phone projects share this tenant and a user has one file).
@@ -607,6 +692,7 @@ async function prepareIds(f: Fixture): Promise<Ids> {
     warehouseId: depot.id,
     sellerName,
     routeId: route.id,
+    vehicleId: vehicle.id,
     orderId: order.id,
     planId: plan.id,
     draftPlanId: draftPlan.id,
@@ -1532,6 +1618,133 @@ for (const locale of LOCALES) {
       });
     } finally {
       saveResults(info.project.name, `dashboard-${locale}`, results);
+      await context.close();
+    }
+  });
+
+  test(`the vehicle screens fit the phone (${locale})`, async ({ browser }, info) => {
+    test.setTimeout(3 * 60_000);
+    const v = ids;
+    if (!v) throw new Error('ids not prepared');
+    const results: Result[] = [];
+    const m = messages(locale);
+    const tv = m['vehicles'] as Record<string, string>;
+    const tt = m['vehicleTypes'] as Record<string, string>;
+    const tr = m['tournees'] as Record<string, string>;
+    const context = await browser.newContext({
+      ...info.project.use,
+      storageState: { cookies: [], origins: [] },
+    });
+    const go = async (page: Page, path: string): Promise<void> => {
+      await page.evaluate((to) => {
+        (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push(
+          to,
+        );
+      }, path);
+      await page.waitForURL((url) => url.pathname === path);
+      await settle(page);
+    };
+    const sheet = async (page: Page) => {
+      const dialog = page.getByRole('dialog');
+      await dialog.waitFor();
+      await dialog.evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
+      return dialog;
+    };
+    const closeSheet = async (page: Page) => {
+      await page.keyboard.press('Escape');
+      await page.getByRole('dialog').waitFor({ state: 'detached' });
+    };
+    try {
+      await context.addCookies([{ name: 'NEXT_LOCALE', value: locale, url: WEB }]);
+      const page = await context.newPage();
+      // "Aujourd'hui" as the driver of the truck sees it, whoever is signed in here.
+      await page.route('**/me/today', (route) =>
+        route.fulfill({
+          json: {
+            day: today(),
+            weekday: new Date().getDay(),
+            vehicle: { id: v.vehicleId, code: VEHICLE_CODE, name: 'Camion', wilayaCode: 28 },
+            routes: [],
+            stops: [],
+            planned: 0,
+            visited: 0,
+          },
+        }),
+      );
+      await signIn(page, fixture().session.email);
+
+      await test.step('vehicle types: the list and its form', async () => {
+        await go(page, '/parametres/types-vehicules');
+        await page.getByText('MXT', { exact: true }).first().waitFor();
+        await check(page, '/parametres/types-vehicules/liste', locale, results);
+        await page.getByRole('button', { name: tt['new'], exact: true }).click();
+        await sheet(page);
+        await page.locator('#type-code').waitFor();
+        await expect.soft(page.locator('input[name="type-activity"]')).toHaveCount(4);
+        await check(page, '/parametres/types-vehicules/formulaire', locale, results, {
+          fullPage: false,
+        });
+        await closeSheet(page);
+      });
+
+      await test.step('vehicles: the cards keep the code in order', async () => {
+        await go(page, '/stock/vehicules');
+        await page.locator('[data-testid="vehicle-cards"]').waitFor();
+        await expectCodeInOrder(page, '[data-testid="vehicle-cards"] li');
+        await check(page, '/stock/vehicules/liste', locale, results);
+      });
+
+      await test.step('vehicles: the driver change sheet', async () => {
+        await page
+          .getByRole('button', { name: tv['changeDriverNamed']!.replace('{name}', VEHICLE_CODE) })
+          .click();
+        await sheet(page);
+        await page.locator('#driver-user').waitFor();
+        await expectCodeInOrder(page, '[role="dialog"]');
+        await expectOnScreen(page, '[role="dialog"] button[type="submit"]');
+        await check(page, '/stock/vehicules/chauffeur', locale, results, { fullPage: false });
+        await closeSheet(page);
+      });
+
+      await test.step('vehicles: the form proposes a code', async () => {
+        await page
+          .getByRole('button', { name: tv['editNamed']!.replace('{name}', VEHICLE_CODE) })
+          .click();
+        await sheet(page);
+        await expect.soft(page.locator('#vehicle-code')).toHaveValue(VEHICLE_CODE);
+        await page.getByRole('button', { name: tv['proposeCode'] }).click();
+        // Its own code is free again for itself: the helper proposes the same one.
+        await expect.soft(page.locator('#vehicle-code')).toHaveValue(VEHICLE_CODE);
+        await check(page, '/stock/vehicules/formulaire', locale, results, { fullPage: false });
+        await closeSheet(page);
+      });
+
+      await test.step('tournées: grouped by vehicle, and the form asks for the vehicle first', async () => {
+        await go(page, '/tournees');
+        await page.locator('[data-testid="vehicle-routes"]').first().waitFor();
+        await expectCodeInOrder(page, '[data-testid="vehicle-routes"]');
+        await check(page, '/tournees/par-vehicule', locale, results);
+        await page.getByRole('button', { name: tr['newRoute'], exact: true }).click();
+        await sheet(page);
+        await page.locator('#route-vehicle').waitFor();
+        await expect.soft(page.locator('#route-seller')).toHaveCount(0);
+        await expect
+          .soft(page.locator('#route-vehicle option', { hasText: 'VAN-28 MXT 01' }))
+          .toHaveCount(1);
+        await check(page, '/tournees/nouvelle', locale, results, { fullPage: false });
+        await page.getByRole('button', { name: tv['forSeller'] }).click();
+        await page.locator('#route-seller').waitFor();
+        await closeSheet(page);
+      });
+
+      await test.step('aujourd’hui names the truck above the stops', async () => {
+        await go(page, '/tournees/aujourdhui');
+        await page.locator('[data-testid="today-vehicle"]').waitFor();
+        await expectCodeInOrder(page, '[data-testid="today-vehicle"]');
+        await check(page, '/tournees/aujourdhui/vehicule', locale, results);
+      });
+    } finally {
+      saveResults(info.project.name, `vehicles-${locale}`, results);
       await context.close();
     }
   });
