@@ -5,9 +5,9 @@
 **Prompt:** [`docs/prompts/test-36-vehicle-first.md`](../docs/prompts/test-36-vehicle-first.md). **Spec:** [`phase-36-vehicle-first-distribution.md`](../docs/prompts/phase-36-vehicle-first-distribution.md).
 **Rule of the pass:** find and prove, do not fix. Nothing under `apps/` or `packages/` is changed.
 
-**This report covers the baseline, the seed, parts A, B, C and D** (part B is section 10, part C
-section 11, part D section 12). Part E is not done (section 7). The verdict at the end is therefore
-provisional on the screens.
+**This report covers the baseline, the seed and parts A to E** (part B is section 10, part C
+section 11, part D section 12, part E section 13). The final findings table and the verdict are in
+section 8, the fix plan in section 9.
 
 ## Status (read this first when resuming)
 
@@ -18,8 +18,8 @@ provisional on the screens.
 | B. Scope, isolation and security | done: 117 lines (101 pass, 7 fail on 5 findings, 9 notes) + 1 low from notes | `e2e/api/vehicles-scope.ts`, section 10 |
 | C. Concurrency | done: 18 lines (12 pass, 2 fail on 2 findings, 4 notes) | `e2e/api/vehicles-race.ts`, section 11 |
 | D. Backfill and upgrade | done: 36 backfill checks (34 pass, 0 fail, 2 info), 4 upgrade runs; 4 findings | `e2e/test-36/part-d.sh`, `e2e/sql/vehicles-backfill.sql`, section 12 |
-| E. Web and phone | not done | |
-| Final go / no-go, fix plan | provisional, on parts A to D | sections 8 and 9 |
+| E. Web and phone | done: 15 tests on 5 screens = 75 runs (61 pass, 14 fail on 3 findings), 319 proofs | `e2e/web/vehicles.spec.ts`, section 13 |
+| Final findings table, go / no-go, fix plan | final, on parts A to E | sections 8 and 9 |
 
 Findings of part A: **1 critical, 1 high, 3 medium, 3 low.** A-2 is critical by the owner's
 decision of 2026-11-15: every truck, delivery trucks included, is loaded by chargement each day
@@ -34,9 +34,14 @@ Findings of part D: **0 critical, 1 high, 2 medium, 1 low** (section 12.4). The 
 right: it writes only facts, never today's driver, and its second run changes 0 rows. What fails is
 the deploy order the runbook gives (D-1) and the commands it gives for Neon (D-2).
 
-To resume: start the stack (section 2), run `pnpm test:vehicles:seed` again if
-`e2e/.auth/vehicles-fixture.json` is gone or older than 12 h (it makes new companies), go on
-with part E. Parts B and C make their own companies on each run and need no seed. The data stays in
+Findings of part E: **0 critical, 0 high, 2 medium, 1 low** (section 13.4). Every phase 36 screen
+works at 360 px in Arabic; what fails is how some codes are drawn.
+
+**All parts: 1 critical, 5 high, 10 medium, 7 low** (table in section 8).
+
+To rerun: start the stack (section 2), run `pnpm test:vehicles:seed` again if
+`e2e/.auth/vehicles-fixture.json` is gone or older than 12 h (it makes new companies).
+Parts B, C and E make their own companies on each run and need no seed. The data stays in
 the local database `erp_t36`. Part D runs on its own database (`erp_t36_base`, dropped and made
 again by `e2e/test-36/part-d.sh`) and needs the old worktree of section 12.1.
 
@@ -48,6 +53,7 @@ again by `e2e/test-36/part-d.sh`) and needs the old worktree of section 12.1.
 | 0 | `e2e/api/vehicles-seed.ts` | Three companies through the real API, every user invited with `POST /users/invite` and accepting his invitation. A (Distribution): owner, manager, supervisor with two sellers, a seller outside the team, two livreurs, a storekeeper; dépôt principal + "Dépôt Batna" (`CDD BATNA 05`); five trucks over the two dépôts (`VAN-28 MXT 01` CASH_VAN, `PRV05-DD01` PRESALE, `LIV 28 MIX` DELIVERY, `VAN34-SELF/MT` MIXED, one without type or code); five types (three with `codePrefix`, one without, `HRC` archived). B: the same type codes and truck codes. E: Essentiel. Plus the history part D needs, with the truck the backfill must find for each row (`history` in the fixture): two old seller routes, a vehicle route, two visits linked to van sales, an order whose BL left a truck, an order put on a truck whose BL left the dépôt, an order delivered from the dépôt principal, two visits with neither. |
 | A | `e2e/api/vehicles.ts` | Nine areas, each in its own new company: vehicle types; truck identity (API and CHECK constraints written as the app role); driver change (every path, forced rollback, sessions); `driverAt` / `vehicleAt` called on the compiled service, the worker history and both paginations; append-only as both database roles; tournées per vehicle, convert one and bulk; the truck frozen on visits and orders, the order that follows its delivery truck; stock and cash after a driver change; livreurs and activities. |
 | A | `e2e/sql/vehicles-history.sql` | 17 rules read with SQL over the whole database after the scenario (driver = last history row, one truck per driver, frozen trucks, truck stock = its movements…), then the repo's own `reconcile` CLI. |
+| E | `e2e/web/vehicles.spec.ts` (+ `vehicles-data.ts`, `vehicles.playwright.config.ts`) | Every phase 36 screen in chromium at 360 and 393 px in `ar` and `fr` and at 1280 px in `fr`, each project in its own company made through the API: types, vehicles, driver sheet, history, "Véhicules conduits", tournées, aujourd'hui, orders and deliveries, the bidi of the codes measured glyph by glyph, the wilaya list, English (section 13). |
 | D | `e2e/test-36/part-d.sh` | A pre-36 database made by the pre-36 code (`93afa56`) through its API, 50 000 visits / orders added, the phase 36 migration timed with its locks, `db:backfill-vehicles` twice against the truth SQL `e2e/sql/vehicles-backfill.sql`, reconcile; each API version on each schema; the old web against the new API (section 12). |
 
 Everything runs against the **real** built API and the **real** PostgreSQL, on a local database
@@ -76,6 +82,7 @@ pnpm test:vehicles:api      # part A, about 15 s; T36_ONLY=driver,stock runs som
 pnpm test:vehicles:scope    # part B, about 20 s; its own companies; T36_ONLY=isolation,scope,permissions,gate,hostile,idempotency
 PROD_API=https://erp-saas-pi.vercel.app pnpm test:vehicles:scope   # adds the 3 anonymous GETs on production
 pnpm test:vehicles:race     # part C, about 15 s; its own companies; T36_ONLY=same,cross,sale,convert; T36_ROUNDS=20
+WEB=http://localhost:3005 pnpm test:vehicles:web   # part E, about 5 min; needs the web of step 2; its own companies
 
 # part D, about 2 min: drops and remakes erp_t36_base, needs a built worktree of main before #72
 # (section 12.1) and ports 3003 / 3005 free. OLD_WEB=0 skips the two old-web runs.
@@ -341,10 +348,7 @@ A-2 (below, after A-1, where it was first written) is critical by the owner's de
 
 ## 7. What was not tested, and why
 
-- **Part E** was not asked in these sessions: every screen and the bidi screenshots, the wilaya
-  names. The seed already holds what it needs (company B with A's codes, the Essentiel company,
-  the manager and supervisor limited to "Dépôt Batna"). Part B's own gaps are in 10.7, part C's
-  in 11.6, part D's in 12.6.
+- Part B's own gaps are in 10.7, part C's in 11.6, part D's in 12.6, part E's in 13.6.
 - **Production:** only the three anonymous `GET`s of the ground rules were sent, in part B (all
   401). Nothing else.
 - **`driverAt` / `vehicleAt` through HTTP:** they have no route. They were called on the compiled
@@ -353,45 +357,88 @@ A-2 (below, after A-1, where it was first written) is critical by the owner's de
 - **Known, left out by PR #72** (not findings): the per-vehicle report screen, Lighthouse
   Performance.
 
-## 8. Go / no-go for phase 37 (provisional, parts A to D)
+## 8. Final findings and go / no-go for phase 37 (parts A to E)
 
-**No-go until A-2 is fixed. After that, no-go yet for two columns; go for the rest.**
+### 8.1 Findings table
 
-- **A-2 is critical.** With delivery trucks loaded every day, the stock of each delivery truck
+| # | Severity | Finding | Section | Fix PR (section 9) |
+|---|---|---|---|---|
+| A-2 | **critical** (owner) | The BL of an order put on a delivery truck leaves the dépôt principal, not the truck | 5.2 | 1 |
+| A-1 | high | A truck switched off with its driver on it: the sale, the visit and the order of the same moment name three different trucks | 5.2 | 2 |
+| B-1 | high | A manager limited to one dépôt takes a driver off a truck of another dépôt | 10.4 | 3 |
+| B-2 | high | Convert puts a seller route on a truck outside the planner's reach, and convert-one writes while answering 404 | 10.4 | 3 |
+| B-4 | high (owner) | A driver change replayed after a later change puts the old driver back | 10.4 | 4 |
+| D-1 | high | The runbook deploys the API before the migration: 500 on dépôts, tournées, orders and visits until `db:deploy` runs | 12.4 | 0 |
+| A-3 | medium | A user who is deactivated, or moved to a role that cannot drive, stays the driver of his truck | 5.3 | 2 |
+| A-4 | medium | The second truck of a driver's day has no clôture, and the guard does not protect it | 5.3 | 6 |
+| A-5 | medium | `_` and `%` in a code are read as wildcards by the uniqueness check | 5.3 | 8 |
+| B-3 | medium | Every user of a dépôt reads who drove each of its trucks, while the user history refuses him | 10.4 | 7 |
+| B-5 | medium | Codes and plates keep control, bidi and zero-width characters: two trucks show as `VAN-28 MXT 01` | 10.4 | 8 |
+| C-1 | medium | A sale and its visit split over two trucks when the driver changes during the visit | 11.4 | 5 |
+| D-2 | medium | The Neon commands of the phase 36 block name no database: as written they migrate and backfill the local one | 12.4 | 0 |
+| D-3 | medium | The web of the previous version crashes on the tournée list and the route page once a vehicle route exists | 12.4 | 0 |
+| E-1 | medium | A code with an Arabic word is not drawn in the order typed, and two different codes are drawn the same | 13.4 | 8 |
+| E-2 | medium | A long code is cut on the vehicle card at every width, with no way to read it in full: two trucks look the same | 13.4 | 11 |
+| A-6 | low | `POST /warehouses` answers `VALIDATION_FAILED` where the spec names `VEHICLE_FIELDS_ON_DEPOT` | 5.4 | 9 |
+| A-7 | low | The dépôt search is an unescaped `ILIKE` | 5.4 | 8 |
+| A-8 | low | The code helper returns the base without a number past 99 on a long base | 5.4 | 9 |
+| B-6 | low | Three reach rules for one supervisor's team truck | 10.4 | 9 |
+| C-2 | low | A route edit overwrites a convert that committed under it, and its audit "before" is wrong | 11.4 | 9 |
+| D-4 | low | The backfill's "else the order's truck" never applies to pre-36 rows | 12.4 | 10 |
+| E-3 | low | On a phone the order list cuts the delivery truck off its row | 13.4 | 11 |
+
+**1 critical, 5 high, 10 medium, 7 low: 23 findings.** Every one reruns with the command of its
+part (section 2); its section gives the check or the proof file.
+
+### 8.2 Verdict
+
+**No-go for phase 37 until PRs 1 to 5 of section 9 are merged. Go after that; the rest can be
+fixed alongside it.**
+
+What blocks:
+
+- **A-2 (critical).** With delivery trucks loaded every day, the stock of each delivery truck
   and of the dépôt principal is wrong after the first delivery. Phase 37's fill rate and
-  per-truck sales read exactly those figures. It must be fixed before any per-truck statistic.
+  per-truck sales read exactly those figures.
+- **A-1, A-3, C-1: `Visit.vehicleId` can disagree with the dépôt its sale left**, and a truck
+  can be "driven" by someone who left. A statistic per vehicle built today would be wrong for
+  those rows.
+- **B-4 (high by the owner):** a replayed driver change undoes a later one. The driver history
+  is what phase 37 reads to say who was on which truck.
+- **B-1, B-2:** a manager limited to one dépôt can write onto trucks and routes of another. No
+  figure is corrupted, but a tournée or a driver moves behind the back of the dépôt that owns
+  it. Fix it before phase 37 adds per-dépôt vehicle screens.
+
+What phase 37 can build on:
+
 - `vehicle_assignments`, `Route.vehicleId` and `Order.vehicleId` behaved as specified in every
-  path tried. Phase 37 can read them.
-- `Visit.vehicleId` can disagree with the dépôt its sale left (A-1), and a truck can be "driven"
-  by someone who left (A-3). A statistic per vehicle built today would be wrong for those rows.
-- **Isolation holds** (part B): no row of another company is readable or writable through any
-  new route, filter or body field, and the Essentiel gate holds. Inside a company, a manager
-  limited to one dépôt can write onto trucks and routes of another dépôt (B-1, B-2). That does
-  not corrupt a figure, but it moves a tournée or a driver behind the back of the dépôt that
-  owns it. Fix it before phase 37 adds per-dépôt vehicle screens.
-- **Concurrency holds where it matters** (part C): 20 rounds each of two changes on one truck,
-  one driver put on two trucks, cross moves and a three-way rotation all end in one consistent
-  state, with no deadlock, no 500, no lost or doubled history row, and reconcile clean. A sale
-  racing a driver change always empties exactly one of the driver's trucks and names it. What
-  breaks is the same column as A-1: the visit of a sale can name the other truck (C-1).
-- B-4 (high by the owner): a replayed driver change undoes a later one. It must be fixed
-  before phase 37, together with B-1 and B-2.
-- **History before phase 36 can be trusted** (part D): the backfill writes the truck only where a
-  sale or a BL left one, never today's driver, leaves the rest null, is exact on 50 000 rows and
-  changes nothing on a second run; the driver history starts with one correct row per truck.
-  Phase 37 must show the null rows as "Véhicule inconnu" and not count them per truck.
-- **Before any further deploy, fix the runbook (D-1, D-2), and the owner confirms Neon.** Done
-  in the order the phase 36 block gives, the new API answers 500 on the dépôts, tournées,
-  orders, visits and "aujourd'hui" until `db:deploy` runs, and the commands as written migrate
-  and backfill the local database instead of Neon. Production answers 401 on `/vehicle-types`, so
-  the phase 36 API is live there; whether the migration and the backfill ran on Neon is not
-  confirmed in this pass (12.5).
-- Part E is not done.
+  path tried (part A), under 20 rounds of each race (part C), and across companies (part B: no
+  row of another company is readable or writable through any new route, filter or body field,
+  and the Essentiel gate holds).
+- **History before phase 36 can be trusted** (part D): the backfill writes the truck only where
+  a sale or a BL left one, never today's driver, leaves the rest null, is exact on 50 000 rows
+  and changes nothing on a second run. Phase 37 must show the null rows as "Véhicule inconnu"
+  and not count them per truck.
+- **The screens hold** (part E): every phase 36 screen and sheet works at 360 and 393 px in
+  Arabic and French and at 1280 px, with no sideways scroll, no raw key in ar / fr / en, no page
+  error and no 5xx in 75 runs. The codes the owner named (`VAN-28 MXT 01`, `VAN34-SELF/MT`,
+  `LIV 28 MIX`) and the plates keep their order everywhere they are drawn, measured and read
+  by eye. Nothing in part E blocks phase 37. Its three findings are about how unusual codes are
+  drawn (E-1, E-2) and one cut line (E-3); phase 37's per-vehicle screens should reuse
+  `VehicleCode` only once E-2 is decided, because every report row will show a code.
+
+Production:
+
+- **Neon is migrated, and in the right order** (owner, 12.5): `20261114232622` was applied on
+  2026-11-15 07:43 UTC, before the merge. D-1 therefore did not happen in production. The runbook
+  still tells the next person the wrong order with commands that reach the local database (D-1,
+  D-2): PR 0 stays first.
 
 ## 9. Fix plan (small PRs, in order; none is opened)
 
 | # | PR | Findings | Test that locks it |
 |---|---|---|---|
+| 0 | Docs only, first: the phase 36 runbook block and README line say "migrate **before** the API deploys" (as `Migrations on Neon` already does), name `DATABASE_URL_MIGRATE` / `DATABASE_URL` on every command, and warn that a vehicle route breaks the tournée screens of a web still on the old version | D-1, D-2, D-3 | `e2e/test-36/part-d.sh` step 2b (new API on the pre-36 schema: 6 reads answer 500) stays as the proof of why; a docs review. |
 | 1 | A delivery BL leaves the delivery truck (`deliveryVehicleId` wins over `order.warehouseId`); the rule written in `docs/domain.md` | A-2 | The A7 check "the BL of an order put on a loaded delivery truck leaves that truck", plus load 100 / deliver 6 / unload as an integration test. |
 | 2 | Every way a driver stops driving goes through `assignDriver`: truck switched off, user deactivated, role that cannot drive | A-1, A-3 | The two A3 checks and the A8 check, plus the SQL rules `driver_is_a_live_user_who_may_drive` and `visit_sale_left_the_truck_frozen_on_the_visit` as an integration test. |
 | 3 | One truck reach for every planner write: the freed truck of a driver move and the target truck of a convert are checked with `assertPlanned` before anything is written | B-1, B-2 | The three B2 checks "the Batna manager puts seller1…", "…converts seller1's old route", "…bulk-converts". |
@@ -399,13 +446,14 @@ A-2 (below, after A-1, where it was first written) is critical by the owner's de
 | 5 | A visit linked to a sale freezes the truck the sale left (the history only when it has no sale) | C-1 | The C3 check "the field flow … the visit and the stock name the same truck", plus the A10 SQL rule `visit_sale_left_the_truck_frozen_on_the_visit`. |
 | 6 | The driver-change guard looks at the cash since the last clôture, not at one session row | A-4 | The A8 check "cash responsibility after the move". |
 | 7 | Truck history read by planners and the driver only | B-3 | The B2 check "truck history…". |
-| 8 | Codes and plates: refuse C0 controls, bidi controls and zero-width characters; codes compared as text (`lower(code) =`), search escaped | B-5, A-5, A-7 | The two B5 checks, the two "compared as text" checks and the search check. |
+| 8 | Codes and plates: refuse C0 controls, bidi controls and zero-width characters; one script direction per code, or the code drawn part by part (owner's choice, E-1); codes compared as text (`lower(code) =`), search escaped | B-5, E-1, A-5, A-7 | The two B5 checks, the two "compared as text" checks, the search check, and the part E test "bidi: a code with an Arabic word…". |
 | 9 | `VEHICLE_FIELDS_ON_DEPOT` at creation; code helper past 99; one reach rule for a supervisor's team trucks; the route edit locks its row before reading it | A-6, A-8, B-6, C-2 | The two A2 checks, the B2 INFO line on VAN turned into an assertion, the C4 check "bulk convert racing a move…". |
-| 0 | Docs only, first: the phase 36 runbook block and README line say "migrate **before** the API deploys" (as `Migrations on Neon` already does), name `DATABASE_URL_MIGRATE` / `DATABASE_URL` on every command, and warn that a vehicle route breaks the tournée screens of a web still on the old version | D-1, D-2, D-3 | `e2e/test-36/part-d.sh` step 2b (new API on the pre-36 schema: 6 reads answer 500) stays as the proof of why; a docs review. |
 | 10 | The backfill's order fallback: either fill a visit from its order's dépôt when it is a truck (if the owner calls that a fact), or drop "else the order's" from the spec and the runbook | D-4 | `e2e/api/vehicles-backfill.ts`, row `visit_order_on_his_truck` turned into the chosen assertion. |
+| 11 | `VehicleCode` never hides part of a code: it wraps or shrinks on the card instead of truncating, carries the full code as `title`, and the order row puts the truck on its own line on a phone | E-2, E-3 | The part E tests "long codes: two 30-character codes…" and "bidi: VAN-28 MXT 01…" (its "cut by the line" assertion on `/commandes`). |
 
-PR 0 goes first, before any other deploy. PRs 1 to 5 come before phase 37 starts; 6 to 10 can go alongside it. PR 5 could ship with PR 2
-(both make one definition of "the truck he was on").
+Order: **PR 0 first**, before any other deploy. **PRs 1 to 5 before phase 37 starts** (PR 5 can
+ship with PR 2: both make one definition of "the truck he was on"). PRs 6 to 11 can go alongside
+phase 37; PR 11 should land before phase 37's first per-vehicle screen.
 
 ## 10. Part B: scope, isolation and security
 
@@ -973,12 +1021,20 @@ Part D: **0 critical, 1 high, 2 medium, 1 low.**
 
 ### 12.5 Production and the owner
 
-- Nothing in part D was sent to production; the Neon block was **not** run.
+- Nothing in part D was sent to production; the Neon block was **not** run by this pass.
 - In part B the anonymous `GET /vehicle-types` on production answered 401, so the phase 36 API is
-  deployed there. Whether the migration ran before or after it, and whether the backfill ran twice,
-  is **not confirmed by the owner in this pass**. To check, in the Neon SQL editor:
-  `SELECT migration_name, finished_at FROM _prisma_migrations ORDER BY finished_at DESC LIMIT 3;`
-  and `SELECT reason, count(*) FROM vehicle_assignments GROUP BY 1;`.
+  deployed there.
+- **Owner note (2026-11-15): Neon is confirmed migrated.** Migration
+  `20261114232622_vehicle_first_distribution` was applied on 2026-11-15 at 07:43 UTC, **before**
+  the merge. That is the safe order (migrate first, deploy after), so the 500s of D-1 did not
+  happen in production. D-1 and D-2 stay as findings about what the runbook tells the next
+  person to do.
+- The owner's note is about the migration. Whether `db:backfill-vehicles` ran twice on Neon was
+  not stated; to check, in the Neon SQL editor:
+  `SELECT reason, count(*) FROM vehicle_assignments GROUP BY 1;` (the `backfill` rows come from
+  the migration itself) and
+  `SELECT count(*) FROM visits v JOIN sales s ON s.id = v."saleId" JOIN warehouses w ON w.id = s."warehouseId" WHERE w.type = 'VEHICLE' AND v."vehicleId" IS NULL;`
+  (0 once the backfill has run).
 
 ### 12.6 Part D: what was not tested, and why
 
@@ -992,3 +1048,246 @@ Part D: **0 critical, 1 high, 2 medium, 1 low.**
   desktop suite and seven tournée / order / dépôt screens were run.
 - **The worktree `../erp-main`** is left at `93afa56` with `apps/api/.env` and an
   `e2e/node_modules` link (both git-ignored), so part D reruns with one command.
+
+## 13. Part E: web and phone
+
+**Suite:** `e2e/web/vehicles.spec.ts` with `vehicles-data.ts` (the data) and
+`vehicles.playwright.config.ts`; `pnpm test:vehicles:web` (section 2), about 5 minutes. Real
+chromium against the built web (`:3005`) and API (`:3003`, database `erp_t36`, connected as
+`erp_app`). Five projects: **360 px `ar`, 360 px `fr`, 393 px `ar`, 393 px `fr`, 1280 px `fr`**.
+Proofs: `artifacts/test-36/web/` (319 files: a screenshot of every state per project,
+`<project>-bidi.json`, `<project>-bidi-code-arabe.json`, `<project>-code-long.json`,
+`wilayas-59-69-{fr,ar}.txt`, `run.txt`, `results.json`).
+
+Each project makes **its own company** through the API, every user invited with
+`POST /users/invite`: an owner, four sellers (one with an Arabic name), a livreur; "Dépôt Batna";
+six types (one archived, one unused); eight trucks: `VAN-28 MXT 01` (plate `00123-119-28`),
+`VAN34-SELF/MT`, `LIV 28 MIX`, **`VAN شاحنة 01`** and **`VAN 01 شاحنة`** (a code with an Arabic
+word, typed in the two possible orders), two 30-character codes that differ only by their last
+number, and one truck with no code and no type; two vehicle routes, three old seller routes; two
+confirmed orders. A second, bare company gives the empty states. Nothing is written with SQL.
+Map tiles are answered locally. A failing `expect.soft` is a finding; the rest must pass.
+
+### 13.1 Results
+
+| Test (each on the 5 projects) | Pass | Fail | Finding |
+|---|---|---|---|
+| Empty company: types, vehicles, tournées, the new-route sheet with no truck | 5 | 0 | |
+| Types de véhicules: list, form, duplicate code, archive refused, archive accepted | 5 | 0 | |
+| Véhicules: cards and the four filters | 5 | 0 | |
+| Véhicules: form, "Proposer un code", archived type kept out, code taken | 5 | 0 | |
+| Driver sheet with the "already has a truck" confirm; history sheet of both trucks | 5 | 0 | |
+| Utilisateurs: "Véhicules conduits", the link to the truck, the empty case | 5 | 0 | |
+| Tournées: grouped by vehicle, "Véhicule" first, "pour un vendeur", "Convertir", bulk banner | 5 | 0 | |
+| Aujourd'hui: truck header; seller without truck; seller with nothing; Arabic-code truck | 5 | 0 | |
+| Commandes: filter by delivery truck, assign one; the livreur's "Mes livraisons" | 5 | 0 | |
+| Bidi: the three Latin codes, the plate, a type code and a dépôt code on five screens | 1 | 4 | E-3 (the four phone projects) |
+| Bidi: a code with an Arabic word | 0 | 5 | E-1 |
+| Long codes on the card | 0 | 5 | E-2 |
+| Wilayas: 69 unique numbers, 1–58 against the official list, 59–69 written down | 5 | 0 | |
+| English: no raw key on ten screens and sheets | 5 | 0 | |
+| Dépôts: the list still shows the trucks with their code | 5 | 0 | |
+| **Total: 75 runs** | **61** | **14** | **3 findings** |
+
+After part E, on Node 22: `pnpm lint`, `pnpm typecheck` and `pnpm test` pass (API 70 suites / 930
+tests, shared 573, web 59), and `git diff --stat origin/main -- apps packages` is empty.
+
+In every test, on every screen and open sheet: no horizontal overflow (`overflowProblems` of the
+phone suite: page width, and boxes that hide content to the side), no raw message key, no
+uncaught page error, no API answer of 500 or more. **None was seen in 75 runs.**
+
+### 13.2 What the prompt asked to be said in words
+
+- **Types de véhicules.** The list shows the owner's code, the name, the activity, the number of
+  trucks and the prefix; the archived type is gone. The empty state names `MXT`, `SELF/MT` and
+  `MIX` as examples of the owner's own codes. A second `mxt` is refused with a sentence. Archiving
+  `MXT` while three trucks use it shows "Des véhicules utilisent encore ce type. Changez d'abord
+  leur type." (and its Arabic) and the type stays; archiving an unused type works.
+- **Véhicules.** On a card the code is the biggest text (20 px, the name under it 14 px), then the
+  type badge with its activity, `28 · M'Sila` / `28 · المسيلة`, the plate and the capacity, the
+  dépôt, "Chauffeur du jour" with "Changer". Search finds a code, a name or a plate; the type
+  filter does not offer the archived type; the wilaya filter lists only wilayas that have a truck
+  (05, 28, 34); the dépôt filter gives the three trucks of Batna.
+- **"Proposer un code".** Nothing chosen: `01`. MXT + 28 with `VAN-28 MXT 01` taken:
+  `VAN-28 MXT 02`. SELF/MT (no prefix) + 34: `34 SELF/MT 01`. The archived type is not offered,
+  and at creation a driver who already has a truck is not in the list. `van-28 mxt 01` is
+  refused with "Ce code est déjà utilisé." and the sheet keeps what was typed.
+- **Driver sheet.** "Enregistrer" is off until the driver changes. Choosing a driver who has
+  another truck shows, before anything is written, "سمير بن يوسف conduit déjà ⁦VAN34-SELF/MT⁩ ·
+  Camion Bordj. Ce véhicule restera sans chauffeur." and the button becomes "Déplacer le
+  chauffeur". After it: the card names him, the truck he left says "Sans chauffeur", the history
+  of the first shows him on top with the reason and who decided, the history of the second closes
+  on "Sans chauffeur".
+- **"Véhicules conduits".** The user's menu opens his periods, newest first: the truck he drives
+  with "En cours", the one he left with its two dates and its type; each row links to
+  `/stock/vehicules?vehicle=…`, where that truck comes first. A worker who never drove gets a
+  sentence.
+- **Tournées.** The list is one card per truck, sorted by code, with today's driver and "Qui
+  conduit aujourd'hui ?"; the old seller routes follow under "Tournées par vendeur". The banner
+  says "2 tournées sont encore planifiées pour un vendeur" (`جولتان ما زالتا مخططتين لبائع`):
+  the two whose seller drives a truck, not the third. The new-route sheet opens on "Véhicule"
+  (code · type · driver) with no seller field; the link "Tournée pour un vendeur (sans véhicule)"
+  swaps the field and back. "Convertir" moves one route under its truck and the banner goes to 1;
+  "Tout convertir" asks "Convertir 1 tournée ?", answers "1 tournée convertie", and the banner
+  leaves. The seller with no truck keeps his route and has no "Convertir".
+- **Aujourd'hui.** The driver of `VAN-28 MXT 01` sees `VAN-28 MXT 01 · M'Sila`
+  (`VAN-28 MXT 01 · المسيلة`, the code at the right in Arabic) above the stops of his truck's
+  tournées. A seller with no truck has no header and his seller route as before. A seller with
+  neither sees the message that existed before phase 36 ("Pas de tournée aujourd'hui…").
+- **Orders and delivery.** `/commandes` has a "Véhicule de livraison" filter that offers the
+  delivery and mixed trucks only; choosing one leaves that truck's orders. On an order,
+  choosing a truck saves at once ("Véhicule de livraison enregistré"), shows the truck with its
+  driver of the day, and switches the livreur field off. The livreur who drives that truck finds
+  both orders in "Mes livraisons".
+- **Bidi.** Each code is measured where it is drawn: the position of every part (`VAN-28`,
+  `MXT`, `01`) read from the glyphs, 15 places per project over five screens, plus the sheets.
+  `VAN-28 MXT 01`, `VAN34-SELF/MT`, `LIV 28 MIX`, `SELF/MT`, `CDD BATNA 05` and the plate
+  `00123-119-28` are always drawn left to right in the order typed, always isolated from the text
+  around them (`<bdi dir="ltr">`, or U+2066…U+2069 inside `<option>` and inside sentences), in
+  lists, headers, the warning sentence, the history title and the closed selects. The Arabic
+  screenshots were read one by one and agree. A code with an Arabic word does not hold: E-1.
+  **Toasts** never name a truck (they are fixed sentences). **PDF / print:** no template under
+  `apps/api/src/printing` or `documents` reads a truck, a dépôt code or a plate, so no printed
+  document shows one; nothing to check there.
+- **Wilayas.** The form lists 69 options, numbers 1 to 69, each once, no name twice. Names 1 to
+  58 match the official list (law 84-09 for 1–48, law 19-12 for 49–58) in French and in Arabic,
+  compared without accents and case. **59 to 69, to confirm by the owner** (not marked right or
+  wrong here):
+
+  | N° | French | Arabic |
+  |---|---|---|
+  | 59 | Aflou | أفلو |
+  | 60 | Barika | بريكة |
+  | 61 | El Kantara | القنطرة |
+  | 62 | Bir El Ater | بئر العاتر |
+  | 63 | El Aricha | العريشة |
+  | 64 | Ksar Chellala | قصر الشلالة |
+  | 65 | Aïn Oussera | عين وسارة |
+  | 66 | Messaad | مسعد |
+  | 67 | Ksar El Boukhari | قصر البخاري |
+  | 68 | Bou Saâda | بوسعادة |
+  | 69 | El Abiodh Sidi Cheikh | الأبيض سيدي الشيخ |
+
+  The source the code cites (`packages/shared/src/wilayas.ts:5-8`) is **not** the press: "law
+  26-06 of 4 April 2026 (JO n° 25), names by presidential decree 26-206 (JO n° 40), numbers as
+  published with the vehicle registration arrêté of 17 June 2026 (JO n° 50 of 15 July 2026)",
+  and it adds that an earlier press list of November 2025 numbered 60–69 differently. The prompt
+  says PR #72 took them from press reports. This pass could not read the Journal officiel: the
+  owner should check the eleven lines against JO n° 40 and n° 50, the numbers above all, because
+  `wilayaCode` is what is stored.
+- **Sheets.** In every sheet Tab stays inside (25 presses), Escape closes, fields and buttons are
+  at least 44 px tall with a 16 px font on the phone, and the main action stays on screen while
+  the form scrolls (the footer is sticky).
+- **English.** Ten screens and sheets served in `en`: no raw key.
+
+### 13.3 What holds up well
+
+- At 360 px in Arabic every phase 36 screen is usable end to end: the owner creates a type and a
+  truck, changes a driver, converts the routes; the driver opens his day; the office assigns a
+  delivery truck. Nothing scrolls sideways and nothing is reachable only on a wide screen.
+- The driver move is safe to tap: the consequence is written on the sheet before the write, and
+  the button changes its name.
+- The lists tell the truth after each write without a reload (driver on the card, route under
+  its truck, banner count), and what the screen shows was checked against the API for the
+  delivery truck.
+- The owner's own codes are isolated everywhere, including inside `<option>` text, which is
+  where test 30 had found scrambled amounts.
+
+### 13.4 Findings
+
+Part E: **0 critical, 0 high, 2 medium, 1 low.** Rerun: `pnpm test:vehicles:web` (add
+`--project m360-ar` for one screen; the file must run whole, its tests build on each other).
+
+#### E-1 (medium) A code with an Arabic word is not drawn in the order typed, and two different codes are drawn the same
+
+- **Rerun:** the test "bidi: a code with an Arabic word…" (fails on the 5 projects);
+  `artifacts/test-36/web/<project>-bidi-code-arabe.json`, `…-bidi-code-arabe-carte-1.png` and
+  `-carte-2.png`, `…-bidi-code-arabe-formulaire.png`, `…-tournee-nouvelle-code-arabe-choisi.png`.
+- **Path:** two trucks, codes `VAN شاحنة 01` (typed VAN, the word, 01) and `VAN 01 شاحنة`
+  (typed VAN, 01, the word). The API accepts both: they are different texts. Open
+  `/stock/vehicules`.
+- **Expected:** the prompt: a code with an Arabic word keeps its order; and two trucks never show
+  the same code (the reason codes are unique).
+- **Actual:** both cards read **`VAN 01 شاحنة`**, glyph for glyph (left to right: `VAN`, `01`,
+  the word). The same in the tournée select, the history title, "Véhicules conduits", the header
+  of "aujourd'hui" and the form field itself, so the owner cannot see the difference while
+  typing either. A driver told "take VAN شاحنة 01" finds two.
+- **Cause:** `components/vehicles/vehicle-code.tsx:9` (`<bdi dir="ltr">`) and `isolateLtr`
+  (line 17) isolate the code from the sentence around it, which works, but inside the code the
+  browser's bidi rules still apply: digits that follow Arabic letters join the Arabic run and are
+  drawn before it. `#vehicle-code` has `dir="ltr"` (`vehicles-page.tsx:522`), same effect.
+- **Why medium:** same harm as B-5 (two trucks that look alike), reached by ordinary typing in
+  the app's default language. No figure is wrong.
+- **Fix proposal:** with B-5, in PR 8. Either refuse a code that mixes Arabic letters with
+  Latin letters or digits after them (simplest, said in the hint under the field), or draw a
+  code part by part (each space-separated part in its own `<bdi>`), and compare codes for
+  uniqueness in their drawn form. Lock with this test.
+
+#### E-2 (medium) A long code is cut on the vehicle card at every width, with no way to read it in full
+
+- **Rerun:** the test "long codes: two 30-character codes…" (fails on the 5 projects);
+  `<project>-code-long.json`, `…-code-long-carte-1.png`, `-carte-2.png`, `…-code-long-cartes.png`.
+- **Path:** two trucks, `VAN-28 GROS DETAIL MSILA N 001` and `…N 002` (30 characters, the length
+  the API and the form allow). Open `/stock/vehicules`.
+- **Expected:** the code is the truck's identity and "big" on the card (spec); docs/ui.md rule 8:
+  a truncated text can be read in full by a tap.
+- **Actual:** the code needs 336 px and gets 206 px at 360, 239 px at 393 and **203 px at 1280**
+  (three columns). In French both cards read `VAN-28 GROS DET…`: the number that tells them
+  apart is hidden. In Arabic the cut falls on the start (`…ETAIL MSILA N 001`). The code element
+  has no `title` and no tap shows it; the name under it has one. The owner must open the form of
+  each truck to know which is which. At that size (336 px for 30 characters) a code is cut from about 18 characters at 360 px.
+- **Cause:** `components/vehicles/vehicles-page.tsx:311` (`truncate text-xl` on the code) next to
+  two 44 px buttons; `VehicleCode` is `whitespace-nowrap` (`vehicle-code.tsx:9`).
+- **Fix proposal:** PR 11. Let the code wrap on its spaces on the card (or step the font down
+  when it is long) and put the full code in `title`. Lock with this test.
+
+#### E-3 (low) On a phone the order list cuts the delivery truck off its row
+
+- **Rerun:** the test "bidi: VAN-28 MXT 01…" (fails on the four phone projects on
+  `/commandes: "LIV 28 MIX" … is cut by the line that holds it`); `<project>-bidi.json`,
+  `m360-ar-commandes-filtre-vehicule.png`.
+- **Path:** an order on `LIV 28 MIX`, whose driver is a livreur. `/commandes` at 360 or 393 px.
+- **Expected:** the order card shows its delivery truck ("filter and assign by delivery truck").
+- **Actual:** the second line of the card is `BC-2026-000001 · Yacine Livreur · LIV 28 MIX` on
+  one truncated line: the truck, last, is what gets cut (`BC-2026-000001 · Yacine Livr…`). At
+  1280 px it shows. After filtering by a truck, no row on the phone names it.
+- **Cause:** `components/tournees/orders-list.tsx:224-241`: number, date, livreur and truck in
+  one `truncate` paragraph.
+- **Fix proposal:** PR 11: the truck on its own line (or before the livreur's name) below `md`.
+
+### 13.5 Notes (seen, not counted as findings)
+
+- `vehicles.todayNoVehicle` ("Vous ne conduisez aucun véhicule aujourd'hui.") and
+  `vehicles.unknown` ("Véhicule inconnu") are translated in the three files and used by no
+  component. A seller without a truck gets the pre-36 screen, which is what the prompt asks;
+  phase 37 will need "Véhicule inconnu" for the null rows of the backfill.
+- The clôture screen names the truck by its name only, not its code
+  (`components/tournees/closing-screen.tsx:190`).
+- The app writes `M'Sila` (the official spelling); the prompt's example writes `M'sila`.
+- A driver sees, on "aujourd'hui", the stops of his truck's tournées **and** of his own old
+  seller routes together until they are converted. That is the spec ("old seller routes still
+  work"); converting removes the double list.
+- On the dépôts list a truck's line (`code · name`) truncates on a phone; the code comes first
+  and stays whole with the codes tried.
+- A long Latin truck name is cut at its start in Arabic (`…ne nord de la wilaya de M'sila`);
+  the full name is in `title`.
+- The opened list of a native `<select>` belongs to the browser and cannot be photographed; the
+  option texts were read from the DOM and the closed select was photographed with a truck chosen.
+
+### 13.6 Part E: what was not tested, and why
+
+- **Real phones and other browsers** (Safari on iOS, Chrome on Android, the on-screen keyboard
+  over a sheet): chromium's phone emulation only. Bidi is the same algorithm everywhere, fonts
+  are not.
+- **Screen readers**, colour contrast and **Lighthouse** (Performance is listed by PR #72 as
+  left out; known, not a finding). **Dark mode.**
+- **The per-vehicle report screen:** left out by PR #72 (known, not a finding); `?by=vehicle`
+  was tested through the API in part B.
+- **The manager, supervisor and storekeeper in the browser:** their reach was tested through the
+  API with SQL truth queries (part B, with B-1, B-2, B-3, B-6). Part E ran as the owner, three
+  sellers and a livreur.
+- **The Essentiel company in the browser:** the gate was tested through the API (part B).
+- **A delivery done in the browser** and the truck form of the dépôts screen: only their lists
+  were opened. The delivery and its stock are part A (A-2).
+- **English at full depth:** raw keys only, on ten screens and sheets; the flows ran in `ar` and `fr`.
+- **Stale data on a second device** after a driver change (a seller's phone left open): not tried.
