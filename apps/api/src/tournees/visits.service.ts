@@ -19,11 +19,13 @@ import { tenantContext } from '../common/tenant-context';
 import { type Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
+import { VehiclesService } from '../stock/vehicles.service';
 import { resolveTourneeSeller, tourneeSellerIds } from './tournee-scope';
 
 const visitInclude = {
   seller: { select: { id: true, fullName: true } },
   client: { select: { id: true, code: true, name: true } },
+  vehicle: { select: { id: true, code: true, name: true } },
   correctedBy: { select: { id: true } },
 } satisfies Prisma.VisitInclude;
 
@@ -35,6 +37,7 @@ function toDto(v: VisitRow): VisitDto {
     seller: v.seller,
     client: v.client,
     routeId: v.routeId,
+    vehicle: v.vehicle,
     startedAt: v.startedAt.toISOString(),
     endedAt: v.endedAt?.toISOString() ?? null,
     outcome: v.outcome,
@@ -55,7 +58,8 @@ const invalid = (rule: string, details: Record<string, unknown> = {}) =>
 /**
  * Visites (phase 16): append-only, never updated (the tenant extension refuses it). A
  * correction is a new visit pointing to the one it replaces; only the last of a chain
- * counts. The POST is idempotent (the mobile app replays).
+ * counts. The POST is idempotent (the mobile app replays). Each visit freezes the truck its
+ * seller drove when it started (phase 36): a later driver change never rewrites it.
  */
 @Injectable()
 export class VisitsService {
@@ -64,6 +68,7 @@ export class VisitsService {
     private readonly scope: ScopeService,
     private readonly audit: AuditService,
     private readonly geo: GeoCheckService,
+    private readonly vehicles: VehiclesService,
   ) {}
 
   async create(input: CreateVisitInput, user: CurrentUserInfo): Promise<VisitDto> {
@@ -75,14 +80,21 @@ export class VisitsService {
       });
       if (!client) throw new AppException(ErrorCode.NOT_FOUND, 'Client not found');
       await this.scope.assertClient(tx, user, input.clientId);
-      await this.checkLinks(tx, input, sellerId);
+      const startedAt = new Date(input.startedAt);
+      const corrected = await this.checkLinks(tx, input, sellerId);
+      // Frozen now: a correction keeps the truck of the visit it replaces.
+      const vehicleId = corrected
+        ? corrected.vehicleId
+        : await this.vehicles.vehicleOfUserAt(sellerId, startedAt, tx);
+      await this.checkRoute(tx, input.routeId, sellerId, vehicleId);
       const v = await tx.visit.create({
         data: {
           tenantId: tenantContext.requireTenantId(),
           sellerId,
           clientId: input.clientId,
           routeId: input.routeId,
-          startedAt: new Date(input.startedAt),
+          vehicleId,
+          startedAt,
           endedAt: input.endedAt ? new Date(input.endedAt) : null,
           outcome: input.outcome,
           reason: input.reason,
@@ -98,7 +110,7 @@ export class VisitsService {
         action: input.correctsVisitId ? 'VISIT_CORRECTED' : 'VISIT_RECORDED',
         entity: 'Visit',
         entityId: v.id,
-        after: { ...input, geo: undefined, sellerId },
+        after: { ...input, geo: undefined, sellerId, vehicleId },
       });
       const geoCheck = await this.geo.checkInTx(tx, {
         refType: GeoRefType.VISIT,
@@ -135,6 +147,7 @@ export class VisitsService {
       where: {
         ...(query.sellerId ? { sellerId: query.sellerId } : ids ? { sellerId: { in: ids } } : {}),
         ...(query.clientId ? { clientId: query.clientId } : {}),
+        ...(query.vehicleId ? { vehicleId: query.vehicleId } : {}),
         ...(query.from || query.to ? { startedAt } : {}),
       },
       include: visitInclude,
@@ -149,15 +162,40 @@ export class VisitsService {
     };
   }
 
-  /** Every id the visit points to must exist, be live, and belong to this seller and client. */
-  private async checkLinks(tx: Tx, input: CreateVisitInput, sellerId: string): Promise<void> {
-    if (input.routeId) {
-      const r = await tx.route.findFirst({
-        where: { id: input.routeId, deletedAt: null },
-        select: { sellerId: true },
-      });
-      if (!r || r.sellerId !== sellerId) throw invalid('route_not_of_seller');
+  /**
+   * The route of a visit is one of the seller's: an old seller route of his, or the route
+   * of the truck he drove then (or drives now, for a visit typed in later).
+   */
+  private async checkRoute(
+    tx: Tx,
+    routeId: string | null,
+    sellerId: string,
+    vehicleId: string | null,
+  ): Promise<void> {
+    if (!routeId) return;
+    const r = await tx.route.findFirst({
+      where: { id: routeId, deletedAt: null },
+      select: { sellerId: true, vehicleId: true },
+    });
+    if (!r) throw invalid('route_not_of_seller');
+    if (!r.vehicleId) {
+      if (r.sellerId !== sellerId) throw invalid('route_not_of_seller');
+      return;
     }
+    if (r.vehicleId === vehicleId) return;
+    const current = await this.vehicles.currentVehicleOf(sellerId, tx);
+    if (current?.id !== r.vehicleId) throw invalid('route_not_of_seller');
+  }
+
+  /**
+   * Every id the visit points to must exist, be live, and belong to this seller and client.
+   * Returns the visit being corrected, when there is one.
+   */
+  private async checkLinks(
+    tx: Tx,
+    input: CreateVisitInput,
+    sellerId: string,
+  ): Promise<{ vehicleId: string | null } | null> {
     if (input.saleId) {
       const s = await tx.sale.findFirst({
         where: { id: input.saleId },
@@ -192,8 +230,10 @@ export class VisitsService {
     }
     if (input.correctsVisitId) {
       // Locked so two corrections of the same visit cannot both pass the check.
-      const rows = await tx.$queryRaw<{ sellerId: string; clientId: string }[]>`
-        SELECT "sellerId", "clientId" FROM visits
+      const rows = await tx.$queryRaw<
+        { sellerId: string; clientId: string; vehicleId: string | null }[]
+      >`
+        SELECT "sellerId", "clientId", "vehicleId" FROM visits
         WHERE id = ${input.correctsVisitId}::uuid
           AND "tenantId" = ${tenantContext.requireTenantId()}::uuid
         FOR UPDATE`;
@@ -206,6 +246,8 @@ export class VisitsService {
         select: { id: true },
       });
       if (already) throw invalid('already_corrected', { visitId: already.id });
+      return { vehicleId: target.vehicleId };
     }
+    return null;
   }
 }

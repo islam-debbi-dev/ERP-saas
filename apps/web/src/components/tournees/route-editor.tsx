@@ -99,7 +99,7 @@ function Loaded({ route }: { route: RouteDto }) {
   const queryClient = useQueryClient();
   const sellers = useSellers();
   const [name, setName] = useState(route.name);
-  const [sellerId, setSellerId] = useState(route.seller.id);
+  const [sellerId, setSellerId] = useState(route.seller?.id ?? '');
   const [weekdays, setWeekdays] = useState(route.weekdays);
   const [active, setActive] = useState(route.active);
   const [stops, setStops] = useState<Stop[]>(route.stops.map((s) => s.client));
@@ -118,7 +118,7 @@ function Loaded({ route }: { route: RouteDto }) {
 
   const headerDirty =
     name !== route.name ||
-    sellerId !== route.seller.id ||
+    sellerId !== (route.seller?.id ?? '') ||
     active !== route.active ||
     weekdays.join() !== route.weekdays.join();
   const stopsDirty = stops.map((s) => s.id).join() !== route.stops.map((s) => s.client.id).join();
@@ -216,7 +216,7 @@ function Loaded({ route }: { route: RouteDto }) {
               value={sellerId}
               onChange={(e) => setSellerId(e.target.value)}
             >
-              {(sellers.data ?? [route.seller]).map((s) => (
+              {(sellers.data ?? (route.seller ? [route.seller] : [])).map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.fullName}
                 </option>

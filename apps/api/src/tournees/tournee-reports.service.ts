@@ -8,6 +8,7 @@ import {
   type TourneeReportDto,
   type TourneeReportQuery,
   type TourneeReportRowDto,
+  type TourneeVehicleReportRowDto,
 } from '@erp/shared';
 import { type CurrentUserInfo } from '../auth/auth.types';
 import { tenantContext } from '../common/tenant-context';
@@ -15,11 +16,30 @@ import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { fromIsoDate } from '../sales/sale.mapper';
 import { ScopeService } from '../sales-force/scope.service';
+import { VehiclesService } from '../stock/vehicles.service';
 import { tourneeSellerIds } from './tournee-scope';
 
 type Counts = Omit<TourneeReportRowDto, 'seller' | 'visitRate' | 'strikeRate'>;
 
 const ratio = (a: number, b: number): number | null => (b === 0 ? null : a / b);
+
+const emptyCounts = (): Counts => ({
+  plannedStops: 0,
+  visitedStops: 0,
+  visits: 0,
+  productiveVisits: 0,
+  noSale: Object.fromEntries(NO_SALE_REASONS.map((k) => [k, 0])) as Counts['noSale'],
+  orders: 0,
+  ordersTtc: '0.00',
+  delivered: 0,
+  deliveredTtc: '0.00',
+  shortLines: 0,
+  closings: 0,
+  ecart: '0.00',
+});
+
+/** Rows whose truck is not known share one line ("Véhicule inconnu"). */
+const UNKNOWN = '';
 
 /**
  * Tournée reports (phase 16), per seller over a period of Algiers days:
@@ -29,21 +49,30 @@ const ratio = (a: number, b: number): number | null => (b === 0 ? null : a / b);
  *   count, their correction does);
  * - orders confirmed in the period and how many were delivered, short lines;
  * - écarts of the closed sessions (an adjustment with a new count replaces the écart).
+ *
+ * Phase 36: the stops of a vehicle route are planned for whoever drove the truck that day
+ * (the driver history), so the figures of a seller survive the conversion of his routes.
+ * With `by=vehicle` the same figures are grouped by the truck frozen on each operation:
+ * they stay with the truck when its crew changes.
  */
 @Injectable()
 export class TourneeReportsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly scope: ScopeService,
+    private readonly vehicles: VehiclesService,
   ) {}
 
   async report(query: TourneeReportQuery, user: CurrentUserInfo): Promise<TourneeReportDto> {
+    if (query.by === 'vehicle') return this.byVehicle(query, user);
     const ids = await tourneeSellerIds(this.scope, user);
     let sellers: string[] | null = ids;
     if (query.sellerId) {
       sellers = ids && !ids.includes(query.sellerId) ? [] : [query.sellerId];
     }
-    if (sellers && sellers.length === 0) return { from: query.from, to: query.to, rows: [] };
+    if (sellers && sellers.length === 0) {
+      return { from: query.from, to: query.to, rows: [], vehicleRows: [] };
+    }
     const t = tenantContext.requireTenantId();
     const start = algiersDayBounds(query.from).start;
     const end = algiersDayBounds(query.to).end;
@@ -59,12 +88,15 @@ export class TourneeReportsService {
           FROM generate_series(${from}::date, ${to}::date, interval '1 day') d
         ),
         planned AS (
-          SELECT DISTINCT r."sellerId", days.day, rs."clientId"
-          FROM routes r
-          JOIN route_stops rs ON rs."routeId" = r.id
-          JOIN days ON days.dow = ANY(r.weekdays)
-          WHERE r."tenantId" = ${t}::uuid AND r."deletedAt" IS NULL AND r.active
-            ${only('r."sellerId"')}
+          SELECT DISTINCT o."sellerId", o.day, o."clientId" FROM (
+            SELECT COALESCE(r."sellerId", ${this.vehicles.driverOnDaySql('r."vehicleId"', 'days.day')})
+                AS "sellerId", days.day, rs."clientId"
+            FROM routes r
+            JOIN route_stops rs ON rs."routeId" = r.id
+            JOIN days ON days.dow = ANY(r.weekdays)
+            WHERE r."tenantId" = ${t}::uuid AND r."deletedAt" IS NULL AND r.active
+          ) o
+          WHERE o."sellerId" IS NOT NULL ${only('o."sellerId"')}
         ),
         visited AS (
           SELECT DISTINCT v."sellerId", (v."startedAt" AT TIME ZONE 'Africa/Algiers')::date AS day,
@@ -128,20 +160,7 @@ export class TourneeReportsService {
     const row = (id: string): Counts => {
       let r = rows.get(id);
       if (!r) {
-        r = {
-          plannedStops: 0,
-          visitedStops: 0,
-          visits: 0,
-          productiveVisits: 0,
-          noSale: Object.fromEntries(NO_SALE_REASONS.map((k) => [k, 0])) as Counts['noSale'],
-          orders: 0,
-          ordersTtc: '0.00',
-          delivered: 0,
-          deliveredTtc: '0.00',
-          shortLines: 0,
-          closings: 0,
-          ecart: '0.00',
-        };
+        r = emptyCounts();
         rows.set(id, r);
       }
       return r;
@@ -180,6 +199,7 @@ export class TourneeReportsService {
     return {
       from: query.from,
       to: query.to,
+      vehicleRows: [],
       rows: users.map((u) => {
         const r = row(u.id);
         return {
@@ -190,5 +210,168 @@ export class TourneeReportsService {
         };
       }),
     };
+  }
+
+  /**
+   * The same figures per truck. A truck's planned stops are those of its routes; what was
+   * done counts for the truck frozen on the visit, the order (taken: `vehicleId`,
+   * delivered: `deliveryVehicleId`) or the session. Reach: the trucks the user plans for.
+   */
+  private async byVehicle(
+    query: TourneeReportQuery,
+    user: CurrentUserInfo,
+  ): Promise<TourneeReportDto> {
+    const reach = await this.vehicles.plannedVehicleIds(user);
+    let trucks: string[] | null = reach;
+    if (query.vehicleId) {
+      trucks = reach && !reach.includes(query.vehicleId) ? [] : [query.vehicleId];
+    }
+    const empty = { from: query.from, to: query.to, rows: [], vehicleRows: [] };
+    if (trucks && trucks.length === 0) return empty;
+    const t = tenantContext.requireTenantId();
+    const start = algiersDayBounds(query.from).start;
+    const end = algiersDayBounds(query.to).end;
+    const from = fromIsoDate(query.from);
+    const to = fromIsoDate(query.to);
+    // A restricted reader never gets the "unknown truck" line: null matches no truck.
+    const only = (col: string) =>
+      trucks ? Prisma.sql`AND ${Prisma.raw(col)} = ANY(${trucks}::uuid[])` : Prisma.empty;
+
+    const [stops, visits, taken, delivered, closings] = await Promise.all([
+      this.prisma.db.$queryRaw<{ vehicleId: string; planned: bigint; visited: bigint }[]>`
+        WITH days AS (
+          SELECT d::date AS day, EXTRACT(DOW FROM d)::int AS dow
+          FROM generate_series(${from}::date, ${to}::date, interval '1 day') d
+        ),
+        planned AS (
+          SELECT DISTINCT r."vehicleId", days.day, rs."clientId"
+          FROM routes r
+          JOIN route_stops rs ON rs."routeId" = r.id
+          JOIN days ON days.dow = ANY(r.weekdays)
+          WHERE r."tenantId" = ${t}::uuid AND r."deletedAt" IS NULL AND r.active
+            AND r."vehicleId" IS NOT NULL ${only('r."vehicleId"')}
+        ),
+        visited AS (
+          SELECT DISTINCT v."vehicleId", (v."startedAt" AT TIME ZONE 'Africa/Algiers')::date AS day,
+            v."clientId"
+          FROM visits v
+          WHERE v."tenantId" = ${t}::uuid AND v."startedAt" >= ${start} AND v."startedAt" < ${end}
+            AND v."vehicleId" IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM visits c WHERE c."correctsVisitId" = v.id)
+        )
+        SELECT p."vehicleId", COUNT(*) AS planned, COUNT(v."clientId") AS visited
+        FROM planned p
+        LEFT JOIN visited v ON v."vehicleId" = p."vehicleId" AND v.day = p.day
+          AND v."clientId" = p."clientId"
+        GROUP BY p."vehicleId"`,
+      this.prisma.db.$queryRaw<
+        { vehicleId: string | null; outcome: string; reason: NoSaleReason | null; n: bigint }[]
+      >`
+        SELECT v."vehicleId", v.outcome::text AS outcome, v.reason, COUNT(*) AS n
+        FROM visits v
+        WHERE v."tenantId" = ${t}::uuid AND v."startedAt" >= ${start} AND v."startedAt" < ${end}
+          AND NOT EXISTS (SELECT 1 FROM visits c WHERE c."correctsVisitId" = v.id)
+          ${only('v."vehicleId"')}
+        GROUP BY 1, 2, 3`,
+      this.prisma.db.$queryRaw<
+        { vehicleId: string | null; orders: bigint; ordersTtc: Prisma.Decimal }[]
+      >`
+        SELECT o."vehicleId", COUNT(*) AS orders, COALESCE(SUM(o."totalTtc"), 0) AS "ordersTtc"
+        FROM orders o
+        WHERE o."tenantId" = ${t}::uuid
+          AND o."confirmedAt" >= ${start} AND o."confirmedAt" < ${end}
+          AND o.status <> 'CANCELLED'
+          ${only('o."vehicleId"')}
+        GROUP BY o."vehicleId"`,
+      this.prisma.db.$queryRaw<
+        {
+          vehicleId: string | null;
+          delivered: bigint;
+          deliveredTtc: Prisma.Decimal;
+          shortLines: bigint;
+        }[]
+      >`
+        SELECT o."deliveryVehicleId" AS "vehicleId", COUNT(*) AS delivered,
+          COALESCE(SUM(s."totalTtc"), 0) AS "deliveredTtc",
+          COALESCE(SUM((SELECT COUNT(*) FROM order_lines l
+            WHERE l."orderId" = o.id AND l."qtyNotDelivered" > 0)), 0) AS "shortLines"
+        FROM orders o
+        LEFT JOIN sales s ON s.id = o."saleId"
+        WHERE o."tenantId" = ${t}::uuid AND o.status = 'DELIVERED'
+          AND o."deliveredAt" >= ${start} AND o."deliveredAt" < ${end}
+          ${only('o."deliveryVehicleId"')}
+        GROUP BY o."deliveryVehicleId"`,
+      this.prisma.db.$queryRaw<
+        { vehicleId: string | null; closings: bigint; ecart: Prisma.Decimal }[]
+      >`
+        SELECT s."warehouseId" AS "vehicleId", COUNT(*) AS closings,
+          COALESCE(SUM(COALESCE((
+            SELECT a.ecart FROM seller_sessions a
+            WHERE a."adjustsSessionId" = s.id AND a.ecart IS NOT NULL
+            ORDER BY a."createdAt" DESC, a.id DESC LIMIT 1), s.ecart)), 0) AS ecart
+        FROM seller_sessions s
+        WHERE s."tenantId" = ${t}::uuid AND s."adjustsSessionId" IS NULL
+          AND s.status = 'CLOSED' AND s.date >= ${from}::date AND s.date <= ${to}::date
+          ${only('s."warehouseId"')}
+        GROUP BY s."warehouseId"`,
+    ]);
+
+    const rows = new Map<string, Counts>();
+    const row = (id: string | null): Counts => {
+      const key = id ?? UNKNOWN;
+      let r = rows.get(key);
+      if (!r) {
+        r = emptyCounts();
+        rows.set(key, r);
+      }
+      return r;
+    };
+    for (const s of stops) {
+      const r = row(s.vehicleId);
+      r.plannedStops = Number(s.planned);
+      r.visitedStops = Number(s.visited);
+    }
+    for (const v of visits) {
+      const r = row(v.vehicleId);
+      const n = Number(v.n);
+      r.visits += n;
+      if (v.outcome === 'SALE' || v.outcome === 'ORDER') r.productiveVisits += n;
+      if (v.reason) r.noSale[v.reason] += n;
+    }
+    for (const o of taken) {
+      const r = row(o.vehicleId);
+      r.orders = Number(o.orders);
+      r.ordersTtc = toMoneyString(o.ordersTtc.toString());
+    }
+    for (const o of delivered) {
+      const r = row(o.vehicleId);
+      r.delivered = Number(o.delivered);
+      r.deliveredTtc = toMoneyString(o.deliveredTtc.toString());
+      r.shortLines = Number(o.shortLines);
+    }
+    for (const c of closings) {
+      const r = row(c.vehicleId);
+      r.closings = Number(c.closings);
+      r.ecart = toMoneyString(money(c.ecart.toString()));
+    }
+
+    const found = await this.prisma.db.warehouse.findMany({
+      where: { id: { in: [...rows.keys()].filter((k) => k !== UNKNOWN) } },
+      select: { id: true, code: true, name: true },
+      orderBy: [{ code: 'asc' }, { name: 'asc' }, { id: 'asc' }],
+    });
+    const line = (
+      vehicle: TourneeVehicleReportRowDto['vehicle'],
+      r: Counts,
+    ): TourneeVehicleReportRowDto => ({
+      vehicle,
+      ...r,
+      visitRate: ratio(r.visitedStops, r.plannedStops),
+      strikeRate: ratio(r.productiveVisits, r.visits),
+    });
+    const vehicleRows = found.map((v) => line(v, row(v.id)));
+    const unknown = rows.get(UNKNOWN);
+    if (unknown) vehicleRows.push(line(null, unknown));
+    return { ...empty, vehicleRows };
   }
 }

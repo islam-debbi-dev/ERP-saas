@@ -29,3 +29,5 @@ export * from './overview';
 export * from './treasury';
 export * from './todo';
 export * from './dashboard';
+export * from './vehicles';
+export * from './wilayas';

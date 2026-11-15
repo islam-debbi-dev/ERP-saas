@@ -125,6 +125,19 @@ export const ErrorCode = {
   PRODUCT_NOT_IN_WAREHOUSE: 'PRODUCT_NOT_IN_WAREHOUSE',
   ACCESS_ABOVE_GRANTER: 'ACCESS_ABOVE_GRANTER',
   WAREHOUSE_ACCESS_INVALID: 'WAREHOUSE_ACCESS_INVALID',
+  // Distribution par véhicule (phase 36)
+  VEHICLE_TYPE_NOT_FOUND: 'VEHICLE_TYPE_NOT_FOUND',
+  /** A live truck still has this type. */
+  VEHICLE_TYPE_IN_USE: 'VEHICLE_TYPE_IN_USE',
+  /** Another live dépôt, truck or vehicle type of the company has this code. */
+  VEHICLE_CODE_TAKEN: 'VEHICLE_CODE_TAKEN',
+  /** Type, wilaya, plate and capacity belong to trucks only. */
+  VEHICLE_FIELDS_ON_DEPOT: 'VEHICLE_FIELDS_ON_DEPOT',
+  /** The driver's day on this truck is still open: close it first. */
+  SESSION_OPEN_ON_VEHICLE: 'SESSION_OPEN_ON_VEHICLE',
+  /** A tournée is planned for a vehicle or for a seller. */
+  ROUTE_NEEDS_OWNER: 'ROUTE_NEEDS_OWNER',
+  SELLER_HAS_NO_VEHICLE: 'SELLER_HAS_NO_VEHICLE',
   // Tournées, commandes, clôture (phase 16)
   ROUTE_NOT_FOUND: 'ROUTE_NOT_FOUND',
   /** The stops changed since the list this save started from was read (phase 35). */

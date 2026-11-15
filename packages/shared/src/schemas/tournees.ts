@@ -14,6 +14,7 @@ import {
 import { amountString, normalizeDecimal, quantityString } from './common';
 import { type GeoCheckResultDto, geoInputSchema } from './geo';
 import { packagingReturnedSchema, saleLineInputSchema, type SaleWarning } from './sales';
+import { type VehicleRef, type VehicleTypeRef } from './vehicles';
 
 const id = z.uuid();
 const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'invalid_date');
@@ -41,9 +42,14 @@ const weekdays = z
   .max(7)
   .transform((days) => [...new Set(days)].sort((a, b) => a - b));
 
+/**
+ * A tournée is planned for a vehicle (phase 36) or, as before, for a seller. With a
+ * `vehicleId` the seller is ignored and stored null; with neither: ROUTE_NEEDS_OWNER.
+ */
 export const createRouteSchema = z.object({
   name: z.string().trim().min(1).max(80),
-  sellerId: id,
+  sellerId: id.optional(),
+  vehicleId: id.optional(),
   weekdays,
   active: z.boolean().default(true),
 });
@@ -52,7 +58,9 @@ export type CreateRouteInput = z.infer<typeof createRouteSchema>;
 export const updateRouteSchema = z
   .object({
     name: z.string().trim().min(1).max(80),
-    sellerId: id,
+    sellerId: id.nullable(),
+    /** A vehicle clears the seller; null goes back to a seller route (give `sellerId`). */
+    vehicleId: id.nullable(),
     weekdays,
     active: z.boolean(),
   })
@@ -79,6 +87,7 @@ export type SetRouteStopsInput = z.infer<typeof setRouteStopsSchema>;
 
 export const routeListQuerySchema = z.object({
   sellerId: id.optional(),
+  vehicleId: id.optional(),
   /** Only routes that run on this weekday. */
   weekday: z.coerce.number().int().min(0).max(6).optional(),
 });
@@ -98,10 +107,20 @@ export interface RouteStopDto {
   };
 }
 
+/** The truck a tournée is planned for, with who drives it today. */
+export interface RouteVehicleDto extends VehicleRef {
+  wilayaCode: number | null;
+  type: VehicleTypeRef | null;
+  driver: UserRef | null;
+}
+
 export interface RouteDto {
   id: string;
   name: string;
-  seller: UserRef;
+  /** Null on a vehicle route (phase 36). */
+  seller: UserRef | null;
+  /** Null on an old seller route. */
+  vehicle: RouteVehicleDto | null;
   weekdays: number[];
   active: boolean;
   stopCount: number;
@@ -148,6 +167,8 @@ export interface TodayDto {
   /** Algiers day, `YYYY-MM-DD`. */
   day: string;
   weekday: number;
+  /** The truck the caller drives now (phase 36); its tournées are his today. */
+  vehicle: (VehicleRef & { wilayaCode: number | null }) | null;
   routes: { id: string; name: string }[];
   /** A client on two of today's routes appears once, at his first route. */
   stops: TodayStopDto[];
@@ -197,6 +218,8 @@ export type CreateVisitInput = z.infer<typeof createVisitSchema>;
 
 export const visitListQuerySchema = z.object({
   sellerId: id.optional(),
+  /** The truck frozen on the visit (phase 36). */
+  vehicleId: id.optional(),
   clientId: id.optional(),
   from: dateString.optional(),
   to: dateString.optional(),
@@ -210,6 +233,8 @@ export interface VisitDto {
   seller: UserRef;
   client: { id: string; code: string; name: string };
   routeId: string | null;
+  /** The truck the seller drove at `startedAt` (phase 36); null = none or unknown. */
+  vehicle: VehicleRef | null;
   startedAt: string;
   endedAt: string | null;
   outcome: VisitOutcomeValue;
@@ -250,7 +275,20 @@ export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 export const updateOrderSchema = z.object({ ...orderFields, version: z.number().int().min(1) });
 export type UpdateOrderInput = z.infer<typeof updateOrderSchema>;
 
-export const assignLivreurSchema = z.object({ livreurId: id.nullable() });
+/**
+ * Who delivers a confirmed order: a person (`livreurId`), or a delivery truck (phase 36):
+ * then the livreur is the truck's driver, and the order follows the truck when he changes.
+ * A `livreurId` alone clears the truck; both null clear everything.
+ */
+export const assignLivreurSchema = z
+  .object({
+    livreurId: id.nullable().optional(),
+    deliveryVehicleId: id.nullable().optional(),
+  })
+  .refine((a) => a.livreurId !== undefined || a.deliveryVehicleId !== undefined, {
+    message: 'livreur_or_vehicle_required',
+    path: ['livreurId'],
+  });
 export type AssignLivreurInput = z.infer<typeof assignLivreurSchema>;
 
 export const cancelOrderSchema = z.object({ reason });
@@ -282,6 +320,10 @@ export const orderListQuerySchema = z.object({
   status: z.enum(ORDER_STATUSES).optional(),
   sellerId: id.optional(),
   livreurId: id.optional(),
+  /** The prévendeur's truck when the order was taken (phase 36). */
+  vehicleId: id.optional(),
+  /** The truck that delivers / delivered it (phase 36). */
+  deliveryVehicleId: id.optional(),
   clientId: id.optional(),
   /** Only this dépôt (phase 24); one outside the user's reach gives nothing. */
   warehouseId: id.optional(),
@@ -325,6 +367,9 @@ export interface OrderDto {
   client: { id: string; code: string; name: string; phone: string | null };
   seller: UserRef | null;
   livreur: UserRef | null;
+  /** The prévendeur's truck at creation, and the delivery truck (phase 36). */
+  vehicle: VehicleRef | null;
+  deliveryVehicle: VehicleRef | null;
   warehouse: { id: string; name: string } | null;
   requestedDate: string | null;
   note: string | null;
@@ -350,6 +395,7 @@ export interface OrderSummaryDto {
   client: { id: string; code: string; name: string };
   seller: UserRef | null;
   livreur: UserRef | null;
+  deliveryVehicle: VehicleRef | null;
   requestedDate: string | null;
   totalTtc: string;
   lineCount: number;
@@ -469,6 +515,9 @@ export const tourneeReportQuerySchema = z
     from: dateString,
     to: dateString,
     sellerId: id.optional(),
+    /** `vehicle` (phase 36): one row per truck, from the truck frozen on each operation. */
+    by: z.enum(['seller', 'vehicle']).default('seller'),
+    vehicleId: id.optional(),
   })
   .refine((q) => q.from <= q.to, { message: 'from_after_to', path: ['to'] });
 export type TourneeReportQuery = z.infer<typeof tourneeReportQuerySchema>;
@@ -497,8 +546,16 @@ export interface TourneeReportRowDto {
   ecart: string;
 }
 
+/** The same figures per truck; `vehicle` null = operations whose truck is not known. */
+export type TourneeVehicleReportRowDto = Omit<TourneeReportRowDto, 'seller'> & {
+  vehicle: VehicleRef | null;
+};
+
 export interface TourneeReportDto {
   from: string;
   to: string;
+  /** Filled with `by=seller` (the default). */
   rows: TourneeReportRowDto[];
+  /** Filled with `by=vehicle` (phase 36). */
+  vehicleRows: TourneeVehicleReportRowDto[];
 }

@@ -16,6 +16,7 @@ import {
   type AdjustSellerSessionInput,
   adjustSellerSessionSchema,
   type AssignLivreurInput,
+  type ConvertRoutesResultDto,
   assignLivreurSchema,
   type CancelOrderInput,
   cancelOrderSchema,
@@ -116,6 +117,25 @@ export class RoutesController {
     @CurrentUser() user: CurrentUserInfo,
   ): Promise<RouteDto> {
     return this.routes.update(id, body, user);
+  }
+
+  /** Every seller route whose seller drives a truck becomes a vehicle route (phase 36). */
+  @Post('convert-to-vehicle')
+  @Roles(...PLANNERS)
+  @HttpCode(HttpStatus.OK)
+  convertAll(@CurrentUser() user: CurrentUserInfo): Promise<ConvertRoutesResultDto> {
+    return this.routes.convertAllToVehicle(user);
+  }
+
+  /** "Convertir en tournée véhicule": the route goes to the truck its seller drives now. */
+  @Post(':id/convert-to-vehicle')
+  @Roles(...PLANNERS)
+  @HttpCode(HttpStatus.OK)
+  convert(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<RouteDto> {
+    return this.routes.convertToVehicle(id, user);
   }
 
   @Put(':id/stops')

@@ -94,7 +94,8 @@ function Routes() {
                   <div className="min-w-0">
                     <p className="truncate font-medium">{r.name}</p>
                     <p className="truncate text-xs text-muted-foreground">
-                      {r.seller.fullName} · {r.weekdays.map((d) => dayLabel(d)).join(', ')}
+                      {r.vehicle?.code ?? r.vehicle?.name ?? r.seller?.fullName} ·{' '}
+                      {r.weekdays.map((d) => dayLabel(d)).join(', ')}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">

@@ -11,11 +11,16 @@ import { StockService } from './stock.service';
 import { UnitBackfillService } from './unit-backfill.service';
 import { WarehouseBackfillService } from './warehouse-backfill.service';
 import { StockTransfersController, WarehousesController } from './warehouses.controllers';
+import { VehicleBackfillService } from './vehicle-backfill.service';
+import { VehicleTypesService } from './vehicle-types.service';
+import { UserVehiclesController, VehicleTypesController } from './vehicles.controllers';
+import { VehiclesService } from './vehicles.service';
 import { WarehousesService } from './warehouses.service';
 
 /**
  * Stock ledger. Other modules (purchases, sales) use StockService.applyMovements only, with
- * the dépôt from WarehousesService; the dashboard reads StockQueriesService.
+ * the dépôt from WarehousesService; the dashboard reads StockQueriesService. Trucks, their
+ * drivers and the driver history belong to VehiclesService (phase 36).
  */
 @Module({
   imports: [DocumentsModule, BillingModule, SalesForceModule],
@@ -24,6 +29,8 @@ import { WarehousesService } from './warehouses.service';
     InventoriesController,
     WarehousesController,
     StockTransfersController,
+    VehicleTypesController,
+    UserVehiclesController,
   ],
   providers: [
     StockService,
@@ -34,7 +41,16 @@ import { WarehousesService } from './warehouses.service';
     StockTransfersService,
     WarehouseBackfillService,
     UnitBackfillService,
+    VehiclesService,
+    VehicleTypesService,
+    VehicleBackfillService,
   ],
-  exports: [StockService, StockQueriesService, WarehousesService, StockTransfersService],
+  exports: [
+    StockService,
+    StockQueriesService,
+    WarehousesService,
+    StockTransfersService,
+    VehiclesService,
+  ],
 })
 export class StockModule {}

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, type OnModuleInit } from '@nestjs/common';
 import {
   type AdjustSellerSessionInput,
   algiersDay,
@@ -27,6 +27,7 @@ import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { fromIsoDate, toIsoDate } from '../sales/sale.mapper';
 import { ScopeService } from '../sales-force/scope.service';
+import { VehiclesService } from '../stock/vehicles.service';
 import { WarehousesService } from '../stock/warehouses.service';
 import { assertVisible, tourneeSellerIds } from './tournee-scope';
 
@@ -55,14 +56,40 @@ const ROAD_ROLES = [Role.SELLER, Role.LIVREUR];
  * or delivered, and the versements he collected.
  */
 @Injectable()
-export class SellerSessionsService {
+export class SellerSessionsService implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly scope: ScopeService,
     private readonly warehouses: WarehousesService,
     private readonly audit: AuditService,
     private readonly clock: ClockService,
+    private readonly vehicles: VehiclesService,
   ) {}
+
+  /**
+   * Money responsibility stays clear (phase 36): a driver does not leave a truck while his
+   * day on it is open. The stock module owns driver changes and asks us through this guard.
+   */
+  onModuleInit(): void {
+    this.vehicles.registerDriverChangeGuard(async (tx, leaving) => {
+      const open = await tx.sellerSession.findFirst({
+        where: {
+          sellerId: leaving.userId,
+          warehouseId: leaving.vehicleId,
+          status: SellerSessionStatus.OPEN,
+          adjustsSessionId: null,
+        },
+        select: { id: true, date: true },
+      });
+      if (open) {
+        throw new AppException(
+          ErrorCode.SESSION_OPEN_ON_VEHICLE,
+          "The driver's day on this truck is open: close it first",
+          { sessionId: open.id, date: toIsoDate(open.date), ...leaving },
+        );
+      }
+    });
+  }
 
   /** The clôture screen: every road user of the day, with a session or not. */
   async listDay(date: string | undefined, user: CurrentUserInfo): Promise<SellerDayDto[]> {
@@ -99,13 +126,9 @@ export class SellerSessionsService {
         where: { sellerId: { in: userIds }, date: fromIsoDate(day), adjustsSessionId: null },
         include: sessionInclude,
       }),
-      this.prisma.db.warehouse.findMany({
-        where: { assignedUserId: { in: userIds }, type: 'VEHICLE', active: true, deletedAt: null },
-        select: { id: true, name: true, assignedUserId: true },
-      }),
+      this.vehicles.currentVehiclesOf(userIds),
     ]);
     const sessionOf = new Map(sessions.map((s) => [s.sellerId, s]));
-    const vehicleOf = new Map(vehicles.map((v) => [v.assignedUserId, { id: v.id, name: v.name }]));
     const live = await this.liveFor(sessions);
     const names = await this.names(sessions);
     return users.map((u) => {
@@ -115,9 +138,13 @@ export class SellerSessionsService {
         date: day,
         session: s ? this.toDto(s, live, names) : null,
         expected: expected.get(u.id) ?? ZERO,
-        vehicle: vehicleOf.get(u.id) ?? null,
+        vehicle: this.vehicleRef(vehicles.get(u.id)),
       };
     });
+  }
+
+  private vehicleRef(v: { id: string; name: string } | undefined) {
+    return v ? { id: v.id, name: v.name } : null;
   }
 
   async get(id: string, user: CurrentUserInfo): Promise<SellerSessionDto> {

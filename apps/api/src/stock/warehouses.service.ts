@@ -4,13 +4,14 @@ import {
   ErrorCode,
   Feature,
   Permission,
-  SELLING_ROLES,
   type UpdateWarehouseInput,
+  VEHICLE_ONLY_FIELDS,
   WarehouseAccessLevel,
   type WarehouseBrandsInput,
   type WarehouseCategoriesInput,
   type WarehouseDetailDto,
   type WarehouseDto,
+  type WarehouseListQuery,
   WarehouseType,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
@@ -21,11 +22,36 @@ import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
+import { VehicleTypesService } from './vehicle-types.service';
+import { VehiclesService } from './vehicles.service';
 
 /** Name of the dépôt every tenant has (shown in French on printed documents too). */
 export const DEFAULT_WAREHOUSE_NAME = 'Dépôt principal';
 
 type Db = PrismaService['db'] | Tx;
+
+const warehouseInclude = {
+  assignedUser: { select: { id: true, fullName: true } },
+  manager: { select: { id: true, fullName: true } },
+  parent: { select: { id: true, name: true } },
+  vehicleType: { select: { id: true, code: true, name: true, activity: true } },
+  _count: { select: { stocks: { where: { qtyBase: { not: 0 } } } } },
+} satisfies Prisma.WarehouseInclude;
+
+/** The identity a truck has (phase 36), as written in audits. */
+const identityOf = (w: {
+  code: string | null;
+  vehicleTypeId: string | null;
+  wilayaCode: number | null;
+  plateNumber: string | null;
+  capacityKg: number | null;
+}) => ({
+  code: w.code,
+  vehicleTypeId: w.vehicleTypeId,
+  wilayaCode: w.wilayaCode,
+  plateNumber: w.plateNumber,
+  capacityKg: w.capacityKg,
+});
 
 /**
  * Dépôts and trucks (phase 15). Every tenant has one default MAIN warehouse, created at
@@ -39,6 +65,8 @@ export class WarehousesService {
     private readonly features: FeaturesService,
     private readonly audit: AuditService,
     private readonly scope: ScopeService,
+    private readonly vehicles: VehiclesService,
+    private readonly vehicleTypes: VehicleTypesService,
   ) {}
 
   async enabled(tenantId: string = tenantContext.requireTenantId()): Promise<boolean> {
@@ -95,11 +123,7 @@ export class WarehousesService {
   /** The active truck driven by this user, when the module is on. */
   async vehicleOf(tx: Tx, userId: string | null | undefined): Promise<string | null> {
     if (!userId || !(await this.enabled())) return null;
-    const truck = await tx.warehouse.findFirst({
-      where: { assignedUserId: userId, type: WarehouseType.VEHICLE, active: true, deletedAt: null },
-      select: { id: true },
-    });
-    return truck?.id ?? null;
+    return (await this.vehicles.currentVehicleOf(userId, tx))?.id ?? null;
   }
 
   /** Where a sale leaves from: the chosen dépôt, else the seller's truck, else MAIN. */
@@ -115,18 +139,22 @@ export class WarehousesService {
    * The dépôts a user can see (phase 24): those he works in or sees figures of; a dépôt
    * outside his reach is not listed. Without a user (internal reads): all of them.
    */
-  async list(user?: CurrentUserInfo): Promise<WarehouseDto[]> {
+  async list(user?: CurrentUserInfo, query: WarehouseListQuery = {}): Promise<WarehouseDto[]> {
     await this.defaultId();
     const reach = user ? (await this.scope.warehouses(user)).statsWarehouseIds : null;
+    const search = query.search ? { contains: query.search, mode: 'insensitive' as const } : null;
     const rows = await this.prisma.db.warehouse.findMany({
-      where: { deletedAt: null, ...(reach ? { id: { in: reach } } : {}) },
-      orderBy: [{ isDefault: 'desc' }, { type: 'asc' }, { name: 'asc' }],
-      include: {
-        assignedUser: { select: { id: true, fullName: true } },
-        manager: { select: { id: true, fullName: true } },
-        parent: { select: { id: true, name: true } },
-        _count: { select: { stocks: { where: { qtyBase: { not: 0 } } } } },
+      where: {
+        deletedAt: null,
+        ...(reach ? { id: { in: reach } } : {}),
+        ...(query.type ? { type: query.type } : {}),
+        ...(query.vehicleTypeId ? { vehicleTypeId: query.vehicleTypeId } : {}),
+        ...(query.wilayaCode ? { wilayaCode: query.wilayaCode } : {}),
+        ...(query.parentWarehouseId ? { parentWarehouseId: query.parentWarehouseId } : {}),
+        ...(search ? { OR: [{ code: search }, { name: search }, { plateNumber: search }] } : {}),
       },
+      orderBy: [{ isDefault: 'desc' }, { type: 'asc' }, { name: 'asc' }],
+      include: warehouseInclude,
     });
     return rows.map((w) => ({
       id: w.id,
@@ -142,6 +170,11 @@ export class WarehousesService {
         w.lat && w.lng
           ? { lat: w.lat.toNumber(), lng: w.lng.toNumber(), radiusM: w.radiusM }
           : null,
+      code: w.code,
+      vehicleType: w.vehicleType,
+      wilayaCode: w.wilayaCode,
+      plateNumber: w.plateNumber,
+      capacityKg: w.capacityKg,
     }));
   }
 
@@ -172,7 +205,12 @@ export class WarehousesService {
       }),
       this.prisma.db.warehouse.findMany({
         where: { parentWarehouseId: id, deletedAt: null },
-        select: { id: true, name: true, assignedUser: { select: { id: true, fullName: true } } },
+        select: {
+          id: true,
+          name: true,
+          code: true,
+          assignedUser: { select: { id: true, fullName: true } },
+        },
         orderBy: { name: 'asc' },
       }),
     ]);
@@ -188,19 +226,31 @@ export class WarehousesService {
   async create(input: CreateWarehouseInput, user?: CurrentUserInfo): Promise<WarehouseDto> {
     const id = await this.prisma.db.$transaction(async (tx) => {
       const mainId = await this.defaultId(tx);
-      if (input.assignedUserId) await this.checkDriver(tx, input.assignedUserId, null);
+      await this.checkIdentity(tx, input.type, input, null);
       const w = await this.write(() =>
         tx.warehouse.create({
           data: {
             tenantId: tenantContext.requireTenantId(),
             name: input.name,
             type: input.type,
-            assignedUserId: input.assignedUserId,
             // A truck belongs to a dépôt (phase 24): the dépôt principal until moved.
             parentWarehouseId: input.type === WarehouseType.VEHICLE ? mainId : null,
+            code: input.code ?? null,
+            vehicleTypeId: input.vehicleTypeId ?? null,
+            wilayaCode: input.wilayaCode ?? null,
+            plateNumber: input.plateNumber ?? null,
+            capacityKg: input.capacityKg ?? null,
           },
         }),
       );
+      // The driver goes through the one path that keeps the history (phase 36).
+      if (input.assignedUserId) {
+        await this.vehicles.assignDriver(tx, {
+          vehicleId: w.id,
+          userId: input.assignedUserId,
+          moveDriver: false,
+        });
+      }
       // Whoever creates a dépôt works in it, so a user restricted to some dépôts sees it.
       if (user && input.type !== WarehouseType.VEHICLE) {
         const { warehouseIds } = await this.scope.warehouses(user, tx);
@@ -257,7 +307,7 @@ export class WarehousesService {
           rule: 'driver_on_vehicle_only',
         });
       }
-      if (input.assignedUserId) await this.checkDriver(tx, input.assignedUserId, id);
+      await this.checkIdentity(tx, before.type, input, id);
       if (input.active === false && before.isDefault) {
         throw new AppException(ErrorCode.WAREHOUSE_INVALID, 'The main dépôt stays active', {
           rule: 'default_stays_active',
@@ -268,10 +318,14 @@ export class WarehousesService {
           where: { id },
           data: {
             name: input.name,
-            assignedUserId: input.assignedUserId,
             active: input.active,
             managerUserId: input.managerUserId,
             parentWarehouseId: input.parentWarehouseId,
+            code: input.code,
+            vehicleTypeId: input.vehicleTypeId,
+            wilayaCode: input.wilayaCode,
+            plateNumber: input.plateNumber,
+            capacityKg: input.capacityKg,
             ...(input.location === undefined
               ? {}
               : {
@@ -282,6 +336,13 @@ export class WarehousesService {
           },
         }),
       );
+      if (input.assignedUserId !== undefined) {
+        await this.vehicles.assignDriver(tx, {
+          vehicleId: id,
+          userId: input.assignedUserId,
+          moveDriver: false,
+        });
+      }
       await this.audit.log(tx, {
         action: 'WAREHOUSE_UPDATED',
         entity: 'Warehouse',
@@ -292,6 +353,7 @@ export class WarehousesService {
           active: before.active,
           managerUserId: before.managerUserId,
           parentWarehouseId: before.parentWarehouseId,
+          ...identityOf(before),
         },
         after: input,
       });
@@ -514,10 +576,9 @@ export class WarehousesService {
           products: holding,
         });
       }
-      await tx.warehouse.update({
-        where: { id },
-        data: { deletedAt: new Date(), active: false, assignedUserId: null },
-      });
+      // The driver leaves through the one path that keeps the history (phase 36).
+      await this.vehicles.assignDriver(tx, { vehicleId: id, userId: null, moveDriver: false });
+      await tx.warehouse.update({ where: { id }, data: { deletedAt: new Date(), active: false } });
       await this.audit.log(tx, { action: 'WAREHOUSE_ARCHIVED', entity: 'Warehouse', entityId: id });
     });
   }
@@ -575,39 +636,53 @@ export class WarehousesService {
     if (user) await this.assertReach(tx, user, parentId);
   }
 
-  /** A driver is an active user who sells, and drives one truck only. */
-  private async checkDriver(tx: Tx, userId: string, warehouseId: string | null): Promise<void> {
-    const user = await tx.user.findFirst({
-      where: { id: userId, deletedAt: null },
-      select: { role: true },
-    });
-    if (!user || !(SELLING_ROLES as readonly string[]).includes(user.role)) {
-      throw new AppException(ErrorCode.SELLER_NOT_ALLOWED, 'This user cannot drive a truck', {
-        field: 'assignedUserId',
-      });
+  /**
+   * Identity fields (phase 36): type, wilaya, plate and capacity belong to trucks; the type
+   * must be a live one of this company; a code is unique among the company's live dépôts
+   * and trucks, whatever the case.
+   */
+  private async checkIdentity(
+    tx: Tx,
+    type: string,
+    input: Pick<UpdateWarehouseInput, 'code' | (typeof VEHICLE_ONLY_FIELDS)[number]>,
+    id: string | null,
+  ): Promise<void> {
+    if (type !== WarehouseType.VEHICLE) {
+      const fields = VEHICLE_ONLY_FIELDS.filter((f) => input[f] != null);
+      if (fields.length > 0) {
+        throw new AppException(
+          ErrorCode.VEHICLE_FIELDS_ON_DEPOT,
+          'Type, wilaya, plate and capacity belong to trucks',
+          { fields },
+        );
+      }
     }
-    const other = await tx.warehouse.findFirst({
-      where: {
-        assignedUserId: userId,
-        deletedAt: null,
-        NOT: warehouseId ? { id: warehouseId } : {},
-      },
-      select: { id: true, name: true },
-    });
-    if (other) {
-      throw new AppException(ErrorCode.VEHICLE_ALREADY_ASSIGNED, 'This seller has a truck', {
-        warehouseId: other.id,
-        name: other.name,
+    if (input.vehicleTypeId) await this.vehicleTypes.assertUsable(tx, input.vehicleTypeId);
+    if (input.code) {
+      const taken = await tx.warehouse.findFirst({
+        where: {
+          code: { equals: input.code, mode: 'insensitive' },
+          deletedAt: null,
+          ...(id ? { NOT: { id } } : {}),
+        },
+        select: { id: true },
       });
+      if (taken) throw this.codeTaken();
     }
   }
 
-  /** Maps the unique-name violation to a clear error. */
+  private codeTaken(): AppException {
+    return new AppException(ErrorCode.VEHICLE_CODE_TAKEN, 'Code already used', { field: 'code' });
+  }
+
+  /** Maps the unique-name and unique-code violations to clear errors. */
   private async write<T>(fn: () => Promise<T>): Promise<T> {
     try {
       return await fn();
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+        // The partial unique index on lower(code): two requests raced past the check.
+        if (JSON.stringify(err.meta ?? {}).includes('code')) throw this.codeTaken();
         throw new AppException(ErrorCode.WAREHOUSE_NAME_TAKEN, 'Name already used', {
           field: 'name',
         });
