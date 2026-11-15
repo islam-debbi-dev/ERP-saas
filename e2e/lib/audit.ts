@@ -24,7 +24,9 @@ const ADMIN_FILE = fileURLToPath(new URL('../.auth/audit02-admin.json', import.m
 export function assertAuditDb(url: string = DB): void {
   const u = new URL(url);
   const local = u.hostname === 'localhost' || u.hostname === '127.0.0.1';
-  if (!local || !u.pathname.startsWith('/erp_audit02')) {
+  // erp_t36*: the scratch databases of test 36 (e2e/REPORT-36.md), made the same way.
+  const scratch = ['/erp_audit02', '/erp_t36'].some((p) => u.pathname.startsWith(p));
+  if (!local || !scratch) {
     throw new Error(
       `Refusing to run on ${u.hostname}${u.pathname}: set DB to a local erp_audit02* database ` +
         '(see e2e/REPORT-02.md, "How to reproduce")',

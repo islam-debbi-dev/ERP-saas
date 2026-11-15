@@ -17,7 +17,9 @@
     "audit02:routes": "tsx audit-02/routes.ts",
     "audit02:a": "bash audit-02/part-a.sh",
     "test:concurrency": "tsx api/concurrency.ts",
-    "audit02:b": "bash audit-02/part-b.sh"
+    "audit02:b": "bash audit-02/part-b.sh",
+    "test:vehicles:seed": "tsx api/vehicles-seed.ts",
+    "test:vehicles:api": "AUDIT_RUN=test-36 tsx api/vehicles.ts"
   },
   "dependencies": {
     "decimal.js": "^10.6.0",
