@@ -19,7 +19,8 @@
     "test:concurrency": "tsx api/concurrency.ts",
     "audit02:b": "bash audit-02/part-b.sh",
     "test:vehicles:seed": "tsx api/vehicles-seed.ts",
-    "test:vehicles:api": "AUDIT_RUN=test-36 tsx api/vehicles.ts"
+    "test:vehicles:api": "AUDIT_RUN=test-36 tsx api/vehicles.ts",
+    "test:vehicles:scope": "AUDIT_RUN=test-36 tsx api/vehicles-scope.ts"
   },
   "dependencies": {
     "decimal.js": "^10.6.0",

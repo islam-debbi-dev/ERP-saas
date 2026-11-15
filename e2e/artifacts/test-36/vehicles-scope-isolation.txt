@@ -1,0 +1,41 @@
+PATCH /vehicle-types/:B: HTTP 404 {"code":"VEHICLE_TYPE_NOT_FOUND","message":"Vehicle type not found","requestId":"e71bc10a-a8d6-47fc-a5e3-1b0d9dcca663"}
+POST /vehicle-types/:B/archive: HTTP 404 {"code":"VEHICLE_TYPE_NOT_FOUND","message":"Vehicle type not found","requestId":"68ef16c8-c646-4aa5-9fad-78899e53b2d1"}
+GET /warehouses/:B (detail): HTTP 404 {"code":"WAREHOUSE_NOT_FOUND","message":"Warehouse not found","requestId":"e056e696-d2c6-4860-a172-9ae62e15f21d"}
+PATCH /warehouses/:B (code): HTTP 404 {"code":"WAREHOUSE_NOT_FOUND","message":"Warehouse not found","requestId":"0b219b47-2527-4776-aa48-87f8781c1e19"}
+DELETE /warehouses/:B: HTTP 404 {"code":"WAREHOUSE_NOT_FOUND","message":"Warehouse not found","requestId":"522ea67b-9e8b-45bd-91aa-eea7f0e44c64"}
+POST /warehouses/:B/driver {userId: null}: HTTP 404 {"code":"WAREHOUSE_NOT_FOUND","message":"Vehicle not found","requestId":"7897c4c8-b12d-4240-96e7-3a94b0d01b33"}
+POST /warehouses/:B/driver {userId: A seller}: HTTP 404 {"code":"WAREHOUSE_NOT_FOUND","message":"Vehicle not found","requestId":"5c3a5baf-30f0-41f1-ba8d-3b2823b6b9f7"}
+GET /warehouses/:B/assignments: HTTP 404 {"code":"WAREHOUSE_NOT_FOUND","message":"Vehicle not found","requestId":"c15d5846-8527-45d1-be64-6ca4eb4e243f"}
+GET /users/:B seller/vehicle-assignments: HTTP 404 {"code":"NOT_FOUND","message":"User not found","requestId":"f19d78c3-efe8-4e8e-a71a-f7c392b52b82"}
+GET /routes/:B: HTTP 404 {"code":"ROUTE_NOT_FOUND","message":"Route not found","requestId":"8627c2fd-adc8-40eb-947c-1d26929e58f2"}
+PATCH /routes/:B: HTTP 404 {"code":"ROUTE_NOT_FOUND","message":"Route not found","requestId":"3dc7c963-fdf0-4e58-931c-f355091f0f91"}
+PUT /routes/:B/stops: HTTP 404 {"code":"ROUTE_NOT_FOUND","message":"Route not found","requestId":"77dcf5fa-80c8-4d6e-a4e0-1c543ded8202"}
+POST /routes/:B/convert-to-vehicle: HTTP 404 {"code":"ROUTE_NOT_FOUND","message":"Route not found","requestId":"190531b5-c06f-414f-aedc-96f280893456"}
+DELETE /routes/:B: HTTP 404 {"code":"ROUTE_NOT_FOUND","message":"Route not found","requestId":"93640114-f005-4769-8f6a-6273b2e1a872"}
+GET /orders/:B: HTTP 404 {"code":"ORDER_NOT_FOUND","message":"Order not found","requestId":"cda388db-a51c-45f4-a6e0-de3695bf7dd5"}
+PATCH /orders/:B/livreur {deliveryVehicleId: A LIV}: HTTP 404 {"code":"ORDER_NOT_FOUND","message":"Order not found","requestId":"704e9b14-0fe7-402c-a1b4-d980bec5ca38"}
+POST /warehouses {vehicleTypeId: B}: HTTP 404 {"code":"VEHICLE_TYPE_NOT_FOUND","message":"Vehicle type not found","details":{"field":"vehicleTypeId"},"requestId":"bf4fd454-45ae-4f58-b600-241bfde92732"}
+POST /warehouses {assignedUserId: B seller}: HTTP 422 {"code":"SELLER_NOT_ALLOWED","message":"This user cannot drive a truck","details":{"field":"assignedUserId"},"requestId":"5cb00539-34f1-430a-b7f1-2ed3a46950a0"}
+PATCH /warehouses/:A truck {parentWarehouseId: B main}: HTTP 422 {"code":"WAREHOUSE_INVALID","message":"A truck belongs to a dépôt","details":{"field":"parentWarehouseId"},"requestId":"5151f72e-741d-439c-b6ff-1fc7ae896033"}
+PATCH /warehouses/:A truck {parentWarehouseId: B truck}: HTTP 422 {"code":"WAREHOUSE_INVALID","message":"A truck belongs to a dépôt","details":{"field":"parentWarehouseId"},"requestId":"ae8707af-7b65-42c3-ae84-9bfdffc0bf53"}
+PATCH /warehouses/:A truck {vehicleTypeId: B}: HTTP 404 {"code":"VEHICLE_TYPE_NOT_FOUND","message":"Vehicle type not found","details":{"field":"vehicleTypeId"},"requestId":"1e1bcf62-3e8d-4d88-acd2-00bb094deff1"}
+PATCH /warehouses/:A truck {assignedUserId: B seller}: HTTP 422 {"code":"SELLER_NOT_ALLOWED","message":"This user cannot drive a truck","details":{"field":"assignedUserId"},"requestId":"644685f6-a0ac-47c6-8e18-5483962d5434"}
+POST /warehouses/:A truck/driver {userId: B seller}: HTTP 422 {"code":"SELLER_NOT_ALLOWED","message":"This user cannot drive a truck","details":{"field":"assignedUserId"},"requestId":"73007159-c0c4-44fc-9052-dfb9f5a52d1d"}
+POST /warehouses/:A truck/driver {userId: B livreur}: HTTP 422 {"code":"SELLER_NOT_ALLOWED","message":"This user cannot drive a truck","details":{"field":"assignedUserId"},"requestId":"5efa57b9-3a05-4287-98fb-0558e7b12c0b"}
+POST /routes {vehicleId: B}: HTTP 404 {"code":"WAREHOUSE_NOT_FOUND","message":"Vehicle not found","requestId":"780bf17c-1904-484d-a0ad-e530d2acccff"}
+POST /routes {sellerId: B}: HTTP 422 {"code":"SELLER_NOT_ALLOWED","message":"This user cannot be the seller","details":{"userId":"801c6e5d-e226-49e2-8083-4d0735223ed0"},"requestId":"bfde14f3-9f6a-47fb-93bb-ed2f62508e0c"}
+PATCH /routes/:A {vehicleId: B}: HTTP 404 {"code":"WAREHOUSE_NOT_FOUND","message":"Vehicle not found","requestId":"04f660eb-b1ac-466c-9e08-8aa47fc896c4"}
+PATCH /orders/:A/livreur {deliveryVehicleId: B}: HTTP 404 {"code":"WAREHOUSE_NOT_FOUND","message":"Vehicle not found","requestId":"0788c855-f3aa-4010-bcc3-3caafe18d0d3"}
+PATCH /orders/:A/livreur {livreurId: B livreur}: HTTP 422 {"code":"SELLER_NOT_ALLOWED","message":"This user cannot deliver","details":{"userId":"9a2db13b-1f84-4265-8c5c-00765f7f13b7"},"requestId":"d5cdbf4d-3230-42eb-9220-8461d9472262"}
+POST /orders {warehouseId: B truck}: HTTP 404 {"code":"WAREHOUSE_NOT_FOUND","message":"Warehouse not found","requestId":"8a696af7-7e3e-4fd2-9914-380c18817b6d"}
+POST /sales/quick {warehouseId: B truck}: HTTP 404 {"code":"WAREHOUSE_NOT_FOUND","message":"Warehouse not found","requestId":"0cb6824a-d8bd-4b94-8db5-c0ea8f5e2c10"}
+POST /stock-transfers LOAD into B truck: HTTP 404 {"code":"WAREHOUSE_NOT_FOUND","message":"Warehouse not found","requestId":"66869070-2456-4d03-b564-adf5d5193756"}
+GET /warehouses?vehicleTypeId=B: HTTP 200 []
+GET /routes?vehicleId=B: HTTP 200 []
+GET /routes?sellerId=B: HTTP 200 []
+GET /orders?vehicleId=B: HTTP 200 {"items":[],"nextCursor":null}
+GET /orders?deliveryVehicleId=B: HTTP 200 {"items":[],"nextCursor":null}
+GET /visits?vehicleId=B: HTTP 200 {"items":[],"nextCursor":null}
+GET /tournees/reports?by=vehicle&vehicleId=B: HTTP 200 {"from":"2026-11-15","to":"2026-11-15","rows":[],"vehicleRows":[]}
+GET /warehouses/:A truck/assignments?cursor=<a row of B>: HTTP 200 {"items":[],"nextCursor":null}
+GET /users/:A seller/vehicle-assignments?cursor=<a row of B>: HTTP 200 {"items":[],"nextCursor":null}
