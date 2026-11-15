@@ -310,6 +310,29 @@ It then checks that no row is left without a dépôt, that every client balance 
 
 **Contract release (later, not with phase 24):** once the backfill ran cleanly in production, move `apps/api/prisma/contract/phase-24-units-contract.sql` into a new migration folder and make `warehouseId` required on `Payment` and `ClientLedgerEntry` in `schema.prisma`. It also requires a parent dépôt on every live truck and puts back the strict append-only trigger on `client_ledger_entries`. Its first statement fails if any row was missed.
 
+
+### Vehicle backfill (once, after the phase 36 deploy)
+
+Phase 36 records the truck on every visit and order. Rows written before it have none. The deploy migration is additive (nothing renamed or removed, `routes."sellerId"` only loses its `NOT NULL`) and already starts the driver history with one row per truck that has a driver. Nothing is wrong in the meantime: a row without a truck shows as "Véhicule inconnu".
+
+Per tenant, in one transaction, the backfill:
+- gives each visit the dépôt of its linked sale when that dépôt is a truck, else the truck frozen on its linked order;
+- gives each delivered order the dépôt of its BL when that dépôt is a truck.
+
+What cannot be known stays empty: it never looks at today's driver. Only empty columns are written, so it is safe with the app running and safe to run twice.
+
+Production is Vercel + Neon (no VPS, no timers): run it from a machine that holds the production `DATABASE_URL` / `DATABASE_URL_MIGRATE`, after the merge.
+
+```bash
+pnpm --filter @erp/api db:deploy              # the additive migration, on Neon
+pnpm --filter @erp/api build
+pnpm --filter @erp/api db:backfill-vehicles   # "Visits given their truck: N. Delivered orders …: M."
+pnpm --filter @erp/api db:backfill-vehicles   # second run: 0 and 0
+pnpm --filter @erp/api reconcile              # still clean
+```
+
+**Contract release (later, not with phase 36):** making `Route.vehicleId` required waits until every company has converted its seller routes.
+
 ## Database roles
 
 | Role | Used by | RLS |
