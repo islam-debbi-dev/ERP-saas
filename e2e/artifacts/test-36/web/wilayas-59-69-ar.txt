@@ -1,0 +1,15 @@
+Wilayas 59 to 69 as the vehicle form shows them (ar), to confirm by the owner.
+Source cited by packages/shared/src/wilayas.ts: law 26-06 of 4 April 2026 (JO n° 25), names by presidential decree 26-206 (JO n° 40),
+numbers as published with the vehicle registration arrêté of 17 June 2026 (JO n° 50 of 15 July 2026).
+
+59 · أفلو
+60 · بريكة
+61 · القنطرة
+62 · بئر العاتر
+63 · العريشة
+64 · قصر الشلالة
+65 · عين وسارة
+66 · مسعد
+67 · قصر البخاري
+68 · بوسعادة
+69 · الأبيض سيدي الشيخ

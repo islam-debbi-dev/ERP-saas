@@ -1,0 +1,3421 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/26.10.0_2/bin/node",
+      "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "web/vehicles.playwright.config.ts"
+    ],
+    "configFile": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.playwright.config.ts",
+    "rootDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles-global-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "ar"
+        },
+        "id": "m360-ar",
+        "name": "m360-ar",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/web\\/vehicles\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "id": "m360-fr",
+        "name": "m360-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/web\\/vehicles\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "ar"
+        },
+        "id": "m393-ar",
+        "name": "m393-ar",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/web\\/vehicles\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "id": "m393-fr",
+        "name": "m393-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/web\\/vehicles\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "id": "d1280-fr",
+        "name": "d1280-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": [
+          "/web\\/vehicles\\.spec\\.ts$/"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "ar"
+        },
+        "name": "m360-ar",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "snapshotDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": {},
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://localhost:3005",
+          "actionTimeout": 20000,
+          "navigationTimeout": 30000,
+          "trace": "off",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 360,
+            "height": 640
+          },
+          "screen": {
+            "width": 360,
+            "height": 640
+          },
+          "deviceScaleFactor": 2.75,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium",
+          "locale": "ar"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "m360-ar"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "name": "m360-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "snapshotDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": {},
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://localhost:3005",
+          "actionTimeout": 20000,
+          "navigationTimeout": 30000,
+          "trace": "off",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 360,
+            "height": 640
+          },
+          "screen": {
+            "width": 360,
+            "height": 640
+          },
+          "deviceScaleFactor": 2.75,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium",
+          "locale": "fr"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "m360-fr"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "ar"
+        },
+        "name": "m393-ar",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "snapshotDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": {},
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://localhost:3005",
+          "actionTimeout": 20000,
+          "navigationTimeout": 30000,
+          "trace": "off",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 393,
+            "height": 851
+          },
+          "screen": {
+            "width": 393,
+            "height": 851
+          },
+          "deviceScaleFactor": 2.75,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium",
+          "locale": "ar"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "m393-ar"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "name": "m393-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "snapshotDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": {},
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://localhost:3005",
+          "actionTimeout": 20000,
+          "navigationTimeout": 30000,
+          "trace": "off",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 393,
+            "height": 851
+          },
+          "screen": {
+            "width": 393,
+            "height": 851
+          },
+          "deviceScaleFactor": 2.75,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium",
+          "locale": "fr"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "m393-fr"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "lang": "fr"
+        },
+        "name": "d1280-fr",
+        "testDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "snapshotDir": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web",
+        "testIgnore": [],
+        "testMatch": {},
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://localhost:3005",
+          "actionTimeout": 20000,
+          "navigationTimeout": 30000,
+          "trace": "off",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "locale": "fr"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "d1280-fr"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../artifacts/test-36/web/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "vehicles.spec.ts",
+      "file": "vehicles.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "empty company: types, vehicles and tournées say what to do, with the field examples",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3675,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:54:03.846Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-8b15fe3a9af30bacdd71",
+          "file": "vehicles.spec.ts",
+          "line": 287,
+          "column": 1
+        },
+        {
+          "title": "types de véhicules: list, form, archive refused while a truck uses the type",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5176,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:54:12.349Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-e6560168017bcc6f5112",
+          "file": "vehicles.spec.ts",
+          "line": 317,
+          "column": 1
+        },
+        {
+          "title": "véhicules: cards (code big, type badge, wilaya, plate, driver of the day, \"Changer\") and filters",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1095,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:54:17.531Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-6593aa9a0fb45e2dd75c",
+          "file": "vehicles.spec.ts",
+          "line": 382,
+          "column": 1
+        },
+        {
+          "title": "véhicules: the form proposes the next code, keeps the archived type out, and saves",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3514,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:54:18.632Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-c4e5622f8d3fa4f91ba2",
+          "file": "vehicles.spec.ts",
+          "line": 444,
+          "column": 1
+        },
+        {
+          "title": "véhicules: the driver sheet warns \"already has a truck\", moves the driver, and the history shows it",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3882,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:54:22.155Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-4bf5d4eaa5c2f4b47f37",
+          "file": "vehicles.spec.ts",
+          "line": 506,
+          "column": 1
+        },
+        {
+          "title": "utilisateurs: \"Véhicules conduits\" follows the worker across trucks",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3941,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:54:26.044Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-d192427e267e17684f92",
+          "file": "vehicles.spec.ts",
+          "line": 557,
+          "column": 1
+        },
+        {
+          "title": "tournées: grouped by vehicle, create asks \"Véhicule\" first, \"Convertir\" and the bulk banner with its count",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2354,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:54:29.995Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-66a0a29a1bf9e178f272",
+          "file": "vehicles.spec.ts",
+          "line": 595,
+          "column": 1
+        },
+        {
+          "title": "aujourd’hui: the truck header for its driver; a seller without truck keeps his seller routes and the old message",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8694,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:54:32.358Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-38c17c8503df4937deb9",
+          "file": "vehicles.spec.ts",
+          "line": 679,
+          "column": 1
+        },
+        {
+          "title": "commandes: filter by delivery truck, assign a delivery truck; the livreur of the truck sees the order",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4613,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:54:41.058Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-80e1ea0b1f1404af77ad",
+          "file": "vehicles.spec.ts",
+          "line": 730,
+          "column": 1
+        },
+        {
+          "title": "bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3717,
+                  "error": {
+                    "message": "Error: /commandes: \"LIV 28 MIX\" in p > bdi is cut by the line that holds it\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: /commandes: \"LIV 28 MIX\" in p > bdi is cut by the line that holds it\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                      "column": 99,
+                      "line": 802
+                    },
+                    "snippet": "  800 |         expect.soft(l.ordered, `${s.path}: \"${code}\" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);\n  801 |         expect.soft(l.isolated, `${s.path}: \"${code}\" in ${l.where} is not isolated from the text around it`).toBe(true);\n> 802 |         expect.soft(l.cut, `${s.path}: \"${code}\" in ${l.where} is cut by the line that holds it`).toBe(false);\n      |                                                                                                   ^\n  803 |       }\n  804 |     }\n  805 |     await pageRules(page, s.path);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 99,
+                        "line": 802
+                      },
+                      "message": "Error: /commandes: \"LIV 28 MIX\" in p > bdi is cut by the line that holds it\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  800 |         expect.soft(l.ordered, `${s.path}: \"${code}\" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);\n  801 |         expect.soft(l.isolated, `${s.path}: \"${code}\" in ${l.where} is not isolated from the text around it`).toBe(true);\n> 802 |         expect.soft(l.cut, `${s.path}: \"${code}\" in ${l.where} is cut by the line that holds it`).toBe(false);\n      |                                                                                                   ^\n  803 |       }\n  804 |     }\n  805 |     await pageRules(page, s.path);\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 99,
+                        "line": 802
+                      },
+                      "message": "Error: /commandes: \"LIV 28 MIX\" in p > bdi is cut by the line that holds it\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  800 |         expect.soft(l.ordered, `${s.path}: \"${code}\" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);\n  801 |         expect.soft(l.isolated, `${s.path}: \"${code}\" in ${l.where} is not isolated from the text around it`).toBe(true);\n> 802 |         expect.soft(l.cut, `${s.path}: \"${code}\" in ${l.where} is cut by the line that holds it`).toBe(false);\n      |                                                                                                   ^\n  803 |       }\n  804 |     }\n  805 |     await pageRules(page, s.path);\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:54:45.678Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles/vehicles-bidi-VAN-28-MXT-0-e3da4-their-order-on-every-screen-m360-ar/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                    "column": 99,
+                    "line": 802
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-a1b888221e05ae181703",
+          "file": "vehicles.spec.ts",
+          "line": 790,
+          "column": 1
+        },
+        {
+          "title": "bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1138,
+                  "error": {
+                    "message": "Error: typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN شاحنة\u001b[7m 01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"VAN \u001b[7m01 \u001b[27mشاحنة\"\u001b[39m",
+                    "stack": "Error: typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN شاحنة\u001b[7m 01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"VAN \u001b[7m01 \u001b[27mشاحنة\"\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:833:99",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                      "column": 99,
+                      "line": 833
+                    },
+                    "snippet": "  831 |     JSON.stringify({ typed1: CODES.arabic, drawn1: drawn(one[0]!), typed2: CODES.arabicSwapped, drawn2: drawn(two[0]!), one, two }, null, 2),\n  832 |   );\n> 833 |   expect.soft(drawn(one[0]!), `typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');\n      |                                                                                                   ^\n  834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));\n  835 |   // The form shows the same text the card does: what the owner typed is what he reads back.\n  836 |   await card(page, CODES.arabic).getByRole('button').first().click();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 99,
+                        "line": 833
+                      },
+                      "message": "Error: typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN شاحنة\u001b[7m 01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"VAN \u001b[7m01 \u001b[27mشاحنة\"\u001b[39m\n\n  831 |     JSON.stringify({ typed1: CODES.arabic, drawn1: drawn(one[0]!), typed2: CODES.arabicSwapped, drawn2: drawn(two[0]!), one, two }, null, 2),\n  832 |   );\n> 833 |   expect.soft(drawn(one[0]!), `typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');\n      |                                                                                                   ^\n  834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));\n  835 |   // The form shows the same text the card does: what the owner typed is what he reads back.\n  836 |   await card(page, CODES.arabic).getByRole('button').first().click();\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:833:99"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 77,
+                        "line": 834
+                      },
+                      "message": "Error: two different codes are drawn the same\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"VAN 01 شاحنة\"\u001b[39m\n\n  832 |   );\n  833 |   expect.soft(drawn(one[0]!), `typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');\n> 834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));\n      |                                                                             ^\n  835 |   // The form shows the same text the card does: what the owner typed is what he reads back.\n  836 |   await card(page, CODES.arabic).getByRole('button').first().click();\n  837 |   const dialog = page.getByRole('dialog');\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:834:77"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:54:49.968Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles/vehicles-bidi-a-code-with--b00dc--codes-do-not-look-the-same-m360-ar/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                    "column": 99,
+                    "line": 833
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-4b05b3929c84d2f1f2ee",
+          "file": "vehicles.spec.ts",
+          "line": 816,
+          "column": 1
+        },
+        {
+          "title": "long codes: two 30-character codes that differ by their last number can be told apart on a card",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 982,
+                  "error": {
+                    "message": "Error: the code is cut (206 px for 336 px) and the end that tells the two trucks apart is hidden\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: the code is cut (206 px for 336 px) and the end that tells the two trucks apart is hidden\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:854:154",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                      "column": 154,
+                      "line": 854
+                    },
+                    "snippet": "  852 |   const full = await card(page, CODES.long1).locator('p.truncate').first().evaluate((p) => ({ title: p.getAttribute('title'), scroll: p.scrollWidth, client: p.clientWidth }));\n  853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));\n> 854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);\n      |                                                                                                                                                          ^\n  855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);\n  856 |   await pageRules(page, 'vehicles, long codes');\n  857 | });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 154,
+                        "line": 854
+                      },
+                      "message": "Error: the code is cut (206 px for 336 px) and the end that tells the two trucks apart is hidden\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  852 |   const full = await card(page, CODES.long1).locator('p.truncate').first().evaluate((p) => ({ title: p.getAttribute('title'), scroll: p.scrollWidth, client: p.clientWidth }));\n  853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));\n> 854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);\n      |                                                                                                                                                          ^\n  855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);\n  856 |   await pageRules(page, 'vehicles, long codes');\n  857 | });\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:854:154"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 106,
+                        "line": 855
+                      },
+                      "message": "Error: a cut code has no way to be read in full (docs/ui.md rule 8)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN-28 GROS DETAIL MSILA N 001\"\u001b[39m\nReceived: \u001b[31mnull\u001b[39m\n\n  853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));\n  854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);\n> 855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);\n      |                                                                                                          ^\n  856 |   await pageRules(page, 'vehicles, long codes');\n  857 | });\n  858 |\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:855:106"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:54:52.671Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles/vehicles-long-codes-two-30-e3cf0-can-be-told-apart-on-a-card-m360-ar/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                    "column": 154,
+                    "line": 854
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-4e83283006ecaa733035",
+          "file": "vehicles.spec.ts",
+          "line": 843,
+          "column": 1
+        },
+        {
+          "title": "wilayas: the list has 69 unique numbers; 1–58 match the official list; 59–69 are written down for the owner",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 925,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:54:54.994Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-482ec27602cd176ddda5",
+          "file": "vehicles.spec.ts",
+          "line": 880,
+          "column": 1
+        },
+        {
+          "title": "en: no raw message key on the phase 36 screens and sheets",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7059,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:54:56.870Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-02866af7df1e5acb97a6",
+          "file": "vehicles.spec.ts",
+          "line": 913,
+          "column": 1
+        },
+        {
+          "title": "dépôts: the list still shows the trucks with their code",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-ar",
+              "projectName": "m360-ar",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 937,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:55:03.935Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-9385a78e7e0ec694211d",
+          "file": "vehicles.spec.ts",
+          "line": 953,
+          "column": 1
+        },
+        {
+          "title": "empty company: types, vehicles and tournées say what to do, with the field examples",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3546,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:55:05.328Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-cc9c87e8aedd6990866e",
+          "file": "vehicles.spec.ts",
+          "line": 287,
+          "column": 1
+        },
+        {
+          "title": "types de véhicules: list, form, archive refused while a truck uses the type",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4558,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:55:13.511Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-4aa00066c14de65270cc",
+          "file": "vehicles.spec.ts",
+          "line": 317,
+          "column": 1
+        },
+        {
+          "title": "véhicules: cards (code big, type badge, wilaya, plate, driver of the day, \"Changer\") and filters",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1017,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:55:18.076Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-bdfe12778095ab4d4356",
+          "file": "vehicles.spec.ts",
+          "line": 382,
+          "column": 1
+        },
+        {
+          "title": "véhicules: the form proposes the next code, keeps the archived type out, and saves",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3961,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:55:19.098Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-d1656c08a94d578c1e42",
+          "file": "vehicles.spec.ts",
+          "line": 444,
+          "column": 1
+        },
+        {
+          "title": "véhicules: the driver sheet warns \"already has a truck\", moves the driver, and the history shows it",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3399,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:55:23.064Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-2ffa958127de40f1a2ea",
+          "file": "vehicles.spec.ts",
+          "line": 506,
+          "column": 1
+        },
+        {
+          "title": "utilisateurs: \"Véhicules conduits\" follows the worker across trucks",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3897,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:55:26.470Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-c1e661a8d247b8b15b3e",
+          "file": "vehicles.spec.ts",
+          "line": 557,
+          "column": 1
+        },
+        {
+          "title": "tournées: grouped by vehicle, create asks \"Véhicule\" first, \"Convertir\" and the bulk banner with its count",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2548,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:55:30.376Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-1ed8265b4a00dc5ecae4",
+          "file": "vehicles.spec.ts",
+          "line": 595,
+          "column": 1
+        },
+        {
+          "title": "aujourd’hui: the truck header for its driver; a seller without truck keeps his seller routes and the old message",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8748,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:55:32.931Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-9fead420c4368bdfdee5",
+          "file": "vehicles.spec.ts",
+          "line": 679,
+          "column": 1
+        },
+        {
+          "title": "commandes: filter by delivery truck, assign a delivery truck; the livreur of the truck sees the order",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5300,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:55:41.687Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-464d9dc11cf67fe808e5",
+          "file": "vehicles.spec.ts",
+          "line": 730,
+          "column": 1
+        },
+        {
+          "title": "bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 4055,
+                  "error": {
+                    "message": "Error: /commandes: \"LIV 28 MIX\" in p > bdi is cut by the line that holds it\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: /commandes: \"LIV 28 MIX\" in p > bdi is cut by the line that holds it\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                      "column": 99,
+                      "line": 802
+                    },
+                    "snippet": "  800 |         expect.soft(l.ordered, `${s.path}: \"${code}\" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);\n  801 |         expect.soft(l.isolated, `${s.path}: \"${code}\" in ${l.where} is not isolated from the text around it`).toBe(true);\n> 802 |         expect.soft(l.cut, `${s.path}: \"${code}\" in ${l.where} is cut by the line that holds it`).toBe(false);\n      |                                                                                                   ^\n  803 |       }\n  804 |     }\n  805 |     await pageRules(page, s.path);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 99,
+                        "line": 802
+                      },
+                      "message": "Error: /commandes: \"LIV 28 MIX\" in p > bdi is cut by the line that holds it\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  800 |         expect.soft(l.ordered, `${s.path}: \"${code}\" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);\n  801 |         expect.soft(l.isolated, `${s.path}: \"${code}\" in ${l.where} is not isolated from the text around it`).toBe(true);\n> 802 |         expect.soft(l.cut, `${s.path}: \"${code}\" in ${l.where} is cut by the line that holds it`).toBe(false);\n      |                                                                                                   ^\n  803 |       }\n  804 |     }\n  805 |     await pageRules(page, s.path);\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 99,
+                        "line": 802
+                      },
+                      "message": "Error: /commandes: \"LIV 28 MIX\" in p > bdi is cut by the line that holds it\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  800 |         expect.soft(l.ordered, `${s.path}: \"${code}\" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);\n  801 |         expect.soft(l.isolated, `${s.path}: \"${code}\" in ${l.where} is not isolated from the text around it`).toBe(true);\n> 802 |         expect.soft(l.cut, `${s.path}: \"${code}\" in ${l.where} is cut by the line that holds it`).toBe(false);\n      |                                                                                                   ^\n  803 |       }\n  804 |     }\n  805 |     await pageRules(page, s.path);\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:55:46.998Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles/vehicles-bidi-VAN-28-MXT-0-e3da4-their-order-on-every-screen-m360-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                    "column": 99,
+                    "line": 802
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-ee031fd9b7c7f387c918",
+          "file": "vehicles.spec.ts",
+          "line": 790,
+          "column": 1
+        },
+        {
+          "title": "bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1142,
+                  "error": {
+                    "message": "Error: typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN شاحنة\u001b[7m 01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"VAN \u001b[7m01 \u001b[27mشاحنة\"\u001b[39m",
+                    "stack": "Error: typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN شاحنة\u001b[7m 01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"VAN \u001b[7m01 \u001b[27mشاحنة\"\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:833:99",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                      "column": 99,
+                      "line": 833
+                    },
+                    "snippet": "  831 |     JSON.stringify({ typed1: CODES.arabic, drawn1: drawn(one[0]!), typed2: CODES.arabicSwapped, drawn2: drawn(two[0]!), one, two }, null, 2),\n  832 |   );\n> 833 |   expect.soft(drawn(one[0]!), `typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');\n      |                                                                                                   ^\n  834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));\n  835 |   // The form shows the same text the card does: what the owner typed is what he reads back.\n  836 |   await card(page, CODES.arabic).getByRole('button').first().click();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 99,
+                        "line": 833
+                      },
+                      "message": "Error: typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN شاحنة\u001b[7m 01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"VAN \u001b[7m01 \u001b[27mشاحنة\"\u001b[39m\n\n  831 |     JSON.stringify({ typed1: CODES.arabic, drawn1: drawn(one[0]!), typed2: CODES.arabicSwapped, drawn2: drawn(two[0]!), one, two }, null, 2),\n  832 |   );\n> 833 |   expect.soft(drawn(one[0]!), `typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');\n      |                                                                                                   ^\n  834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));\n  835 |   // The form shows the same text the card does: what the owner typed is what he reads back.\n  836 |   await card(page, CODES.arabic).getByRole('button').first().click();\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:833:99"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 77,
+                        "line": 834
+                      },
+                      "message": "Error: two different codes are drawn the same\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"VAN 01 شاحنة\"\u001b[39m\n\n  832 |   );\n  833 |   expect.soft(drawn(one[0]!), `typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');\n> 834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));\n      |                                                                             ^\n  835 |   // The form shows the same text the card does: what the owner typed is what he reads back.\n  836 |   await card(page, CODES.arabic).getByRole('button').first().click();\n  837 |   const dialog = page.getByRole('dialog');\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:834:77"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:55:51.671Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles/vehicles-bidi-a-code-with--b00dc--codes-do-not-look-the-same-m360-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                    "column": 99,
+                    "line": 833
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-45350a7d54a9ff79acb2",
+          "file": "vehicles.spec.ts",
+          "line": 816,
+          "column": 1
+        },
+        {
+          "title": "long codes: two 30-character codes that differ by their last number can be told apart on a card",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 997,
+                  "error": {
+                    "message": "Error: the code is cut (206 px for 336 px) and the end that tells the two trucks apart is hidden\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: the code is cut (206 px for 336 px) and the end that tells the two trucks apart is hidden\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:854:154",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                      "column": 154,
+                      "line": 854
+                    },
+                    "snippet": "  852 |   const full = await card(page, CODES.long1).locator('p.truncate').first().evaluate((p) => ({ title: p.getAttribute('title'), scroll: p.scrollWidth, client: p.clientWidth }));\n  853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));\n> 854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);\n      |                                                                                                                                                          ^\n  855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);\n  856 |   await pageRules(page, 'vehicles, long codes');\n  857 | });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 154,
+                        "line": 854
+                      },
+                      "message": "Error: the code is cut (206 px for 336 px) and the end that tells the two trucks apart is hidden\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  852 |   const full = await card(page, CODES.long1).locator('p.truncate').first().evaluate((p) => ({ title: p.getAttribute('title'), scroll: p.scrollWidth, client: p.clientWidth }));\n  853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));\n> 854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);\n      |                                                                                                                                                          ^\n  855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);\n  856 |   await pageRules(page, 'vehicles, long codes');\n  857 | });\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:854:154"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 106,
+                        "line": 855
+                      },
+                      "message": "Error: a cut code has no way to be read in full (docs/ui.md rule 8)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN-28 GROS DETAIL MSILA N 001\"\u001b[39m\nReceived: \u001b[31mnull\u001b[39m\n\n  853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));\n  854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);\n> 855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);\n      |                                                                                                          ^\n  856 |   await pageRules(page, 'vehicles, long codes');\n  857 | });\n  858 |\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:855:106"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:55:54.678Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles/vehicles-long-codes-two-30-e3cf0-can-be-told-apart-on-a-card-m360-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                    "column": 154,
+                    "line": 854
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-3916fa535f778d04c89a",
+          "file": "vehicles.spec.ts",
+          "line": 843,
+          "column": 1
+        },
+        {
+          "title": "wilayas: the list has 69 unique numbers; 1–58 match the official list; 59–69 are written down for the owner",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 936,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:55:56.985Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-74e9bb98c73cc032cc14",
+          "file": "vehicles.spec.ts",
+          "line": 880,
+          "column": 1
+        },
+        {
+          "title": "en: no raw message key on the phase 36 screens and sheets",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7138,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:55:58.891Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-f17abacab70db84dd944",
+          "file": "vehicles.spec.ts",
+          "line": 913,
+          "column": 1
+        },
+        {
+          "title": "dépôts: the list still shows the trucks with their code",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m360-fr",
+              "projectName": "m360-fr",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 824,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:56:06.037Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-2f13a025969b5f0d6f21",
+          "file": "vehicles.spec.ts",
+          "line": 953,
+          "column": 1
+        },
+        {
+          "title": "empty company: types, vehicles and tournées say what to do, with the field examples",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3599,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:56:07.226Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-255de4e91dd5189b5e9b",
+          "file": "vehicles.spec.ts",
+          "line": 287,
+          "column": 1
+        },
+        {
+          "title": "types de véhicules: list, form, archive refused while a truck uses the type",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4599,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:56:14.380Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-b5a017250d04d4423671",
+          "file": "vehicles.spec.ts",
+          "line": 317,
+          "column": 1
+        },
+        {
+          "title": "véhicules: cards (code big, type badge, wilaya, plate, driver of the day, \"Changer\") and filters",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1010,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:56:18.985Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-7b86099a79d63c5f40fe",
+          "file": "vehicles.spec.ts",
+          "line": 382,
+          "column": 1
+        },
+        {
+          "title": "véhicules: the form proposes the next code, keeps the archived type out, and saves",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3494,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:56:20.001Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-f7a238b4c76c9b1a6cea",
+          "file": "vehicles.spec.ts",
+          "line": 444,
+          "column": 1
+        },
+        {
+          "title": "véhicules: the driver sheet warns \"already has a truck\", moves the driver, and the history shows it",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3357,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:56:23.503Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-4e158fe3f68bade72e7a",
+          "file": "vehicles.spec.ts",
+          "line": 506,
+          "column": 1
+        },
+        {
+          "title": "utilisateurs: \"Véhicules conduits\" follows the worker across trucks",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3965,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:56:26.878Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-696b4c2d72fdd3b13aaa",
+          "file": "vehicles.spec.ts",
+          "line": 557,
+          "column": 1
+        },
+        {
+          "title": "tournées: grouped by vehicle, create asks \"Véhicule\" first, \"Convertir\" and the bulk banner with its count",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2515,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:56:30.855Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-389142e0d1f19d6b0688",
+          "file": "vehicles.spec.ts",
+          "line": 595,
+          "column": 1
+        },
+        {
+          "title": "aujourd’hui: the truck header for its driver; a seller without truck keeps his seller routes and the old message",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8521,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:56:33.377Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-c2ec2a6d739b13db32b7",
+          "file": "vehicles.spec.ts",
+          "line": 679,
+          "column": 1
+        },
+        {
+          "title": "commandes: filter by delivery truck, assign a delivery truck; the livreur of the truck sees the order",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4583,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:56:41.903Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-6372342bb830b93a8532",
+          "file": "vehicles.spec.ts",
+          "line": 730,
+          "column": 1
+        },
+        {
+          "title": "bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3917,
+                  "error": {
+                    "message": "Error: /commandes: \"LIV 28 MIX\" in p > bdi is cut by the line that holds it\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: /commandes: \"LIV 28 MIX\" in p > bdi is cut by the line that holds it\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                      "column": 99,
+                      "line": 802
+                    },
+                    "snippet": "  800 |         expect.soft(l.ordered, `${s.path}: \"${code}\" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);\n  801 |         expect.soft(l.isolated, `${s.path}: \"${code}\" in ${l.where} is not isolated from the text around it`).toBe(true);\n> 802 |         expect.soft(l.cut, `${s.path}: \"${code}\" in ${l.where} is cut by the line that holds it`).toBe(false);\n      |                                                                                                   ^\n  803 |       }\n  804 |     }\n  805 |     await pageRules(page, s.path);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 99,
+                        "line": 802
+                      },
+                      "message": "Error: /commandes: \"LIV 28 MIX\" in p > bdi is cut by the line that holds it\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  800 |         expect.soft(l.ordered, `${s.path}: \"${code}\" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);\n  801 |         expect.soft(l.isolated, `${s.path}: \"${code}\" in ${l.where} is not isolated from the text around it`).toBe(true);\n> 802 |         expect.soft(l.cut, `${s.path}: \"${code}\" in ${l.where} is cut by the line that holds it`).toBe(false);\n      |                                                                                                   ^\n  803 |       }\n  804 |     }\n  805 |     await pageRules(page, s.path);\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 99,
+                        "line": 802
+                      },
+                      "message": "Error: /commandes: \"LIV 28 MIX\" in p > bdi is cut by the line that holds it\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  800 |         expect.soft(l.ordered, `${s.path}: \"${code}\" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);\n  801 |         expect.soft(l.isolated, `${s.path}: \"${code}\" in ${l.where} is not isolated from the text around it`).toBe(true);\n> 802 |         expect.soft(l.cut, `${s.path}: \"${code}\" in ${l.where} is cut by the line that holds it`).toBe(false);\n      |                                                                                                   ^\n  803 |       }\n  804 |     }\n  805 |     await pageRules(page, s.path);\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:56:46.496Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles/vehicles-bidi-VAN-28-MXT-0-e3da4-their-order-on-every-screen-m393-ar/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                    "column": 99,
+                    "line": 802
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-1cc0c56bcb276f9e25b3",
+          "file": "vehicles.spec.ts",
+          "line": 790,
+          "column": 1
+        },
+        {
+          "title": "bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1153,
+                  "error": {
+                    "message": "Error: typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN شاحنة\u001b[7m 01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"VAN \u001b[7m01 \u001b[27mشاحنة\"\u001b[39m",
+                    "stack": "Error: typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN شاحنة\u001b[7m 01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"VAN \u001b[7m01 \u001b[27mشاحنة\"\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:833:99",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                      "column": 99,
+                      "line": 833
+                    },
+                    "snippet": "  831 |     JSON.stringify({ typed1: CODES.arabic, drawn1: drawn(one[0]!), typed2: CODES.arabicSwapped, drawn2: drawn(two[0]!), one, two }, null, 2),\n  832 |   );\n> 833 |   expect.soft(drawn(one[0]!), `typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');\n      |                                                                                                   ^\n  834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));\n  835 |   // The form shows the same text the card does: what the owner typed is what he reads back.\n  836 |   await card(page, CODES.arabic).getByRole('button').first().click();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 99,
+                        "line": 833
+                      },
+                      "message": "Error: typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN شاحنة\u001b[7m 01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"VAN \u001b[7m01 \u001b[27mشاحنة\"\u001b[39m\n\n  831 |     JSON.stringify({ typed1: CODES.arabic, drawn1: drawn(one[0]!), typed2: CODES.arabicSwapped, drawn2: drawn(two[0]!), one, two }, null, 2),\n  832 |   );\n> 833 |   expect.soft(drawn(one[0]!), `typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');\n      |                                                                                                   ^\n  834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));\n  835 |   // The form shows the same text the card does: what the owner typed is what he reads back.\n  836 |   await card(page, CODES.arabic).getByRole('button').first().click();\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:833:99"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 77,
+                        "line": 834
+                      },
+                      "message": "Error: two different codes are drawn the same\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"VAN 01 شاحنة\"\u001b[39m\n\n  832 |   );\n  833 |   expect.soft(drawn(one[0]!), `typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');\n> 834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));\n      |                                                                             ^\n  835 |   // The form shows the same text the card does: what the owner typed is what he reads back.\n  836 |   await card(page, CODES.arabic).getByRole('button').first().click();\n  837 |   const dialog = page.getByRole('dialog');\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:834:77"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:56:51.009Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles/vehicles-bidi-a-code-with--b00dc--codes-do-not-look-the-same-m393-ar/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                    "column": 99,
+                    "line": 833
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-c9d5febc35d04d095edd",
+          "file": "vehicles.spec.ts",
+          "line": 816,
+          "column": 1
+        },
+        {
+          "title": "long codes: two 30-character codes that differ by their last number can be told apart on a card",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1005,
+                  "error": {
+                    "message": "Error: the code is cut (239 px for 336 px) and the end that tells the two trucks apart is hidden\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: the code is cut (239 px for 336 px) and the end that tells the two trucks apart is hidden\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:854:154",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                      "column": 154,
+                      "line": 854
+                    },
+                    "snippet": "  852 |   const full = await card(page, CODES.long1).locator('p.truncate').first().evaluate((p) => ({ title: p.getAttribute('title'), scroll: p.scrollWidth, client: p.clientWidth }));\n  853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));\n> 854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);\n      |                                                                                                                                                          ^\n  855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);\n  856 |   await pageRules(page, 'vehicles, long codes');\n  857 | });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 154,
+                        "line": 854
+                      },
+                      "message": "Error: the code is cut (239 px for 336 px) and the end that tells the two trucks apart is hidden\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  852 |   const full = await card(page, CODES.long1).locator('p.truncate').first().evaluate((p) => ({ title: p.getAttribute('title'), scroll: p.scrollWidth, client: p.clientWidth }));\n  853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));\n> 854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);\n      |                                                                                                                                                          ^\n  855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);\n  856 |   await pageRules(page, 'vehicles, long codes');\n  857 | });\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:854:154"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 106,
+                        "line": 855
+                      },
+                      "message": "Error: a cut code has no way to be read in full (docs/ui.md rule 8)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN-28 GROS DETAIL MSILA N 001\"\u001b[39m\nReceived: \u001b[31mnull\u001b[39m\n\n  853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));\n  854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);\n> 855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);\n      |                                                                                                          ^\n  856 |   await pageRules(page, 'vehicles, long codes');\n  857 | });\n  858 |\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:855:106"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:56:53.762Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles/vehicles-long-codes-two-30-e3cf0-can-be-told-apart-on-a-card-m393-ar/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                    "column": 154,
+                    "line": 854
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-946dd43c9ca9408582e5",
+          "file": "vehicles.spec.ts",
+          "line": 843,
+          "column": 1
+        },
+        {
+          "title": "wilayas: the list has 69 unique numbers; 1–58 match the official list; 59–69 are written down for the owner",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 11,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 926,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:56:56.131Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-281fc396bb03599339bc",
+          "file": "vehicles.spec.ts",
+          "line": 880,
+          "column": 1
+        },
+        {
+          "title": "en: no raw message key on the phase 36 screens and sheets",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 11,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6988,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:56:58.044Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-8a4223a82876e3b0fb86",
+          "file": "vehicles.spec.ts",
+          "line": 913,
+          "column": 1
+        },
+        {
+          "title": "dépôts: the list still shows the trucks with their code",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-ar",
+              "projectName": "m393-ar",
+              "results": [
+                {
+                  "workerIndex": 11,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 783,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:57:05.039Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-6e635e5f6758d6780316",
+          "file": "vehicles.spec.ts",
+          "line": 953,
+          "column": 1
+        },
+        {
+          "title": "empty company: types, vehicles and tournées say what to do, with the field examples",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 12,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3576,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:57:06.188Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-af3c855829ad0cdc7368",
+          "file": "vehicles.spec.ts",
+          "line": 287,
+          "column": 1
+        },
+        {
+          "title": "types de véhicules: list, form, archive refused while a truck uses the type",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 12,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4600,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:57:13.195Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-71f46df26a8aa73f8385",
+          "file": "vehicles.spec.ts",
+          "line": 317,
+          "column": 1
+        },
+        {
+          "title": "véhicules: cards (code big, type badge, wilaya, plate, driver of the day, \"Changer\") and filters",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 12,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1012,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:57:17.800Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-9e5623fb9ed8f7d1a0b8",
+          "file": "vehicles.spec.ts",
+          "line": 382,
+          "column": 1
+        },
+        {
+          "title": "véhicules: the form proposes the next code, keeps the archived type out, and saves",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 12,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3977,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:57:18.817Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-b185a5de81231396dc01",
+          "file": "vehicles.spec.ts",
+          "line": 444,
+          "column": 1
+        },
+        {
+          "title": "véhicules: the driver sheet warns \"already has a truck\", moves the driver, and the history shows it",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 12,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3339,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:57:22.798Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-9c6cd62d37674486be39",
+          "file": "vehicles.spec.ts",
+          "line": 506,
+          "column": 1
+        },
+        {
+          "title": "utilisateurs: \"Véhicules conduits\" follows the worker across trucks",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 12,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3439,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:57:26.145Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-f0084af20f65e12a675c",
+          "file": "vehicles.spec.ts",
+          "line": 557,
+          "column": 1
+        },
+        {
+          "title": "tournées: grouped by vehicle, create asks \"Véhicule\" first, \"Convertir\" and the bulk banner with its count",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 12,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2457,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:57:29.594Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-07051034712c56075412",
+          "file": "vehicles.spec.ts",
+          "line": 595,
+          "column": 1
+        },
+        {
+          "title": "aujourd’hui: the truck header for its driver; a seller without truck keeps his seller routes and the old message",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 12,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8471,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:57:32.059Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-29b00209ff98162067f6",
+          "file": "vehicles.spec.ts",
+          "line": 679,
+          "column": 1
+        },
+        {
+          "title": "commandes: filter by delivery truck, assign a delivery truck; the livreur of the truck sees the order",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 12,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4635,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:57:40.537Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-422e54f8bcf43881505f",
+          "file": "vehicles.spec.ts",
+          "line": 730,
+          "column": 1
+        },
+        {
+          "title": "bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 12,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3789,
+                  "error": {
+                    "message": "Error: /commandes: \"LIV 28 MIX\" in p > bdi is cut by the line that holds it\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: /commandes: \"LIV 28 MIX\" in p > bdi is cut by the line that holds it\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                      "column": 99,
+                      "line": 802
+                    },
+                    "snippet": "  800 |         expect.soft(l.ordered, `${s.path}: \"${code}\" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);\n  801 |         expect.soft(l.isolated, `${s.path}: \"${code}\" in ${l.where} is not isolated from the text around it`).toBe(true);\n> 802 |         expect.soft(l.cut, `${s.path}: \"${code}\" in ${l.where} is cut by the line that holds it`).toBe(false);\n      |                                                                                                   ^\n  803 |       }\n  804 |     }\n  805 |     await pageRules(page, s.path);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 99,
+                        "line": 802
+                      },
+                      "message": "Error: /commandes: \"LIV 28 MIX\" in p > bdi is cut by the line that holds it\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  800 |         expect.soft(l.ordered, `${s.path}: \"${code}\" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);\n  801 |         expect.soft(l.isolated, `${s.path}: \"${code}\" in ${l.where} is not isolated from the text around it`).toBe(true);\n> 802 |         expect.soft(l.cut, `${s.path}: \"${code}\" in ${l.where} is cut by the line that holds it`).toBe(false);\n      |                                                                                                   ^\n  803 |       }\n  804 |     }\n  805 |     await pageRules(page, s.path);\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 99,
+                        "line": 802
+                      },
+                      "message": "Error: /commandes: \"LIV 28 MIX\" in p > bdi is cut by the line that holds it\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  800 |         expect.soft(l.ordered, `${s.path}: \"${code}\" in ${l.where}: ${JSON.stringify(l.parts)}`).toBe(true);\n  801 |         expect.soft(l.isolated, `${s.path}: \"${code}\" in ${l.where} is not isolated from the text around it`).toBe(true);\n> 802 |         expect.soft(l.cut, `${s.path}: \"${code}\" in ${l.where} is cut by the line that holds it`).toBe(false);\n      |                                                                                                   ^\n  803 |       }\n  804 |     }\n  805 |     await pageRules(page, s.path);\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:802:99"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:57:45.181Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles/vehicles-bidi-VAN-28-MXT-0-e3da4-their-order-on-every-screen-m393-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                    "column": 99,
+                    "line": 802
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-b909cb21f624dd741b36",
+          "file": "vehicles.spec.ts",
+          "line": 790,
+          "column": 1
+        },
+        {
+          "title": "bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 13,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1223,
+                  "error": {
+                    "message": "Error: typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN شاحنة\u001b[7m 01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"VAN \u001b[7m01 \u001b[27mشاحنة\"\u001b[39m",
+                    "stack": "Error: typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN شاحنة\u001b[7m 01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"VAN \u001b[7m01 \u001b[27mشاحنة\"\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:833:99",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                      "column": 99,
+                      "line": 833
+                    },
+                    "snippet": "  831 |     JSON.stringify({ typed1: CODES.arabic, drawn1: drawn(one[0]!), typed2: CODES.arabicSwapped, drawn2: drawn(two[0]!), one, two }, null, 2),\n  832 |   );\n> 833 |   expect.soft(drawn(one[0]!), `typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');\n      |                                                                                                   ^\n  834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));\n  835 |   // The form shows the same text the card does: what the owner typed is what he reads back.\n  836 |   await card(page, CODES.arabic).getByRole('button').first().click();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 99,
+                        "line": 833
+                      },
+                      "message": "Error: typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN شاحنة\u001b[7m 01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"VAN \u001b[7m01 \u001b[27mشاحنة\"\u001b[39m\n\n  831 |     JSON.stringify({ typed1: CODES.arabic, drawn1: drawn(one[0]!), typed2: CODES.arabicSwapped, drawn2: drawn(two[0]!), one, two }, null, 2),\n  832 |   );\n> 833 |   expect.soft(drawn(one[0]!), `typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');\n      |                                                                                                   ^\n  834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));\n  835 |   // The form shows the same text the card does: what the owner typed is what he reads back.\n  836 |   await card(page, CODES.arabic).getByRole('button').first().click();\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:833:99"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 77,
+                        "line": 834
+                      },
+                      "message": "Error: two different codes are drawn the same\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"VAN 01 شاحنة\"\u001b[39m\n\n  832 |   );\n  833 |   expect.soft(drawn(one[0]!), `typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');\n> 834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));\n      |                                                                             ^\n  835 |   // The form shows the same text the card does: what the owner typed is what he reads back.\n  836 |   await card(page, CODES.arabic).getByRole('button').first().click();\n  837 |   const dialog = page.getByRole('dialog');\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:834:77"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:57:49.589Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles/vehicles-bidi-a-code-with--b00dc--codes-do-not-look-the-same-m393-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                    "column": 99,
+                    "line": 833
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-397b1d8bd0ca02aff250",
+          "file": "vehicles.spec.ts",
+          "line": 816,
+          "column": 1
+        },
+        {
+          "title": "long codes: two 30-character codes that differ by their last number can be told apart on a card",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 14,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1002,
+                  "error": {
+                    "message": "Error: the code is cut (239 px for 336 px) and the end that tells the two trucks apart is hidden\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: the code is cut (239 px for 336 px) and the end that tells the two trucks apart is hidden\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:854:154",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                      "column": 154,
+                      "line": 854
+                    },
+                    "snippet": "  852 |   const full = await card(page, CODES.long1).locator('p.truncate').first().evaluate((p) => ({ title: p.getAttribute('title'), scroll: p.scrollWidth, client: p.clientWidth }));\n  853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));\n> 854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);\n      |                                                                                                                                                          ^\n  855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);\n  856 |   await pageRules(page, 'vehicles, long codes');\n  857 | });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 154,
+                        "line": 854
+                      },
+                      "message": "Error: the code is cut (239 px for 336 px) and the end that tells the two trucks apart is hidden\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  852 |   const full = await card(page, CODES.long1).locator('p.truncate').first().evaluate((p) => ({ title: p.getAttribute('title'), scroll: p.scrollWidth, client: p.clientWidth }));\n  853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));\n> 854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);\n      |                                                                                                                                                          ^\n  855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);\n  856 |   await pageRules(page, 'vehicles, long codes');\n  857 | });\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:854:154"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 106,
+                        "line": 855
+                      },
+                      "message": "Error: a cut code has no way to be read in full (docs/ui.md rule 8)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN-28 GROS DETAIL MSILA N 001\"\u001b[39m\nReceived: \u001b[31mnull\u001b[39m\n\n  853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));\n  854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);\n> 855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);\n      |                                                                                                          ^\n  856 |   await pageRules(page, 'vehicles, long codes');\n  857 | });\n  858 |\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:855:106"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:57:52.497Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles/vehicles-long-codes-two-30-e3cf0-can-be-told-apart-on-a-card-m393-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                    "column": 154,
+                    "line": 854
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-a60280c0b5b81af70f54",
+          "file": "vehicles.spec.ts",
+          "line": 843,
+          "column": 1
+        },
+        {
+          "title": "wilayas: the list has 69 unique numbers; 1–58 match the official list; 59–69 are written down for the owner",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 15,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1087,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:57:54.972Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-cd41824278e033fa41e0",
+          "file": "vehicles.spec.ts",
+          "line": 880,
+          "column": 1
+        },
+        {
+          "title": "en: no raw message key on the phase 36 screens and sheets",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 15,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7349,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:57:57.091Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-251e5f2c67b87fb54301",
+          "file": "vehicles.spec.ts",
+          "line": 913,
+          "column": 1
+        },
+        {
+          "title": "dépôts: the list still shows the trucks with their code",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "m393-fr",
+              "projectName": "m393-fr",
+              "results": [
+                {
+                  "workerIndex": 15,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 822,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:58:04.449Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-c9d722a2b8a5254ef0e8",
+          "file": "vehicles.spec.ts",
+          "line": 953,
+          "column": 1
+        },
+        {
+          "title": "empty company: types, vehicles and tournées say what to do, with the field examples",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3567,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:58:05.852Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-579472132c7a1442a79b",
+          "file": "vehicles.spec.ts",
+          "line": 287,
+          "column": 1
+        },
+        {
+          "title": "types de véhicules: list, form, archive refused while a truck uses the type",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3213,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:58:13.179Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-98c6551fd844b2601b73",
+          "file": "vehicles.spec.ts",
+          "line": 317,
+          "column": 1
+        },
+        {
+          "title": "véhicules: cards (code big, type badge, wilaya, plate, driver of the day, \"Changer\") and filters",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1133,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:58:16.403Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-98aa09190d143b799b61",
+          "file": "vehicles.spec.ts",
+          "line": 382,
+          "column": 1
+        },
+        {
+          "title": "véhicules: the form proposes the next code, keeps the archived type out, and saves",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2547,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:58:17.544Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-6c35378698100c738ec0",
+          "file": "vehicles.spec.ts",
+          "line": 444,
+          "column": 1
+        },
+        {
+          "title": "véhicules: the driver sheet warns \"already has a truck\", moves the driver, and the history shows it",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2317,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:58:20.097Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-cf0566c0b4c08eeb62fa",
+          "file": "vehicles.spec.ts",
+          "line": 506,
+          "column": 1
+        },
+        {
+          "title": "utilisateurs: \"Véhicules conduits\" follows the worker across trucks",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3093,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:58:22.420Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-5aa5c8381a5bdab378a4",
+          "file": "vehicles.spec.ts",
+          "line": 557,
+          "column": 1
+        },
+        {
+          "title": "tournées: grouped by vehicle, create asks \"Véhicule\" first, \"Convertir\" and the bulk banner with its count",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2611,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:58:25.520Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-a3303f7d0b24a3f8e09b",
+          "file": "vehicles.spec.ts",
+          "line": 595,
+          "column": 1
+        },
+        {
+          "title": "aujourd’hui: the truck header for its driver; a seller without truck keeps his seller routes and the old message",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 84235,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:58:28.139Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-02fdc54dab983958bb2e",
+          "file": "vehicles.spec.ts",
+          "line": 679,
+          "column": 1
+        },
+        {
+          "title": "commandes: filter by delivery truck, assign a delivery truck; the livreur of the truck sees the order",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4306,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:59:52.376Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-2ffd3880340e138d8e56",
+          "file": "vehicles.spec.ts",
+          "line": 730,
+          "column": 1
+        },
+        {
+          "title": "bidi: VAN-28 MXT 01, VAN34-SELF/MT, LIV 28 MIX and the plate keep their order on every screen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3949,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T21:59:56.689Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-f842a2bb72c4f8f919c7",
+          "file": "vehicles.spec.ts",
+          "line": 790,
+          "column": 1
+        },
+        {
+          "title": "bidi: a code with an Arabic word is drawn in the order it was typed, and two codes do not look the same",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1142,
+                  "error": {
+                    "message": "Error: typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN شاحنة\u001b[7m 01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"VAN \u001b[7m01 \u001b[27mشاحنة\"\u001b[39m",
+                    "stack": "Error: typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN شاحنة\u001b[7m 01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"VAN \u001b[7m01 \u001b[27mشاحنة\"\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:833:99",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                      "column": 99,
+                      "line": 833
+                    },
+                    "snippet": "  831 |     JSON.stringify({ typed1: CODES.arabic, drawn1: drawn(one[0]!), typed2: CODES.arabicSwapped, drawn2: drawn(two[0]!), one, two }, null, 2),\n  832 |   );\n> 833 |   expect.soft(drawn(one[0]!), `typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');\n      |                                                                                                   ^\n  834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));\n  835 |   // The form shows the same text the card does: what the owner typed is what he reads back.\n  836 |   await card(page, CODES.arabic).getByRole('button').first().click();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 99,
+                        "line": 833
+                      },
+                      "message": "Error: typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN شاحنة\u001b[7m 01\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"VAN \u001b[7m01 \u001b[27mشاحنة\"\u001b[39m\n\n  831 |     JSON.stringify({ typed1: CODES.arabic, drawn1: drawn(one[0]!), typed2: CODES.arabicSwapped, drawn2: drawn(two[0]!), one, two }, null, 2),\n  832 |   );\n> 833 |   expect.soft(drawn(one[0]!), `typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');\n      |                                                                                                   ^\n  834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));\n  835 |   // The form shows the same text the card does: what the owner typed is what he reads back.\n  836 |   await card(page, CODES.arabic).getByRole('button').first().click();\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:833:99"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 77,
+                        "line": 834
+                      },
+                      "message": "Error: two different codes are drawn the same\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m\"VAN 01 شاحنة\"\u001b[39m\n\n  832 |   );\n  833 |   expect.soft(drawn(one[0]!), `typed \"VAN شاحنة 01\" (VAN, the word, 01): drawn left to right as`).toBe('VAN شاحنة 01');\n> 834 |   expect.soft(drawn(one[0]!), 'two different codes are drawn the same').not.toBe(drawn(two[0]!));\n      |                                                                             ^\n  835 |   // The form shows the same text the card does: what the owner typed is what he reads back.\n  836 |   await card(page, CODES.arabic).getByRole('button').first().click();\n  837 |   const dialog = page.getByRole('dialog');\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:834:77"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T22:00:00.643Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles/vehicles-bidi-a-code-with--b00dc--codes-do-not-look-the-same-d1280-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                    "column": 99,
+                    "line": 833
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-a64d753228ab8e22a06e",
+          "file": "vehicles.spec.ts",
+          "line": 816,
+          "column": 1
+        },
+        {
+          "title": "long codes: two 30-character codes that differ by their last number can be told apart on a card",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 17,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1025,
+                  "error": {
+                    "message": "Error: the code is cut (203 px for 336 px) and the end that tells the two trucks apart is hidden\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: the code is cut (203 px for 336 px) and the end that tells the two trucks apart is hidden\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:854:154",
+                    "location": {
+                      "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                      "column": 154,
+                      "line": 854
+                    },
+                    "snippet": "  852 |   const full = await card(page, CODES.long1).locator('p.truncate').first().evaluate((p) => ({ title: p.getAttribute('title'), scroll: p.scrollWidth, client: p.clientWidth }));\n  853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));\n> 854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);\n      |                                                                                                                                                          ^\n  855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);\n  856 |   await pageRules(page, 'vehicles, long codes');\n  857 | });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 154,
+                        "line": 854
+                      },
+                      "message": "Error: the code is cut (203 px for 336 px) and the end that tells the two trucks apart is hidden\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  852 |   const full = await card(page, CODES.long1).locator('p.truncate').first().evaluate((p) => ({ title: p.getAttribute('title'), scroll: p.scrollWidth, client: p.clientWidth }));\n  853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));\n> 854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);\n      |                                                                                                                                                          ^\n  855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);\n  856 |   await pageRules(page, 'vehicles, long codes');\n  857 | });\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:854:154"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                        "column": 106,
+                        "line": 855
+                      },
+                      "message": "Error: a cut code has no way to be read in full (docs/ui.md rule 8)\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"VAN-28 GROS DETAIL MSILA N 001\"\u001b[39m\nReceived: \u001b[31mnull\u001b[39m\n\n  853 |   writeFileSync(`${SHOTS}${info.project.name}-code-long.json`, JSON.stringify({ a, b, full }, null, 2));\n  854 |   expect.soft(a[0]!.cut || b[0]!.cut, `the code is cut (${full.client} px for ${full.scroll} px) and the end that tells the two trucks apart is hidden`).toBe(false);\n> 855 |   if (a[0]!.cut) expect.soft(full.title, 'a cut code has no way to be read in full (docs/ui.md rule 8)').toBe(CODES.long1);\n      |                                                                                                          ^\n  856 |   await pageRules(page, 'vehicles, long codes');\n  857 | });\n  858 |\n    at /Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts:855:106"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T22:00:02.381Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/test-results/vehicles/vehicles-long-codes-two-30-e3cf0-can-be-told-apart-on-a-card-d1280-fr/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/islamdebbi/coding/ERP saas/ERP-saas/e2e/web/vehicles.spec.ts",
+                    "column": 154,
+                    "line": 854
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-bfea542833d5a43ce743",
+          "file": "vehicles.spec.ts",
+          "line": 843,
+          "column": 1
+        },
+        {
+          "title": "wilayas: the list has 69 unique numbers; 1–58 match the official list; 59–69 are written down for the owner",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 18,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1003,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T22:00:04.973Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-08084155773216f377bf",
+          "file": "vehicles.spec.ts",
+          "line": 880,
+          "column": 1
+        },
+        {
+          "title": "en: no raw message key on the phase 36 screens and sheets",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 18,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7303,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T22:00:06.977Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-b34fb72805a77423f0f9",
+          "file": "vehicles.spec.ts",
+          "line": 913,
+          "column": 1
+        },
+        {
+          "title": "dépôts: the list still shows the trucks with their code",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "d1280-fr",
+              "projectName": "d1280-fr",
+              "results": [
+                {
+                  "workerIndex": 18,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 884,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-15T22:00:14.289Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b96d6ac1827fbdecc424-7e92d6393201e9a9b0e4",
+          "file": "vehicles.spec.ts",
+          "line": 953,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-15T21:54:03.070Z",
+    "duration": 372159.58,
+    "expected": 61,
+    "skipped": 0,
+    "unexpected": 14,
+    "flaky": 0
+  }
+}

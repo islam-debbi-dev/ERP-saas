@@ -1,0 +1,101 @@
+{
+  "a": [
+    {
+      "where": "p > bdi",
+      "parts": [
+        {
+          "text": "VAN",
+          "left": 33,
+          "top": 1152
+        },
+        {
+          "text": "28",
+          "left": 86.7,
+          "top": 1152
+        },
+        {
+          "text": "GROS",
+          "left": 116.5,
+          "top": 1152
+        },
+        {
+          "text": "DETAIL",
+          "left": 175.8,
+          "top": 1152
+        },
+        {
+          "text": "MSILA",
+          "left": 247,
+          "top": 1152
+        },
+        {
+          "text": "N",
+          "left": 312.2,
+          "top": 1152
+        },
+        {
+          "text": "001",
+          "left": 331.8,
+          "top": 1152
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": true,
+      "cut": true,
+      "isolated": true
+    }
+  ],
+  "b": [
+    {
+      "where": "p > bdi",
+      "parts": [
+        {
+          "text": "VAN",
+          "left": 33,
+          "top": 2098
+        },
+        {
+          "text": "28",
+          "left": 86.7,
+          "top": 2098
+        },
+        {
+          "text": "GROS",
+          "left": 116.5,
+          "top": 2098
+        },
+        {
+          "text": "DETAIL",
+          "left": 175.8,
+          "top": 2098
+        },
+        {
+          "text": "MSILA",
+          "left": 247,
+          "top": 2098
+        },
+        {
+          "text": "N",
+          "left": 312.2,
+          "top": 2098
+        },
+        {
+          "text": "002",
+          "left": 331.8,
+          "top": 2098
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": true,
+      "cut": true,
+      "isolated": true
+    }
+  ],
+  "full": {
+    "title": null,
+    "scroll": 336,
+    "client": 206
+  }
+}

@@ -1,0 +1,11 @@
+old web http://localhost:3005, new API http://localhost:3003, vehicle route 4cedf7f5-d190-4eb2-8bd9-8ec069143dc0 (sellerId null)
+BROKEN /tournees  HTTP 200  shows the vehicle route: false
+         pageerror: Cannot read properties of null (reading 'fullName')
+BROKEN /tournees/4cedf7f5-d190-4eb2-8bd9-8ec069143dc0  HTTP 200  shows the vehicle route: false
+         pageerror: Cannot read properties of null (reading 'id')
+ok     /tournees/aujourdhui  HTTP 200  shows the vehicle route: false
+ok     /tournees/rapports  HTTP 200  shows the vehicle route: false
+ok     /commandes  HTTP 200  shows the vehicle route: false
+ok     /livraisons  HTTP 200  shows the vehicle route: false
+ok     /stock/depots  HTTP 200  shows the vehicle route: false
+7 screens, 2 broken

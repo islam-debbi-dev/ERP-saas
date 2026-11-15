@@ -1,0 +1,24 @@
+# vehicles-race
+
+Total 18 · PASS 12 · FAIL 2 · BLOCKED 0
+
+| Area | Check | Result | Expected | Actual |
+|---|---|---|---|---|
+| C1. Two driver changes on the same truck at once | 20 rounds, two people with no truck put on the same truck at once: one end state, the last row names the driver, one row per change | PASS |  |  |
+| C1. Two driver changes on the same truck at once | 20 rounds, two drivers who each have a truck moved onto the same truck at once: no driver on two trucks, the freed trucks have their rows | PASS |  |  |
+| C1. Two driver changes on the same truck at once | 20 rounds, one person put on two different trucks at once: one wins, the other is refused (VEHICLE_ALREADY_ASSIGNED), never 500 | PASS |  |  |
+| C1. Two driver changes on the same truck at once | PostgreSQL logged no deadlock during C1 | PASS |  |  |
+| C2. Cross moves: A to truck 2 and B to truck 1 at once | INFO C2: 20/20 rounds ended swapped | INFO |  |  |
+| C2. Cross moves: A to truck 2 and B to truck 1 at once | 20 rounds of A (truck 1) to truck 2 and B (truck 2) to truck 1 at once: both pass, no deadlock, the trucks swap, no row lost | PASS |  |  |
+| C2. Cross moves: A to truck 2 and B to truck 1 at once | 20 rounds of a three-way rotation at once (A→2, B→3, C→1): no deadlock, no 500, the rules hold | PASS |  |  |
+| C2. Cross moves: A to truck 2 and B to truck 1 at once | PostgreSQL logged no deadlock during C2 | PASS |  |  |
+| C3. A driver change racing a sale or a visit by the old driver | INFO C3a: the racing sale left the old truck 0 times, the new one 20 times | INFO |  |  |
+| C3. A driver change racing a sale or a visit by the old driver | 20 rounds of a quick sale by X racing his move to the other truck: the sale names and empties one truck, one of his two | PASS |  |  |
+| C3. A driver change racing a sale or a visit by the old driver | 20 rounds of a visit started by X racing his move: the visit freezes one of his two trucks, the one the history gives at startedAt | PASS |  |  |
+| C3. A driver change racing a sale or a visit by the old driver | INFO C3c: 20/20 rounds split the sale and its visit over two trucks | INFO |  |  |
+| C3. A driver change racing a sale or a visit by the old driver | 20 rounds of the field flow (visit opened on the phone, then the sale, then the visit sent with the sale) racing his move: the visit and the stock name the same truck | FAIL |  | round 0: stock left the new truck, the visit names the old truck \| round 1: stock left the new truck, the visit names the old truck \| round 2: stock left the new truck, the visit names the old truck \| round 3: stock left the new truck, the visit names the old truck \| round 4: stock left the new truck, the visit names the old truck \| round 5: stock left the new truck, the visit names the old truck |
+| C3. A driver change racing a sale or a visit by the old driver | after C3: each truck and the dépôt principal equal their movements; no negative stock | PASS |  |  |
+| C4. Bulk convert racing a route edit | 20 rounds of a bulk convert racing a rename of the same seller route: the route ends on the truck with the new name, never with neither owner | PASS |  |  |
+| C4. Bulk convert racing a route edit | INFO C4b: convert won 0, the edit won 20, the edit overwrote a committed convert from a stale read 20 times | INFO |  |  |
+| C4. Bulk convert racing a route edit | 20 rounds of a bulk convert racing a move of the same seller route to seller2 (who drives no truck): one decision wins and its audit "before" is the state it replaced | FAIL |  | round 0: ROUTE_CONVERTED put it on the truck, then ROUTE_UPDATED moved it to seller2 with before = {"name":"Tournée vendeur 100","active":true,"sellerId":"2ac894df-8c85-4b22-adad-a4378d44f342","weekdays":[0,1,2,3,4,5,6],"vehicleId":null} (it was on the truck) \| round 1: ROUTE_CONVERTED put it on the truck, then ROUTE_UPDATED moved it to seller2 with before = {"name":"Tournée vendeur 101","active":true,"sellerId":"2ac894df-8c85-4b22-adad-a4378d44f342","weekdays":[0,1,2,3,4,5,6],"vehicleId":null} (it was on the truck) \| round 2: ROUTE_CONVERTED put it on the truck, then ROUTE_UPDATED moved it to seller2 with before = {"name":"Tournée vendeur 102","active":true,"sellerId":"2ac894df-8c85-4b22-adad-a4378d44f342","weekdays":[0,1,2,3,4,5,6],"vehicleId":null} (it was on the truck) \| round 3: ROUTE_CONVERTED put it on the truck, then ROUTE_UPDATED moved it to seller2 with before = {"name":"Tournée vendeur 103","active":true,"sellerId":"2ac894df-8c85-4b22-adad-a4378d44f342","weekdays":[0,1,2,3,4,5,6],"vehicleId":null} (it was on the truck) |
+| C4. Bulk convert racing a route edit | reconcile on the same database after part C: no difference | PASS |  |  |

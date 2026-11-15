@@ -1,0 +1,42 @@
+## driver_matches_last_history_row: 0 row(s)
+
+## history_only_on_trucks_of_the_same_company: 0 row(s)
+
+## one_live_truck_per_driver: 0 row(s)
+
+## history_never_goes_back_on_a_truck: 0 row(s)
+
+## archived_truck_has_no_driver: 0 row(s)
+
+## driver_is_a_live_user_who_may_drive: 6 row(s)
+{"tenantId":"57abe86b-13d2-4566-8359-099827a1c28c","vehicle_id":"1a8517fb-12ca-4b0c-8a33-43d77326f824","code":"GONE","user_id":"389288c7-dd68-4cdd-bf32-706e4494e15c","role":"SELLER","user_archived_at":"2026-11-15T09:22:12.774Z"}
+{"tenantId":"57abe86b-13d2-4566-8359-099827a1c28c","vehicle_id":"98982ae8-a6a5-49fb-a365-3b4181459e42","code":"DEMO","user_id":"5f077d24-a210-436c-b213-8da79384657c","role":"STOREKEEPER","user_archived_at":null}
+{"tenantId":"b6b409d0-433e-4f2c-9d02-5732f60f38a3","vehicle_id":"3eae9cab-ae0c-48d4-9e9e-a65a4ab1936a","code":"GONE","user_id":"0db270c7-359a-4780-be65-397a1312e559","role":"SELLER","user_archived_at":"2026-11-15T09:25:32.898Z"}
+{"tenantId":"0f1845e4-ae11-414d-8ab2-3e16bdcca4dc","vehicle_id":"871d4607-fd1a-4769-abb0-31d08232c76c","code":"DEMO","user_id":"67053745-789c-486f-a284-10fd5949659a","role":"STOREKEEPER","user_archived_at":null}
+{"tenantId":"0f1845e4-ae11-414d-8ab2-3e16bdcca4dc","vehicle_id":"ac93cfd7-3bfa-4fdd-8f41-b9bd24227b42","code":"GONE","user_id":"0924bf03-581f-4d71-b1f7-9764f3cb2bfe","role":"SELLER","user_archived_at":"2026-11-15T09:24:27.027Z"}
+{"tenantId":"b6b409d0-433e-4f2c-9d02-5732f60f38a3","vehicle_id":"64f57ac3-4fc6-4232-b886-feea2af76363","code":"DEMO","user_id":"f19a6e8f-e70d-4b3f-b2d1-057146112bdb","role":"STOREKEEPER","user_archived_at":null}
+
+## identity_fields_only_on_trucks: 0 row(s)
+
+## truck_type_is_a_type_of_the_same_company: 0 row(s)
+
+## live_truck_has_a_live_type: 0 row(s)
+
+## live_codes_are_unique_per_company_whatever_the_case: 0 row(s)
+
+## route_has_an_owner_and_a_vehicle_route_no_seller: 0 row(s)
+
+## frozen_trucks_are_trucks_of_the_same_company: 0 row(s)
+
+## visit_truck_is_the_truck_its_seller_had_then: 0 row(s)
+
+## visit_sale_left_the_truck_frozen_on_the_visit: 3 row(s)
+{"visit_id":"61d3e008-7abd-4ed6-85f4-75447391a809","tenantId":"e9060233-2105-425c-9c89-e235efa79d84","visit_truck":"6cb8f1f2-5e4d-4ef9-bc39-9136c47001ed","sale_left_from":"2b43c2ad-acb5-40ab-935d-912a280de811","sale_depot_type":"MAIN","number":"BL-2026-000001"}
+{"visit_id":"3f64d0f4-ac43-4025-8f04-3725395e1293","tenantId":"b483d6dd-5f8c-4b48-8aa6-e8e2a60186a4","visit_truck":"e3d18718-2a3d-4513-a474-050474411743","sale_left_from":"e4b0cbb3-ff9e-4abb-95fa-c890bff8beb2","sale_depot_type":"MAIN","number":"BL-2026-000001"}
+{"visit_id":"71abfac2-d0cc-44fa-b927-7eadb92dfc16","tenantId":"e3f4f32c-a6b9-48a2-89ec-aad655373307","visit_truck":"7f589c71-12eb-43e4-90c6-da7457ff6a0f","sale_left_from":"2b3beeb5-5204-4d9a-87b9-26c524a17e41","sale_depot_type":"MAIN","number":"BL-2026-000001"}
+
+## delivered_order_truck_is_where_its_bl_left_from: 0 row(s)
+
+## truck_stock_equals_its_movements: 0 row(s)
+
+## dépôts_sum_to_the_product_level: 0 row(s)

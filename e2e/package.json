@@ -17,7 +17,13 @@
     "audit02:routes": "tsx audit-02/routes.ts",
     "audit02:a": "bash audit-02/part-a.sh",
     "test:concurrency": "tsx api/concurrency.ts",
-    "audit02:b": "bash audit-02/part-b.sh"
+    "audit02:b": "bash audit-02/part-b.sh",
+    "test:vehicles:seed": "tsx api/vehicles-seed.ts",
+    "test:vehicles:api": "AUDIT_RUN=test-36 tsx api/vehicles.ts",
+    "test:vehicles:scope": "AUDIT_RUN=test-36 tsx api/vehicles-scope.ts",
+    "test:vehicles:race": "AUDIT_RUN=test-36 tsx api/vehicles-race.ts",
+    "test:vehicles:backfill": "bash test-36/part-d.sh",
+    "test:vehicles:web": "playwright test --config web/vehicles.playwright.config.ts"
   },
   "dependencies": {
     "decimal.js": "^10.6.0",

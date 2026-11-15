@@ -1,0 +1,167 @@
+
+=== A1. Vehicle types ===
+  ✓ PASS    code of 1 and of 20 characters accepted, 21 refused with 400, empty refused
+  ✓ PASS    MXT then mxt in the same company: VEHICLE_CODE_TAKEN
+  ✓ PASS    the same code in another company is allowed
+  ✗ FAIL    a code is compared as text: "_" and "%" are not wildcards (AB1 exists, A_1 is another code)
+      expected: spec: code is the owner's own text, unique "case-insensitive", nothing more
+      evidence: A_1 -> HTTP 409 {"code":"VEHICLE_CODE_TAKEN","message":"Code already used","details":{"field":"code"},"requestId":"b2c53a8d-14c1-4629-b7b3-f2ddfd45785f"} ; % -> HTTP 409 {"code":"VEHICLE_CODE_TAKEN","message":"Code already used","details":{"field":"code"},"requestId":"115f4237-72b2-49a3-bcd5-7451a3dd947a"}
+  ✓ PASS    archive refused while a live truck has the type (VEHICLE_TYPE_IN_USE), allowed once the truck is archived
+  ✓ PASS    an archived type is not listed, not usable on a new truck, and its code is free again
+  · INFO    INFO inactive type: listed=true (active=false), usable on a new truck=true
+  ✓ PASS    a type switched off (active: false) but not archived: what the API does
+  ✓ PASS    activity outside the four, unknown field on update, codePrefix of 11: 400
+  ✓ PASS    audit rows: one per write, with before / after
+  ✓ PASS    a SELLER (no SETTINGS_EDIT) reads the types and cannot write them
+
+=== A2. Truck identity ===
+  ✓ PASS    code unique among the live dépôts and trucks of the company, whatever the case
+  ✓ PASS    the code is free again once the first truck is archived
+  ✗ FAIL    a code is compared as text: "VAN_28 MXT 01" is not "VAN-28 MXT 01" ("_" is no wildcard)
+      expected: accepted: another code
+      evidence: HTTP 409 {"code":"VEHICLE_CODE_TAKEN","message":"Code already used","details":{"field":"code"},"requestId":"392eae43-637b-4d96-95ef-ed85815a779f"}
+  ✗ FAIL    identity fields on a new dépôt are refused with the code the spec names (VEHICLE_FIELDS_ON_DEPOT), as on update
+      expected: spec, API: error code VEHICLE_FIELDS_ON_DEPOT
+      evidence: POST /warehouses answers vehicleTypeId: HTTP 400 VALIDATION_FAILED ; wilayaCode: HTTP 400 VALIDATION_FAILED ; plateNumber: HTTP 400 VALIDATION_FAILED ; capacityKg: HTTP 400 VALIDATION_FAILED (PATCH answers VEHICLE_FIELDS_ON_DEPOT)
+  ✓ PASS    identity fields refused on a dépôt on update, one by one (VEHICLE_FIELDS_ON_DEPOT); a code is allowed
+  ✓ PASS    the database refuses them too (CHECK), written as the app role
+  ✓ PASS    wilaya 0 and 70 refused, 1 and 69 accepted; a string, a float refused
+  ✓ PASS    capacityKg 0, -1, a float and huge values refused with 400; 1 and 1 000 000 accepted
+  ✓ PASS    plate of 20 accepted, 21 refused; code of 30 accepted, 31 refused
+  ✓ PASS    the owner's text is kept as typed: Arabic, inner spaces, slash, lower case
+  ✓ PASS    list filters: type, wilaya, search on code / name / plate
+  ✗ FAIL    the search box takes "%" and "_" as text (no truck has either in its code, name or plate)
+      expected: a search on text
+      evidence: ?search=% returns 17 of 17 dépôts; ?search=N_2 returns 2 rows that do not hold "N_2" (e.g. "VAN-28 MXT 01")
+  ✓ PASS    code helper: the lowest free number, gaps filled (01, 02, 04 taken -> 03)
+  ✗ FAIL    code helper: what it proposes is always free and fits (100 trucks of one type and wilaya, long prefix)
+      expected: a free code of at most 30 characters ending with a number
+      evidence: first proposal "PPPPPPPPPP-28 TTTTTTTTTTTTT 01"; with 01..99 taken it proposes "PPPPPPPPPP-28 TTTTTTTTTTTTT" (no number: the form would offer the same text for every further truck)
+  ✓ PASS    audit: the identity is in the after of WAREHOUSE_CREATED and in before / after of WAREHOUSE_UPDATED
+
+=== A3. Driver change ===
+  ✓ PASS    one row per change, written with who and why; the same driver again writes nothing
+  ✓ PASS    moving a driver who has another truck frees it: two rows, in one go
+  ✓ PASS    userId null leaves the truck without a driver (one row naming nobody)
+  ✓ PASS    who may be put on a truck: a seller and a livreur, not a storekeeper, not an unknown user
+  ✓ PASS    who may call it: owner, manager, supervisor (his team); a seller, a livreur, a storekeeper get 403
+  ✓ PASS    the dépôt form (PATCH assignedUserId) still refuses a driver who has a truck: VEHICLE_ALREADY_ASSIGNED
+  ✓ PASS    a failure after the history row rolls everything back: no row, no driver, no audit
+  ✓ PASS    an open SellerSession of the driver on the truck blocks the change (SESSION_OPEN_ON_VEHICLE), whoever's turn it is
+  ✓ PASS    every path writes its row: create with a driver, PATCH set / clear, archive, quick-assign
+  ✗ FAIL    deactivating a user who drives a truck frees the truck (a row naming nobody), or is refused
+      expected: spec: "every change of assignedUserId writes a row"; a truck is driven by a live user (assignDriver refuses a deleted one)
+      evidence: deactivate -> HTTP 200; warehouses.assignedUserId is still the deactivated user; history rows: 1 (last userId 0db270c7-359a-4780-be65-397a1312e559). GET /warehouses shows him as today's driver: {"id":"0db270c7-359a-4780-be65-397a1312e559","fullName":"A2 SELLER mwhmpypbi"}
+  ✗ FAIL    changing a driver to a role that cannot drive (STOREKEEPER) frees the truck, or is refused
+      expected: DRIVING_ROLES = selling roles + LIVREUR (packages/shared/src/enums.ts)
+      evidence: PUT role STOREKEEPER -> HTTP 200; the storekeeper is still assignedUserId of truck DEMO (assignDriver answers SELLER_NOT_ALLOWED for that role)
+  ✓ PASS    SQL truth: for every truck of the company the last history row names today's driver
+
+=== A4. History helpers and the worker history ===
+  ✓ PASS    driverAt / vehicleAt across three changes: at the exact fromAt, one millisecond before, between, in the future
+  ✓ PASS    A: truck 1 -> truck 2 -> truck 2 given to B: A has two closed periods with the right dates, B one open
+  ✓ PASS    who reads it: the worker himself and the owner; another seller gets 403; an unknown user 404
+  ✓ PASS    cursor pagination of the worker history is stable while new changes are written
+  ✓ PASS    cursor pagination of a truck's history (GET /warehouses/:id/assignments): the same walk
+  ✓ PASS    a truck outside the reader's dépôts appears by its code with inReach false
+
+=== A5. vehicle_assignments is append-only ===
+  ✓ PASS    UPDATE and DELETE refused by the trigger as the app role (erp_app)
+  ✓ PASS    UPDATE and DELETE refused by the trigger as the owner role (erp)
+  ✓ PASS    TRUNCATE: refused to the app role
+  · INFO    INFO TRUNCATE as the owner role (rolled back): accepted: the row trigger does not cover TRUNCATE
+  ✓ PASS    the app role inserts only for its own company (RLS), and the rows are all still there
+
+=== A6. Tournées per vehicle ===
+  ✓ PASS    a route planned for a truck stores sellerId null, even when a seller is sent with it
+  ✓ PASS    a route with neither a truck nor a seller is refused: ROUTE_NEEDS_OWNER in the API, routes_owner_check in the database
+  ✓ PASS    aujourd'hui (GET /me/today): the truck's route for its driver, with the truck named; nothing for the others
+  ✓ PASS    right after the driver change, with no route edit: the new driver has the tournée, the previous one no longer
+  · INFO    INFO after the change, the new driver's day shows visited 0 / 2 (the truck's first stop was visited today by the previous driver: visitedToday=false)
+  ✓ PASS    the stops B sees on the truck's tournée say what the truck already did today (A visited one before the change)
+  ✓ PASS    convert one: SELLER_HAS_NO_VEHICLE when the seller drives none; the route is left as it was
+  ✓ PASS    convert one: the route takes its seller's truck of now, loses its seller, is audited; a second convert changes nothing
+  ✓ PASS    bulk convert: the count, the routes of sellers without a truck skipped, a second run converts 0, one audit row per route
+  ✓ PASS    list filters: ?vehicleId= gives the routes of that truck, ?sellerId= the old seller routes
+
+=== A7. The truck frozen on visits and orders ===
+  ✓ PASS    Visit.vehicleId = the truck the seller drives when it starts; a seller without a truck: null
+  ✓ PASS    a visit typed in for a moment before he had the truck gets no truck (history, never today's driver)
+  ✓ PASS    Order.vehicleId = the truck of the prévendeur when the order is taken
+  ✓ PASS    a later driver change rewrites neither the visit nor the order
+  ✓ PASS    a correction visit copies the truck of the visit it replaces, not the truck of today
+  ✓ PASS    the visits table refuses an UPDATE of the frozen truck through the API (no route) and the list filters by truck
+  ✓ PASS    assigning a delivery truck puts the order on the truck and on its driver of today ("Mes livraisons")
+  ✓ PASS    the driver changes before delivery: the order follows the truck, the new driver has it, the old one no longer
+  ✓ PASS    delivery by the new driver: deliveryVehicleId and livreurId say what and who delivered, the cash is his
+  ✗ FAIL    the BL of an order put on a loaded delivery truck leaves that truck (the order was taken by a seller, who named no dépôt)
+      expected: spec: "the truck that delivered it … (the BL's dépôt when it is a truck)"; domain: a truck is a dépôt with its own stock, chargement and déchargement
+      evidence: the 6 units left the dépôt principal: delivery truck 100.000 -> 100.000 (100 were loaded on it), dépôt principal 1900.000 -> 1894.000; Order.deliveryVehicleId = the truck. The order got warehouseId = the dépôt principal when the seller took it, though he sent none (ScopeService.onlyWarehouse)
+  ✓ PASS    an order whose dépôt is the delivery truck itself (taken by the office): the BL leaves the truck
+  ✓ PASS    later driver changes do not rewrite a delivered order
+  ✓ PASS    an order delivered from the dépôt principal by the office has no delivery truck; list filter ?deliveryVehicleId=
+  · INFO    INFO POST /visits with startedAt 30 days from now: HTTP 201 , vehicleId = today's truck
+  ✓ PASS    a visit dated in the future: what the API does
+
+=== A8. Stock and money after a driver change ===
+  ✓ PASS    before any change: a sale with no dépôt chosen leaves the truck the seller drives
+  ✓ PASS    the day opened on truck 1 names truck 1; the move to truck 2 waits for the clôture
+  ✓ PASS    after the change (critical): the sale takes its stock from the truck he drives now, not the old one, not the dépôt principal
+  ✓ PASS    the visit of that sale freezes the same truck as the sale left
+  · INFO    INFO a seller naming a truck he no longer drives (warehouseId = old truck): HTTP 201 
+  ✓ PASS    he can still name his old truck or the dépôt (what phase 15 allowed), and what he names is what moves
+  ✓ PASS    chargement and déchargement after the change: the goods move between the named dépôts, the CUMP stays
+  ✗ FAIL    cash responsibility after the move: the second truck of his day has a clôture too (the guard that protects it needs an open one)
+      expected: spec: "close the day first, money responsibility must stay clear" — one clôture per seller per day (phase 16) leaves the second truck of the day without one
+      evidence: POST /seller-sessions again -> HTTP 201, the same closed session (true). Cash collected by the seller today: 8000.00 DA; counted in his clôtures: 5000 DA; sessions of the day: [{"status":"CLOSED","truck":"S1","expected":"5000.00"}]. No session names truck S2: the afternoon on the second truck has no clôture, and he can be taken off S2 with that cash in hand: POST /warehouses/S2/driver {userId: null} -> HTTP 200.
+  · INFO    INFO seller with an OPEN day (opened before he got the truck, session.warehouseId null) and cash in hand is taken off his truck: HTTP 200 (allowed: the guard only looks at sessions that name the truck)
+  ✓ PASS    a day opened before the seller had a truck (no truck on the session) does not block a later change
+  ✗ FAIL    a truck switched off (active: false) with its driver still on it: the sale and its visit agree on the truck
+      expected: one truck for the sale, the visit and the order of the same seller at the same moment (phase 37 reads Visit.vehicleId as the truck of the sale)
+      evidence: after PATCH active:false (assignedUserId kept: true, history rows: 1, last names the seller: true): the sale left the dépôt principal (truck stock 30.000, dépôt principal 1967.000), Visit.vehicleId = truck X1, Order.vehicleId = null, GET /me/today vehicle = null
+
+=== A9. Livreurs drive trucks; the activity is only a hint ===
+  ✓ PASS    a livreur is put on a DELIVERY truck (new decision), through the quick change and through the form
+  ✓ PASS    the livreur delivers an order from his truck (an order whose dépôt is the truck)
+  · INFO    INFO livreur on a truck: POST /sales/quick -> 403 FORBIDDEN; naming his truck -> 403 FORBIDDEN; POST /orders -> 403 FORBIDDEN; POST /visits -> 403 FORBIDDEN
+  ✓ PASS    the livreur cannot sell from his truck: the existing rules (who may create a sale) still decide
+  ✓ PASS    activity is a hint: the driver of a PRESALE truck still sells from its stock, takes orders, and is loaded and unloaded
+  ✓ PASS    activity is a hint: a seller on a DELIVERY truck sells from it; a route may be planned for any truck; orders are assigned to a CASH_VAN or PRESALE truck
+
+=== A10. After the whole scenario: the database, read with SQL (sql/vehicles-history.sql) ===
+  ✓ PASS    driver_matches_last_history_row
+  ✓ PASS    history_only_on_trucks_of_the_same_company
+  ✓ PASS    one_live_truck_per_driver
+  ✓ PASS    history_never_goes_back_on_a_truck
+  ✓ PASS    archived_truck_has_no_driver
+  ✗ FAIL    driver_is_a_live_user_who_may_drive
+      evidence: 6 row(s) break the rule, e.g. [{"tenantId":"57abe86b-13d2-4566-8359-099827a1c28c","vehicle_id":"1a8517fb-12ca-4b0c-8a33-43d77326f824","code":"GONE","user_id":"389288c7-dd68-4cdd-bf32-706e4494e15c","role":"SELLER","user_archived_at":"2026-11-15T09:22:12.774Z"},{"tenantId":"57abe86b-13d2-4566-8359-099827a1c28c","vehicle_id":"98982ae8-a6a5-49fb-a365-3b4181459e42","code":"DEMO","user_id":"5f077d24-a210-436c-b213-8da79384657c","role":"STOREKEEPER","user_archived_at":null}]
+  ✓ PASS    identity_fields_only_on_trucks
+  ✓ PASS    truck_type_is_a_type_of_the_same_company
+  ✓ PASS    live_truck_has_a_live_type
+  ✓ PASS    live_codes_are_unique_per_company_whatever_the_case
+  ✓ PASS    route_has_an_owner_and_a_vehicle_route_no_seller
+  ✓ PASS    frozen_trucks_are_trucks_of_the_same_company
+  ✓ PASS    visit_truck_is_the_truck_its_seller_had_then
+  ✗ FAIL    visit_sale_left_the_truck_frozen_on_the_visit
+      evidence: 3 row(s) break the rule, e.g. [{"visit_id":"61d3e008-7abd-4ed6-85f4-75447391a809","tenantId":"e9060233-2105-425c-9c89-e235efa79d84","visit_truck":"6cb8f1f2-5e4d-4ef9-bc39-9136c47001ed","sale_left_from":"2b43c2ad-acb5-40ab-935d-912a280de811","sale_depot_type":"MAIN","number":"BL-2026-000001"},{"visit_id":"3f64d0f4-ac43-4025-8f04-3725395e1293","tenantId":"b483d6dd-5f8c-4b48-8aa6-e8e2a60186a4","visit_truck":"e3d18718-2a3d-4513-a474-050474411743","sale_left_from":"e4b0cbb3-ff9e-4abb-95fa-c890bff8beb2","sale_depot_type":"MAIN","number":"BL-2026-000001"}]
+  ✓ PASS    delivered_order_truck_is_where_its_bl_left_from
+  ✓ PASS    truck_stock_equals_its_movements
+  ✓ PASS    dépôts_sum_to_the_product_level
+  ✓ PASS    pnpm --filter @erp/api reconcile on the same database: no difference
+
+vehicles-api: 109 checks · 90 passed · 12 failed · 0 blocked
+
+Failures:
+  - [A1. Vehicle types] a code is compared as text: "_" and "%" are not wildcards (AB1 exists, A_1 is another code): A_1 -> HTTP 409 {"code":"VEHICLE_CODE_TAKEN","message":"Code already used","details":{"field":"code"},"requestId":"b2c53a8d-14c1-4629-b7b3-f2ddfd45785f"} ; % -> HTTP 409 {"code":"VEHICLE_CODE_TAKEN","message":"Code already used","details":{"field":"code"},"requestId":"115f4237-72b2-49a3-bcd5-7451a3dd947a"}
+  - [A2. Truck identity] a code is compared as text: "VAN_28 MXT 01" is not "VAN-28 MXT 01" ("_" is no wildcard): HTTP 409 {"code":"VEHICLE_CODE_TAKEN","message":"Code already used","details":{"field":"code"},"requestId":"392eae43-637b-4d96-95ef-ed85815a779f"}
+  - [A2. Truck identity] identity fields on a new dépôt are refused with the code the spec names (VEHICLE_FIELDS_ON_DEPOT), as on update: POST /warehouses answers vehicleTypeId: HTTP 400 VALIDATION_FAILED ; wilayaCode: HTTP 400 VALIDATION_FAILED ; plateNumber: HTTP 400 VALIDATION_FAILED ; capacityKg: HTTP 400 VALIDATION_FAILED (PATCH answers VEHICLE_FIELDS_ON_DEPOT)
+  - [A2. Truck identity] the search box takes "%" and "_" as text (no truck has either in its code, name or plate): ?search=% returns 17 of 17 dépôts; ?search=N_2 returns 2 rows that do not hold "N_2" (e.g. "VAN-28 MXT 01")
+  - [A2. Truck identity] code helper: what it proposes is always free and fits (100 trucks of one type and wilaya, long prefix): first proposal "PPPPPPPPPP-28 TTTTTTTTTTTTT 01"; with 01..99 taken it proposes "PPPPPPPPPP-28 TTTTTTTTTTTTT" (no number: the form would offer the same text for every further truck)
+  - [A3. Driver change] deactivating a user who drives a truck frees the truck (a row naming nobody), or is refused: deactivate -> HTTP 200; warehouses.assignedUserId is still the deactivated user; history rows: 1 (last userId 0db270c7-359a-4780-be65-397a1312e559). GET /warehouses shows him as today's driver: {"id":"0db270c7-359a-4780-be65-397a1312e559","fullName":"A2 SELLER mwhmpypbi"}
+  - [A3. Driver change] changing a driver to a role that cannot drive (STOREKEEPER) frees the truck, or is refused: PUT role STOREKEEPER -> HTTP 200; the storekeeper is still assignedUserId of truck DEMO (assignDriver answers SELLER_NOT_ALLOWED for that role)
+  - [A7. The truck frozen on visits and orders] the BL of an order put on a loaded delivery truck leaves that truck (the order was taken by a seller, who named no dépôt): the 6 units left the dépôt principal: delivery truck 100.000 -> 100.000 (100 were loaded on it), dépôt principal 1900.000 -> 1894.000; Order.deliveryVehicleId = the truck. The order got warehouseId = the dépôt principal when the seller took it, though he sent none (ScopeService.onlyWarehouse)
+  - [A8. Stock and money after a driver change] cash responsibility after the move: the second truck of his day has a clôture too (the guard that protects it needs an open one): POST /seller-sessions again -> HTTP 201, the same closed session (true). Cash collected by the seller today: 8000.00 DA; counted in his clôtures: 5000 DA; sessions of the day: [{"status":"CLOSED","truck":"S1","expected":"5000.00"}]. No session names truck S2: the afternoon on the second truck has no clôture, and he can be taken off S2 with that cash in hand: POST /warehouses/S2/driver {userId: null} -> HTTP 200.
+  - [A8. Stock and money after a driver change] a truck switched off (active: false) with its driver still on it: the sale and its visit agree on the truck: after PATCH active:false (assignedUserId kept: true, history rows: 1, last names the seller: true): the sale left the dépôt principal (truck stock 30.000, dépôt principal 1967.000), Visit.vehicleId = truck X1, Order.vehicleId = null, GET /me/today vehicle = null
+  - [A10. After the whole scenario: the database, read with SQL (sql/vehicles-history.sql)] driver_is_a_live_user_who_may_drive: 6 row(s) break the rule, e.g. [{"tenantId":"57abe86b-13d2-4566-8359-099827a1c28c","vehicle_id":"1a8517fb-12ca-4b0c-8a33-43d77326f824","code":"GONE","user_id":"389288c7-dd68-4cdd-bf32-706e4494e15c","role":"SELLER","user_archived_at":"2026-11-15T09:22:12.774Z"},{"tenantId":"57abe86b-13d2-4566-8359-099827a1c28c","vehicle_id":"98982ae8-a6a5-49fb-a365-3b4181459e42","code":"DEMO","user_id":"5f077d24-a210-436c-b213-8da79384657c","role":"STOREKEEPER","user_archived_at":null}]
+  - [A10. After the whole scenario: the database, read with SQL (sql/vehicles-history.sql)] visit_sale_left_the_truck_frozen_on_the_visit: 3 row(s) break the rule, e.g. [{"visit_id":"61d3e008-7abd-4ed6-85f4-75447391a809","tenantId":"e9060233-2105-425c-9c89-e235efa79d84","visit_truck":"6cb8f1f2-5e4d-4ef9-bc39-9136c47001ed","sale_left_from":"2b43c2ad-acb5-40ab-935d-912a280de811","sale_depot_type":"MAIN","number":"BL-2026-000001"},{"visit_id":"3f64d0f4-ac43-4025-8f04-3725395e1293","tenantId":"b483d6dd-5f8c-4b48-8aa6-e8e2a60186a4","visit_truck":"e3d18718-2a3d-4513-a474-050474411743","sale_left_from":"e4b0cbb3-ff9e-4abb-95fa-c890bff8beb2","sale_depot_type":"MAIN","number":"BL-2026-000001"}]

@@ -1,0 +1,397 @@
+{
+  "vehicules": [
+    {
+      "code": "VAN-28 MXT 01",
+      "where": "p > bdi",
+      "parts": [
+        {
+          "text": "VAN",
+          "left": 626.3,
+          "top": 286
+        },
+        {
+          "text": "28",
+          "left": 680,
+          "top": 286
+        },
+        {
+          "text": "MXT",
+          "left": 709.8,
+          "top": 286
+        },
+        {
+          "text": "01",
+          "left": 758.4,
+          "top": 286
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": false,
+      "cut": false,
+      "isolated": true
+    },
+    {
+      "code": "VAN34-SELF/MT",
+      "where": "p > bdi",
+      "parts": [
+        {
+          "text": "VAN34",
+          "left": 297,
+          "top": 286
+        },
+        {
+          "text": "SELF",
+          "left": 375.6,
+          "top": 286
+        },
+        {
+          "text": "MT",
+          "left": 428.9,
+          "top": 286
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": false,
+      "cut": false,
+      "isolated": true
+    },
+    {
+      "code": "LIV 28 MIX",
+      "where": "p > bdi",
+      "parts": [
+        {
+          "text": "LIV",
+          "left": 297,
+          "top": 956
+        },
+        {
+          "text": "28",
+          "left": 331.8,
+          "top": 956
+        },
+        {
+          "text": "MIX",
+          "left": 361.5,
+          "top": 956
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": false,
+      "cut": false,
+      "isolated": true
+    },
+    {
+      "code": "00123-119-28",
+      "where": "li > bdi",
+      "parts": [
+        {
+          "text": "00123",
+          "left": 650.3,
+          "top": 404
+        },
+        {
+          "text": "119",
+          "left": 704.8,
+          "top": 404
+        },
+        {
+          "text": "28",
+          "left": 741.1,
+          "top": 404
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": false,
+      "cut": false,
+      "isolated": true
+    },
+    {
+      "code": "SELF/MT",
+      "where": "p > bdi",
+      "parts": [
+        {
+          "text": "SELF",
+          "left": 375.6,
+          "top": 286
+        },
+        {
+          "text": "MT",
+          "left": 428.9,
+          "top": 286
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": false,
+      "cut": false,
+      "isolated": true
+    },
+    {
+      "code": "SELF/MT",
+      "where": "li > bdi",
+      "parts": [
+        {
+          "text": "SELF",
+          "left": 306,
+          "top": 348
+        },
+        {
+          "text": "MT",
+          "left": 339.3,
+          "top": 348
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": false,
+      "cut": false,
+      "isolated": true
+    }
+  ],
+  "depots": [
+    {
+      "code": "VAN-28 MXT 01",
+      "where": "p > bdi",
+      "parts": [
+        {
+          "text": "VAN",
+          "left": 329,
+          "top": 431
+        },
+        {
+          "text": "28",
+          "left": 373,
+          "top": 431
+        },
+        {
+          "text": "MXT",
+          "left": 398,
+          "top": 431
+        },
+        {
+          "text": "01",
+          "left": 437.9,
+          "top": 431
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": false,
+      "cut": false,
+      "isolated": true
+    },
+    {
+      "code": "VAN34-SELF/MT",
+      "where": "p > bdi",
+      "parts": [
+        {
+          "text": "VAN34",
+          "left": 329,
+          "top": 362
+        },
+        {
+          "text": "SELF",
+          "left": 393.7,
+          "top": 362
+        },
+        {
+          "text": "MT",
+          "left": 438.1,
+          "top": 362
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": false,
+      "cut": false,
+      "isolated": true
+    },
+    {
+      "code": "LIV 28 MIX",
+      "where": "p > bdi",
+      "parts": [
+        {
+          "text": "LIV",
+          "left": 329,
+          "top": 776
+        },
+        {
+          "text": "28",
+          "left": 358,
+          "top": 776
+        },
+        {
+          "text": "MIX",
+          "left": 383.1,
+          "top": 776
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": false,
+      "cut": false,
+      "isolated": true
+    },
+    {
+      "code": "SELF/MT",
+      "where": "p > bdi",
+      "parts": [
+        {
+          "text": "SELF",
+          "left": 393.7,
+          "top": 362
+        },
+        {
+          "text": "MT",
+          "left": 438.1,
+          "top": 362
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": false,
+      "cut": false,
+      "isolated": true
+    }
+  ],
+  "types": [
+    {
+      "code": "SELF/MT",
+      "where": "p > bdi",
+      "parts": [
+        {
+          "text": "SELF",
+          "left": 297,
+          "top": 492
+        },
+        {
+          "text": "MT",
+          "left": 341.6,
+          "top": 492
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": false,
+      "cut": false,
+      "isolated": true
+    }
+  ],
+  "tournees": [
+    {
+      "code": "VAN-28 MXT 01",
+      "where": "h2 > bdi",
+      "parts": [
+        {
+          "text": "VAN",
+          "left": 321,
+          "top": 530
+        },
+        {
+          "text": "28",
+          "left": 365.6,
+          "top": 530
+        },
+        {
+          "text": "MXT",
+          "left": 390.6,
+          "top": 530
+        },
+        {
+          "text": "01",
+          "left": 431.1,
+          "top": 530
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": false,
+      "cut": false,
+      "isolated": true
+    },
+    {
+      "code": "LIV 28 MIX",
+      "where": "h2 > bdi",
+      "parts": [
+        {
+          "text": "LIV",
+          "left": 321,
+          "top": 224
+        },
+        {
+          "text": "28",
+          "left": 350.4,
+          "top": 224
+        },
+        {
+          "text": "MIX",
+          "left": 375.4,
+          "top": 224
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": false,
+      "cut": false,
+      "isolated": true
+    }
+  ],
+  "commandes": [
+    {
+      "code": "LIV 28 MIX",
+      "where": "p > bdi",
+      "parts": [
+        {
+          "text": "LIV",
+          "left": 508,
+          "top": 345
+        },
+        {
+          "text": "28",
+          "left": 529.5,
+          "top": 345
+        },
+        {
+          "text": "MIX",
+          "left": 548.3,
+          "top": 345
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": false,
+      "cut": false,
+      "isolated": true
+    },
+    {
+      "code": "LIV 28 MIX",
+      "where": "p > bdi",
+      "parts": [
+        {
+          "text": "LIV",
+          "left": 508,
+          "top": 416
+        },
+        {
+          "text": "28",
+          "left": 529.5,
+          "top": 416
+        },
+        {
+          "text": "MIX",
+          "left": 548.3,
+          "top": 416
+        }
+      ],
+      "ordered": true,
+      "wrapped": false,
+      "clipped": false,
+      "cut": false,
+      "isolated": true
+    }
+  ]
+}
