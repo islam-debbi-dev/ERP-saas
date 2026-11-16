@@ -252,6 +252,44 @@ Big distributors follow the **truck**, not the worker: sellers and drivers chang
 - The dashboard shows the **résultat net du mois** (marge − charges, same dépôt filter) for managers with `VIEW_COST_AND_MARGIN`, with or without `MULTI_UNIT`.
 - Not in this phase: budgets / objectives per dépôt, forecasting, the Flutter owner app.
 
+## Statistiques distribution (phase 37, module DISTRIBUTION_STATS)
+Figures per truck, truck type, activity, dépôt, wilaya, product family, brand, client segment. **One definition per figure**, written here and in `packages/shared/src/distribution-stats.ts`; the API computes every value and sends it with its unit; the same figure is equal in every view, and the groups of a view add up to its total. The statistics write nothing.
+
+| Figure | Definition |
+|---|---|
+| CA TTC | Σ `totalTtc` of the validated BL and direct factures of the period (by `validatedAt`, Algiers day) − Σ avoirs made in the period on sales that still count. A facture that groups BLs is never counted again; a cancelled sale leaves the figures with its avoirs. |
+| Nb BL | Validated BL + direct factures, not cancelled. |
+| Drop size | CA TTC / Nb BL; none with 0 BL. |
+| SKU / BL | Distinct products per BL, averaged: (lines − lines repeating a product of the same BL) / Nb BL. |
+| Poids vendu (t) | Σ line weight / 1000, net of the weight of the period's avoirs. The weight is **frozen on the line at validation** (quantity in base unit × the product's weight then). A line older than phase 37 uses the product's weight of today and the figure is marked **estimé**. A line whose product has no weight is counted in "poids inconnu (N lignes)", never as 0. |
+| Clients actifs (POS) | Distinct clients with at least one BL in the period. |
+| Versements | Σ valid versements received in the period (cancelled and bounced excluded). |
+| Taux de recouvrement | Versements / CA TTC of the period. It can exceed 100 % when old debt is paid. |
+| Bons de commande | Orders confirmed in the period (by confirmation day) and not cancelled: count and TTC. "J-1" is the day before the period's end. |
+| Taux de livraison | Σ delivered / Σ ordered quantity (base units) over the lines of the orders confirmed in the period that are delivered or cancelled; each line is capped at what was ordered, so it never exceeds 100 %. A cancelled order delivered nothing. Orders still open are shown apart ("en attente"). |
+| Valeur de chargement | Σ validated chargements (LOAD) to the truck in the period: at the CUMP of the validation (`REPORTS_FINANCE`), and in TTC at price level 1 for everyone (the price of the base unit, else of the default sale unit brought back to the base unit; a product without a level-1 price counts 0). |
+| Taux de remplissage | Poids chargé / capacity, over the loads of the trucks that have a capacity; none without one. |
+| Avaries | Retours client with disposition DAMAGED on the truck's sales: quantity and TTC. |
+| Écart de caisse | Σ écart of the truck's closed sessions of the period; a correction with a new count replaces the écart of its session. |
+| Visites planifiées | For each day of the period up to today and each active vehicle route of that weekday: its stops. A route or a stop counts from the day it was created (routes are not versioned): before the first vehicle route, the planning is unknown ("planification inconnue"). |
+| Visites effectuées / avec succès | Distinct (truck, client, day) with a visit that was not corrected; success = outcome SALE or ORDER. |
+| Taux visités / planifiés, succès / planifiés | Planned stops visited (with success) / planned stops: never above 100 %; visits off the tournée count in "effectuées" only. |
+| Taux succès / visités | Visits with success / visits done. |
+| Causes de non-achat | NO_SALE visits by reason. |
+| Véhicules actifs | Trucks with at least one BL in the period. |
+| Réalisation vs objectif | The month's figure of the truck / its target for that metric (CA TTC, poids in kg, Nb BL, clients actifs). |
+
+- **Which truck a figure belongs to** (one rule, `vehicleOfSql`): a sale, its avoirs and its avaries → the dépôt or truck the sale left from; a visit → the truck frozen on it; an order taken → the prévendeur's truck, an order to deliver → its delivery truck; a chargement → the truck loaded; a clôture → the session's truck; a versement → its own truck, else the truck its collector drove when it was recorded (driver history), else its dépôt. What has no truck is **"Sans véhicule / dépôt"**, never dropped: Σ trucks = the total.
+- **A dépôt** in the statistics is the business unit of phase 24: its own rows and its trucks'; a row without a dépôt is the dépôt principal's.
+- **What adds up**: amounts, weights, quantities and counts of events add up on every dimension. A count of distinct things adds up only on the dimensions its subject belongs to: a BL has one truck and one client but may carry two brands (it counts once in each), a client is in one segment but may buy from two trucks. Rates are derived from two figures after aggregation, never summed or averaged.
+- **CA by product, brand or family** is the lines' own TTC; the few centimes between a document's TTC and Σ of its lines go to the product of its last line, so Σ products = the CA to the centime.
+- **Filters** (dépôts, trucks, types, activities, wilayas, brands, families with their sub-families, products, segments, sectors, clients) are applied to every figure that can follow them. A figure that cannot (a versement has no brand) is shown empty with the reason, never unfiltered; a view where no figure can follow a filter refuses it (`STATS_FILTER_NOT_APPLICABLE`).
+- **Who sees what**: owner and "Tous les dépôts" everything; a user with Travailler or Voir les statistiques on a dépôt, that dépôt and its trucks; a supervisor the trucks his team drives (plus his dépôts with MULTI_UNIT); a seller or a livreur only "Mon véhicule" on his dashboard (the truck he drives today: no other truck, no ranking). A truck outside the reach never appears, not even in a total. Cost values need `REPORTS_FINANCE`.
+- **Client segments** (`ClientSegment`): the owner's own names for his kinds of clients (détaillant, supérette, grossiste, café…), set on the client form or by the Excel import ("Type" column: unknown values are listed in the preview and created only when the owner ticks it at confirm). No behaviour attached; `ClientType` (PARTICULIER / PROFESSIONNEL) stays as is. Archived, never deleted.
+- **Targets per truck** (`VehicleTarget`): one value per truck, month and metric, with an audit trail; last month's can be copied. Not read by objectifs & primes (phase 18), which stay per user.
+- **Drill-down**: every figure opens the list behind it. The sales list opened from a statistic is filtered on the validation day and shows the documents that count and their total net of avoirs: the same number as the figure.
+- Not in this phase: scheduled e-mail / WhatsApp reports, daily summary tables, a custom report builder, sales heat maps, AI insights, fuel and kilometre costs, sell-out per retailer outlet.
+
 ## Typical edge cases to always consider
 - Selling the last carton from two devices at the same time.
 - Negative stock (allow with warning? tenant setting) – common in real shops because entries are late.
@@ -290,6 +328,8 @@ Big distributors follow the **truck**, not the worker: sellers and drivers chang
 - **Avoir**: credit note for returns or corrections, prefix `AV`.
 - **Bon de réception (BR)**: purchase entry from a supplier, prefix `BR`.
 - **Versement**: payment received from a client, prefix `VER`.
+- **Drop size**: average TTC of a BL. **SKU / BL**: distinct products per BL. **POS**: a client that bought in the period (point of sale).
+- **Segment** (type client / canal): the owner's own kind of client, `ClientSegment`.
 - **Crédit / dette**: what a client owes. Positive client balance = client owes us.
 - **Plafond (de crédit)**: credit limit per client.
 - **Relevé de compte**: client statement with running balance.
