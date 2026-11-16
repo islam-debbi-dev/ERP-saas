@@ -38,6 +38,16 @@ export const importPreviewBodySchema = z.object({
 });
 export type ImportPreviewBody = z.infer<typeof importPreviewBodySchema>;
 
+/**
+ * Body of `POST /imports/:id/confirm`. A client file may name segments ("Type") that do
+ * not exist: the preview lists them, and they are created only when the owner says so here;
+ * otherwise those clients are imported without a segment.
+ */
+export const importConfirmBodySchema = z
+  .object({ createSegments: z.boolean().default(false) })
+  .default({ createSegments: false });
+export type ImportConfirmBody = z.infer<typeof importConfirmBodySchema>;
+
 export const importListQuerySchema = z.object({
   cursor: z.uuid().optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20),

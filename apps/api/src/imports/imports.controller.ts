@@ -18,6 +18,8 @@ import {
   type ImportJobDto,
   type ImportJobPage,
   type ImportListQuery,
+  type ImportConfirmBody,
+  importConfirmBodySchema,
   importListQuerySchema,
   type ImportPreviewBody,
   importPreviewBodySchema,
@@ -83,7 +85,8 @@ export class ImportsController {
   confirm(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: CurrentUserInfo,
+    @Body(new ZodValidationPipe(importConfirmBodySchema)) body: ImportConfirmBody,
   ): Promise<ImportJobDto> {
-    return this.imports.confirm(id, user);
+    return this.imports.confirm(id, user, body);
   }
 }

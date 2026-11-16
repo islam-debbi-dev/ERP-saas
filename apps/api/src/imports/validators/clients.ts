@@ -13,8 +13,20 @@ import type { ValidatedRow } from './products';
 import { DuplicateTracker, RowReader } from './row-reader';
 
 export type ClientPlan =
-  | { kind: 'CREATE'; input: CreateClientInput; opening: string | null }
-  | { kind: 'UPDATE'; id: string; input: UpdateClientInput | null; opening: string | null };
+  | {
+      kind: 'CREATE';
+      input: CreateClientInput;
+      opening: string | null;
+      /** A segment the file names that does not exist: created at confirm only if asked. */
+      segmentName: string | null;
+    }
+  | {
+      kind: 'UPDATE';
+      id: string;
+      input: UpdateClientInput | null;
+      opening: string | null;
+      segmentName: string | null;
+    };
 
 /**
  * Clients matched by code: new ones are created, existing ones get the
@@ -26,6 +38,8 @@ export function validateClients(
   mapping: ImportMapping,
   fields: ImportFieldDef[],
   existing: Map<string, ClientDto>,
+  /** Live segments by lower-case code and name (phase 37). */
+  segments: Map<string, string> = new Map(),
 ): ValidatedRow<ClientPlan>[] {
   const codes = new DuplicateTracker();
   return table.rows.map(({ rowNumber, cells }) => {
@@ -38,6 +52,11 @@ export function validateClients(
     const name = client ? row.optionalText('name', 160) : row.requiredText('name', 160);
     const phone = row.optionalText('phone', 40);
     const address = row.optionalText('address', 255);
+    // "Type": a known segment is set; an unknown one is listed, never created silently.
+    const segmentText = row.optionalText('segment', 80) ?? '';
+    const segmentId = segmentText === '' ? undefined : segments.get(segmentText.toLowerCase());
+    const segmentName = segmentText !== '' && !segmentId ? segmentText : null;
+    if (segmentName) row.warn('segment', 'segment_unknown', { name: segmentName });
     const creditLimit = row.number('creditLimit', { decimals: 2 });
     const opening = row.number('openingBalance', { decimals: 2, signed: true });
     const hasOpening = !!opening && !money(opening).isZero();
@@ -55,6 +74,7 @@ export function validateClients(
         phone,
         address,
         creditLimit: creditLimit === '' ? null : creditLimit,
+        ...(segmentId ? { segmentId } : {}),
       });
       if (!parsed.success) {
         for (const issue of parsed.error.issues) {
@@ -64,7 +84,12 @@ export function validateClients(
       }
       return {
         row,
-        plan: { kind: 'CREATE', input: parsed.data, opening: hasOpening ? opening : null },
+        plan: {
+          kind: 'CREATE',
+          input: parsed.data,
+          opening: hasOpening ? opening : null,
+          segmentName,
+        },
       };
     }
 
@@ -74,6 +99,9 @@ export function validateClients(
       phone: phone || client.phone,
       address: address || client.address,
       creditLimit: creditLimit === '' ? client.creditLimit : creditLimit,
+      sectorId: undefined,
+      assignedSellerId: undefined,
+      segmentId: segmentId ?? undefined,
     });
     if (!parsed.success) {
       for (const issue of parsed.error.issues) {
@@ -83,6 +111,7 @@ export function validateClients(
     }
     const input = parsed.data;
     const changed =
+      (segmentId !== undefined && segmentId !== (client.segment?.id ?? null)) ||
       input.name !== client.name ||
       input.phone !== client.phone ||
       input.address !== client.address ||
@@ -90,14 +119,16 @@ export function validateClients(
       (input.creditLimit !== null &&
         client.creditLimit !== null &&
         !money(input.creditLimit).eq(client.creditLimit));
-    if (!changed && !hasOpening) row.warn(undefined, 'no_changes');
+    if (!changed && !hasOpening && !segmentName) row.warn(undefined, 'no_changes');
     return {
       row,
       plan: {
         kind: 'UPDATE',
         id: client.id,
-        input: changed ? input : null,
+        // An unknown segment may be created at confirm: keep the input to set it then.
+        input: changed || segmentName ? input : null,
         opening: hasOpening ? opening : null,
+        segmentName,
       },
     };
   });
