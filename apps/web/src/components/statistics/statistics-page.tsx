@@ -57,10 +57,15 @@ import {
 
 /** /statistiques (phase 37): the director's screen of the distribution. */
 export function StatisticsPage() {
+  const t = useTranslations('stats');
+  // The header paints before /auth/me answers (it is the largest text of the page).
   return (
-    <FeatureGate feature={Feature.DISTRIBUTION_STATS}>
-      <Statistics />
-    </FeatureGate>
+    <>
+      <PageHeader title={t('title')} description={t('subtitle')} />
+      <FeatureGate feature={Feature.DISTRIBUTION_STATS}>
+        <Statistics />
+      </FeatureGate>
+    </>
   );
 }
 
@@ -68,17 +73,9 @@ function Statistics() {
   const t = useTranslations('stats');
   const allowed = useHasDistributionStats();
   const [state, setUrl] = useStatsState();
-  if (!allowed) {
-    return (
-      <>
-        <PageHeader title={t('title')} />
-        <p className="rounded-md border p-4 text-sm">{t('notAllowed')}</p>
-      </>
-    );
-  }
+  if (!allowed) return <p className="rounded-md border p-4 text-sm">{t('notAllowed')}</p>;
   return (
     <>
-      <PageHeader title={t('title')} description={t('subtitle')} />
       <FilterBar state={state} setUrl={setUrl} />
       <ViewSwitch
         value={state.view}
