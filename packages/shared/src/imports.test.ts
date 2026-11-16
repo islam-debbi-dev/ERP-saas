@@ -80,9 +80,15 @@ describe('detectMapping', () => {
       name: 1,
       phone: 2,
       address: 3,
+      segment: null,
       creditLimit: 4,
       openingBalance: 5,
     });
+  });
+
+  it('maps a "Type client" header to the client segment (phase 37)', () => {
+    const mapping = detectMapping(['Code', 'Nom', 'Type client'], importFields(ImportType.CLIENTS));
+    expect(mapping['segment']).toBe(2);
   });
 
   it('accepts Arabic and English headers and leaves unknown columns unmapped', () => {
