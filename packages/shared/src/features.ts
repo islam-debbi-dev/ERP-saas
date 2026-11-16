@@ -37,6 +37,8 @@ export const Feature = {
   AI_ASSISTANT: 'AI_ASSISTANT',
   /** Caisses, bank accounts, balances (phase 34). In every edition. */
   TREASURY: 'TREASURY',
+  /** Statistiques distribution: figures per truck, type, dépôt, wilaya (phase 37). */
+  DISTRIBUTION_STATS: 'DISTRIBUTION_STATS',
 } as const;
 export type Feature = (typeof Feature)[keyof typeof Feature];
 export const FEATURES = Object.values(Feature);
@@ -77,6 +79,7 @@ export const EDITION_FEATURES: Record<Edition, readonly Feature[]> = {
     Feature.PAYROLL,
     Feature.AI_ASSISTANT,
     Feature.TREASURY,
+    Feature.DISTRIBUTION_STATS,
   ],
   [Edition.ENTREPRISE]: FEATURES,
 };

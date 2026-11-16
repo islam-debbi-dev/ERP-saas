@@ -28,12 +28,14 @@ import {
   type GeoCheckResultDto,
   GeoRefType,
   Role,
+  partWeightKg,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { requirePermission } from '../auth/permissions';
 import { ClientAccountService, type LedgerEntryInput } from '../clients/client-account.service';
 import { AppException } from '../common/app-exception';
+import { freezeLineWeights } from '../common/line-weight';
 import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
 import { GeoCheckService } from '../geo/geo-check.service';
@@ -276,6 +278,7 @@ export class SaleWorkflowService {
         saleId: id,
       })),
     });
+    await freezeLineWeights(tx, 'sale', id);
     const moved = await this.stock.applyMovements(
       tx,
       lines.map((l) => ({
@@ -624,6 +627,12 @@ export class SaleWorkflowService {
           discountPct: p.line.discountPct.toString(),
           tvaRate: p.line.tvaRate.toString(),
           lineHt: totals.lines[i]?.lineHt.toString() ?? '0',
+          // The share of the weight frozen on the sale line (phase 37).
+          weightKg: partWeightKg(
+            p.line.weightKg?.toString() ?? null,
+            p.line.qtyBase.toString(),
+            p.qtyBase.toString(),
+          ),
         })),
       });
       // Goods come back at the cost they left with; damaged ones are then written off.
@@ -887,6 +896,11 @@ export class SaleWorkflowService {
           tvaRate: l.tvaRate,
           lineHt: totals.lines[i]?.lineHt.toString() ?? l.lineHt,
           unitCostBase: l.unitCostBase,
+          weightKg: partWeightKg(
+            l.weightKg?.toString() ?? null,
+            l.qtyBase.toString(),
+            keptBase.toString(),
+          ),
           sourceLineId: l.id,
           isFree: l.isFree,
           promotionId: l.promotionId,

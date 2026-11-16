@@ -18,6 +18,7 @@ import {
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { AppException } from '../common/app-exception';
+import { freezeLineWeights } from '../common/line-weight';
 import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
 import { type Prisma } from '../generated/prisma/client';
@@ -134,6 +135,7 @@ export class StockTransfersService {
         refId: id,
         note: number,
       });
+      await freezeLineWeights(tx, 'transfer', id);
       const userId = tenantContext.get()?.userId ?? null;
       await tx.stockTransfer.update({
         where: { id },

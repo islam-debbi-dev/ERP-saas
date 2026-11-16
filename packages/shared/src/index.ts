@@ -31,3 +31,4 @@ export * from './todo';
 export * from './dashboard';
 export * from './vehicles';
 export * from './wilayas';
+export * from './distribution-stats';

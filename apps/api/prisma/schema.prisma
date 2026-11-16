@@ -202,6 +202,8 @@ model Tenant {
   sectors                  Sector[]
   warehouses               Warehouse[]
   vehicleTypes             VehicleType[]
+  clientSegments           ClientSegment[]
+  vehicleTargets           VehicleTarget[]
   vehicleAssignments       VehicleAssignment[]
   warehouseStocks          WarehouseStock[]
   stockTransfers           StockTransfer[]
@@ -1062,6 +1064,8 @@ model Client {
   active           Boolean    @default(true)
   /// Sales force (phase 14): the client's zone and the seller who follows him.
   sectorId         String?    @db.Uuid
+  /// The owner's own "type client / canal" (phase 37); no behaviour attached.
+  segmentId        String?    @db.Uuid
   assignedSellerId String?    @db.Uuid
   /// Reference GPS point (phase 17). A seller moves it only through an approved request.
   lat              Decimal?   @db.Decimal(9, 6)
@@ -1084,6 +1088,7 @@ model Client {
   tenant         Tenant                   @relation(fields: [tenantId], references: [id])
   priceLevel     PriceLevel?              @relation(fields: [priceLevelId], references: [id], onDelete: Restrict)
   sector         Sector?                  @relation(fields: [sectorId], references: [id], onDelete: Restrict)
+  segment        ClientSegment?           @relation(fields: [segmentId], references: [id], onDelete: Restrict)
   assignedSeller User?                    @relation("ClientSeller", fields: [assignedSellerId], references: [id], onDelete: Restrict)
   ledger         ClientLedgerEntry[]
   balance        ClientBalance?
@@ -1102,6 +1107,7 @@ model Client {
   @@index([tenantId, name])
   @@index([tenantId, phone])
   @@index([tenantId, sectorId])
+  @@index([tenantId, segmentId])
   @@index([tenantId, assignedSellerId])
   /// Phase 35: clients_tenant_geo_f_idx ("tenantId", lat_f, lng_f) WHERE live and with a
   /// point, a partial index in the migration (Prisma cannot express it). The older
@@ -1276,6 +1282,9 @@ model SaleLine {
   lineHt         Decimal  @db.Decimal(14, 2)
   /// CUMP of one base unit at validation (margin, and the value of returns).
   unitCostBase   Decimal  @default(0) @db.Decimal(14, 4)
+  /// Frozen at validation (phase 37): qtyBase × the product's weight then; null when the
+  /// product had none, and on lines written before phase 37.
+  weightKg       Decimal? @db.Decimal(14, 3)
   /// For facture lines copied from a BL line.
   sourceLineId   String?  @db.Uuid
   /// Promotions (phase 20): a free line (UG) is priced 0 and points to its paid line.
@@ -1337,6 +1346,8 @@ model SaleReturnLine {
   discountPct Decimal  @default(0) @db.Decimal(5, 2)
   tvaRate     Decimal  @db.Decimal(5, 2)
   lineHt      Decimal  @db.Decimal(14, 2)
+  /// Frozen weight of what came back (phase 37), like `SaleLine.weightKg`.
+  weightKg    Decimal? @db.Decimal(14, 3)
   createdAt   DateTime @default(now()) @db.Timestamptz(3)
 
   tenant   Tenant     @relation(fields: [tenantId], references: [id])
@@ -1718,6 +1729,55 @@ enum VehicleActivity {
   MIXED
 }
 
+/// The owner's own way to recognise his clients (détaillant, supérette, grossiste, café…):
+/// the competitor's "type client / canal". Master data with no behaviour attached; archived,
+/// never deleted. Code unique per tenant among live segments, case-insensitive (partial
+/// unique index in the migration). `ClientType` (PARTICULIER / PROFESSIONNEL) is separate.
+model ClientSegment {
+  id        String    @id @default(uuid()) @db.Uuid
+  tenantId  String    @db.Uuid
+  code      String    @db.VarChar(20)
+  name      String    @db.VarChar(80)
+  deletedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3)
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id])
+  clients Client[]
+
+  @@index([tenantId, deletedAt])
+  @@map("client_segments")
+}
+
+enum VehicleTargetMetric {
+  CA_TTC
+  POIDS_KG
+  NB_BL
+  CLIENTS_ACTIFS
+}
+
+/// Monthly target of a truck (phase 37), shown against its figures in the statistics.
+/// NOT read by the incentives engine: objectifs & primes (phase 18) stay per user.
+model VehicleTarget {
+  id          String              @id @default(uuid()) @db.Uuid
+  tenantId    String              @db.Uuid
+  vehicleId   String              @db.Uuid
+  /// First day of the month.
+  periodStart DateTime            @db.Date
+  metric      VehicleTargetMetric
+  targetValue Decimal             @db.Decimal(16, 3)
+  createdBy   String?             @db.Uuid
+  createdAt   DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime            @updatedAt @db.Timestamptz(3)
+
+  tenant  Tenant    @relation(fields: [tenantId], references: [id])
+  vehicle Warehouse @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, vehicleId, periodStart, metric])
+  @@index([tenantId, periodStart])
+  @@map("vehicle_targets")
+}
+
 /// A kind of truck the company names itself (`MXT` gros + détail, `SELF/MT`, `MIX`).
 /// Master data: archived, never deleted. Code unique per tenant among live types,
 /// case-insensitive (partial unique index in the migration).
@@ -1814,6 +1874,7 @@ model Warehouse {
   tenant           Tenant                @relation(fields: [tenantId], references: [id])
   vehicleType      VehicleType?          @relation(fields: [vehicleTypeId], references: [id], onDelete: Restrict)
   assignments      VehicleAssignment[]   @relation("VehicleAssignments")
+  targets          VehicleTarget[]
   routes           Route[]               @relation("RouteVehicle")
   visits           Visit[]               @relation("VisitVehicle")
   ordersTaken      Order[]               @relation("OrderVehicle")
@@ -1974,6 +2035,8 @@ model StockTransferLine {
   unitId     String   @db.Uuid
   qty        Decimal  @db.Decimal(14, 3)
   qtyBase    Decimal  @db.Decimal(14, 3)
+  /// Frozen at validation (phase 37): the weight moved, like `SaleLine.weightKg`.
+  weightKg   Decimal? @db.Decimal(14, 3)
   createdAt  DateTime @default(now()) @db.Timestamptz(3)
 
   tenant   Tenant        @relation(fields: [tenantId], references: [id])
