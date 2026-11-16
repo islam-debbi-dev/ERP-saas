@@ -139,7 +139,7 @@ export function StatTable({
   caption: string;
 }) {
   return (
-    <div className="max-w-full overflow-x-auto rounded-md border">
+    <div data-scroll-x="" className="max-w-full overflow-x-auto rounded-md border">
       <table className="w-full text-sm">
         <caption className="sr-only">{caption}</caption>
         <thead className="bg-muted/50 text-xs text-muted-foreground">

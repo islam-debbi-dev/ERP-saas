@@ -354,7 +354,7 @@ export function DispersionView({ state }: { state: StatsState }) {
         dto.rows.length === 0 ? (
           <Empty />
         ) : (
-          <div className="max-w-full overflow-x-auto rounded-md border">
+          <div data-scroll-x="" className="max-w-full overflow-x-auto rounded-md border">
             <table className="text-xs">
               <caption className="sr-only">{t('dispersionTitle')}</caption>
               <thead className="bg-muted/50 text-muted-foreground">

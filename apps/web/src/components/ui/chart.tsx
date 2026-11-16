@@ -18,6 +18,10 @@ export type ChartConfig = Record<
 const text = (v: unknown): string =>
   typeof v === 'string' || typeof v === 'number' ? String(v) : '';
 
+/** The page's writing direction, for the HTML parts (tooltip, legend) inside the chart. */
+const pageDir = () =>
+  typeof document === 'undefined' ? undefined : document.documentElement.dir || undefined;
+
 const ChartContext = React.createContext<{ config: ChartConfig } | null>(null);
 
 export function useChart() {
@@ -43,6 +47,9 @@ export function ChartContainer({
       <div
         data-slot="chart"
         data-chart={chartId}
+        // recharts lays the SVG out left to right; in Arabic the charts mirror their axes
+        // themselves (reversed X, Y axis on the right) instead of inheriting RTL text anchors.
+        dir="ltr"
         className={cn(
           "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-layer]:outline-hidden [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden",
           className,
@@ -102,6 +109,7 @@ export function ChartTooltipContent({
   if (!active || !payload?.length) return null;
   return (
     <div
+      dir={pageDir()}
       className={cn(
         'grid min-w-32 items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl',
         className,
@@ -151,6 +159,7 @@ export function ChartLegendContent({
   if (!payload?.length) return null;
   return (
     <div
+      dir={pageDir()}
       className={cn('flex flex-wrap items-center justify-center gap-x-4 gap-y-1 pt-3', className)}
     >
       {payload.map((item) => {

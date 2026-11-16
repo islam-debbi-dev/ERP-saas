@@ -23,6 +23,7 @@ import {
   StatUnit,
   THOUSANDS_SEPARATOR,
   formatDA,
+  money,
   type PutVehicleTargetsInput,
   type VehicleTargetsDto,
 } from '@erp/shared';
@@ -257,7 +258,8 @@ export function formatStat(value: string | null | undefined, unit: StatUnit): st
     case StatUnit.DA:
       return formatDA(value);
     case StatUnit.TONNE:
-      return `${decimal(value)}${NBSP}t`;
+      // The API keeps grams (6 decimals) so grouped rows add up; the screen shows 3.
+      return `${decimal(money(value).toFixed(3))}${NBSP}t`;
     case StatUnit.PERCENT:
       return `${decimal(value)}${NBSP}%`;
     default:

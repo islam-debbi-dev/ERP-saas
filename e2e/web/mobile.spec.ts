@@ -1749,6 +1749,80 @@ for (const locale of LOCALES) {
     }
   });
 
+  test(`the statistics views fit the phone (${locale})`, async ({ browser }, info) => {
+    test.setTimeout(4 * 60_000);
+    const results: Result[] = [];
+    const ts = messages(locale)['stats'] as Record<string, string>;
+    const context = await browser.newContext({
+      ...info.project.use,
+      storageState: { cookies: [], origins: [] },
+    });
+    const go = async (page: Page, path: string, search = ''): Promise<void> => {
+      await page.evaluate((to) => {
+        (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push(
+          to,
+        );
+      }, `${path}${search}`);
+      await page.waitForURL((url) => url.pathname === path && url.search === search);
+      await settle(page);
+    };
+    try {
+      await context.addCookies([{ name: 'NEXT_LOCALE', value: locale, url: WEB }]);
+      const page = await context.newPage();
+      await signIn(page, fixture().session.email);
+      const views = [
+        'global',
+        'vehicles',
+        'zones',
+        'products',
+        'clients',
+        'visits',
+        'orders',
+        'dispersion',
+        'targets',
+        'day',
+      ];
+      for (const view of views) {
+        await test.step(`statistiques: ${view}`, async () => {
+          await go(page, '/statistiques', view === 'global' ? '' : `?view=${view}`);
+          await page.locator('#stats-view').waitFor();
+          // The data has landed (or its empty state): no skeleton left.
+          await expect(page.locator('[aria-busy="true"], [data-slot="skeleton"]')).toHaveCount(0, {
+            timeout: 15_000,
+          });
+          // The filter bar is reachable without scrolling.
+          await expectOnScreen(page, '#stats-compare');
+          await check(page, `/statistiques/${view}`, locale, results);
+        });
+      }
+
+      await test.step('statistiques: the Tableau toggle shows the same block as a table', async () => {
+        await go(page, '/statistiques', '?view=vehicles');
+        const toggle = page.getByRole('button', { name: ts['showTable'], exact: true }).first();
+        await toggle.click();
+        await expect(
+          page.getByRole('button', { name: ts['showChart'], exact: true }).first(),
+        ).toBeVisible();
+        await check(page, '/statistiques/tableau', locale, results);
+      });
+
+      await test.step('statistiques: the filter sheet', async () => {
+        await go(page, '/statistiques');
+        await page.getByRole('button', { name: ts['filters']!.replace('{count}', '0') }).click();
+        const dialog = page.getByRole('dialog');
+        await dialog.waitFor();
+        await dialog.evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
+        await expectOnScreen(page, '[role="dialog"] button:has-text("' + ts['apply'] + '")');
+        await check(page, '/statistiques/filtres', locale, results, { fullPage: false });
+        await page.keyboard.press('Escape');
+        await dialog.waitFor({ state: 'detached' });
+      });
+    } finally {
+      saveResults(info.project.name, `statistics-${locale}`, results);
+      await context.close();
+    }
+  });
+
   test(`every public screen fits the phone (${locale})`, async ({ browser }, info) => {
     const v = ids;
     if (!v) throw new Error('ids not prepared');
