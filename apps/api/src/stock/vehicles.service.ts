@@ -49,6 +49,11 @@ export interface AssignDriverArgs {
    * re-assignment), false refuses with VEHICLE_ALREADY_ASSIGNED (the dépôt form).
    */
   moveDriver: boolean;
+  /**
+   * The trucks the caller plans for (`plannedVehicleIds`; null or absent = all). The truck
+   * a moved driver leaves is written too, so it must be in that reach as well.
+   */
+  reach?: string[] | null;
 }
 
 export interface AssignDriverOutcome {
@@ -236,8 +241,12 @@ export class VehiclesService {
 
   /** A truck outside the planner's reach answers WAREHOUSE_NOT_FOUND, as if it were not there. */
   async assertPlanned(db: Tx | undefined, user: CurrentUserInfo, vehicleId: string): Promise<void> {
-    const ids = await this.plannedVehicleIds(user, db);
-    if (ids && !ids.includes(vehicleId)) {
+    this.assertInReach(await this.plannedVehicleIds(user, db), vehicleId);
+  }
+
+  /** The one reach check of every planner write, for a reach already read. */
+  assertInReach(reach: string[] | null, vehicleId: string): void {
+    if (reach && !reach.includes(vehicleId)) {
       throw new AppException(ErrorCode.WAREHOUSE_NOT_FOUND, 'Vehicle not found');
     }
   }
@@ -297,6 +306,15 @@ export class VehiclesService {
           warehouseId: other.id,
           name: other.name,
         });
+      }
+      // Moving him frees his other truck: a planner who does not reach that truck cannot
+      // take its driver away (test-36 B-1). Checked under the locks, before any write.
+      if (other && args.reach && !args.reach.includes(other.id)) {
+        throw new AppException(
+          ErrorCode.VEHICLE_ALREADY_ASSIGNED,
+          'This seller drives a truck outside your reach',
+          { rule: 'other_truck_out_of_reach' },
+        );
       }
     }
     // Money stays with one person: nobody leaves a truck while his day on it is open.
@@ -367,7 +385,8 @@ export class VehiclesService {
   ): Promise<AssignDriverResultDto> {
     const outcome = await this.prisma.db.$transaction(async (tx) => {
       await this.assertVehicle(tx, vehicleId);
-      await this.assertPlanned(tx, user, vehicleId);
+      const reach = await this.plannedVehicleIds(user, tx);
+      this.assertInReach(reach, vehicleId);
       if (input.userId && user.role === Role.SUPERVISOR) {
         // A supervisor puts his own people on his trucks.
         if (!(await this.scope.teamIds(user.id, tx)).includes(input.userId)) {
@@ -381,6 +400,7 @@ export class VehiclesService {
         userId: input.userId,
         reason: input.reason,
         moveDriver: true,
+        reach,
       });
     });
     const ids = [input.userId, outcome.previousUserId].filter((x): x is string => !!x);

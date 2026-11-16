@@ -969,6 +969,81 @@ describe('distribution par véhicule (phase 36)', () => {
         .expect(403);
     });
 
+    it('a manager of one dépôt never writes on a truck of another: driver move, convert one, convert all', async () => {
+      // Test-36 B-1, B-2.
+      const batna = (
+        await as(d)
+          .post('/warehouses', { name: `Batna ${++seq}`, type: 'SECONDARY' }, null)
+          .expect(201)
+      ).body as WarehouseDto;
+      const mgr = await member(d, 'MANAGER', { depots: false });
+      await as(d)
+        .put(`/users/${mgr.id}/access`, { access: [{ warehouseId: batna.id, level: 'OPERATE' }] })
+        .expect(200);
+      const [far, near] = [await member(d, 'SELLER'), await member(d, 'SELLER')];
+      // A truck starts under the dépôt principal; two are moved to Batna.
+      const van = await truck(d, { assignedUserId: far.id });
+      const local = await truck(d, { assignedUserId: near.id });
+      const spare = await truck();
+      for (const w of [local, spare]) {
+        await as(d).patch(`/warehouses/${w.id}`, { parentWarehouseId: batna.id }).expect(200);
+      }
+      const sellerRoute = async (sellerId: string) =>
+        (
+          await as(d)
+            .post('/routes', { name: `Vendeur ${++seq}`, sellerId, weekdays: [3] }, null)
+            .expect(201)
+        ).body as RouteDto;
+      const [farRoute, nearRoute] = [await sellerRoute(far.id), await sellerRoute(near.id)];
+      const audits = (action: string, entityId: string) =>
+        asTenant(d.tenantId, () =>
+          t.prisma.db.auditLog.count({ where: { action, entityId, userId: mgr.id } }),
+        );
+
+      // B-1: putting a driver of the principal on a Batna truck would free VAN.
+      await drive(mgr, van.id, null).expect(404);
+      const moved = await drive(mgr, spare.id, far.id).expect(409);
+      expect(errorOf(moved)).toMatchObject({
+        code: ErrorCode.VEHICLE_ALREADY_ASSIGNED,
+        details: { rule: 'other_truck_out_of_reach' },
+      });
+      expect((await warehouseOf(van.id)).assignedUser?.id).toBe(far.id);
+      expect((await warehouseOf(spare.id)).assignedUser).toBeNull();
+      expect(await historyOf(van.id)).toHaveLength(1);
+      expect(await historyOf(spare.id)).toHaveLength(0);
+      // Within his dépôt he moves a driver as before.
+      const ok = (await drive(mgr, spare.id, near.id).expect(200)).body as AssignDriverResultDto;
+      expect(ok.freedVehicle?.id).toBe(local.id);
+      await drive(mgr, local.id, near.id).expect(200);
+
+      // B-2, one route: refused before anything is written, never a 404 after a save.
+      const one = await as(mgr).post(`/routes/${farRoute.id}/convert-to-vehicle`, {}, null);
+      expect(one.status).toBe(404);
+      expect(errorOf(one).code).toBe(ErrorCode.WAREHOUSE_NOT_FOUND);
+      const kept = (await as(d).get(`/routes/${farRoute.id}`).expect(200)).body as RouteDto;
+      expect(kept).toMatchObject({ seller: { id: far.id }, vehicle: null });
+      expect(await audits('ROUTE_CONVERTED', farRoute.id)).toBe(0);
+
+      // B-2, all: the route of the truck he reaches moves, the other is skipped.
+      const all = (await as(mgr).post('/routes/convert-to-vehicle', {}, null).expect(200))
+        .body as ConvertRoutesResultDto;
+      expect(all.converted).toBeGreaterThanOrEqual(1);
+      expect(all.skipped).toBeGreaterThanOrEqual(1);
+      expect((await as(d).get(`/routes/${nearRoute.id}`).expect(200)).body).toMatchObject({
+        seller: null,
+        vehicle: { id: local.id },
+      });
+      expect((await as(d).get(`/routes/${farRoute.id}`).expect(200)).body).toMatchObject({
+        seller: { id: far.id },
+        vehicle: null,
+      });
+      expect(await audits('ROUTE_CONVERTED', farRoute.id)).toBe(0);
+      // The route he converted stays his to read: the answer and the state agree.
+      await as(mgr).get(`/routes/${nearRoute.id}`).expect(200);
+      // The owner converts the one left.
+      await as(d).post(`/routes/${farRoute.id}/convert-to-vehicle`, {}, null).expect(200);
+    });
+
     it('converts a seller route to the truck its seller drives; twice changes nothing', async () => {
       const a = await member(d, 'SELLER');
       const route = (

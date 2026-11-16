@@ -231,7 +231,10 @@ export class RoutesService {
   async convertToVehicle(id: string, user: CurrentUserInfo): Promise<RouteDto> {
     await this.prisma.db.$transaction(async (tx) => {
       await this.live(tx, id, user);
-      const done = await this.convert(tx, [id]);
+      const reach = await this.vehicles.plannedVehicleIds(user, tx);
+      const done = await this.convert(tx, [id], reach);
+      // Refused before anything is written: the transaction holds no write here.
+      if (done.outOfReach.length > 0) this.vehicles.assertInReach(reach, done.outOfReach[0]!);
       if (done.skipped > 0) {
         throw new AppException(ErrorCode.SELLER_HAS_NO_VEHICLE, 'This seller drives no truck');
       }
@@ -247,16 +250,26 @@ export class RoutesService {
         where: { AND: [{ deletedAt: null, vehicleId: null }, routeWhere(reach)] },
         select: { id: true },
       });
-      return this.convert(
+      const { converted, skipped } = await this.convert(
         tx,
         rows.map((r) => r.id),
+        reach.vehicleIds,
       );
+      return { converted, skipped };
     });
   }
 
-  /** Under the row locks (in id order): the routes still planned for a seller get his truck. */
-  private async convert(tx: Tx, ids: string[]): Promise<ConvertRoutesResultDto> {
-    if (ids.length === 0) return { converted: 0, skipped: 0 };
+  /**
+   * Under the row locks (in id order): the routes still planned for a seller get his truck.
+   * A truck outside the planner's reach (`reach`, null = all) is never written on: its
+   * route is skipped and its truck named in `outOfReach` (test-36 B-2).
+   */
+  private async convert(
+    tx: Tx,
+    ids: string[],
+    reach: string[] | null,
+  ): Promise<ConvertRoutesResultDto & { outOfReach: string[] }> {
+    if (ids.length === 0) return { converted: 0, skipped: 0, outOfReach: [] };
     const rows = await tx.$queryRaw<{ id: string; sellerId: string | null }[]>`
       SELECT id, "sellerId" FROM routes
       WHERE id = ANY(${ids}::uuid[]) AND "tenantId" = ${tenantContext.requireTenantId()}::uuid
@@ -268,9 +281,14 @@ export class RoutesService {
       tx,
     );
     let converted = 0;
+    const outOfReach: string[] = [];
     for (const r of rows) {
       const truck = r.sellerId ? trucks.get(r.sellerId) : undefined;
       if (!truck) continue;
+      if (reach && !reach.includes(truck.id)) {
+        outOfReach.push(truck.id);
+        continue;
+      }
       await tx.route.update({
         where: { id: r.id },
         data: { vehicleId: truck.id, sellerId: null },
@@ -284,7 +302,7 @@ export class RoutesService {
       });
       converted += 1;
     }
-    return { converted, skipped: rows.length - converted };
+    return { converted, skipped: rows.length - converted, outOfReach };
   }
 
   /**
