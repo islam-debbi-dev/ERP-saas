@@ -45,12 +45,15 @@ const codeOf = (r: Res): string | undefined => (r.body as { code?: string } | nu
 const brief = (r: Res): string => `HTTP ${r.status} ${r.raw.slice(0, 220)}`;
 const ok2 = (r: Res): boolean => r.status >= 200 && r.status < 300;
 const is4xx = (r: Res): boolean => r.status >= 400 && r.status < 500;
+/** The driver change and both converts take an Idempotency-Key (test-36 B-4). */
+const keyed = (path: string): string | null =>
+  /\/driver$|\/convert-to-vehicle$/.test(path) ? idemKey('t36') : null;
 const send = (
   api: Api,
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   path: string,
   body: unknown = {},
-  key: string | null = null,
+  key: string | null = keyed(path),
 ): Promise<Res> => api.send(method, path, body, key);
 const get = (api: Api, path: string): Promise<Res> => api.get(path);
 const list = <T>(r: Res): T[] => {
@@ -817,7 +820,7 @@ async function scope(s: Cast): Promise<void> {
       ['LIVB', livreur2],
     ] as const) {
       if ((await driverOf(s.t[k]!)) !== who!.id)
-        await s.c.owner.ok('POST', `/warehouses/${s.t[k]}/driver`, { userId: who!.id }, null);
+        await s.c.owner.ok('POST', `/warehouses/${s.t[k]}/driver`, { userId: who!.id });
     }
     // The old seller routes back to their sellers (a bulk convert of B1 moved them).
     for (const [k, id] of Object.entries(s.sroute)) {
@@ -1781,14 +1784,14 @@ async function idempotencyAndAudit(s: Cast): Promise<void> {
         )
       ).id;
       await A.patch(`/warehouses/${w}`, { code: 'AUD 02', wilayaCode: 28 });
-      await A.ok('POST', `/warehouses/${w}/driver`, { userId: x.id, reason: 'audit' }, null);
+      await A.ok('POST', `/warehouses/${w}/driver`, { userId: x.id, reason: 'audit' });
       const r = await A.post<{ id: string }>('/routes', {
         name: 'Aud',
         sellerId: x.id,
         weekdays: WEEK,
         active: true,
       });
-      await A.ok('POST', `/routes/${r.id}/convert-to-vehicle`, {}, null);
+      await A.ok('POST', `/routes/${r.id}/convert-to-vehicle`, {});
       await A.ok(
         'PATCH',
         `/orders/${s.order.id}/livreur`,

@@ -65,6 +65,9 @@ function DriverForm({
   const assign = useAssignDriver();
   const [userId, setUserId] = useState(vehicle.driver?.id ?? '');
   const [reason, setReason] = useState('');
+  // One Idempotency-Key per choice: tapping "save" again after a lost answer replays the
+  // same request, and a different choice is a new request (test-36 B-4).
+  const [key, setKey] = useState(() => crypto.randomUUID());
 
   // The driver he had may no longer be in the list (role changed): keep him selectable.
   const options =
@@ -83,6 +86,7 @@ function DriverForm({
       {
         vehicleId: vehicle.id,
         body: { userId: userId || null, reason: reason.trim() || undefined },
+        key,
       },
       {
         onSuccess: () => {
@@ -110,7 +114,10 @@ function DriverForm({
       </ResponsiveDialogHeader>
       <div className="space-y-2">
         <Label htmlFor="driver-user">{t('driver')}</Label>
-        <NativeSelect id="driver-user" value={userId} onChange={(e) => setUserId(e.target.value)}>
+        <NativeSelect id="driver-user" value={userId} onChange={(e) => {
+            setUserId(e.target.value);
+            setKey(crypto.randomUUID());
+          }}>
           <option value="">{t('noDriver')}</option>
           {options.map((d) => (
             <option key={d.id} value={d.id}>
@@ -135,7 +142,10 @@ function DriverForm({
           id="driver-reason"
           maxLength={120}
           value={reason}
-          onChange={(e) => setReason(e.target.value)}
+          onChange={(e) => {
+            setReason(e.target.value);
+            setKey(crypto.randomUUID());
+          }}
         />
       </div>
       <ResponsiveDialogFooter>

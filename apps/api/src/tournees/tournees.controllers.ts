@@ -123,6 +123,7 @@ export class RoutesController {
   @Post('convert-to-vehicle')
   @Roles(...PLANNERS)
   @HttpCode(HttpStatus.OK)
+  @Idempotent()
   convertAll(@CurrentUser() user: CurrentUserInfo): Promise<ConvertRoutesResultDto> {
     return this.routes.convertAllToVehicle(user);
   }
@@ -131,6 +132,7 @@ export class RoutesController {
   @Post(':id/convert-to-vehicle')
   @Roles(...PLANNERS)
   @HttpCode(HttpStatus.OK)
+  @Idempotent()
   convert(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: CurrentUserInfo,

@@ -150,7 +150,7 @@ describe('distribution par véhicule (phase 36)', () => {
     ).body as WarehouseDto;
 
   const drive = (by: Who, vehicleId: string, userId: string | null, reason?: string) =>
-    as(by).post(`/warehouses/${vehicleId}/driver`, { userId, ...(reason ? { reason } : {}) }, null);
+    as(by).post(`/warehouses/${vehicleId}/driver`, { userId, ...(reason ? { reason } : {}) });
 
   const warehouseOf = async (id: string, who: RegisteredTenant = d) =>
     ((await as(who).get('/warehouses').expect(200)).body as WarehouseDto[]).find(
@@ -733,6 +733,57 @@ describe('distribution par véhicule (phase 36)', () => {
       expect(await driversWhoCannotDrive()).toEqual([]);
     });
 
+    it('a driver change replayed after a later change returns the first answer and writes nothing', async () => {
+      // Test-36 B-4: a phone retrying after a lost answer must not undo a later decision.
+      const [x, y] = [await member(d, 'SELLER'), await member(d, 'SELLER')];
+      const v = await truck();
+      const key = randomUUID();
+      const send = (userId: string, k: string | null) =>
+        as(d).post(`/warehouses/${v.id}/driver`, { userId }, k);
+      const first = await send(x.id, key).expect(200);
+      await send(y.id, randomUUID()).expect(200);
+      const replay = await send(x.id, key).expect(200);
+      expect(replay.headers['idempotent-replayed']).toBe('true');
+      expect(replay.body).toEqual(first.body);
+      expect((await warehouseOf(v.id)).assignedUser?.id).toBe(y.id);
+      expect((await historyOf(v.id)).map((h) => h.user?.id)).toEqual([y.id, x.id]);
+      // The key is required, and names one request.
+      expect(errorOf(await send(x.id, null).expect(400)).code).toBe(
+        ErrorCode.IDEMPOTENCY_KEY_REQUIRED,
+      );
+      expect((await send(y.id, key)).status).toBeGreaterThanOrEqual(400);
+      expect(await historyOf(v.id)).toHaveLength(2);
+
+      // Both converts take the key too: a replay is the same answer, one audit row.
+      const route = (
+        await as(d)
+          .post('/routes', { name: `Rejouée ${++seq}`, sellerId: y.id, weekdays: [4] }, null)
+          .expect(201)
+      ).body as RouteDto;
+      const k2 = randomUUID();
+      const c1 = await as(d).post(`/routes/${route.id}/convert-to-vehicle`, {}, k2).expect(200);
+      const c2 = await as(d).post(`/routes/${route.id}/convert-to-vehicle`, {}, k2).expect(200);
+      expect(c2.headers['idempotent-replayed']).toBe('true');
+      expect(c2.body).toEqual(c1.body);
+      const k3 = randomUUID();
+      const b1 = await as(d).post('/routes/convert-to-vehicle', {}, k3).expect(200);
+      const b2 = await as(d).post('/routes/convert-to-vehicle', {}, k3).expect(200);
+      expect(b2.headers['idempotent-replayed']).toBe('true');
+      expect(b2.body).toEqual(b1.body);
+      expect(
+        await asTenant(d.tenantId, () =>
+          t.prisma.db.auditLog.count({
+            where: { action: 'ROUTE_CONVERTED', entityId: route.id },
+          }),
+        ),
+      ).toBe(1);
+      for (const url of [`/routes/${route.id}/convert-to-vehicle`, '/routes/convert-to-vehicle']) {
+        expect(errorOf(await as(d).post(url, {}, null).expect(400)).code).toBe(
+          ErrorCode.IDEMPOTENCY_KEY_REQUIRED,
+        );
+      }
+    });
+
     it('two changes of the same truck at once end in one consistent state', async () => {
       const [a, b] = [await member(d, 'SELLER'), await member(d, 'SELLER')];
       const v = await truck();
@@ -1017,7 +1068,7 @@ describe('distribution par véhicule (phase 36)', () => {
       await drive(mgr, local.id, near.id).expect(200);
 
       // B-2, one route: refused before anything is written, never a 404 after a save.
-      const one = await as(mgr).post(`/routes/${farRoute.id}/convert-to-vehicle`, {}, null);
+      const one = await as(mgr).post(`/routes/${farRoute.id}/convert-to-vehicle`);
       expect(one.status).toBe(404);
       expect(errorOf(one).code).toBe(ErrorCode.WAREHOUSE_NOT_FOUND);
       const kept = (await as(d).get(`/routes/${farRoute.id}`).expect(200)).body as RouteDto;
@@ -1025,7 +1076,7 @@ describe('distribution par véhicule (phase 36)', () => {
       expect(await audits('ROUTE_CONVERTED', farRoute.id)).toBe(0);
 
       // B-2, all: the route of the truck he reaches moves, the other is skipped.
-      const all = (await as(mgr).post('/routes/convert-to-vehicle', {}, null).expect(200))
+      const all = (await as(mgr).post('/routes/convert-to-vehicle').expect(200))
         .body as ConvertRoutesResultDto;
       expect(all.converted).toBeGreaterThanOrEqual(1);
       expect(all.skipped).toBeGreaterThanOrEqual(1);
@@ -1041,7 +1092,7 @@ describe('distribution par véhicule (phase 36)', () => {
       // The route he converted stays his to read: the answer and the state agree.
       await as(mgr).get(`/routes/${nearRoute.id}`).expect(200);
       // The owner converts the one left.
-      await as(d).post(`/routes/${farRoute.id}/convert-to-vehicle`, {}, null).expect(200);
+      await as(d).post(`/routes/${farRoute.id}/convert-to-vehicle`).expect(200);
     });
 
     it('converts a seller route to the truck its seller drives; twice changes nothing', async () => {
@@ -1052,16 +1103,16 @@ describe('distribution par véhicule (phase 36)', () => {
           .expect(201)
       ).body as RouteDto;
       const refused = await as(d)
-        .post(`/routes/${route.id}/convert-to-vehicle`, {}, null)
+        .post(`/routes/${route.id}/convert-to-vehicle`)
         .expect(409);
       expect(errorOf(refused).code).toBe(ErrorCode.SELLER_HAS_NO_VEHICLE);
 
       const v = await truck(d, { assignedUserId: a.id });
       const done = (
-        await as(d).post(`/routes/${route.id}/convert-to-vehicle`, {}, null).expect(200)
+        await as(d).post(`/routes/${route.id}/convert-to-vehicle`).expect(200)
       ).body as RouteDto;
       expect(done).toMatchObject({ seller: null, vehicle: { id: v.id } });
-      await as(d).post(`/routes/${route.id}/convert-to-vehicle`, {}, null).expect(200);
+      await as(d).post(`/routes/${route.id}/convert-to-vehicle`).expect(200);
       const audits = await asTenant(d.tenantId, () =>
         t.prisma.db.auditLog.findMany({
           where: { action: 'ROUTE_CONVERTED', entityId: route.id },
@@ -1073,7 +1124,7 @@ describe('distribution par véhicule (phase 36)', () => {
         before: { sellerId: a.id, vehicleId: null },
         after: { sellerId: null, vehicleId: v.id },
       });
-      await as(a).post(`/routes/${route.id}/convert-to-vehicle`, {}, null).expect(403);
+      await as(a).post(`/routes/${route.id}/convert-to-vehicle`).expect(403);
     });
 
     it('converts every seller route whose seller drives a truck; a second run converts 0', async () => {
@@ -1090,7 +1141,7 @@ describe('distribution par véhicule (phase 36)', () => {
         await make(withTruck.id),
         await make(without.id),
       ];
-      const first = (await as(d).post('/routes/convert-to-vehicle', {}, null).expect(200))
+      const first = (await as(d).post('/routes/convert-to-vehicle').expect(200))
         .body as ConvertRoutesResultDto;
       expect(first.converted).toBeGreaterThanOrEqual(2);
       expect(first.skipped).toBeGreaterThanOrEqual(1);
@@ -1099,7 +1150,7 @@ describe('distribution par véhicule (phase 36)', () => {
       expect((await read(r1.id)).vehicle?.id).toBe(v.id);
       expect((await read(r2.id)).vehicle?.id).toBe(v.id);
       expect(await read(r3.id)).toMatchObject({ vehicle: null, seller: { id: without.id } });
-      const second = (await as(d).post('/routes/convert-to-vehicle', {}, null).expect(200))
+      const second = (await as(d).post('/routes/convert-to-vehicle').expect(200))
         .body as ConvertRoutesResultDto;
       expect(second.converted).toBe(0);
       expect(second.skipped).toBe(first.skipped);
@@ -1540,7 +1591,7 @@ describe('distribution par véhicule (phase 36)', () => {
       await as(d).patch(`/vehicle-types/${type.id}`, { name: 'Pris' }).expect(404);
       await as(d).post(`/vehicle-types/${type.id}/archive`, {}, null).expect(404);
       await drive(d, v.id, mine.id).expect(404);
-      await as(d).post(`/routes/${route.id}/convert-to-vehicle`, {}, null).expect(404);
+      await as(d).post(`/routes/${route.id}/convert-to-vehicle`).expect(404);
 
       // Their ids in a body.
       const badType = await as(d)
@@ -1580,9 +1631,9 @@ describe('distribution par véhicule (phase 36)', () => {
         await drive(essentiel, randomUUID(), null).expect(403),
         await as(essentiel).get(`/warehouses/${randomUUID()}/assignments`).expect(403),
         await as(essentiel).get(`/users/${essentiel.auth.user.id}/vehicle-assignments`).expect(403),
-        await as(essentiel).post('/routes/convert-to-vehicle', {}, null).expect(403),
+        await as(essentiel).post('/routes/convert-to-vehicle').expect(403),
         await as(essentiel)
-          .post(`/routes/${randomUUID()}/convert-to-vehicle`, {}, null)
+          .post(`/routes/${randomUUID()}/convert-to-vehicle`)
           .expect(403),
       ]) {
         expect(errorOf(res).code).toBe(ErrorCode.FEATURE_NOT_IN_PLAN);

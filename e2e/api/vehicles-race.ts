@@ -27,7 +27,7 @@ import {
   product,
   type Staff,
 } from '../lib/audit.ts';
-import { type ApiResponse } from '../lib/http.ts';
+import { type ApiResponse, idemKey } from '../lib/http.ts';
 import { assertT36Db, proof36 } from '../lib/vehicles-fixture.ts';
 
 assertT36Db();
@@ -45,11 +45,14 @@ const codeOf = (r: ApiResponse<unknown>): string | undefined =>
   (r.body as { code?: string } | null)?.code;
 const brief = (r: ApiResponse<unknown>): string => `HTTP ${r.status} ${r.raw.slice(0, 200)}`;
 const ok2 = (r: ApiResponse<unknown>): boolean => r.status >= 200 && r.status < 300;
+/** The driver change and both converts take an Idempotency-Key (test-36 B-4). */
+const keyed = (path: string): string | null =>
+  /\/driver$|\/convert-to-vehicle$/.test(path) ? idemKey('t36') : null;
 const post = (
   api: Api,
   path: string,
   body: unknown = {},
-  key: string | null = null,
+  key: string | null = keyed(path),
 ): Promise<Res> => api.send<Record<string, unknown>>('POST', path, body, key);
 const patch = (api: Api, path: string, body: unknown): Promise<Res> =>
   api.send<Record<string, unknown>>('PATCH', path, body, null);

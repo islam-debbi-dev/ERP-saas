@@ -97,10 +97,21 @@ export function useDriverOptions(): { id: string; fullName: string }[] {
 export function useAssignDriver() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ vehicleId, body }: { vehicleId: string; body: AssignDriverInput }) =>
+    // `key`: one per choice in the dialog, so a retry after a lost answer is a replay and
+    // never undoes a later change (test-36 B-4).
+    mutationFn: ({
+      vehicleId,
+      body,
+      key,
+    }: {
+      vehicleId: string;
+      body: AssignDriverInput;
+      key: string;
+    }) =>
       api.request<AssignDriverResultDto>(`/warehouses/${vehicleId}/driver`, {
         method: 'POST',
         body,
+        idempotencyKey: key,
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: stockKeys.warehouses });
@@ -162,12 +173,18 @@ function useRouteMutation<TInput, TResult>(fn: (input: TInput) => Promise<TResul
 /** "Convertir en tournée véhicule": the route goes to the truck its seller drives. */
 export function useConvertRoute() {
   return useRouteMutation((id: string) =>
-    api.request<RouteDto>(`/routes/${id}/convert-to-vehicle`, { method: 'POST' }),
+    api.request<RouteDto>(`/routes/${id}/convert-to-vehicle`, {
+      method: 'POST',
+      idempotencyKey: crypto.randomUUID(),
+    }),
   );
 }
 
 export function useConvertAllRoutes() {
   return useRouteMutation(() =>
-    api.request<ConvertRoutesResultDto>('/routes/convert-to-vehicle', { method: 'POST' }),
+    api.request<ConvertRoutesResultDto>('/routes/convert-to-vehicle', {
+      method: 'POST',
+      idempotencyKey: crypto.randomUUID(),
+    }),
   );
 }

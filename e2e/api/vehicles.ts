@@ -96,7 +96,6 @@ const driver = (
     'POST',
     `/warehouses/${vehicleId}/driver`,
     { userId, ...(reason ? { reason } : {}) },
-    null,
   );
 async function setDriver(c: Company, vehicleId: string, userId: string | null): Promise<void> {
   accepted(await driver(c.owner, vehicleId, userId), `driver of ${vehicleId}`);
@@ -1621,7 +1620,7 @@ async function tournees(): Promise<void> {
       const again = await post(c.owner, `/routes/${oldId}/convert-to-vehicle`);
       assert(again.status < 500, `second convert: ${brief(again)}`);
       assert((await audits(t, 'ROUTE_CONVERTED', oldId)).length === 1, 'a second audit row');
-      const seller = await b.api.send('POST', `/routes/${oldId}/convert-to-vehicle`, {}, null);
+      const seller = await b.api.send('POST', `/routes/${oldId}/convert-to-vehicle`, {});
       assert(seller.status === 403, `a seller converts: ${brief(seller)}`);
     },
   );
