@@ -1731,6 +1731,10 @@ async function idempotencyAndAudit(s: Cast): Promise<void> {
         weekdays: WEEK,
         active: true,
       });
+      // Since the fix of B-4 the replay above no longer puts x back on the truck (y drives
+      // it): x gets it here, so that there is a route to convert.
+      const back = await send(A, 'POST', `/warehouses/${truck}/driver`, { userId: x.id });
+      assert(ok2(back), `x back on the truck: ${brief(back)}`);
       const key = idemKey('b6-conv');
       const c1 = await send(A, 'POST', `/routes/${r.id}/convert-to-vehicle`, {}, key);
       const c2 = await send(A, 'POST', `/routes/${r.id}/convert-to-vehicle`, {}, key);
@@ -1742,9 +1746,12 @@ async function idempotencyAndAudit(s: Cast): Promise<void> {
         ok2(c1) && rows.length <= 1,
         `${brief(c1)} / ${brief(c2)}; ${rows.length} ROUTE_CONVERTED rows`,
       );
-      // x drives `truck`? y does now; x drives nothing: the route stays a seller route (SELLER_HAS_NO_VEHICLE).
+      assert(
+        c2.status === c1.status && c2.headers.get('idempotent-replayed') === 'true',
+        `the replay is not the first answer: ${brief(c2)} (Idempotent-Replayed: ${c2.headers.get('idempotent-replayed') ?? 'absent'})`,
+      );
       record({
-        name: `INFO convert one of a seller with no truck: ${c1.status} ${codeOf(c1) ?? ''}, replay ${c2.status} ${codeOf(c2) ?? ''}`,
+        name: `INFO convert one: ${c1.status} ${codeOf(c1) ?? ''}, replay ${c2.status} ${codeOf(c2) ?? ''}`,
         status: 'INFO',
       });
       await send(A, 'POST', '/routes/convert-to-vehicle', {}, idemKey('b6'));
