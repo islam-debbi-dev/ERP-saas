@@ -5,6 +5,7 @@ import {
   type DashboardLayoutInput,
   effectivePermissions,
   normalizeDashboardLayout,
+  DRIVING_ROLES,
   ErrorCode,
   type InviteResultDto,
   type InviteUserInput,
@@ -26,6 +27,7 @@ import { tenantContext } from '../common/tenant-context';
 import { Prisma, type User } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
+import { VehiclesService } from '../stock/vehicles.service';
 import { UserAccessService } from './user-access.service';
 
 type UserRow = User & {
@@ -81,6 +83,7 @@ export class UsersService {
     private readonly billing: BillingService,
     private readonly scope: ScopeService,
     private readonly access: UserAccessService,
+    private readonly vehicles: VehiclesService,
   ) {}
 
   async list(): Promise<UserDto[]> {
@@ -166,6 +169,10 @@ export class UsersService {
         ) {
           await this.checkManager(tx, id, input.managerId);
         }
+        // A role that cannot drive leaves its truck, with a history row (test-36 A-3).
+        if (input.role !== before.role && !DRIVING_ROLES.includes(input.role)) {
+          await this.vehicles.releaseDriver(tx, id);
+        }
         const after = await tx.user.update({
           where: { id },
           data: {
@@ -243,6 +250,9 @@ export class UsersService {
       }
       assertBelowActor(actor, user);
       if (user.deletedAt) return;
+      // He drives nothing from now on: the truck is freed with its history row, and the
+      // deactivation is refused while his day on it is open (test-36 A-3).
+      await this.vehicles.releaseDriver(tx, id);
       const now = new Date();
       await tx.user.update({ where: { id }, data: { deletedAt: now } });
       const { count } = await tx.session.updateMany({

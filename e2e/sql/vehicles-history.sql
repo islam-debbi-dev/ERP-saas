@@ -94,7 +94,9 @@ WHERE w.type <> 'VEHICLE' OR w."tenantId" <> o."tenantId";
 
 -- name: visit_truck_is_the_truck_its_seller_had_then
 -- Spec, "Freeze the truck": Visit.vehicleId = the truck the seller drives at startedAt, from
--- the history only. A correction copies the visit it replaces, so it is left out.
+-- the history only. A correction copies the visit it replaces, so it is left out. Since the
+-- fix of C-1 a visit linked to a sale of its seller names the dépôt that sale left (rule
+-- visit_sale_left_the_truck_frozen_on_the_visit), so it is left out here too.
 SELECT v.id, v."tenantId", v."sellerId", v."startedAt", v."vehicleId" AS frozen, h."vehicleId" AS from_history
 FROM visits v
 LEFT JOIN LATERAL (
@@ -106,7 +108,10 @@ LEFT JOIN LATERAL (
         AND (n."fromAt", n."createdAt", n.id) > (a."fromAt", a."createdAt", a.id))
   ORDER BY a."fromAt" DESC, a."createdAt" DESC, a.id DESC
   LIMIT 1) h ON true
-WHERE v."correctsVisitId" IS NULL AND v."vehicleId" IS DISTINCT FROM h."vehicleId";
+WHERE v."correctsVisitId" IS NULL AND v."vehicleId" IS DISTINCT FROM h."vehicleId"
+  AND NOT EXISTS (
+    SELECT 1 FROM sales s
+    WHERE s.id = v."saleId" AND s."sellerId" = v."sellerId" AND s."warehouseId" IS NOT NULL);
 
 -- name: visit_sale_left_the_truck_frozen_on_the_visit
 -- Phase 37 reads Visit.vehicleId as "the truck this sale was made with". When the sale of a

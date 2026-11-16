@@ -311,9 +311,15 @@ It then checks that no row is left without a dépôt, that every client balance 
 **Contract release (later, not with phase 24):** once the backfill ran cleanly in production, move `apps/api/prisma/contract/phase-24-units-contract.sql` into a new migration folder and make `warehouseId` required on `Payment` and `ClientLedgerEntry` in `schema.prisma`. It also requires a parent dépôt on every live truck and puts back the strict append-only trigger on `client_ledger_entries`. Its first statement fails if any row was missed.
 
 
-### Vehicle backfill (once, after the phase 36 deploy)
+### Vehicle backfill (phase 36: migrate before the API deploys, backfill after)
 
-Phase 36 records the truck on every visit and order. Rows written before it have none. The deploy migration is additive (nothing renamed or removed, `routes."sellerId"` only loses its `NOT NULL`) and already starts the driver history with one row per truck that has a driver. Nothing is wrong in the meantime: a row without a truck shows as "Véhicule inconnu".
+Phase 36 records the truck on every visit and order. Rows written before it have none. The migration is additive (nothing renamed or removed, `routes."sellerId"` only loses its `NOT NULL`) and already starts the driver history with one row per truck that has a driver. A row without a truck shows as "Véhicule inconnu".
+
+**Order (the same as "Migrations on Neon" below): migrate first, deploy the API and the web together after, backfill last.**
+
+1. **Before the merge reaches production**, run `db:deploy` on Neon. The previous API works with the migration in place. The phase 36 API does **not** work without it: Vercel builds the API on the merge with no migration step, and until the columns exist `GET /warehouses`, `/routes`, `/me/today`, `/orders` and `/visits` answer 500 (`e2e/test-36/part-d.sh`, step 2b, proves it).
+2. Merge, and let the **API and the web deploy together**. A web still on the previous version (or an old tab) crashes on the tournée list and on a route page as soon as one vehicle route exists, because `route.seller` is null there. Do not use "Convertir" on seller routes, and do not plan a tournée on a truck, until both are live and the users have reloaded.
+3. Run the backfill twice, then reconcile.
 
 Per tenant, in one transaction, the backfill:
 - gives each visit the dépôt of its linked sale when that dépôt is a truck, else the truck frozen on its linked order;
@@ -321,14 +327,32 @@ Per tenant, in one transaction, the backfill:
 
 What cannot be known stays empty: it never looks at today's driver. Only empty columns are written, so it is safe with the app running and safe to run twice.
 
-Production is Vercel + Neon (no VPS, no timers): run it from a machine that holds the production `DATABASE_URL` / `DATABASE_URL_MIGRATE`, after the merge.
+Production is Vercel + Neon (no VPS, no timers): run the commands from a machine that holds the production URLs. **Every command names the database.** `db:deploy` reads `DATABASE_URL_MIGRATE`, the backfill and reconcile read `DATABASE_URL`; a variable missing from the command line is read from `apps/api/.env`, which is the **local** database, and the command still prints a green result. So each line sets both:
 
 ```bash
-pnpm --filter @erp/api db:deploy              # the additive migration, on Neon
-pnpm --filter @erp/api build
-pnpm --filter @erp/api db:backfill-vehicles   # "Visits given their truck: N. Delivered orders …: M."
-pnpm --filter @erp/api db:backfill-vehicles   # second run: 0 and 0
-pnpm --filter @erp/api reconcile              # still clean
+# owner role, direct host (no -pooler in the name)
+NEON_OWNER='postgresql://<owner>:<password>@<neon-direct-host>/<db>?sslmode=require'
+# the URL the API uses on Vercel (erp_app)
+NEON_APP='postgresql://<erp_app>:<password>@<neon-host>/<db>?sslmode=require'
+
+# step 1, before the merge: the additive migration
+DATABASE_URL_MIGRATE="$NEON_OWNER" DATABASE_URL="$NEON_APP" pnpm --filter @erp/api db:deploy
+
+# step 3, after the API and the web are live
+pnpm --filter @erp/api build    # local build of the CLIs, reaches no database
+DATABASE_URL_MIGRATE="$NEON_OWNER" DATABASE_URL="$NEON_APP" pnpm --filter @erp/api db:backfill-vehicles   # "Visits given their truck: N. Delivered orders …: M."
+DATABASE_URL_MIGRATE="$NEON_OWNER" DATABASE_URL="$NEON_APP" pnpm --filter @erp/api db:backfill-vehicles   # second run: 0 and 0
+DATABASE_URL_MIGRATE="$NEON_OWNER" DATABASE_URL="$NEON_APP" pnpm --filter @erp/api reconcile              # still clean
+```
+
+Check in the Neon SQL editor, after step 1 and after step 3:
+
+```sql
+SELECT migration_name, finished_at FROM _prisma_migrations ORDER BY finished_at DESC LIMIT 3;
+-- 20261114232622_vehicle_first_distribution is there, with a finished_at
+SELECT count(*) FROM visits v JOIN sales s ON s.id = v."saleId" JOIN warehouses w ON w.id = s."warehouseId"
+ WHERE w.type = 'VEHICLE' AND v."vehicleId" IS NULL;
+-- 0 once the backfill has run
 ```
 
 **Contract release (later, not with phase 36):** making `Route.vehicleId` required waits until every company has converted its seller routes.

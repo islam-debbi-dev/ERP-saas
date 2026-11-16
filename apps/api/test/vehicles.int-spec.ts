@@ -150,7 +150,7 @@ describe('distribution par véhicule (phase 36)', () => {
     ).body as WarehouseDto;
 
   const drive = (by: Who, vehicleId: string, userId: string | null, reason?: string) =>
-    as(by).post(`/warehouses/${vehicleId}/driver`, { userId, ...(reason ? { reason } : {}) }, null);
+    as(by).post(`/warehouses/${vehicleId}/driver`, { userId, ...(reason ? { reason } : {}) });
 
   const warehouseOf = async (id: string, who: RegisteredTenant = d) =>
     ((await as(who).get('/warehouses').expect(200)).body as WarehouseDto[]).find(
@@ -571,6 +571,301 @@ describe('distribution par véhicule (phase 36)', () => {
       expect((await warehouseOf(v.id)).assignedUser?.id).toBe(b.id);
     });
 
+    // The two SQL rules of test-36 (e2e/sql/vehicles-history.sql), on this company.
+    const driversWhoCannotDrive = () =>
+      asTenant(d.tenantId, () =>
+        t.prisma.db.$queryRaw<{ id: string }[]>`
+          SELECT w.id FROM warehouses w JOIN users u ON u.id = w."assignedUserId"
+          WHERE w."tenantId" = ${d.tenantId}::uuid AND w.type = 'VEHICLE' AND w."deletedAt" IS NULL
+            AND (u."deletedAt" IS NOT NULL
+              OR u.role NOT IN ('OWNER', 'MANAGER', 'SUPERVISOR', 'SELLER', 'LIVREUR'))`,
+      );
+    const visitsOffTheirSaleTruck = () =>
+      asTenant(d.tenantId, () =>
+        t.prisma.db.$queryRaw<{ id: string }[]>`
+          SELECT v.id FROM visits v
+          JOIN sales s ON s.id = v."saleId"
+          JOIN warehouses sw ON sw.id = s."warehouseId"
+          WHERE v."tenantId" = ${d.tenantId}::uuid AND s."sellerId" = v."sellerId"
+            AND ((sw.type = 'VEHICLE' AND v."vehicleId" IS DISTINCT FROM s."warehouseId")
+              OR (sw.type <> 'VEHICLE' AND v."vehicleId" IS NOT NULL))`,
+      );
+
+    it('a truck switched off frees its driver: the sale, the visit and the order agree', async () => {
+      // Test-36 A-1.
+      const x = await member(d, 'SELLER');
+      const v = await truck(d, { assignedUserId: x.id });
+      const [c, p] = [await client(), await product()];
+      await load(v.id, p, '2');
+
+      // Refused while his day on it is open; nothing is written.
+      const session = (await as(d).post('/seller-sessions', { sellerId: x.id }).expect(201))
+        .body as SellerSessionDto;
+      const refused = await as(d).patch(`/warehouses/${v.id}`, { active: false }).expect(409);
+      expect(errorOf(refused).code).toBe(ErrorCode.SESSION_OPEN_ON_VEHICLE);
+      expect(await warehouseOf(v.id)).toMatchObject({ active: true, assignedUser: { id: x.id } });
+      await as(d).post(`/seller-sessions/${session.id}/close`, { handedCash: '0' }).expect(200);
+
+      await as(d).patch(`/warehouses/${v.id}`, { active: false }).expect(200);
+      expect(await warehouseOf(v.id)).toMatchObject({ active: false, assignedUser: null });
+      const history = await historyOf(v.id);
+      expect(history.map((h) => h.user?.id ?? null)).toEqual([null, x.id]);
+      // Switching it off again writes nothing.
+      await as(d).patch(`/warehouses/${v.id}`, { active: false }).expect(200);
+      expect(await historyOf(v.id)).toHaveLength(2);
+
+      // One answer to "which truck was he on": none.
+      const sale = (
+        await as(x)
+          .post('/sales/quick', {
+            documentDate: today(),
+            clientId: c.id,
+            lines: [{ productId: p.id, unitId: p.carton, qty: '1' }],
+            paidAmount: '2856',
+          })
+          .expect(201)
+      ).body as SaleResultDto;
+      const visit = (
+        await as(x)
+          .post('/visits', {
+            clientId: c.id,
+            startedAt: clock.now().toISOString(),
+            outcome: 'SALE',
+            saleId: sale.sale.id,
+          })
+          .expect(201)
+      ).body as VisitDto;
+      const order = (
+        await as(x)
+          .post('/orders', {
+            clientId: c.id,
+            lines: [{ productId: p.id, unitId: p.carton, qty: '1' }],
+          })
+          .expect(201)
+      ).body as OrderDto;
+      const soldFrom = await asTenant(d.tenantId, () =>
+        t.prisma.db.sale.findUniqueOrThrow({
+          where: { id: sale.sale.id },
+          select: { warehouse: { select: { isDefault: true } } },
+        }),
+      );
+      expect(soldFrom.warehouse?.isDefault).toBe(true);
+      expect(visit.vehicle).toBeNull();
+      expect(order.vehicle).toBeNull();
+      expect((await todayOf(x)).vehicle).toBeNull();
+      expect(await visitsOffTheirSaleTruck()).toEqual([]);
+
+      // A truck that is off takes no driver, by either path; switched on again it does.
+      for (const res of [
+        await drive(d, v.id, x.id).expect(422),
+        await as(d).patch(`/warehouses/${v.id}`, { assignedUserId: x.id }).expect(422),
+        await as(d)
+          .patch(`/warehouses/${v.id}`, { active: false, assignedUserId: x.id })
+          .expect(422),
+      ]) {
+        expect(errorOf(res)).toMatchObject({
+          code: ErrorCode.WAREHOUSE_INVALID,
+          details: { rule: 'inactive' },
+        });
+      }
+      await as(d).patch(`/warehouses/${v.id}`, { active: true, assignedUserId: x.id }).expect(200);
+      expect(await warehouseOf(v.id)).toMatchObject({ active: true, assignedUser: { id: x.id } });
+    });
+
+    it('a user deactivated, or moved to a role that cannot drive, leaves his truck', async () => {
+      // Test-36 A-3.
+      const [gone, demoted, busy] = [
+        await member(d, 'SELLER'),
+        await member(d, 'SELLER'),
+        await member(d, 'SELLER'),
+      ];
+      const [v1, v2, v3] = [
+        await truck(d, { assignedUserId: gone.id }),
+        await truck(d, { assignedUserId: demoted.id }),
+        await truck(d, { assignedUserId: busy.id }),
+      ];
+
+      await as(d).post(`/users/${gone.id}/deactivate`, {}, null).expect(200);
+      expect((await warehouseOf(v1.id)).assignedUser).toBeNull();
+      expect((await historyOf(v1.id)).map((h) => h.user?.id ?? null)).toEqual([null, gone.id]);
+
+      const profile = async (id: string) => {
+        const u = (await as(d).get(`/users/${id}`).expect(200)).body as {
+          fullName: string;
+          email: string | null;
+          phone: string | null;
+        };
+        return { fullName: u.fullName, email: u.email, phone: u.phone };
+      };
+      // A role that still drives keeps the truck, and writes no row.
+      await as(d)
+        .put(`/users/${demoted.id}`, { ...(await profile(demoted.id)), role: 'LIVREUR' })
+        .expect(200);
+      expect((await warehouseOf(v2.id)).assignedUser?.id).toBe(demoted.id);
+      expect(await historyOf(v2.id)).toHaveLength(1);
+      await as(d)
+        .put(`/users/${demoted.id}`, { ...(await profile(demoted.id)), role: 'STOREKEEPER' })
+        .expect(200);
+      expect((await warehouseOf(v2.id)).assignedUser).toBeNull();
+      expect((await historyOf(v2.id)).map((h) => h.user?.id ?? null)).toEqual([null, demoted.id]);
+
+      // Refused while his day on the truck is open: the money is counted first.
+      const session = (await as(d).post('/seller-sessions', { sellerId: busy.id }).expect(201))
+        .body as SellerSessionDto;
+      for (const res of [
+        await as(d).post(`/users/${busy.id}/deactivate`, {}, null).expect(409),
+        await as(d)
+          .put(`/users/${busy.id}`, { ...(await profile(busy.id)), role: 'STOREKEEPER' })
+          .expect(409),
+      ]) {
+        expect(errorOf(res).code).toBe(ErrorCode.SESSION_OPEN_ON_VEHICLE);
+      }
+      const still = (await as(d).get(`/users/${busy.id}`).expect(200)).body as {
+        active: boolean;
+        role: Role;
+      };
+      expect(still).toMatchObject({ active: true, role: 'SELLER' });
+      expect((await warehouseOf(v3.id)).assignedUser?.id).toBe(busy.id);
+      await as(d).post(`/seller-sessions/${session.id}/close`, { handedCash: '0' }).expect(200);
+      await as(d).post(`/users/${busy.id}/deactivate`, {}, null).expect(200);
+      expect((await warehouseOf(v3.id)).assignedUser).toBeNull();
+
+      expect(await driversWhoCannotDrive()).toEqual([]);
+    });
+
+    it('a driver change replayed after a later change returns the first answer and writes nothing', async () => {
+      // Test-36 B-4: a phone retrying after a lost answer must not undo a later decision.
+      const [x, y] = [await member(d, 'SELLER'), await member(d, 'SELLER')];
+      const v = await truck();
+      const key = randomUUID();
+      const send = (userId: string, k: string | null) =>
+        as(d).post(`/warehouses/${v.id}/driver`, { userId }, k);
+      const first = await send(x.id, key).expect(200);
+      await send(y.id, randomUUID()).expect(200);
+      const replay = await send(x.id, key).expect(200);
+      expect(replay.headers['idempotent-replayed']).toBe('true');
+      expect(replay.body).toEqual(first.body);
+      expect((await warehouseOf(v.id)).assignedUser?.id).toBe(y.id);
+      expect((await historyOf(v.id)).map((h) => h.user?.id)).toEqual([y.id, x.id]);
+      // The key is required, and names one request.
+      expect(errorOf(await send(x.id, null).expect(400)).code).toBe(
+        ErrorCode.IDEMPOTENCY_KEY_REQUIRED,
+      );
+      expect((await send(y.id, key)).status).toBeGreaterThanOrEqual(400);
+      expect(await historyOf(v.id)).toHaveLength(2);
+
+      // Both converts take the key too: a replay is the same answer, one audit row.
+      const route = (
+        await as(d)
+          .post('/routes', { name: `Rejouée ${++seq}`, sellerId: y.id, weekdays: [4] }, null)
+          .expect(201)
+      ).body as RouteDto;
+      const k2 = randomUUID();
+      const c1 = await as(d).post(`/routes/${route.id}/convert-to-vehicle`, {}, k2).expect(200);
+      const c2 = await as(d).post(`/routes/${route.id}/convert-to-vehicle`, {}, k2).expect(200);
+      expect(c2.headers['idempotent-replayed']).toBe('true');
+      expect(c2.body).toEqual(c1.body);
+      const k3 = randomUUID();
+      const b1 = await as(d).post('/routes/convert-to-vehicle', {}, k3).expect(200);
+      const b2 = await as(d).post('/routes/convert-to-vehicle', {}, k3).expect(200);
+      expect(b2.headers['idempotent-replayed']).toBe('true');
+      expect(b2.body).toEqual(b1.body);
+      expect(
+        await asTenant(d.tenantId, () =>
+          t.prisma.db.auditLog.count({
+            where: { action: 'ROUTE_CONVERTED', entityId: route.id },
+          }),
+        ),
+      ).toBe(1);
+      for (const url of [`/routes/${route.id}/convert-to-vehicle`, '/routes/convert-to-vehicle']) {
+        expect(errorOf(await as(d).post(url, {}, null).expect(400)).code).toBe(
+          ErrorCode.IDEMPOTENCY_KEY_REQUIRED,
+        );
+      }
+    });
+
+    it('refuses the change while the driver holds cash no clôture counted, whatever truck his day names', async () => {
+      // Test-36 A-4: one clôture per seller per day, so the cash of a second truck (or of a
+      // day opened before he had a truck) was in no count and nothing asked for it.
+      const a = await member(d, 'SELLER');
+      const [s1, s2] = [await truck(d, { assignedUserId: a.id }), await truck()];
+      const [c, p] = [await client(), await product()];
+      await load(s1.id, p, '2');
+      await load(s2.id, p, '2');
+      const sellCash = () =>
+        as(a)
+          .post('/sales/quick', {
+            documentDate: today(),
+            clientId: c.id,
+            lines: [{ productId: p.id, unitId: p.carton, qty: '1' }],
+            paidAmount: '2856',
+            paymentMode: 'ESPECES',
+          })
+          .expect(201);
+
+      await sellCash();
+      const session = (await as(d).post('/seller-sessions', { sellerId: a.id }).expect(201))
+        .body as SellerSessionDto;
+      await as(d).post(`/seller-sessions/${session.id}/close`, { handedCash: '2856' }).expect(200);
+      // Closed and counted: he moves to the second truck.
+      await drive(d, s2.id, a.id).expect(200);
+      await sellCash();
+      // The same closed session comes back: the afternoon has no clôture of its own.
+      const again = (await as(d).post('/seller-sessions', { sellerId: a.id })).body as {
+        id: string;
+        status: string;
+      };
+      expect(again).toMatchObject({ id: session.id, status: 'CLOSED' });
+
+      for (const res of [
+        await drive(d, s2.id, null).expect(409),
+        await drive(d, s1.id, a.id).expect(409),
+        await as(d).patch(`/warehouses/${s2.id}`, { assignedUserId: null }).expect(409),
+        await as(d).patch(`/warehouses/${s2.id}`, { active: false }).expect(409),
+        await as(d).post(`/users/${a.id}/deactivate`, {}, null).expect(409),
+      ]) {
+        expect(errorOf(res)).toMatchObject({
+          code: ErrorCode.CASH_AFTER_CLOSING,
+          details: { sessionId: session.id, date: today(), amount: '2856.00', userId: a.id },
+        });
+      }
+      expect((await warehouseOf(s2.id)).assignedUser?.id).toBe(a.id);
+      // The new count is a correction of the clôture; then nothing is left uncounted.
+      await as(d)
+        .post(`/seller-sessions/${session.id}/adjust`, {
+          handedCash: '5712',
+          note: 'Encaissé sur le second camion',
+        })
+        .expect(201);
+      await drive(d, s2.id, null).expect(200);
+
+      // A day opened before he had a truck names no truck: it blocks all the same.
+      const b = await member(d, 'SELLER');
+      const early = (await as(d).post('/seller-sessions', { sellerId: b.id }).expect(201))
+        .body as SellerSessionDto;
+      expect(early.warehouse).toBeNull();
+      // Getting a truck is not leaving one.
+      await drive(d, s1.id, b.id).expect(200);
+      const blocked = await drive(d, s1.id, null).expect(409);
+      expect(errorOf(blocked).code).toBe(ErrorCode.SESSION_OPEN_ON_VEHICLE);
+      await as(d).post(`/seller-sessions/${early.id}/close`, { handedCash: '0' }).expect(200);
+      await drive(d, s1.id, null).expect(200);
+
+      // A company that never does a clôture is not held by its cash.
+      const free = await member(d, 'SELLER');
+      await drive(d, s1.id, free.id).expect(200);
+      await as(free)
+        .post('/sales/quick', {
+          documentDate: today(),
+          clientId: c.id,
+          lines: [{ productId: p.id, unitId: p.carton, qty: '1' }],
+          paidAmount: '2856',
+          paymentMode: 'ESPECES',
+        })
+        .expect(201);
+      await drive(d, s1.id, null).expect(200);
+    });
+
     it('two changes of the same truck at once end in one consistent state', async () => {
       const [a, b] = [await member(d, 'SELLER'), await member(d, 'SELLER')];
       const v = await truck();
@@ -807,6 +1102,81 @@ describe('distribution par véhicule (phase 36)', () => {
         .expect(403);
     });
 
+    it('a manager of one dépôt never writes on a truck of another: driver move, convert one, convert all', async () => {
+      // Test-36 B-1, B-2.
+      const batna = (
+        await as(d)
+          .post('/warehouses', { name: `Batna ${++seq}`, type: 'SECONDARY' }, null)
+          .expect(201)
+      ).body as WarehouseDto;
+      const mgr = await member(d, 'MANAGER', { depots: false });
+      await as(d)
+        .put(`/users/${mgr.id}/access`, { access: [{ warehouseId: batna.id, level: 'OPERATE' }] })
+        .expect(200);
+      const [far, near] = [await member(d, 'SELLER'), await member(d, 'SELLER')];
+      // A truck starts under the dépôt principal; two are moved to Batna.
+      const van = await truck(d, { assignedUserId: far.id });
+      const local = await truck(d, { assignedUserId: near.id });
+      const spare = await truck();
+      for (const w of [local, spare]) {
+        await as(d).patch(`/warehouses/${w.id}`, { parentWarehouseId: batna.id }).expect(200);
+      }
+      const sellerRoute = async (sellerId: string) =>
+        (
+          await as(d)
+            .post('/routes', { name: `Vendeur ${++seq}`, sellerId, weekdays: [3] }, null)
+            .expect(201)
+        ).body as RouteDto;
+      const [farRoute, nearRoute] = [await sellerRoute(far.id), await sellerRoute(near.id)];
+      const audits = (action: string, entityId: string) =>
+        asTenant(d.tenantId, () =>
+          t.prisma.db.auditLog.count({ where: { action, entityId, userId: mgr.id } }),
+        );
+
+      // B-1: putting a driver of the principal on a Batna truck would free VAN.
+      await drive(mgr, van.id, null).expect(404);
+      const moved = await drive(mgr, spare.id, far.id).expect(409);
+      expect(errorOf(moved)).toMatchObject({
+        code: ErrorCode.VEHICLE_ALREADY_ASSIGNED,
+        details: { rule: 'other_truck_out_of_reach' },
+      });
+      expect((await warehouseOf(van.id)).assignedUser?.id).toBe(far.id);
+      expect((await warehouseOf(spare.id)).assignedUser).toBeNull();
+      expect(await historyOf(van.id)).toHaveLength(1);
+      expect(await historyOf(spare.id)).toHaveLength(0);
+      // Within his dépôt he moves a driver as before.
+      const ok = (await drive(mgr, spare.id, near.id).expect(200)).body as AssignDriverResultDto;
+      expect(ok.freedVehicle?.id).toBe(local.id);
+      await drive(mgr, local.id, near.id).expect(200);
+
+      // B-2, one route: refused before anything is written, never a 404 after a save.
+      const one = await as(mgr).post(`/routes/${farRoute.id}/convert-to-vehicle`);
+      expect(one.status).toBe(404);
+      expect(errorOf(one).code).toBe(ErrorCode.WAREHOUSE_NOT_FOUND);
+      const kept = (await as(d).get(`/routes/${farRoute.id}`).expect(200)).body as RouteDto;
+      expect(kept).toMatchObject({ seller: { id: far.id }, vehicle: null });
+      expect(await audits('ROUTE_CONVERTED', farRoute.id)).toBe(0);
+
+      // B-2, all: the route of the truck he reaches moves, the other is skipped.
+      const all = (await as(mgr).post('/routes/convert-to-vehicle').expect(200))
+        .body as ConvertRoutesResultDto;
+      expect(all.converted).toBeGreaterThanOrEqual(1);
+      expect(all.skipped).toBeGreaterThanOrEqual(1);
+      expect((await as(d).get(`/routes/${nearRoute.id}`).expect(200)).body).toMatchObject({
+        seller: null,
+        vehicle: { id: local.id },
+      });
+      expect((await as(d).get(`/routes/${farRoute.id}`).expect(200)).body).toMatchObject({
+        seller: { id: far.id },
+        vehicle: null,
+      });
+      expect(await audits('ROUTE_CONVERTED', farRoute.id)).toBe(0);
+      // The route he converted stays his to read: the answer and the state agree.
+      await as(mgr).get(`/routes/${nearRoute.id}`).expect(200);
+      // The owner converts the one left.
+      await as(d).post(`/routes/${farRoute.id}/convert-to-vehicle`).expect(200);
+    });
+
     it('converts a seller route to the truck its seller drives; twice changes nothing', async () => {
       const a = await member(d, 'SELLER');
       const route = (
@@ -815,16 +1185,16 @@ describe('distribution par véhicule (phase 36)', () => {
           .expect(201)
       ).body as RouteDto;
       const refused = await as(d)
-        .post(`/routes/${route.id}/convert-to-vehicle`, {}, null)
+        .post(`/routes/${route.id}/convert-to-vehicle`)
         .expect(409);
       expect(errorOf(refused).code).toBe(ErrorCode.SELLER_HAS_NO_VEHICLE);
 
       const v = await truck(d, { assignedUserId: a.id });
       const done = (
-        await as(d).post(`/routes/${route.id}/convert-to-vehicle`, {}, null).expect(200)
+        await as(d).post(`/routes/${route.id}/convert-to-vehicle`).expect(200)
       ).body as RouteDto;
       expect(done).toMatchObject({ seller: null, vehicle: { id: v.id } });
-      await as(d).post(`/routes/${route.id}/convert-to-vehicle`, {}, null).expect(200);
+      await as(d).post(`/routes/${route.id}/convert-to-vehicle`).expect(200);
       const audits = await asTenant(d.tenantId, () =>
         t.prisma.db.auditLog.findMany({
           where: { action: 'ROUTE_CONVERTED', entityId: route.id },
@@ -836,7 +1206,7 @@ describe('distribution par véhicule (phase 36)', () => {
         before: { sellerId: a.id, vehicleId: null },
         after: { sellerId: null, vehicleId: v.id },
       });
-      await as(a).post(`/routes/${route.id}/convert-to-vehicle`, {}, null).expect(403);
+      await as(a).post(`/routes/${route.id}/convert-to-vehicle`).expect(403);
     });
 
     it('converts every seller route whose seller drives a truck; a second run converts 0', async () => {
@@ -853,7 +1223,7 @@ describe('distribution par véhicule (phase 36)', () => {
         await make(withTruck.id),
         await make(without.id),
       ];
-      const first = (await as(d).post('/routes/convert-to-vehicle', {}, null).expect(200))
+      const first = (await as(d).post('/routes/convert-to-vehicle').expect(200))
         .body as ConvertRoutesResultDto;
       expect(first.converted).toBeGreaterThanOrEqual(2);
       expect(first.skipped).toBeGreaterThanOrEqual(1);
@@ -862,7 +1232,7 @@ describe('distribution par véhicule (phase 36)', () => {
       expect((await read(r1.id)).vehicle?.id).toBe(v.id);
       expect((await read(r2.id)).vehicle?.id).toBe(v.id);
       expect(await read(r3.id)).toMatchObject({ vehicle: null, seller: { id: without.id } });
-      const second = (await as(d).post('/routes/convert-to-vehicle', {}, null).expect(200))
+      const second = (await as(d).post('/routes/convert-to-vehicle').expect(200))
         .body as ConvertRoutesResultDto;
       expect(second.converted).toBe(0);
       expect(second.skipped).toBe(first.skipped);
@@ -920,6 +1290,81 @@ describe('distribution par véhicule (phase 36)', () => {
       expect(byTruck.items.map((x) => x.id).sort()).toEqual([visit.id, byB.id, fixed.id].sort());
       const orders = (await as(d).get(`/orders?vehicleId=${v.id}`).expect(200)).body as OrderPage;
       expect(orders.items.map((o) => o.id)).toEqual([order.id]);
+    });
+
+    it('a visit linked to a sale names the truck the sale left, whatever the history says', async () => {
+      // Test-36 C-1: the driver changes between the door (startedAt) and the sale.
+      const x = await member(d, 'SELLER');
+      const [t1, t2] = [await truck(d, { assignedUserId: x.id }), await truck()];
+      const [c, p] = [await client(), await product()];
+      await load(t1.id, p, '2');
+      await load(t2.id, p, '2');
+      const main = ((await as(d).get('/warehouses').expect(200)).body as WarehouseDto[]).find(
+        (w) => w.isDefault,
+      )!;
+      const atTheDoor = clock.now().toISOString();
+      await drive(d, t2.id, x.id).expect(200);
+      const sell = async (extra: object = {}) =>
+        (
+          await as(x)
+            .post('/sales/quick', {
+              documentDate: today(),
+              clientId: c.id,
+              lines: [{ productId: p.id, unitId: p.carton, qty: '1' }],
+              paidAmount: '2856',
+              ...extra,
+            })
+            .expect(201)
+        ).body as SaleResultDto;
+      const visit = async (body: object) =>
+        (
+          await as(x)
+            .post('/visits', { clientId: c.id, startedAt: atTheDoor, ...body })
+            .expect(201)
+        ).body as VisitDto;
+      const leftFrom = async (saleId: string) =>
+        (
+          await asTenant(d.tenantId, () =>
+            t.prisma.db.sale.findUniqueOrThrow({
+              where: { id: saleId },
+              select: { warehouseId: true },
+            }),
+          )
+        ).warehouseId;
+
+      // The goods leave the truck he drives when he sells: the visit names that truck,
+      // not the one he drove when it started.
+      const sale = await sell();
+      expect(await leftFrom(sale.sale.id)).toBe(t2.id);
+      const withSale = await visit({ outcome: 'SALE', saleId: sale.sale.id });
+      expect(withSale.vehicle?.id).toBe(t2.id);
+      // Without a sale the history at startedAt still answers.
+      const without = await visit({ outcome: 'NO_SALE', reason: 'CLOSED' });
+      expect(without.vehicle?.id).toBe(t1.id);
+      // A sale of his that left a dépôt: the visit names no truck.
+      const fromDepot = await sell({ warehouseId: main.id });
+      expect(await leftFrom(fromDepot.sale.id)).toBe(main.id);
+      const depotVisit = await visit({ outcome: 'SALE', saleId: fromDepot.sale.id });
+      expect(depotVisit.vehicle).toBeNull();
+      // A correction that carries the sale keeps the sale's truck.
+      const fixed = await visit({
+        outcome: 'SALE',
+        saleId: sale.sale.id,
+        correctsVisitId: without.id,
+      });
+      expect(fixed.vehicle?.id).toBe(t2.id);
+
+      // The SQL rule of test-36 (visit_sale_left_the_truck_frozen_on_the_visit).
+      const split = await asTenant(d.tenantId, () =>
+        t.prisma.db.$queryRaw<{ id: string }[]>`
+          SELECT v.id FROM visits v
+          JOIN sales s ON s.id = v."saleId"
+          JOIN warehouses sw ON sw.id = s."warehouseId"
+          WHERE v."tenantId" = ${d.tenantId}::uuid AND s."sellerId" = v."sellerId"
+            AND ((sw.type = 'VEHICLE' AND v."vehicleId" IS DISTINCT FROM s."warehouseId")
+              OR (sw.type <> 'VEHICLE' AND v."vehicleId" IS NOT NULL))`,
+      );
+      expect(split).toEqual([]);
     });
 
     it('an order on a delivery truck follows the truck, and freezes it at delivery', async () => {
@@ -989,6 +1434,126 @@ describe('distribution par véhicule (phase 36)', () => {
       expect(after).toMatchObject({ livreur: { id: l2.id }, deliveryVehicle: { id: v.id } });
       await as(l2).get(`/orders/${order.id}`).expect(200);
       await as(l1).get(`/orders/${order.id}`).expect(404);
+    });
+
+    it('the BL of an order put on a delivery truck leaves the truck, not the dépôt the order names', async () => {
+      // Test-36 A-2: load, deliver, unload. The truck ends empty and the dépôt is short of
+      // exactly what was delivered.
+      const liv = await member(d, 'LIVREUR');
+      const v = await truck(d, { assignedUserId: liv.id, code: `LIV ${++seq}` });
+      const main = ((await as(d).get('/warehouses').expect(200)).body as WarehouseDto[]).find(
+        (w) => w.isDefault,
+      )!;
+      const [c, p] = [await client(), await product()];
+      const levels = async () => {
+        const rows = await asTenant(d.tenantId, () =>
+          t.prisma.db.warehouseStock.findMany({
+            where: { productId: p.id, warehouseId: { in: [v.id, main.id] } },
+            select: { warehouseId: true, qtyBase: true },
+          }),
+        );
+        const of = (id: string) => Number(rows.find((r) => r.warehouseId === id)?.qtyBase ?? 0);
+        return { truck: of(v.id), main: of(main.id) };
+      };
+      await load(v.id, p, '5');
+      expect(await levels()).toEqual({ truck: 120, main: 120 });
+      // The order names the dépôt principal, as a seller who works there gets on every order.
+      const order = async (cartons: string, on = { truckId: v.id, clientId: c.id, item: p }) => {
+        const draft = (
+          await as(d)
+            .post('/orders', {
+              clientId: on.clientId,
+              warehouseId: main.id,
+              lines: [{ productId: on.item.id, unitId: on.item.carton, qty: cartons }],
+            })
+            .expect(201)
+        ).body as OrderDto;
+        await as(d).post(`/orders/${draft.id}/confirm`).expect(200);
+        return (
+          await as(d)
+            .patch(`/orders/${draft.id}/livreur`, { deliveryVehicleId: on.truckId })
+            .expect(200)
+        ).body as OrderDto;
+      };
+      const first = await order('2');
+      expect(first.warehouse?.id).toBe(main.id);
+      // The availability shown on the order is the truck's: 5 cartons, not the dépôt's.
+      expect(first.lines[0]!.availableBase).toBe('120.000');
+      const res = (
+        await as(liv)
+          .post(`/orders/${first.id}/deliver`, {
+            lines: [{ orderLineId: first.lines[0]!.id, qty: '2' }],
+          })
+          .expect(200)
+      ).body as DeliverOrderResultDto;
+      expect(res.order).toMatchObject({ warehouse: { id: v.id }, deliveryVehicle: { id: v.id } });
+      expect(await levels()).toEqual({ truck: 72, main: 120 });
+      const sale = await asTenant(d.tenantId, () =>
+        t.prisma.db.sale.findUniqueOrThrow({
+          where: { id: res.sale.id },
+          select: { warehouseId: true },
+        }),
+      );
+      expect(sale.warehouseId).toBe(v.id);
+
+      // More than the truck carries: the company's setting decides, for the truck. BLOCK
+      // refuses although the dépôt has the goods; nothing leaves either place.
+      const big = await order('4');
+      await as(d).patch('/tenant/settings', { negativeStockMode: 'BLOCK' }).expect(200);
+      try {
+        const refused = await as(liv).post(`/orders/${big.id}/deliver`, {
+          lines: [{ orderLineId: big.lines[0]!.id, qty: '4' }],
+        });
+        expect(refused.status).toBe(409);
+        expect(errorOf(refused).code).toBe(ErrorCode.STOCK_INSUFFICIENT);
+        expect(await levels()).toEqual({ truck: 72, main: 120 });
+      } finally {
+        await as(d).patch('/tenant/settings', { negativeStockMode: 'WARN' }).expect(200);
+      }
+      // WARN (the default): it goes, with a warning that names the truck, and the truck
+      // goes negative. The dépôt is not touched.
+      const warned = (
+        await as(liv)
+          .post(`/orders/${big.id}/deliver`, {
+            lines: [{ orderLineId: big.lines[0]!.id, qty: '4' }],
+          })
+          .expect(200)
+      ).body as DeliverOrderResultDto;
+      expect(warned.warnings).toHaveLength(1);
+      expect(warned.warnings[0]).toMatchObject({ warehouseId: v.id });
+      expect(await levels()).toEqual({ truck: -24, main: 120 });
+
+      // A second truck for the clean cycle: load 5, deliver 2, unload the 3 left.
+      const v2 = await truck(d, { assignedUserId: null, code: `LIV ${++seq}` });
+      await drive(d, v2.id, liv.id).expect(200);
+      const [c2, p2] = [await client(), await product()];
+      await load(v2.id, p2, '5');
+      const clean = await order('2', { truckId: v2.id, clientId: c2.id, item: p2 });
+      await as(liv)
+        .post(`/orders/${clean.id}/deliver`, {
+          lines: [{ orderLineId: clean.lines[0]!.id, qty: '2' }],
+        })
+        .expect(200);
+      const back = (
+        await as(d)
+          .post('/stock-transfers', {
+            type: 'UNLOAD',
+            fromWarehouseId: v2.id,
+            toWarehouseId: main.id,
+            lines: [{ productId: p2.id, unitId: p2.carton, qty: '3' }],
+          })
+          .expect(201)
+      ).body as { id: string };
+      await as(d).post(`/stock-transfers/${back.id}/validate`).expect(200);
+      const end = await asTenant(d.tenantId, () =>
+        t.prisma.db.warehouseStock.findMany({
+          where: { productId: p2.id, warehouseId: { in: [v2.id, main.id] } },
+          select: { warehouseId: true, qtyBase: true },
+        }),
+      );
+      expect(Number(end.find((r) => r.warehouseId === v2.id)?.qtyBase ?? 0)).toBe(0);
+      // 240 at the start, minus the 2 cartons (48 pièces) delivered.
+      expect(Number(end.find((r) => r.warehouseId === main.id)?.qtyBase ?? 0)).toBe(192);
     });
 
     it('a person named alone takes the order off its truck; a truck out of reach is refused', async () => {
@@ -1183,7 +1748,7 @@ describe('distribution par véhicule (phase 36)', () => {
       await as(d).patch(`/vehicle-types/${type.id}`, { name: 'Pris' }).expect(404);
       await as(d).post(`/vehicle-types/${type.id}/archive`, {}, null).expect(404);
       await drive(d, v.id, mine.id).expect(404);
-      await as(d).post(`/routes/${route.id}/convert-to-vehicle`, {}, null).expect(404);
+      await as(d).post(`/routes/${route.id}/convert-to-vehicle`).expect(404);
 
       // Their ids in a body.
       const badType = await as(d)
@@ -1223,9 +1788,9 @@ describe('distribution par véhicule (phase 36)', () => {
         await drive(essentiel, randomUUID(), null).expect(403),
         await as(essentiel).get(`/warehouses/${randomUUID()}/assignments`).expect(403),
         await as(essentiel).get(`/users/${essentiel.auth.user.id}/vehicle-assignments`).expect(403),
-        await as(essentiel).post('/routes/convert-to-vehicle', {}, null).expect(403),
+        await as(essentiel).post('/routes/convert-to-vehicle').expect(403),
         await as(essentiel)
-          .post(`/routes/${randomUUID()}/convert-to-vehicle`, {}, null)
+          .post(`/routes/${randomUUID()}/convert-to-vehicle`)
           .expect(403),
       ]) {
         expect(errorOf(res).code).toBe(ErrorCode.FEATURE_NOT_IN_PLAN);

@@ -433,6 +433,7 @@ test('a tournée planned for a truck follows its driver of the day (phase 36)', 
         method: 'POST',
         token,
         body: { userId: null },
+        idempotencyKey: idemKey('web-driver'),
       });
     }
     // The plan of the fixture allows five users, and the phone projects need the seats.

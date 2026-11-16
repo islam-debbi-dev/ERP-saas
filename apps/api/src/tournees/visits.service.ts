@@ -10,6 +10,7 @@ import {
   type VisitListQuery,
   type VisitPage,
   GeoRefType,
+  WarehouseType,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import { GeoCheckService } from '../geo/geo-check.service';
@@ -81,11 +82,16 @@ export class VisitsService {
       if (!client) throw new AppException(ErrorCode.NOT_FOUND, 'Client not found');
       await this.scope.assertClient(tx, user, input.clientId);
       const startedAt = new Date(input.startedAt);
-      const corrected = await this.checkLinks(tx, input, sellerId);
-      // Frozen now: a correction keeps the truck of the visit it replaces.
-      const vehicleId = corrected
-        ? corrected.vehicleId
-        : await this.vehicles.vehicleOfUserAt(sellerId, startedAt, tx);
+      const { corrected, saleLeft } = await this.checkLinks(tx, input, sellerId);
+      // Frozen now. A visit with a sale of this seller names the truck the goods left (none
+      // when they left a dépôt): the sale and its visit never split over two trucks, even
+      // when the driver changed between the door and the sale (test-36 C-1). Else a
+      // correction keeps the truck of the visit it replaces, else the history at startedAt.
+      const vehicleId = saleLeft
+        ? saleLeft.vehicleId
+        : corrected
+          ? corrected.vehicleId
+          : await this.vehicles.vehicleOfUserAt(sellerId, startedAt, tx);
       await this.checkRoute(tx, input.routeId, sellerId, vehicleId);
       const v = await tx.visit.create({
         data: {
@@ -189,20 +195,35 @@ export class VisitsService {
 
   /**
    * Every id the visit points to must exist, be live, and belong to this seller and client.
-   * Returns the visit being corrected, when there is one.
+   * Returns the visit being corrected, when there is one, and where the linked sale left
+   * from when it is a sale of this seller (`vehicleId` null = a dépôt, not a truck).
    */
   private async checkLinks(
     tx: Tx,
     input: CreateVisitInput,
     sellerId: string,
-  ): Promise<{ vehicleId: string | null } | null> {
+  ): Promise<{
+    corrected: { vehicleId: string | null } | null;
+    saleLeft: { vehicleId: string | null } | null;
+  }> {
+    let saleLeft: { vehicleId: string | null } | null = null;
     if (input.saleId) {
       const s = await tx.sale.findFirst({
         where: { id: input.saleId },
-        select: { clientId: true, status: true },
+        select: {
+          clientId: true,
+          status: true,
+          sellerId: true,
+          warehouse: { select: { id: true, type: true } },
+        },
       });
       if (!s || s.clientId !== input.clientId || s.status !== SaleStatus.VALIDATED) {
         throw invalid('sale_not_of_client');
+      }
+      if (s.sellerId === sellerId && s.warehouse) {
+        saleLeft = {
+          vehicleId: s.warehouse.type === WarehouseType.VEHICLE ? s.warehouse.id : null,
+        };
       }
     }
     if (input.orderId) {
@@ -246,8 +267,8 @@ export class VisitsService {
         select: { id: true },
       });
       if (already) throw invalid('already_corrected', { visitId: already.id });
-      return { vehicleId: target.vehicleId };
+      return { corrected: { vehicleId: target.vehicleId }, saleLeft };
     }
-    return null;
+    return { corrected: null, saleLeft };
   }
 }

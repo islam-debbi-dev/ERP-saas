@@ -435,9 +435,13 @@ export class OrdersService {
         });
       }
 
-      // The order's dépôt, else the deliverer's truck, else MAIN (never the seller's truck:
-      // the goods are not on it).
+      // The delivery truck the order was put on, whatever dépôt the order names: every
+      // truck is loaded by chargement each day, so the goods are on it (docs/domain.md).
+      // A truck that lacks them follows negativeStockMode like any dépôt; the BL never
+      // falls back to the order's dépôt. Then the order's dépôt, else the deliverer's
+      // truck, else MAIN (never the seller's truck: the goods are not on it).
       const warehouseId =
+        order.deliveryVehicleId ??
         order.warehouseId ??
         (await this.warehouses.vehicleOf(tx, user.id)) ??
         (await this.warehouses.defaultId(tx));
@@ -771,14 +775,20 @@ export class OrdersService {
     return { lines, totals, assujetti, priceLevelId };
   }
 
-  /** Stock now in each order's delivery dépôt (its own, else MAIN), per product. */
+  /**
+   * Stock now where each order's BL will leave (its delivery truck, else its dépôt, else
+   * MAIN), per product.
+   */
   private async available(orders: OrderRow[]): Promise<Map<string, Map<string, string>>> {
     const out = new Map<string, Map<string, string>>();
     if (orders.length === 0) return out;
     const defaultId = await this.warehouses.defaultId();
     const byWarehouse = new Map<string, OrderRow[]>();
     for (const o of orders) {
-      const w = o.warehouseId ?? defaultId;
+      const w =
+        (o.status === OrderStatus.CONFIRMED ? o.deliveryVehicleId : null) ??
+        o.warehouseId ??
+        defaultId;
       byWarehouse.set(w, [...(byWarehouse.get(w) ?? []), o]);
     }
     for (const [warehouseId, list] of byWarehouse) {

@@ -129,8 +129,8 @@ export async function prepare(project: string): Promise<UiData> {
     plain: await truck('Camion sans type', {}),
   };
   // A little driver history on the Arabic truck: Farid, then nobody.
-  await c.owner.post(`/warehouses/${trucks.arabic.id}/driver`, { userId: farid.id, reason: 'Remplacement du matin' }, null);
-  await c.owner.post(`/warehouses/${trucks.arabic.id}/driver`, { userId: null, reason: 'Retour au dépôt' }, null);
+  await c.owner.post(`/warehouses/${trucks.arabic.id}/driver`, { userId: farid.id, reason: 'Remplacement du matin' });
+  await c.owner.post(`/warehouses/${trucks.arabic.id}/driver`, { userId: null, reason: 'Retour au dépôt' });
 
   const p = await product(c, { priceHt: '1000', designation: 'Article T36 E' });
   await openingStock(c, p, '500', '500');

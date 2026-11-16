@@ -80,6 +80,8 @@ export class WarehousesController {
   @Roles(Role.OWNER, Role.MANAGER, Role.SUPERVISOR)
   @RequireFeature(Feature.WAREHOUSES)
   @HttpCode(HttpStatus.OK)
+  // A replay after a later change must not put the old driver back (test-36 B-4).
+  @Idempotent()
   changeDriver(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodValidationPipe(assignDriverSchema)) body: AssignDriverInput,

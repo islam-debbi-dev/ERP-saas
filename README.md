@@ -83,7 +83,19 @@ Sidebar help links come from the web env (`NEXT_PUBLIC_SUPPORT_WHATSAPP`, `NEXT_
 - Stock → Dépôts → a dépôt: what it sells (brands, categories), its manager, team and trucks. The header switcher filters lists, reports and the dashboard.
 - Permissions are now per module (view / create / edit / cancel); the role defaults give everyone exactly what they had before.
 - **After deploying phase 24, run the units backfill once** (`docs/runbook.md`, "Units backfill"); locally: `pnpm --filter @erp/api build && pnpm --filter @erp/api db:backfill-units`.
-- **After deploying phase 36, run the vehicle backfill** (`docs/runbook.md`, "Vehicle backfill"): `pnpm --filter @erp/api db:deploy`, then `pnpm --filter @erp/api build && pnpm --filter @erp/api db:backfill-vehicles` twice (the second run changes 0 rows), then `pnpm --filter @erp/api reconcile`.
+- **Phase 36: run the migration on Neon before the API deploys, the vehicle backfill after** (`docs/runbook.md`, "Vehicle backfill"). The phase 36 API answers 500 on dépôts, tournées, orders and visits until the migration is there; the previous version works with it in place. Deploy the web with the API: the previous web crashes on a tournée planned on a truck. Every command names the database, or it runs on the local one of `apps/api/.env` and still prints a green result:
+
+  ```bash
+  NEON_OWNER='postgresql://<owner>:<password>@<neon-direct-host>/<db>?sslmode=require'   # owner role, direct host
+  NEON_APP='postgresql://<erp_app>:<password>@<neon-host>/<db>?sslmode=require'          # the API's URL
+  # before the merge reaches production
+  DATABASE_URL_MIGRATE="$NEON_OWNER" DATABASE_URL="$NEON_APP" pnpm --filter @erp/api db:deploy
+  # after the API and the web are live (the second backfill run changes 0 rows)
+  pnpm --filter @erp/api build
+  DATABASE_URL_MIGRATE="$NEON_OWNER" DATABASE_URL="$NEON_APP" pnpm --filter @erp/api db:backfill-vehicles
+  DATABASE_URL_MIGRATE="$NEON_OWNER" DATABASE_URL="$NEON_APP" pnpm --filter @erp/api db:backfill-vehicles
+  DATABASE_URL_MIGRATE="$NEON_OWNER" DATABASE_URL="$NEON_APP" pnpm --filter @erp/api reconcile
+  ```
 
 ## Dépenses et loyers (phase 25)
 

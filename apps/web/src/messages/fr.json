@@ -527,6 +527,7 @@
     "VEHICLE_CODE_TAKEN": "Ce code est déjà utilisé.",
     "VEHICLE_FIELDS_ON_DEPOT": "Le type, la wilaya, le matricule et la capacité sont réservés aux véhicules.",
     "SESSION_OPEN_ON_VEHICLE": "La journée du chauffeur sur ce véhicule est encore ouverte. Faites d’abord la clôture.",
+    "CASH_AFTER_CLOSING": "Ce chauffeur a encaissé des espèces après sa clôture. Corrigez la clôture avec le nouveau comptage avant de changer de chauffeur.",
     "ROUTE_NEEDS_OWNER": "Choisissez un véhicule ou un vendeur pour cette tournée.",
     "SELLER_HAS_NO_VEHICLE": "Ce vendeur ne conduit aucun véhicule.",
     "TRANSFER_NOT_DRAFT": "Ce transfert est déjà validé ou annulé.",

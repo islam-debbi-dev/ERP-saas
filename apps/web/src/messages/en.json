@@ -527,6 +527,7 @@
     "VEHICLE_CODE_TAKEN": "This code is already used.",
     "VEHICLE_FIELDS_ON_DEPOT": "Type, wilaya, plate and capacity belong to vehicles only.",
     "SESSION_OPEN_ON_VEHICLE": "The driver's day on this vehicle is still open. Close it first.",
+    "CASH_AFTER_CLOSING": "This driver collected cash after his closing. Adjust the closing with the new count before changing the driver.",
     "ROUTE_NEEDS_OWNER": "Choose a vehicle or a seller for this route.",
     "SELLER_HAS_NO_VEHICLE": "This seller drives no vehicle.",
     "TRANSFER_NOT_DRAFT": "This transfer is already validated or cancelled.",
