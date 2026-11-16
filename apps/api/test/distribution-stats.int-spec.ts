@@ -197,7 +197,7 @@ describe('statistiques distribution (phase 37)', () => {
   const warehouse = async (who: RegisteredTenant, body: object) =>
     (await as(who).post('/warehouses', body, null).expect(201)).body as WarehouseDto;
   const drive = (vehicleId: string, userId: string | null) =>
-    as(d).post(`/warehouses/${vehicleId}/driver`, { userId }, null).expect(200);
+    as(d).post(`/warehouses/${vehicleId}/driver`, { userId }).expect(200);
 
   async function product(body: object): Promise<Item> {
     const piece = cat.units['PIECE']!.id;
