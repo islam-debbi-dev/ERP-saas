@@ -1280,7 +1280,11 @@
     "returnToSaleWarehouse": "Retour à {name}",
     "returnToMain": "Retour au dépôt principal",
     "warnPackagingNegative": "Le client rend plus d’emballages que prévu (solde {count}).",
-    "returnFreeHelp": "Les unités gratuites (UG) reviennent avec leur ligne, au prorata."
+    "returnFreeHelp": "Les unités gratuites (UG) reviennent avec leur ligne, au prorata.",
+    "chipValidated": "Validés du {from} au {to}",
+    "chipWarehouse": "Dépôt / véhicule des statistiques",
+    "chipSegment": "Type de client",
+    "summaryLine": "{count, plural, one {# document compté} other {# documents comptés}} · CA TTC net des avoirs : <total></total>"
   },
   "payments": {
     "title": "Versements",

@@ -1280,7 +1280,11 @@
     "returnToSaleWarehouse": "Back to {name}",
     "returnToMain": "Back to the main warehouse",
     "warnPackagingNegative": "The client returned more packaging than recorded (count {count}).",
-    "returnFreeHelp": "Free units come back with their line, in proportion."
+    "returnFreeHelp": "Free units come back with their line, in proportion.",
+    "chipValidated": "Validated {from} to {to}",
+    "chipWarehouse": "Depot / truck from the statistics",
+    "chipSegment": "Customer type",
+    "summaryLine": "{count, plural, one {# document counted} other {# documents counted}} · sales net of credit notes: <total></total>"
   },
   "payments": {
     "title": "Payments",

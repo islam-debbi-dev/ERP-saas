@@ -1280,7 +1280,11 @@
     "returnToSaleWarehouse": "رجوع إلى {name}",
     "returnToMain": "رجوع إلى المستودع الرئيسي",
     "warnPackagingNegative": "أرجع الزبون تغليفًا أكثر من المسجّل (الرصيد {count}).",
-    "returnFreeHelp": "الوحدات المجانية ترجع مع سطرها بالتناسب."
+    "returnFreeHelp": "الوحدات المجانية ترجع مع سطرها بالتناسب.",
+    "chipValidated": "المصادق عليها من {from} إلى {to}",
+    "chipWarehouse": "المستودع / المركبة من الإحصائيات",
+    "chipSegment": "نوع العميل",
+    "summaryLine": "{count} وثيقة محسوبة · رقم الأعمال الصافي من المرتجعات: <total></total>"
   },
   "payments": {
     "title": "الدفعات",
