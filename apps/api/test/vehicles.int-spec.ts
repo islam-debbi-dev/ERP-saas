@@ -1210,6 +1210,81 @@ describe('distribution par véhicule (phase 36)', () => {
       expect(orders.items.map((o) => o.id)).toEqual([order.id]);
     });
 
+    it('a visit linked to a sale names the truck the sale left, whatever the history says', async () => {
+      // Test-36 C-1: the driver changes between the door (startedAt) and the sale.
+      const x = await member(d, 'SELLER');
+      const [t1, t2] = [await truck(d, { assignedUserId: x.id }), await truck()];
+      const [c, p] = [await client(), await product()];
+      await load(t1.id, p, '2');
+      await load(t2.id, p, '2');
+      const main = ((await as(d).get('/warehouses').expect(200)).body as WarehouseDto[]).find(
+        (w) => w.isDefault,
+      )!;
+      const atTheDoor = clock.now().toISOString();
+      await drive(d, t2.id, x.id).expect(200);
+      const sell = async (extra: object = {}) =>
+        (
+          await as(x)
+            .post('/sales/quick', {
+              documentDate: today(),
+              clientId: c.id,
+              lines: [{ productId: p.id, unitId: p.carton, qty: '1' }],
+              paidAmount: '2856',
+              ...extra,
+            })
+            .expect(201)
+        ).body as SaleResultDto;
+      const visit = async (body: object) =>
+        (
+          await as(x)
+            .post('/visits', { clientId: c.id, startedAt: atTheDoor, ...body })
+            .expect(201)
+        ).body as VisitDto;
+      const leftFrom = async (saleId: string) =>
+        (
+          await asTenant(d.tenantId, () =>
+            t.prisma.db.sale.findUniqueOrThrow({
+              where: { id: saleId },
+              select: { warehouseId: true },
+            }),
+          )
+        ).warehouseId;
+
+      // The goods leave the truck he drives when he sells: the visit names that truck,
+      // not the one he drove when it started.
+      const sale = await sell();
+      expect(await leftFrom(sale.sale.id)).toBe(t2.id);
+      const withSale = await visit({ outcome: 'SALE', saleId: sale.sale.id });
+      expect(withSale.vehicle?.id).toBe(t2.id);
+      // Without a sale the history at startedAt still answers.
+      const without = await visit({ outcome: 'NO_SALE', reason: 'CLOSED' });
+      expect(without.vehicle?.id).toBe(t1.id);
+      // A sale of his that left a dépôt: the visit names no truck.
+      const fromDepot = await sell({ warehouseId: main.id });
+      expect(await leftFrom(fromDepot.sale.id)).toBe(main.id);
+      const depotVisit = await visit({ outcome: 'SALE', saleId: fromDepot.sale.id });
+      expect(depotVisit.vehicle).toBeNull();
+      // A correction that carries the sale keeps the sale's truck.
+      const fixed = await visit({
+        outcome: 'SALE',
+        saleId: sale.sale.id,
+        correctsVisitId: without.id,
+      });
+      expect(fixed.vehicle?.id).toBe(t2.id);
+
+      // The SQL rule of test-36 (visit_sale_left_the_truck_frozen_on_the_visit).
+      const split = await asTenant(d.tenantId, () =>
+        t.prisma.db.$queryRaw<{ id: string }[]>`
+          SELECT v.id FROM visits v
+          JOIN sales s ON s.id = v."saleId"
+          JOIN warehouses sw ON sw.id = s."warehouseId"
+          WHERE v."tenantId" = ${d.tenantId}::uuid AND s."sellerId" = v."sellerId"
+            AND ((sw.type = 'VEHICLE' AND v."vehicleId" IS DISTINCT FROM s."warehouseId")
+              OR (sw.type <> 'VEHICLE' AND v."vehicleId" IS NOT NULL))`,
+      );
+      expect(split).toEqual([]);
+    });
+
     it('an order on a delivery truck follows the truck, and freezes it at delivery', async () => {
       const [l1, l2] = [await member(d, 'LIVREUR'), await member(d, 'LIVREUR')];
       const type = await vehicleType(d, { activity: 'DELIVERY' });
