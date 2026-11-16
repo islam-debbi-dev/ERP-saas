@@ -330,6 +330,9 @@ export const orderListQuerySchema = z.object({
   /** Requested delivery date range. */
   from: dateString.optional(),
   to: dateString.optional(),
+  /** Confirmed between these Algiers days (phase 37, the statistics' drill-down). */
+  confirmedFrom: dateString.optional(),
+  confirmedTo: dateString.optional(),
   cursor: id.optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });

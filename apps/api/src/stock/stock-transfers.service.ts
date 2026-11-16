@@ -14,6 +14,7 @@ import {
   toQtyString,
   type UpdateStockTransferInput,
   WarehouseType,
+  addDays,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
@@ -22,6 +23,7 @@ import { freezeLineWeights } from '../common/line-weight';
 import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
 import { type Prisma } from '../generated/prisma/client';
+import { algiersMidnight } from '../common/algiers';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
 import { type MovementInput, StockService } from './stock.service';
@@ -215,6 +217,16 @@ export class StockTransfersService {
           query.warehouseId
             ? {
                 OR: [{ fromWarehouseId: query.warehouseId }, { toWarehouseId: query.warehouseId }],
+              }
+            : {},
+          query.type ? { type: query.type } : {},
+          query.toWarehouseId ? { toWarehouseId: query.toWarehouseId } : {},
+          query.from || query.to
+            ? {
+                validatedAt: {
+                  ...(query.from ? { gte: algiersMidnight(query.from) } : {}),
+                  ...(query.to ? { lt: algiersMidnight(addDays(query.to, 1)) } : {}),
+                },
               }
             : {},
         ],

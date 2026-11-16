@@ -179,6 +179,18 @@ export type CancelStockTransferInput = z.infer<typeof cancelStockTransferSchema>
 
 export const stockTransferListQuerySchema = z.object({
   warehouseId: id.optional(),
+  /** Phase 37 (the statistics' drill-down): only this kind, only towards this truck. */
+  type: z.enum(['LOAD', 'UNLOAD', 'TRANSFER']).optional(),
+  toWarehouseId: id.optional(),
+  /** Validated between these Algiers days. */
+  from: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'invalid_date')
+    .optional(),
+  to: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'invalid_date')
+    .optional(),
   cursor: id.optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });

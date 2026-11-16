@@ -15,10 +15,13 @@ import {
   SaleType,
   toMoneyString,
   type UpdateSaleInput,
+  addDays,
+  type SaleListSummary,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { can, requirePermission } from '../auth/permissions';
+import { algiersMidnight } from '../common/algiers';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { type Prisma } from '../generated/prisma/client';
@@ -365,6 +368,18 @@ export class SalesService {
         team ? soldBy(team) : {},
         query.brandId ? { lines: { some: { product: { brandId: query.brandId } } } } : {},
         query.warehouseId ? { warehouseId: query.warehouseId } : {},
+        query.segmentId ? { client: { segmentId: query.segmentId } } : {},
+        query.depotId ? await this.depotWhere(query.depotId) : {},
+        query.validatedFrom || query.validatedTo
+          ? {
+              validatedAt: {
+                ...(query.validatedFrom ? { gte: algiersMidnight(query.validatedFrom) } : {}),
+                ...(query.validatedTo
+                  ? { lt: algiersMidnight(addDays(query.validatedTo, 1)) }
+                  : {}),
+              },
+            }
+          : {},
       ],
       ...(query.type ? { type: query.type } : {}),
       ...(query.status ? { status: query.status } : {}),
@@ -414,6 +429,70 @@ export class SalesService {
         lineCount: s._count.lines,
       })),
       nextCursor: rows.length > query.limit ? (page.at(-1)?.id ?? null) : null,
+      ...(query.summary && !query.cursor ? { summary: await this.summary(where, query) } : {}),
+    };
+  }
+
+  /** The documents of a dépôt as the figures count them: its own, its trucks', and the
+   *  ones without a dépôt when it is the dépôt principal. */
+  private async depotWhere(depotId: string): Promise<Prisma.SaleWhereInput> {
+    const ids = (await this.scope.figureWarehouses(null, depotId)) ?? [depotId];
+    const main = await this.prisma.db.warehouse.findFirst({
+      where: { id: depotId, isDefault: true },
+      select: { id: true },
+    });
+    return main
+      ? { OR: [{ warehouseId: { in: ids } }, { warehouseId: null }] }
+      : { warehouseId: { in: ids } };
+  }
+
+  /**
+   * What the documents of a filtered list add up to, with the definitions of the figures
+   * (phase 37): validated documents, a facture that groups BLs left out, and the avoirs
+   * made on them in the validation period subtracted. Opened from a statistic, the list
+   * shows the same total as the figure that led to it.
+   */
+  private async summary(
+    where: Prisma.SaleWhereInput,
+    query: SaleListQuery,
+  ): Promise<SaleListSummary> {
+    const counted: Prisma.SaleWhereInput = {
+      AND: [where, { status: SaleStatus.VALIDATED, sourceBls: { none: {} } }],
+    };
+    // The avoirs follow their own date: made in the period, on a sale that still counts.
+    const saleOfReturn: Prisma.SaleWhereInput = {
+      AND: [
+        ...(where.AND as Prisma.SaleWhereInput[]).filter((w) => !('validatedAt' in w)),
+        { status: SaleStatus.VALIDATED, sourceBls: { none: {} } },
+      ],
+      ...(query.type ? { type: query.type } : {}),
+      ...(query.clientId ? { clientId: query.clientId } : {}),
+    };
+    const period =
+      query.validatedFrom || query.validatedTo
+        ? {
+            createdAt: {
+              ...(query.validatedFrom ? { gte: algiersMidnight(query.validatedFrom) } : {}),
+              ...(query.validatedTo ? { lt: algiersMidnight(addDays(query.validatedTo, 1)) } : {}),
+            },
+          }
+        : null;
+    const [sales, returns] = await Promise.all([
+      this.prisma.db.sale.aggregate({ where: counted, _count: true, _sum: { totalTtc: true } }),
+      period
+        ? this.prisma.db.saleReturn.aggregate({
+            where: { ...period, sale: saleOfReturn },
+            _sum: { totalTtc: true },
+          })
+        : null,
+    ]);
+    const total = money(sales._sum.totalTtc?.toString() ?? '0');
+    const back = money(returns?._sum.totalTtc?.toString() ?? '0');
+    return {
+      count: sales._count,
+      totalTtc: toMoneyString(total),
+      returnsTtc: toMoneyString(back),
+      netTtc: toMoneyString(total.minus(back)),
     };
   }
 

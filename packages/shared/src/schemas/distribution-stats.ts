@@ -333,6 +333,19 @@ export interface StatsVehicleDayDto {
   };
 }
 
+/**
+ * "Clients perdus": clients who bought in the comparison period and not in this one, the
+ * largest first. `count` is all of them; `clients` the first ones.
+ */
+export interface StatsLostClientsDto extends DayRange {
+  compare: DayRange;
+  /** Clients actifs of the period and of the comparison period. */
+  active: number;
+  previousActive: number;
+  count: number;
+  clients: { id: string; name: string; previousCaTtc: string; link: string }[];
+}
+
 /** "Mon véhicule" on the dashboard of a seller or a livreur. */
 export interface StatsMyVehicleDto {
   /** null: he drives no truck today. */

@@ -73,6 +73,11 @@ export const paymentListQuerySchema = z.object({
   collectedBy: id.optional(),
   /** Only this dépôt (phase 24); one outside the user's reach gives nothing. */
   warehouseId: id.optional(),
+  /**
+   * Only the versements of this truck as the statistics count them (phase 37): its own,
+   * and those its driver of the moment collected.
+   */
+  vehicleId: id.optional(),
   /** Received between these Algiers days. */
   from: dateString.optional(),
   to: dateString.optional(),

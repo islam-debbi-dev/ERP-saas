@@ -22,6 +22,7 @@ import {
   toQtyString,
   type UpdateOrderInput,
   WarehouseType,
+  addDays,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import { type CurrentUserInfo } from '../auth/auth.types';
@@ -30,6 +31,7 @@ import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
 import { Prisma } from '../generated/prisma/client';
+import { algiersMidnight } from '../common/algiers';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { fromIsoDate, toIsoDate } from '../sales/sale.mapper';
 import { PricingService } from '../promotions/pricing.service';
@@ -570,6 +572,16 @@ export class OrdersService {
           query.clientId ? { clientId: query.clientId } : {},
           query.warehouseId ? { warehouseId: query.warehouseId } : {},
           query.from || query.to ? { requestedDate } : {},
+          query.confirmedFrom || query.confirmedTo
+            ? {
+                confirmedAt: {
+                  ...(query.confirmedFrom ? { gte: algiersMidnight(query.confirmedFrom) } : {}),
+                  ...(query.confirmedTo
+                    ? { lt: algiersMidnight(addDays(query.confirmedTo, 1)) }
+                    : {}),
+                },
+              }
+            : {},
         ],
       },
       include: orderInclude,

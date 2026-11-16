@@ -86,43 +86,73 @@ function cell(c: ReportColumn, value: string | null): string | number | null {
   }
 }
 
-const NUMBER_FORMATS: Partial<Record<ReportColumn['kind'], string>> = {
+/** How a column of an exported table is printed. */
+export type XlsxKind =
+  | ReportColumn['kind']
+  /** Tonnes, 3 decimals. */
+  | 'tonne'
+  /** A rate in percent, 1 decimal. */
+  | 'rate'
+  /** A plain ratio, 2 decimals. */
+  | 'ratio';
+
+const NUMBER_FORMATS: Partial<Record<XlsxKind, string>> = {
   money: '#,##0.00',
   percent: '0.00',
   qty: '#,##0.###',
   count: '0',
+  tonne: '0.000',
+  rate: '0.0',
+  ratio: '0.00',
 };
 
 export function reportFileName(report: ReportDto): string {
   return `${report.name}-${report.groupBy}-${report.from}-${report.to}.xlsx`;
 }
 
-/** One sheet: a title line, the column headers, the rows and a totals line. */
-export async function buildReportXlsx(report: ReportDto): Promise<Buffer> {
+export interface XlsxTable {
+  sheet: string;
+  /** The line above the table: what it is and its period. */
+  title: string;
+  columns: { title: string; kind: XlsxKind }[];
+  rows: (string | number | null)[][];
+  /** A bold last line. */
+  totals?: (string | number | null)[];
+}
+
+/**
+ * One sheet: a title line, the column headers, the rows and an optional totals line.
+ * Numbers are written as numbers, with a format per column. Shared by the reports and
+ * the distribution statistics (phase 37).
+ */
+export async function buildTableXlsx(table: XlsxTable): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet(REPORT_TITLES[report.name]);
-  sheet.addRow([`${REPORT_TITLES[report.name]} du ${report.from} au ${report.to}`]).font = {
-    bold: true,
-  };
+  const sheet = workbook.addWorksheet(table.sheet);
+  sheet.addRow([table.title]).font = { bold: true };
   sheet.addRow([]);
-  const header = sheet.addRow(report.columns.map((c) => title(report.name, c)));
-  header.font = { bold: true };
-  for (const r of report.rows) {
-    sheet.addRow(report.columns.map((c) => cell(c, r.values[c.key] ?? null)));
-  }
-  const totals = sheet.addRow(
-    report.columns.map((c, i) => {
-      const v = report.totals[c.key];
-      if (v !== undefined) return cell(c, v);
-      return i === 0 ? 'Total' : null;
-    }),
-  );
-  totals.font = { bold: true };
-  report.columns.forEach((c, i) => {
+  sheet.addRow(table.columns.map((c) => c.title)).font = { bold: true };
+  for (const r of table.rows) sheet.addRow(r);
+  if (table.totals) sheet.addRow(table.totals).font = { bold: true };
+  table.columns.forEach((c, i) => {
     const column = sheet.getColumn(i + 1);
     column.width = c.kind === 'text' ? 28 : 16;
     const format = NUMBER_FORMATS[c.kind];
     if (format) column.numFmt = format;
   });
   return Buffer.from(await workbook.xlsx.writeBuffer());
+}
+
+/** One sheet: a title line, the column headers, the rows and a totals line. */
+export function buildReportXlsx(report: ReportDto): Promise<Buffer> {
+  return buildTableXlsx({
+    sheet: REPORT_TITLES[report.name],
+    title: `${REPORT_TITLES[report.name]} du ${report.from} au ${report.to}`,
+    columns: report.columns.map((c) => ({ title: title(report.name, c), kind: c.kind })),
+    rows: report.rows.map((r) => report.columns.map((c) => cell(c, r.values[c.key] ?? null))),
+    totals: report.columns.map((c, i) => {
+      const v = report.totals[c.key];
+      if (v !== undefined) return cell(c, v);
+      return i === 0 ? 'Total' : null;
+    }),
+  });
 }

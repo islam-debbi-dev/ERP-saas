@@ -297,9 +297,12 @@ export function deliveryRate(
   return ratePercent(delivered, ordered);
 }
 
-/** Kilograms to tonnes, 3 decimals. */
-export function kgToTonnes(kg: MoneyInput): string {
-  return dec(kg).div(1000).toFixed(3);
+/**
+ * Kilograms to tonnes. 3 decimals to print (`12,350 t`); the API sends 6 (the gram), so
+ * the tonnes of the groups still add up to the tonnes of the total.
+ */
+export function kgToTonnes(kg: MoneyInput, decimals = 3): string {
+  return dec(kg).div(1000).toFixed(decimals);
 }
 
 /**
