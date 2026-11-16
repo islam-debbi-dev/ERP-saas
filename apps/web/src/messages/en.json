@@ -1119,7 +1119,9 @@
     "withLocation": "With location",
     "withoutLocation": "Without location",
     "filterLocation": "GPS point",
-    "anyLocation": "All"
+    "anyLocation": "All",
+    "segment": "Customer type",
+    "noSegment": "No type"
   },
   "clientLedgerTypes": {
     "OPENING": "Opening balance",
@@ -4317,5 +4319,20 @@
     "def_dispersion": "Sales of each truck for each day of the period, to spot irregular trucks.",
     "def_lostClients": "Customers who bought in the comparison period and not in this one.",
     "def_targets": "The truck’s figure of the month / its target. These targets are not used for bonuses."
+  },
+  "segments": {
+    "title": "Customer types",
+    "help": "Names to recognise your customers (retailer, mini-market, café…) and read the statistics by type. No effect on prices or credit.",
+    "empty": "No type yet.",
+    "code": "Code",
+    "name": "Name",
+    "namePlaceholder": "Retailer",
+    "add": "Add",
+    "clients": "{count} customers",
+    "saveName": "Save the name of {name}",
+    "archive": "Archive {name}",
+    "saved": "Type saved",
+    "created": "Type added",
+    "archived": "Type archived"
   }
 }

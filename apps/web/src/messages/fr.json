@@ -1119,7 +1119,9 @@
     "withLocation": "Avec position",
     "withoutLocation": "Sans position",
     "filterLocation": "Position GPS",
-    "anyLocation": "Toutes"
+    "anyLocation": "Toutes",
+    "segment": "Type de client",
+    "noSegment": "Aucun type"
   },
   "clientLedgerTypes": {
     "OPENING": "Solde d'ouverture",
@@ -4317,5 +4319,20 @@
     "def_dispersion": "CA TTC de chaque véhicule pour chaque jour de la période, pour repérer les véhicules irréguliers.",
     "def_lostClients": "Clients qui ont acheté pendant la période de comparaison et pas pendant celle-ci.",
     "def_targets": "Chiffre du mois du véhicule / son objectif. Ces objectifs ne servent pas au calcul des primes."
+  },
+  "segments": {
+    "title": "Types de client",
+    "help": "Des noms pour reconnaître vos clients (détaillant, supérette, café…) et lire les statistiques par type. Aucun effet sur les prix ou le crédit.",
+    "empty": "Aucun type pour le moment.",
+    "code": "Code",
+    "name": "Nom",
+    "namePlaceholder": "Détaillant",
+    "add": "Ajouter",
+    "clients": "{count} clients",
+    "saveName": "Enregistrer le nom de {name}",
+    "archive": "Archiver {name}",
+    "saved": "Type enregistré",
+    "created": "Type ajouté",
+    "archived": "Type archivé"
   }
 }
