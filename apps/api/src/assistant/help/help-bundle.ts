@@ -626,6 +626,7 @@ export const WEB_ROUTES: readonly string[] = [
   "/rh/paie/[id]",
   "/rh/paie/reglages",
   "/rh/paie/taux",
+  "/statistiques",
   "/stock",
   "/stock/[productId]",
   "/stock/depots",

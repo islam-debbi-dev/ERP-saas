@@ -6,6 +6,7 @@ type TitleKey =
   | 'vehicleTypes.title'
   | 'nav.treasury'
   | 'nav.overview'
+  | 'nav.statistics'
   | 'nav.dashboard'
   | 'nav.products'
   | 'nav.purchases'

@@ -6,6 +6,7 @@ import {
   SlidersHorizontal,
   TrendingDown,
   TrendingUp,
+  ChartPie,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
@@ -62,6 +63,8 @@ import { MyObjectivesCard } from '@/components/incentives/my-objectives-card';
 import { OnboardingCard } from './onboarding-card';
 import { PullToRefresh, UpdatedBar } from './live-bar';
 import { PeriodSwitcher, usePeriodName } from './period-switcher';
+import { useHasDistributionStats } from '@/lib/distribution-stats';
+import { MyVehicleCard } from './my-vehicle-card';
 import { GreetingLine, TargetCard } from './target-card';
 import { QuickActionButtons, QuickActionFab } from './quick-actions';
 import { TopLists } from './top-lists';
@@ -134,6 +137,7 @@ export function DashboardPage() {
   const [organising, setOrganising] = useState(false);
   const visible = layout.order.filter((id) => !layout.hidden.includes(id));
   const firstData = visible.find((id) => DATA_CARDS.includes(id)) ?? null;
+  const hasStats = useHasDistributionStats();
 
   return (
     <>
@@ -146,6 +150,7 @@ export function DashboardPage() {
         actions={<QuickActionButtons />}
       />
       <GreetingLine fact={d?.greeting ?? null} />
+      <MyVehicleCard />
       <UpdatedBar
         updatedAt={dashboard.dataUpdatedAt}
         fetching={dashboard.isFetching}
@@ -153,7 +158,15 @@ export function DashboardPage() {
       />
       <PullToRefresh onRefresh={refreshAll} />
       <OnboardingCard />
-      <div className="flex justify-end">
+      <div className="flex flex-wrap justify-end gap-2">
+        {hasStats ? (
+          <Button asChild variant="outline" size="sm" className="min-h-11">
+            <Link href="/statistiques">
+              <ChartPie aria-hidden />
+              {t('openStatistics')}
+            </Link>
+          </Button>
+        ) : null}
         <Button
           variant="outline"
           size="sm"

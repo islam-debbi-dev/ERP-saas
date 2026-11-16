@@ -3,6 +3,7 @@ import {
   Van,
   Banknote,
   ChartColumn,
+  ChartPie,
   ClipboardList,
   Fingerprint,
   Landmark,
@@ -51,6 +52,7 @@ export type NavKey =
   | 'hr'
   | 'myAttendance'
   | 'myPayslips'
+  | 'statistics'
   | 'reports'
   | 'settings';
 
@@ -210,6 +212,15 @@ export const NAV_GROUPS: readonly NavGroup[] = [
       },
       { key: 'myAttendance', url: '/mon-pointage', icon: Fingerprint, feature: Feature.HR },
       { key: 'myPayslips', url: '/mes-bulletins', icon: ReceiptText, feature: Feature.PAYROLL },
+      // Phase 37: sellers and livreurs only get the "Mon véhicule" card on the dashboard.
+      {
+        key: 'statistics',
+        url: '/statistiques',
+        icon: ChartPie,
+        feature: Feature.DISTRIBUTION_STATS,
+        roles: [...PLANNERS, Role.STOREKEEPER],
+        permission: Permission.REPORTS_VIEW,
+      },
       { key: 'reports', url: '/rapports', icon: ChartColumn },
       { key: 'settings', url: '/parametres', icon: Settings },
     ],

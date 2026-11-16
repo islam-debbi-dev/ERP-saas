@@ -1,6 +1,7 @@
 'use client';
 
-import { ArrowDownUp, ChevronRight, Download, Loader2 } from 'lucide-react';
+import { ArrowDownUp, ChartPie, ChevronRight, Download, Loader2 } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useFormatter, useTranslations } from 'next-intl';
 import { type ReactNode, useMemo, useState } from 'react';
@@ -32,6 +33,7 @@ import { todayInAlgiers } from '@/lib/purchases';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
 import { useWarehouseScope } from '@/lib/warehouse-scope';
+import { useHasDistributionStats } from '@/lib/distribution-stats';
 import { Sparkline } from './sparkline';
 
 type View = 'cards' | 'compare';
@@ -60,6 +62,7 @@ function Overview() {
   const format = useFormatter();
   const errorMessage = useErrorMessage();
   const allowed = usePermission(Permission.REPORTS_FINANCE);
+  const hasStats = useHasDistributionStats();
   const canExport = usePermission(Permission.EXPORT_DATA);
   // Phase 33: the dashboard opens this page on its period with ?from=&to= (read once).
   const params = useSearchParams();
@@ -104,16 +107,26 @@ function Overview() {
             : t('subtitle')
         }
         actions={
-          canExport && allowed && view === 'compare' ? (
-            <Button onClick={() => void exportXlsx()} disabled={exporting || invalid || !o}>
-              {exporting ? (
-                <Loader2 className="animate-spin" aria-hidden />
-              ) : (
-                <Download aria-hidden />
-              )}
-              {t('export')}
-            </Button>
-          ) : undefined
+          <>
+            {hasStats ? (
+              <Button asChild variant="outline">
+                <Link href="/statistiques">
+                  <ChartPie aria-hidden />
+                  {t('openStatistics')}
+                </Link>
+              </Button>
+            ) : null}
+            {canExport && allowed && view === 'compare' ? (
+              <Button onClick={() => void exportXlsx()} disabled={exporting || invalid || !o}>
+                {exporting ? (
+                  <Loader2 className="animate-spin" aria-hidden />
+                ) : (
+                  <Download aria-hidden />
+                )}
+                {t('export')}
+              </Button>
+            ) : null}
+          </>
         }
       />
       {!allowed ? (
