@@ -255,9 +255,9 @@ export class VehiclesService {
     // Both trucks in one statement, in id order: two changes crossing the same pair of
     // trucks cannot deadlock.
     const locked = await tx.$queryRaw<
-      { id: string; type: string; name: string; assignedUserId: string | null }[]
+      { id: string; type: string; name: string; active: boolean; assignedUserId: string | null }[]
     >`
-      SELECT id, type::text AS type, name, "assignedUserId" FROM warehouses
+      SELECT id, type::text AS type, name, active, "assignedUserId" FROM warehouses
       WHERE "tenantId" = ${tenantId}::uuid AND "deletedAt" IS NULL
         AND (id = ${vehicleId}::uuid
              OR (${userId}::uuid IS NOT NULL AND "assignedUserId" = ${userId}::uuid))
@@ -271,6 +271,14 @@ export class VehiclesService {
     if (userId && target.type !== WarehouseType.VEHICLE) {
       throw new AppException(ErrorCode.WAREHOUSE_INVALID, 'Only a truck has a driver', {
         rule: 'driver_on_vehicle_only',
+      });
+    }
+    // A truck switched off is driven by nobody: sales, orders and "ma tournée" only know
+    // the active truck of a user, and the history must say the same (test-36 A-1).
+    if (userId && !target.active) {
+      throw new AppException(ErrorCode.WAREHOUSE_INVALID, 'This truck is switched off', {
+        rule: 'inactive',
+        field: 'assignedUserId',
       });
     }
     const other = userId ? locked.find((w) => w.id !== vehicleId) : undefined;
@@ -334,6 +342,21 @@ export class VehiclesService {
       previousUserId: target.assignedUserId,
       freedVehicleId: other?.id ?? null,
     };
+  }
+
+  /**
+   * A user stops driving (deactivated, or moved to a role that cannot drive): his truck is
+   * left without a driver through `assignDriver`, so the history gets its row and the
+   * guards apply (refused while his day on it is open). Returns the truck freed, if any.
+   */
+  async releaseDriver(tx: Tx, userId: string, reason?: string): Promise<string | null> {
+    const truck = await tx.warehouse.findFirst({
+      where: { assignedUserId: userId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!truck) return null;
+    await this.assignDriver(tx, { vehicleId: truck.id, userId: null, reason, moveDriver: false });
+    return truck.id;
   }
 
   /** `POST /warehouses/:id/driver`: today's driver, in two taps. */

@@ -336,12 +336,16 @@ export class WarehousesService {
           },
         }),
       );
-      if (input.assignedUserId !== undefined) {
-        await this.vehicles.assignDriver(tx, {
-          vehicleId: id,
-          userId: input.assignedUserId,
-          moveDriver: false,
-        });
+      // Switching a truck off frees its driver (refused while his day on it is open): the
+      // history learns the truck stopped, like when it is archived (test-36 A-1).
+      const driver =
+        input.assignedUserId === undefined &&
+        input.active === false &&
+        before.type === WarehouseType.VEHICLE
+          ? null
+          : input.assignedUserId;
+      if (driver !== undefined) {
+        await this.vehicles.assignDriver(tx, { vehicleId: id, userId: driver, moveDriver: false });
       }
       await this.audit.log(tx, {
         action: 'WAREHOUSE_UPDATED',

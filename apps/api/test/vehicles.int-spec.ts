@@ -571,6 +571,168 @@ describe('distribution par véhicule (phase 36)', () => {
       expect((await warehouseOf(v.id)).assignedUser?.id).toBe(b.id);
     });
 
+    // The two SQL rules of test-36 (e2e/sql/vehicles-history.sql), on this company.
+    const driversWhoCannotDrive = () =>
+      asTenant(d.tenantId, () =>
+        t.prisma.db.$queryRaw<{ id: string }[]>`
+          SELECT w.id FROM warehouses w JOIN users u ON u.id = w."assignedUserId"
+          WHERE w."tenantId" = ${d.tenantId}::uuid AND w.type = 'VEHICLE' AND w."deletedAt" IS NULL
+            AND (u."deletedAt" IS NOT NULL
+              OR u.role NOT IN ('OWNER', 'MANAGER', 'SUPERVISOR', 'SELLER', 'LIVREUR'))`,
+      );
+    const visitsOffTheirSaleTruck = () =>
+      asTenant(d.tenantId, () =>
+        t.prisma.db.$queryRaw<{ id: string }[]>`
+          SELECT v.id FROM visits v
+          JOIN sales s ON s.id = v."saleId"
+          JOIN warehouses sw ON sw.id = s."warehouseId"
+          WHERE v."tenantId" = ${d.tenantId}::uuid AND s."sellerId" = v."sellerId"
+            AND ((sw.type = 'VEHICLE' AND v."vehicleId" IS DISTINCT FROM s."warehouseId")
+              OR (sw.type <> 'VEHICLE' AND v."vehicleId" IS NOT NULL))`,
+      );
+
+    it('a truck switched off frees its driver: the sale, the visit and the order agree', async () => {
+      // Test-36 A-1.
+      const x = await member(d, 'SELLER');
+      const v = await truck(d, { assignedUserId: x.id });
+      const [c, p] = [await client(), await product()];
+      await load(v.id, p, '2');
+
+      // Refused while his day on it is open; nothing is written.
+      const session = (await as(d).post('/seller-sessions', { sellerId: x.id }).expect(201))
+        .body as SellerSessionDto;
+      const refused = await as(d).patch(`/warehouses/${v.id}`, { active: false }).expect(409);
+      expect(errorOf(refused).code).toBe(ErrorCode.SESSION_OPEN_ON_VEHICLE);
+      expect(await warehouseOf(v.id)).toMatchObject({ active: true, assignedUser: { id: x.id } });
+      await as(d).post(`/seller-sessions/${session.id}/close`, { handedCash: '0' }).expect(200);
+
+      await as(d).patch(`/warehouses/${v.id}`, { active: false }).expect(200);
+      expect(await warehouseOf(v.id)).toMatchObject({ active: false, assignedUser: null });
+      const history = await historyOf(v.id);
+      expect(history.map((h) => h.user?.id ?? null)).toEqual([null, x.id]);
+      // Switching it off again writes nothing.
+      await as(d).patch(`/warehouses/${v.id}`, { active: false }).expect(200);
+      expect(await historyOf(v.id)).toHaveLength(2);
+
+      // One answer to "which truck was he on": none.
+      const sale = (
+        await as(x)
+          .post('/sales/quick', {
+            documentDate: today(),
+            clientId: c.id,
+            lines: [{ productId: p.id, unitId: p.carton, qty: '1' }],
+            paidAmount: '2856',
+          })
+          .expect(201)
+      ).body as SaleResultDto;
+      const visit = (
+        await as(x)
+          .post('/visits', {
+            clientId: c.id,
+            startedAt: clock.now().toISOString(),
+            outcome: 'SALE',
+            saleId: sale.sale.id,
+          })
+          .expect(201)
+      ).body as VisitDto;
+      const order = (
+        await as(x)
+          .post('/orders', {
+            clientId: c.id,
+            lines: [{ productId: p.id, unitId: p.carton, qty: '1' }],
+          })
+          .expect(201)
+      ).body as OrderDto;
+      const soldFrom = await asTenant(d.tenantId, () =>
+        t.prisma.db.sale.findUniqueOrThrow({
+          where: { id: sale.sale.id },
+          select: { warehouse: { select: { isDefault: true } } },
+        }),
+      );
+      expect(soldFrom.warehouse?.isDefault).toBe(true);
+      expect(visit.vehicle).toBeNull();
+      expect(order.vehicle).toBeNull();
+      expect((await todayOf(x)).vehicle).toBeNull();
+      expect(await visitsOffTheirSaleTruck()).toEqual([]);
+
+      // A truck that is off takes no driver, by either path; switched on again it does.
+      for (const res of [
+        await drive(d, v.id, x.id).expect(422),
+        await as(d).patch(`/warehouses/${v.id}`, { assignedUserId: x.id }).expect(422),
+        await as(d)
+          .patch(`/warehouses/${v.id}`, { active: false, assignedUserId: x.id })
+          .expect(422),
+      ]) {
+        expect(errorOf(res)).toMatchObject({
+          code: ErrorCode.WAREHOUSE_INVALID,
+          details: { rule: 'inactive' },
+        });
+      }
+      await as(d).patch(`/warehouses/${v.id}`, { active: true, assignedUserId: x.id }).expect(200);
+      expect(await warehouseOf(v.id)).toMatchObject({ active: true, assignedUser: { id: x.id } });
+    });
+
+    it('a user deactivated, or moved to a role that cannot drive, leaves his truck', async () => {
+      // Test-36 A-3.
+      const [gone, demoted, busy] = [
+        await member(d, 'SELLER'),
+        await member(d, 'SELLER'),
+        await member(d, 'SELLER'),
+      ];
+      const [v1, v2, v3] = [
+        await truck(d, { assignedUserId: gone.id }),
+        await truck(d, { assignedUserId: demoted.id }),
+        await truck(d, { assignedUserId: busy.id }),
+      ];
+
+      await as(d).post(`/users/${gone.id}/deactivate`, {}, null).expect(200);
+      expect((await warehouseOf(v1.id)).assignedUser).toBeNull();
+      expect((await historyOf(v1.id)).map((h) => h.user?.id ?? null)).toEqual([null, gone.id]);
+
+      const profile = async (id: string) => {
+        const u = (await as(d).get(`/users/${id}`).expect(200)).body as {
+          fullName: string;
+          email: string | null;
+          phone: string | null;
+        };
+        return { fullName: u.fullName, email: u.email, phone: u.phone };
+      };
+      // A role that still drives keeps the truck, and writes no row.
+      await as(d)
+        .put(`/users/${demoted.id}`, { ...(await profile(demoted.id)), role: 'LIVREUR' })
+        .expect(200);
+      expect((await warehouseOf(v2.id)).assignedUser?.id).toBe(demoted.id);
+      expect(await historyOf(v2.id)).toHaveLength(1);
+      await as(d)
+        .put(`/users/${demoted.id}`, { ...(await profile(demoted.id)), role: 'STOREKEEPER' })
+        .expect(200);
+      expect((await warehouseOf(v2.id)).assignedUser).toBeNull();
+      expect((await historyOf(v2.id)).map((h) => h.user?.id ?? null)).toEqual([null, demoted.id]);
+
+      // Refused while his day on the truck is open: the money is counted first.
+      const session = (await as(d).post('/seller-sessions', { sellerId: busy.id }).expect(201))
+        .body as SellerSessionDto;
+      for (const res of [
+        await as(d).post(`/users/${busy.id}/deactivate`, {}, null).expect(409),
+        await as(d)
+          .put(`/users/${busy.id}`, { ...(await profile(busy.id)), role: 'STOREKEEPER' })
+          .expect(409),
+      ]) {
+        expect(errorOf(res).code).toBe(ErrorCode.SESSION_OPEN_ON_VEHICLE);
+      }
+      const still = (await as(d).get(`/users/${busy.id}`).expect(200)).body as {
+        active: boolean;
+        role: Role;
+      };
+      expect(still).toMatchObject({ active: true, role: 'SELLER' });
+      expect((await warehouseOf(v3.id)).assignedUser?.id).toBe(busy.id);
+      await as(d).post(`/seller-sessions/${session.id}/close`, { handedCash: '0' }).expect(200);
+      await as(d).post(`/users/${busy.id}/deactivate`, {}, null).expect(200);
+      expect((await warehouseOf(v3.id)).assignedUser).toBeNull();
+
+      expect(await driversWhoCannotDrive()).toEqual([]);
+    });
+
     it('two changes of the same truck at once end in one consistent state', async () => {
       const [a, b] = [await member(d, 'SELLER'), await member(d, 'SELLER')];
       const v = await truck();
