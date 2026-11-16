@@ -2161,37 +2161,45 @@ async function stockAndMoney(): Promise<void> {
     },
   );
   await check(
-    'cash responsibility after the move: the second truck of his day has a clôture too (the guard that protects it needs an open one)',
+    'cash responsibility after the move: he does not leave the second truck of his day with cash that no clôture counted',
     async () => {
-      // 3 000 DA were collected on truck 2 after the morning's day (5 000) was closed.
+      // 3 000 DA were collected on truck 2 after the morning's day (5 000) was closed. There
+      // is one clôture per seller per day, so the guard looks at the cash since its last
+      // count (fix of A-4): the change is refused until the clôture is corrected.
       const again = await post(c.owner, '/seller-sessions', { sellerId: a.id, date: today });
-      const rows = await query<{ id: string; status: string; w: string | null; e: string | null }>(
-        `SELECT id, status, "warehouseId" AS w, "expectedCash"::text AS e FROM seller_sessions WHERE "tenantId" = $1::uuid AND "sellerId" = $2::uuid AND date = $3::date ORDER BY "createdAt"`,
-        [c.tenantId, a.id, today],
-      );
       const collected = (
         await query<{ s: string }>(
           `SELECT COALESCE(SUM(amount), 0)::text AS s FROM payments WHERE "tenantId" = $1::uuid AND "collectedBy" = $2::uuid AND mode = 'ESPECES' AND status = 'VALID'`,
           [c.tenantId, a.id],
         )
       )[0]!.s;
-      const counted = rows.reduce((n, r) => n + Number(r.e ?? 0), 0);
-      const onT2 = rows.some((r) => r.w === t2.id);
+      const refused = await driver(c.owner, t2.id, null);
+      const stillOn = (await driverNow(t2.id)) === a.id;
       assert(
-        Number(collected) === counted && onT2,
+        refused.status === 409 && codeOf(refused) === 'CASH_AFTER_CLOSING' && stillOn,
         `POST /seller-sessions again -> HTTP ${again.status}, the same closed session (${String(again.body['id']) === session.id}). ` +
-          `Cash collected by the seller today: ${collected} DA; counted in his clôtures: ${counted} DA; sessions of the day: ${JSON.stringify(rows.map((r) => ({ status: r.status, truck: r.w === t1.id ? 'S1' : r.w === t2.id ? 'S2' : r.w, expected: r.e })))}. ` +
-          'No session names truck S2: the afternoon on the second truck has no clôture, and he can be taken off S2 with that cash in hand: ' +
-          `POST /warehouses/S2/driver {userId: null} -> HTTP ${(await driver(c.owner, t2.id, null)).status}.`,
+          `Cash collected by the seller today: ${collected} DA, 5 000 of it in his clôture. ` +
+          `POST /warehouses/S2/driver {userId: null} -> HTTP ${refused.status} ${codeOf(refused) ?? ''}; he is ${stillOn ? 'still' : 'no longer'} on S2.`,
       );
+      const amount = (refused.body['details'] as { amount?: string } | undefined)?.amount;
+      assert(amount === '3000.00', `the refusal names ${amount} DA, expected 3000.00`);
+      // The new count is a correction of the clôture; after it he can leave the truck.
+      accepted(
+        await post(c.owner, `/seller-sessions/${session.id}/adjust`, {
+          handedCash: collected,
+          note: 'Encaissé sur le second camion',
+        }),
+        'adjust the clôture',
+      );
+      accepted(await driver(c.owner, t2.id, null), 'leave S2 once the cash is counted');
     },
     {
       expected:
-        'spec: "close the day first, money responsibility must stay clear" — one clôture per seller per day (phase 16) leaves the second truck of the day without one',
+        'spec: "close the day first, money responsibility must stay clear" — the guard refuses a driver who collected cash since his last clôture (CASH_AFTER_CLOSING)',
     },
   );
   await check(
-    'a day opened before the seller had a truck (no truck on the session) does not block a later change',
+    'a day opened before the seller had a truck (no truck on the session) blocks a later change until it is closed (INFO line)',
     async () => {
       const d = await truck(c, 'Camion 3', { code: 'S3' });
       const open = await c.owner.post<{ id: string }>('/seller-sessions', {

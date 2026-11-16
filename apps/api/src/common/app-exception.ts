@@ -39,6 +39,7 @@ const STATUS_BY_CODE: Record<ErrorCode, HttpStatus> = {
   [ErrorCode.VEHICLE_CODE_TAKEN]: HttpStatus.CONFLICT,
   [ErrorCode.VEHICLE_FIELDS_ON_DEPOT]: HttpStatus.BAD_REQUEST,
   [ErrorCode.SESSION_OPEN_ON_VEHICLE]: HttpStatus.CONFLICT,
+  [ErrorCode.CASH_AFTER_CLOSING]: HttpStatus.CONFLICT,
   [ErrorCode.ROUTE_NEEDS_OWNER]: HttpStatus.BAD_REQUEST,
   [ErrorCode.SELLER_HAS_NO_VEHICLE]: HttpStatus.CONFLICT,
   [ErrorCode.TRANSFER_NOT_DRAFT]: HttpStatus.CONFLICT,

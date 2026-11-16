@@ -135,6 +135,8 @@ export const ErrorCode = {
   VEHICLE_FIELDS_ON_DEPOT: 'VEHICLE_FIELDS_ON_DEPOT',
   /** The driver's day on this truck is still open: close it first. */
   SESSION_OPEN_ON_VEHICLE: 'SESSION_OPEN_ON_VEHICLE',
+  /** The driver collected cash after his last clôture: count it (adjust the clôture) first. */
+  CASH_AFTER_CLOSING: 'CASH_AFTER_CLOSING',
   /** A tournée is planned for a vehicle or for a seller. */
   ROUTE_NEEDS_OWNER: 'ROUTE_NEEDS_OWNER',
   SELLER_HAS_NO_VEHICLE: 'SELLER_HAS_NO_VEHICLE',

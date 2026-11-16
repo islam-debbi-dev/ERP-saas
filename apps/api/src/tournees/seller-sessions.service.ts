@@ -67,25 +67,68 @@ export class SellerSessionsService implements OnModuleInit {
   ) {}
 
   /**
-   * Money responsibility stays clear (phase 36): a driver does not leave a truck while his
-   * day on it is open. The stock module owns driver changes and asks us through this guard.
+   * Money responsibility stays clear (phase 36): a driver does not leave a truck with cash
+   * nobody counted. The stock module owns driver changes and asks us through this guard.
+   * It looks at the driver's cash, not at one session row (test-36 A-4):
+   * - any day of his still open refuses the change, whatever truck the session names (a
+   *   day opened before he had a truck names none);
+   * - his last clôture being closed, the cash he collected on that day after its last
+   *   count (the closing, or its latest adjustment) refuses it too: there is one clôture
+   *   per seller per day, so what he collects after it, on a second truck or not, is in no
+   *   count until the clôture is adjusted.
    */
   onModuleInit(): void {
     this.vehicles.registerDriverChangeGuard(async (tx, leaving) => {
       const open = await tx.sellerSession.findFirst({
         where: {
           sellerId: leaving.userId,
-          warehouseId: leaving.vehicleId,
           status: SellerSessionStatus.OPEN,
           adjustsSessionId: null,
         },
+        orderBy: [{ date: 'desc' }, { id: 'desc' }],
         select: { id: true, date: true },
       });
       if (open) {
         throw new AppException(
           ErrorCode.SESSION_OPEN_ON_VEHICLE,
-          "The driver's day on this truck is open: close it first",
+          "The driver's day is open: close it first",
           { sessionId: open.id, date: toIsoDate(open.date), ...leaving },
+        );
+      }
+      const last = await tx.sellerSession.findFirst({
+        where: {
+          sellerId: leaving.userId,
+          status: SellerSessionStatus.CLOSED,
+          adjustsSessionId: null,
+        },
+        orderBy: [{ date: 'desc' }, { id: 'desc' }],
+        select: {
+          id: true,
+          date: true,
+          closedAt: true,
+          adjustments: { select: { closedAt: true, createdAt: true } },
+        },
+      });
+      if (!last?.closedAt) return;
+      const countedAt = [last.closedAt, ...last.adjustments.map((a) => a.closedAt ?? a.createdAt)]
+        .sort((a, b) => a.getTime() - b.getTime())
+        .at(-1)!;
+      const day = toIsoDate(last.date);
+      const { start, end } = algiersDayBounds(day);
+      const rows = await tx.$queryRaw<{ total: Prisma.Decimal }[]>`
+        SELECT COALESCE(SUM(p.amount), 0) AS total FROM payments p
+        WHERE p."tenantId" = ${tenantContext.requireTenantId()}::uuid
+          AND p."collectedBy" = ${leaving.userId}::uuid
+          AND p.mode = ${PaymentMode.ESPECES}::"PaymentMode"
+          AND p.status = 'VALID'
+          AND p."receivedAt" >= ${start} AND p."receivedAt" < ${end}
+          AND p."createdAt" > ${countedAt}`;
+      const uncounted = money(rows[0]?.total.toString() ?? '0');
+      if (uncounted.gt(0)) {
+        throw new AppException(
+          ErrorCode.CASH_AFTER_CLOSING,
+          'The driver collected cash after his last clôture: count it first',
+          { sessionId: last.id, date: day, amount: toMoneyString(uncounted), ...leaving },
         );
       }
     });

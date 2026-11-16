@@ -784,6 +784,88 @@ describe('distribution par véhicule (phase 36)', () => {
       }
     });
 
+    it('refuses the change while the driver holds cash no clôture counted, whatever truck his day names', async () => {
+      // Test-36 A-4: one clôture per seller per day, so the cash of a second truck (or of a
+      // day opened before he had a truck) was in no count and nothing asked for it.
+      const a = await member(d, 'SELLER');
+      const [s1, s2] = [await truck(d, { assignedUserId: a.id }), await truck()];
+      const [c, p] = [await client(), await product()];
+      await load(s1.id, p, '2');
+      await load(s2.id, p, '2');
+      const sellCash = () =>
+        as(a)
+          .post('/sales/quick', {
+            documentDate: today(),
+            clientId: c.id,
+            lines: [{ productId: p.id, unitId: p.carton, qty: '1' }],
+            paidAmount: '2856',
+            paymentMode: 'ESPECES',
+          })
+          .expect(201);
+
+      await sellCash();
+      const session = (await as(d).post('/seller-sessions', { sellerId: a.id }).expect(201))
+        .body as SellerSessionDto;
+      await as(d).post(`/seller-sessions/${session.id}/close`, { handedCash: '2856' }).expect(200);
+      // Closed and counted: he moves to the second truck.
+      await drive(d, s2.id, a.id).expect(200);
+      await sellCash();
+      // The same closed session comes back: the afternoon has no clôture of its own.
+      const again = (await as(d).post('/seller-sessions', { sellerId: a.id })).body as {
+        id: string;
+        status: string;
+      };
+      expect(again).toMatchObject({ id: session.id, status: 'CLOSED' });
+
+      for (const res of [
+        await drive(d, s2.id, null).expect(409),
+        await drive(d, s1.id, a.id).expect(409),
+        await as(d).patch(`/warehouses/${s2.id}`, { assignedUserId: null }).expect(409),
+        await as(d).patch(`/warehouses/${s2.id}`, { active: false }).expect(409),
+        await as(d).post(`/users/${a.id}/deactivate`, {}, null).expect(409),
+      ]) {
+        expect(errorOf(res)).toMatchObject({
+          code: ErrorCode.CASH_AFTER_CLOSING,
+          details: { sessionId: session.id, date: today(), amount: '2856.00', userId: a.id },
+        });
+      }
+      expect((await warehouseOf(s2.id)).assignedUser?.id).toBe(a.id);
+      // The new count is a correction of the clôture; then nothing is left uncounted.
+      await as(d)
+        .post(`/seller-sessions/${session.id}/adjust`, {
+          handedCash: '5712',
+          note: 'Encaissé sur le second camion',
+        })
+        .expect(201);
+      await drive(d, s2.id, null).expect(200);
+
+      // A day opened before he had a truck names no truck: it blocks all the same.
+      const b = await member(d, 'SELLER');
+      const early = (await as(d).post('/seller-sessions', { sellerId: b.id }).expect(201))
+        .body as SellerSessionDto;
+      expect(early.warehouse).toBeNull();
+      // Getting a truck is not leaving one.
+      await drive(d, s1.id, b.id).expect(200);
+      const blocked = await drive(d, s1.id, null).expect(409);
+      expect(errorOf(blocked).code).toBe(ErrorCode.SESSION_OPEN_ON_VEHICLE);
+      await as(d).post(`/seller-sessions/${early.id}/close`, { handedCash: '0' }).expect(200);
+      await drive(d, s1.id, null).expect(200);
+
+      // A company that never does a clôture is not held by its cash.
+      const free = await member(d, 'SELLER');
+      await drive(d, s1.id, free.id).expect(200);
+      await as(free)
+        .post('/sales/quick', {
+          documentDate: today(),
+          clientId: c.id,
+          lines: [{ productId: p.id, unitId: p.carton, qty: '1' }],
+          paidAmount: '2856',
+          paymentMode: 'ESPECES',
+        })
+        .expect(201);
+      await drive(d, s1.id, null).expect(200);
+    });
+
     it('two changes of the same truck at once end in one consistent state', async () => {
       const [a, b] = [await member(d, 'SELLER'), await member(d, 'SELLER')];
       const v = await truck();
