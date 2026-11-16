@@ -263,6 +263,10 @@ export const ErrorCode = {
   AI_BASE_URL_NOT_ALLOWED: 'AI_BASE_URL_NOT_ALLOWED',
   /** SECRETS_ENCRYPTION_KEY is missing or wrong on the server. */
   SECRETS_KEY_UNAVAILABLE: 'SECRETS_KEY_UNAVAILABLE',
+  /** Statistics (phase 37): the view cannot apply this filter; details name it. */
+  STATS_FILTER_NOT_APPLICABLE: 'STATS_FILTER_NOT_APPLICABLE',
+  /** A client segment with this code already exists. */
+  CLIENT_SEGMENT_CODE_TAKEN: 'CLIENT_SEGMENT_CODE_TAKEN',
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 

@@ -21,6 +21,7 @@ import {
   LeaveEntryType,
   Permission,
   WarehouseType,
+  type ImportConfirmBody,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
@@ -42,6 +43,7 @@ import { SuppliersService } from '../purchases/suppliers.service';
 import { StockService } from '../stock/stock.service';
 import { WarehousesService } from '../stock/warehouses.service';
 import { type ImportTable, readTable } from './file-reader';
+import { ClientSegmentsService } from '../clients/client-segments.service';
 import { type ClientPlan, validateClients } from './validators/clients';
 import { type EmployeePlan, validateEmployees } from './validators/employees';
 import { type OpeningStockPlan, validateOpeningStock } from './validators/opening-stock';
@@ -142,6 +144,7 @@ export class ImportsService {
     private readonly features: FeaturesService,
     private readonly employees: EmployeesService,
     private readonly employeeLedger: EmployeeLedgerService,
+    private readonly segments: ClientSegmentsService,
   ) {}
 
   /**
@@ -252,7 +255,11 @@ export class ImportsService {
    * or any write that fails rolls the whole import back; the job is then marked
    * FAILED with the reason, outside the rolled-back transaction.
    */
-  async confirm(id: string, user: CurrentUserInfo): Promise<ImportJobDto> {
+  async confirm(
+    id: string,
+    user: CurrentUserInfo,
+    options: ImportConfirmBody = { createSegments: false },
+  ): Promise<ImportJobDto> {
     try {
       return await this.prisma.db.$transaction(async (tx) => {
         const job = await this.lockJob(tx, id);
@@ -285,7 +292,7 @@ export class ImportsService {
         }
 
         const plans = validation.rows.flatMap((r) => (r.plan ? [r.plan] : []));
-        const written = await this.write(tx, job, plans, user);
+        const written = await this.write(tx, job, plans, user, options);
         const updated = await tx.importJob.update({
           where: { id },
           select: jobSummary,
@@ -390,7 +397,13 @@ export class ImportsService {
       rows = validateEmployees(table, mapping, fields, await this.employeeLookups(tx));
     } else {
       const codes = columnValues(table, mapping, 'code');
-      rows = validateClients(table, mapping, fields, await this.clients.byCodes(tx, codes));
+      rows = validateClients(
+        table,
+        mapping,
+        fields,
+        await this.clients.byCodes(tx, codes),
+        await this.segments.lookup(tx),
+      );
     }
     return { fields, mapping, fileErrors, rows };
   }
@@ -422,6 +435,7 @@ export class ImportsService {
     job: ImportJob,
     plans: AnyPlan[],
     user: CurrentUserInfo,
+    options: ImportConfirmBody,
   ): Promise<{ created: number; updated: number; opening: number }> {
     if (job.type === ImportType.PRODUCTS) return this.writeProducts(tx, plans as ProductPlan[]);
     if (job.type === ImportType.OPENING_STOCK) {
@@ -436,7 +450,7 @@ export class ImportsService {
     if (job.type === ImportType.EMPLOYEES) {
       return this.writeEmployees(tx, plans as EmployeePlan[], user);
     }
-    return this.writeClients(tx, job, plans as ClientPlan[], user);
+    return this.writeClients(tx, job, plans as ClientPlan[], user, options);
   }
 
   /** Employees and their opening balances: an avance here has no dépense behind it. */
@@ -575,7 +589,23 @@ export class ImportsService {
     return { created: 0, updated: 0, opening: plans.length };
   }
 
-  private async writeClients(tx: Tx, job: ImportJob, plans: ClientPlan[], user: CurrentUserInfo) {
+  private async writeClients(
+    tx: Tx,
+    job: ImportJob,
+    plans: ClientPlan[],
+    user: CurrentUserInfo,
+    options: ImportConfirmBody,
+  ) {
+    // Segments the file names and the company does not have (phase 37): created only when
+    // the owner asked for it at confirm; otherwise those clients keep no segment.
+    const named = plans.flatMap((p) => (p.segmentName ? [p.segmentName] : []));
+    if (options.createSegments && named.length > 0) {
+      const ids = await this.segments.ensure(tx, named);
+      for (const p of plans) {
+        const segmentId = p.segmentName ? ids.get(p.segmentName.trim().toLowerCase()) : undefined;
+        if (segmentId && p.input) p.input = { ...p.input, segmentId };
+      }
+    }
     const creates = plans.flatMap((p) => (p.kind === 'CREATE' ? [p] : []));
     const ids = await this.clients.createManyInTx(
       tx,

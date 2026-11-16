@@ -1,5 +1,6 @@
 import { titled } from '@/lib/page-metadata';
 import { getTranslations } from 'next-intl/server';
+import { ClientSegmentsCard } from '@/components/settings/client-segments-card';
 import { AdminLinksCard } from '@/components/settings/admin-links-card';
 import { ImportLinkCard } from '@/components/settings/import-link-card';
 import { PriceLevelsCard } from '@/components/settings/price-levels-card';
@@ -16,6 +17,7 @@ export default async function SettingsPage() {
       <AdminLinksCard />
       <ImportLinkCard />
       <PriceLevelsCard />
+      <ClientSegmentsCard />
       <SettingsForm />
     </>
   );

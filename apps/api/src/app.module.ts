@@ -39,6 +39,7 @@ import { ImportFilesModule } from './import-files/import-files.module';
 import { PurchasesModule } from './purchases/purchases.module';
 import { ReconcileModule } from './reconcile/reconcile.module';
 import { TreasuryModule } from './treasury/treasury.module';
+import { DistributionStatsModule } from './distribution-stats/distribution-stats.module';
 import { ReportsModule } from './reports/reports.module';
 import { StockModule } from './stock/stock.module';
 import { TenantsModule } from './tenants/tenants.module';
@@ -123,6 +124,7 @@ import { UsersModule } from './users/users.module';
     PrintingModule,
     ImportsModule,
     ReportsModule,
+    DistributionStatsModule,
     UsersModule,
     ReconcileModule,
     TreasuryModule,

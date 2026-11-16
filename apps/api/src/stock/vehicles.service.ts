@@ -232,6 +232,87 @@ export class VehiclesService {
       LIMIT 1)`;
   }
 
+  /**
+   * SQL: every stretch of time a user drove a truck, as rows `vehicleId, userId, fromAt,
+   * toAt` (`toAt` null = still driving). A stretch ends at the truck's next history row, or
+   * when the same user starts driving another truck: a user drives one truck at a time
+   * (`assignDriver` frees the old one in the same transaction), so his stretches never
+   * overlap and joining on them cannot double a row.
+   */
+  driverIntervalsSql(): Prisma.Sql {
+    return Prisma.sql`
+      SELECT i."vehicleId", i."userId", i."fromAt",
+             LEAST(i."truckNext", i."userNext") AS "toAt"
+      FROM (
+        SELECT a."vehicleId", a."userId", a."fromAt",
+               LEAD(a."fromAt") OVER (PARTITION BY a."vehicleId"
+                 ORDER BY a."fromAt", a."createdAt", a.id) AS "truckNext",
+               CASE WHEN a."userId" IS NULL THEN NULL ELSE
+                 LEAD(a."fromAt") OVER (PARTITION BY a."userId"
+                   ORDER BY a."fromAt", a."createdAt", a.id) END AS "userNext"
+        FROM vehicle_assignments a
+        WHERE a."tenantId" = ${tenantContext.requireTenantId()}::uuid
+      ) i
+      WHERE i."userId" IS NOT NULL`;
+  }
+
+  /**
+   * SQL: the truck (or dépôt) a versement belongs to, on a `payments` alias: its own truck,
+   * else the truck its collector drove when it was recorded (driver history), else its
+   * dépôt. `join` goes in the FROM clause, `vehicle` is the id. The one rule, shared by the
+   * statistics and the versements list filtered on a truck.
+   */
+  vehicleOfPayment(payment = 'py'): { join: Prisma.Sql; vehicle: Prisma.Sql } {
+    const py = Prisma.raw(payment);
+    return {
+      join: Prisma.sql`
+        LEFT JOIN warehouses pw ON pw.id = ${py}."warehouseId"
+        LEFT JOIN (${this.driverIntervalsSql()}) drv ON drv."userId" = ${py}."collectedBy"
+          AND ${py}."createdAt" >= drv."fromAt"
+          AND (drv."toAt" IS NULL OR ${py}."createdAt" < drv."toAt")`,
+      vehicle: Prisma.sql`CASE WHEN pw.type = 'VEHICLE' THEN ${py}."warehouseId"
+        ELSE COALESCE(drv."vehicleId", ${py}."warehouseId") END`,
+    };
+  }
+
+  /**
+   * Who drove each truck during `[start, end)`, in order: the driver in force at `start`
+   * (the TS `vehicleAt` rule, in one query for many trucks) and every change after it.
+   * Rows without a user (truck left without a driver) are skipped.
+   */
+  async driversDuring(
+    vehicleIds: string[],
+    start: Date,
+    end: Date,
+    db: Db = this.prisma.db,
+  ): Promise<Map<string, { id: string; fullName: string; fromAt: Date }[]>> {
+    const out = new Map<string, { id: string; fullName: string; fromAt: Date }[]>();
+    if (vehicleIds.length === 0) return out;
+    const tenantId = tenantContext.requireTenantId();
+    const rows = await db.$queryRaw<
+      { vehicleId: string; userId: string; fullName: string; fromAt: Date }[]
+    >`
+      SELECT a."vehicleId", a."userId", u."fullName", a."fromAt"
+      FROM vehicle_assignments a JOIN users u ON u.id = a."userId"
+      WHERE a."tenantId" = ${tenantId}::uuid AND a."vehicleId" = ANY(${vehicleIds}::uuid[])
+        AND a."fromAt" < ${end}
+        AND (a."fromAt" >= ${start} OR NOT EXISTS (
+          SELECT 1 FROM vehicle_assignments n
+          WHERE n."tenantId" = a."tenantId" AND n."vehicleId" = a."vehicleId"
+            AND n."fromAt" <= ${start}
+            AND (n."fromAt", n."createdAt", n.id) > (a."fromAt", a."createdAt", a.id)))
+      ORDER BY a."vehicleId", a."fromAt", a."createdAt", a.id`;
+    for (const r of rows) {
+      const list = out.get(r.vehicleId) ?? [];
+      // The same driver put back on his truck is one line.
+      if (list.at(-1)?.id !== r.userId) {
+        list.push({ id: r.userId, fullName: r.fullName, fromAt: r.fromAt });
+      }
+      out.set(r.vehicleId, list);
+    }
+    return out;
+  }
+
   // ---------------------------------------------------------------- reach
 
   /** The trucks a user plans for; the rule is written once, in `tournee-scope.ts`. */

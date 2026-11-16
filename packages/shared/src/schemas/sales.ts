@@ -140,6 +140,27 @@ export const saleListQuerySchema = z.object({
     .transform((v) => v === 'true'),
   from: dateString.optional(),
   to: dateString.optional(),
+  /**
+   * Validated between these Algiers days (phase 37): what the statistics count, where
+   * `from` / `to` compare the document date.
+   */
+  validatedFrom: dateString.optional(),
+  validatedTo: dateString.optional(),
+  /** Only the sales to clients of this segment (phase 37). */
+  segmentId: id.optional(),
+  /**
+   * Only this dépôt as the figures count it (phase 37): with its trucks, and the documents
+   * without a dépôt when it is the dépôt principal. `warehouseId` is the dépôt alone.
+   */
+  depotId: id.optional(),
+  /**
+   * `true` adds `summary` to the first page: the documents that count in the figures
+   * (validated, a facture grouping BLs left out) and their total, net of the avoirs.
+   */
+  summary: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => v === 'true'),
   cursor: id.optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
@@ -292,9 +313,22 @@ export interface SaleSummaryDto {
   lineCount: number;
 }
 
+/** The figures behind a filtered sales list, with the statistics' own definitions. */
+export interface SaleListSummary {
+  /** Validated documents that count (a facture grouping BLs does not). */
+  count: number;
+  totalTtc: string;
+  /** Avoirs made on them in the `validatedFrom`–`validatedTo` days (0 without them). */
+  returnsTtc: string;
+  /** totalTtc − returnsTtc: the CA TTC of the statistics for the same filters. */
+  netTtc: string;
+}
+
 export interface SalePage {
   items: SaleSummaryDto[];
   nextCursor: string | null;
+  /** Only when asked with `summary=true`. */
+  summary?: SaleListSummary;
 }
 
 export type SaleWarning =

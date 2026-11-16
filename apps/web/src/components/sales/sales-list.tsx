@@ -47,6 +47,12 @@ const SALE_URL_FILTERS = {
   sellerId: q.sellerId,
   teamOf: q.teamOf,
   brandId: q.brandId,
+  // Phase 37: what a statistic opens.
+  validatedFrom: q.validatedFrom,
+  validatedTo: q.validatedTo,
+  depotId: q.depotId,
+  segmentId: q.segmentId,
+  warehouseId: q.warehouseId,
 };
 type SaleUrlFilters = UrlFilters<typeof SALE_URL_FILTERS>;
 const NO_SALE_FILTERS: SaleUrlFilters = {
@@ -58,6 +64,11 @@ const NO_SALE_FILTERS: SaleUrlFilters = {
   sellerId: '',
   teamOf: '',
   brandId: '',
+  validatedFrom: '',
+  validatedTo: '',
+  depotId: '',
+  segmentId: '',
+  warehouseId: '',
 };
 
 /** One removable chip per active filter; names come from lists already loaded. */
@@ -97,6 +108,24 @@ function useSaleChips(
       'brandId',
       td('chipBrand', { name: brands.data?.find((b) => b.id === f.brandId)?.name ?? '…' }),
     );
+  if (f.validatedFrom || f.validatedTo) {
+    chips.push({
+      key: 'validated',
+      label: t('chipValidated', {
+        from: f.validatedFrom ? day(f.validatedFrom) : '…',
+        to: f.validatedTo ? day(f.validatedTo) : '…',
+      }),
+      onRemove: () => set({ validatedFrom: '', validatedTo: '' }),
+    });
+  }
+  if (f.warehouseId || f.depotId) {
+    chips.push({
+      key: 'warehouse',
+      label: t('chipWarehouse'),
+      onRemove: () => set({ warehouseId: '', depotId: '' }),
+    });
+  }
+  if (f.segmentId) add('segmentId', t('chipSegment'));
   return chips;
 }
 
@@ -117,6 +146,7 @@ export function SalesList() {
   const pages = useSalePages(filters);
   const clients = useClientPages({ search: '', hasDebt: false, overLimit: false });
   const items = useMemo(() => pages.data?.pages.flatMap((p) => p.items) ?? [], [pages.data]);
+  const summary = pages.data?.pages[0]?.summary;
   const chips = useSaleChips(url, set, clients.data?.pages[0]?.items ?? []);
   const picked = [...selected.values()];
   const sameClient = new Set(picked.map((s) => s.client?.id)).size === 1;
@@ -270,6 +300,14 @@ export function SalesList() {
         }
       />
       <FilterChips chips={chips} onClear={() => set(NO_SALE_FILTERS)} />
+      {summary ? (
+        <p data-testid="sales-summary" className="text-sm">
+          {t.rich('summaryLine', {
+            count: summary.count,
+            total: () => <Amount value={summary.netTtc} />,
+          })}
+        </p>
+      ) : null}
       {picked.length > 0 && !sameClient ? (
         <p role="status" className="text-sm text-destructive">
           {t('sameClientOnly')}

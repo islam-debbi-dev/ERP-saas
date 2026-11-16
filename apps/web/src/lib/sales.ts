@@ -22,6 +22,13 @@ export interface SaleFilters {
   sellerId?: string;
   teamOf?: string;
   brandId?: string;
+  /** Statistics drill-down (phase 37): validated in these days, with the list's total. */
+  validatedFrom?: string;
+  validatedTo?: string;
+  depotId?: string;
+  segmentId?: string;
+  /** A truck or a dépôt picked by the statistics; wins over the dépôt switcher. */
+  warehouseId?: string;
 }
 
 export const saleKeys = {
@@ -31,7 +38,8 @@ export const saleKeys = {
 };
 
 export function useSalePages(filters: SaleFilters) {
-  const warehouseId = useWarehouseFilter();
+  const switcher = useWarehouseFilter();
+  const warehouseId = filters.warehouseId || switcher;
   return useInfiniteQuery({
     queryKey: [...saleKeys.list(filters), warehouseId],
     initialPageParam: null as string | null,
@@ -46,6 +54,12 @@ export function useSalePages(filters: SaleFilters) {
       if (filters.teamOf) params.set('teamOf', filters.teamOf);
       if (filters.brandId) params.set('brandId', filters.brandId);
       if (warehouseId) params.set('warehouseId', warehouseId);
+      if (filters.validatedFrom) params.set('validatedFrom', filters.validatedFrom);
+      if (filters.validatedTo) params.set('validatedTo', filters.validatedTo);
+      if (filters.depotId) params.set('depotId', filters.depotId);
+      if (filters.segmentId) params.set('segmentId', filters.segmentId);
+      // The statistics' own total of the list, on its first page.
+      if (filters.validatedFrom && !pageParam) params.set('summary', 'true');
       if (pageParam) params.set('cursor', pageParam);
       return api.request<SalePage>(`/sales?${params.toString()}`, { signal });
     },

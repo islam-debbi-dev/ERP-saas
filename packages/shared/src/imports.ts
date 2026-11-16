@@ -281,6 +281,17 @@ const CLIENT_FIELDS: ImportFieldDef[] = [
   ]),
   f('phone', 'text', false, ['telephone', 'tel', 'tél', 'mobile', 'portable', 'phone', 'الهاتف']),
   f('address', 'text', false, ['adresse', 'address', 'العنوان']),
+  // The owner's own client segments (phase 37), by code or by name.
+  f('segment', 'text', false, [
+    'type',
+    'type client',
+    'type de client',
+    'canal',
+    'segment',
+    'categorie client',
+    'النوع',
+    'نوع الزبون',
+  ]),
   f('creditLimit', 'money', false, [
     'plafond',
     'plafond credit',

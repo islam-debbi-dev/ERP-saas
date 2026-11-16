@@ -31,10 +31,12 @@ import { type DataScope, ScopeService } from '../sales-force/scope.service';
 import { WarehousesService } from '../stock/warehouses.service';
 import { SectorsService } from '../sales-force/sectors.service';
 import { ClientAccountService } from './client-account.service';
+import { ClientSegmentsService } from './client-segments.service';
 
 const clientInclude = {
   balance: true,
   sector: { select: { id: true, name: true } },
+  segment: { select: { id: true, code: true, name: true } },
   assignedSeller: { select: { id: true, fullName: true } },
 } satisfies Prisma.ClientInclude;
 type ClientWithBalance = Prisma.ClientGetPayload<{ include: typeof clientInclude }>;
@@ -66,6 +68,7 @@ function toDto(c: ClientWithBalance): ClientDto {
     priceLevelId: c.priceLevelId,
     creditLimit: c.creditLimit ? toMoneyString(c.creditLimit.toString()) : null,
     sector: c.sector,
+    segment: c.segment,
     assignedSeller: c.assignedSeller,
     notes: c.notes,
     active: c.active,
@@ -101,6 +104,7 @@ export class ClientsService {
     private readonly scope: ScopeService,
     private readonly sectors: SectorsService,
     private readonly warehouses: WarehousesService,
+    private readonly segments: ClientSegmentsService,
   ) {}
 
   /** Raw SQL picks the page (filters compare balance with plafond); Prisma loads the rows. */
@@ -113,6 +117,7 @@ export class ClientsService {
       this.scope.clientSql(scope, 'c'),
     ];
     if (query.sectorId) filters.push(Prisma.sql`c."sectorId" = ${query.sectorId}::uuid`);
+    if (query.segmentId) filters.push(Prisma.sql`c."segmentId" = ${query.segmentId}::uuid`);
     if (query.assignedSellerId)
       filters.push(Prisma.sql`c."assignedSellerId" = ${query.assignedSellerId}::uuid`);
     if (query.unassigned === 'sector') filters.push(Prisma.sql`c."sectorId" IS NULL`);
@@ -210,6 +215,7 @@ export class ClientsService {
     return this.withCodeErrors(() =>
       this.prisma.db.$transaction(async (tx) => {
         await this.checkPriceLevel(tx, input.priceLevelId);
+        if (input.segmentId) await this.segments.assertLive(tx, input.segmentId);
         const { sectorId, assignedSellerId, ...fields } = input;
         const assignment = await this.assignment(tx, user, { sectorId, assignedSellerId }, null);
         const c = await tx.client.create({
@@ -255,6 +261,10 @@ export class ClientsService {
       });
     }
     await this.checkPriceLevel(tx, input.priceLevelId);
+    // A segment archived since stays on the client; only a new one must be live.
+    if (input.segmentId && input.segmentId !== before.segmentId) {
+      await this.segments.assertLive(tx, input.segmentId);
+    }
     const { version, sectorId, assignedSellerId, ...data } = input;
     const assignment = await this.assignment(tx, user, { sectorId, assignedSellerId }, before);
     const { count } = await tx.client.updateMany({

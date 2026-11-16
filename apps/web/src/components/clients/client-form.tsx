@@ -27,6 +27,7 @@ import { api } from '@/lib/api-client';
 import { useFeature } from '@/lib/auth';
 import { clientKeys, useCanManageCredit } from '@/lib/clients';
 import { useIsOffice, useSectors, useSellers } from '@/lib/sales-force';
+import { useClientSegments } from '@/lib/distribution-stats';
 import { useErrorMessage } from '@/lib/use-error-message';
 
 const TEXT_FIELDS = [
@@ -51,6 +52,7 @@ type FormValues = Record<TextField, string> & {
   creditLimit: string;
   sectorId: string;
   assignedSellerId: string;
+  segmentId: string;
 };
 
 function toFormValues(c: ClientDto | null): FormValues {
@@ -65,6 +67,7 @@ function toFormValues(c: ClientDto | null): FormValues {
     creditLimit: c?.creditLimit ? formatDA(c.creditLimit, { currency: false }) : '',
     sectorId: c?.sector?.id ?? '',
     assignedSellerId: c?.assignedSeller?.id ?? '',
+    segmentId: c?.segment?.id ?? '',
   };
 }
 
@@ -110,6 +113,9 @@ export function ClientForm({
   const canAssign = useIsOffice() && salesForce;
   const sectors = useSectors();
   const sellers = useSellers();
+  // Phase 37: the client's type (segment) for the statistics.
+  const segmentsOn = useFeature(Feature.DISTRIBUTION_STATS);
+  const segments = useClientSegments(segmentsOn);
   const [problems, setProblems] = useState<string[]>([]);
   const form = useForm<FormValues>({ defaultValues: toFormValues(client) });
   const type = useWatch({ control: form.control, name: 'type' });
@@ -129,9 +135,10 @@ export function ClientForm({
     onError: (err) => setProblems([errorMessage(err)]),
   });
 
-  const onSubmit = form.handleSubmit(({ sectorId, assignedSellerId, ...v }) => {
+  const onSubmit = form.handleSubmit(({ sectorId, assignedSellerId, segmentId, ...v }) => {
     const body = {
       ...v,
+      ...(segmentsOn ? { segmentId: segmentId || null } : {}),
       ...(canAssign
         ? { sectorId: sectorId || null, assignedSellerId: assignedSellerId || null }
         : {}),
@@ -253,6 +260,21 @@ export function ClientForm({
               ))}
             </NativeSelect>
           </div>
+          {segmentsOn ? (
+            <div className="space-y-2">
+              <Label htmlFor="segmentId">{t('segment')}</Label>
+              <NativeSelect id="segmentId" {...form.register('segmentId')}>
+                <option value="">{t('noSegment')}</option>
+                {(segments.data ?? [])
+                  .filter((s) => !s.archived || s.id === client?.segment?.id)
+                  .map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+              </NativeSelect>
+            </div>
+          ) : null}
           {field('notes', { wide: true })}
         </Section>
 

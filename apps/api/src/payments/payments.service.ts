@@ -33,6 +33,7 @@ import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { type DataScope, ScopeService } from '../sales-force/scope.service';
 import { WarehousesService } from '../stock/warehouses.service';
+import { VehiclesService } from '../stock/vehicles.service';
 import { CashLedgerService } from '../treasury/cash-ledger.service';
 
 const paymentInclude = {
@@ -109,6 +110,7 @@ export class PaymentsService {
     private readonly geo: GeoCheckService,
     private readonly warehouses: WarehousesService,
     private readonly cash: CashLedgerService,
+    private readonly vehicles: VehiclesService,
   ) {}
 
   // ---------------------------------------------------------------- used by sales
@@ -507,6 +509,7 @@ export class PaymentsService {
             }
           : {},
         query.warehouseId ? { warehouseId: query.warehouseId } : {},
+        query.vehicleId ? { id: { in: await this.idsOfVehicle(query) } } : {},
       ],
       ...(query.clientId ? { clientId: query.clientId } : {}),
       ...(query.mode ? { mode: query.mode } : {}),
@@ -538,6 +541,23 @@ export class PaymentsService {
       items: page.map((p) => toDto(p, users)),
       nextCursor: rows.length > query.limit ? (page.at(-1)?.id ?? null) : null,
     };
+  }
+
+  /**
+   * The versements a truck is credited with in the statistics (phase 37): the rule is
+   * `VehiclesService.vehicleOfPayment`, the same expression the statistics aggregate.
+   */
+  private async idsOfVehicle(query: PaymentListQuery): Promise<string[]> {
+    const tenantId = tenantContext.requireTenantId();
+    const truck = this.vehicles.vehicleOfPayment('py');
+    const rows = await this.prisma.db.$queryRaw<{ id: string }[]>`
+      SELECT py.id FROM payments py
+      ${truck.join}
+      WHERE py."tenantId" = ${tenantId}::uuid
+        ${query.from ? Prisma.sql`AND py."receivedAt" >= ${algiersMidnight(query.from)}` : Prisma.empty}
+        ${query.to ? Prisma.sql`AND py."receivedAt" < ${algiersMidnight(nextDay(query.to))}` : Prisma.empty}
+        AND ${truck.vehicle} = ${query.vehicleId}::uuid`;
+    return rows.map((r) => r.id);
   }
 
   async unpaidDocuments(clientId: string, user: CurrentUserInfo): Promise<UnpaidDocumentDto[]> {

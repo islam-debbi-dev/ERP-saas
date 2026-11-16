@@ -441,6 +441,33 @@ test('a tournée planned for a truck follows its driver of the day (phase 36)', 
   }
 });
 
+test('statistiques: the period moves the tiles, a bar opens its sales with the same total (phase 37)', async ({
+  page,
+}) => {
+  const f = shared();
+  await makeSale(f, { qty: '1' });
+  await useEnglish(page);
+  await open(page, '/statistiques?period=today');
+  const caTile = page.locator('a, div').filter({ hasText: /^Sales incl\. tax/ }).first();
+  await expect(caTile).toContainText('DA');
+  const today = (await caTile.innerText()).trim();
+  // Another period: the tiles follow the URL.
+  await page.getByRole('button', { name: 'Yesterday', exact: true }).click();
+  await expect(page).toHaveURL(/period=yesterday/);
+  await expect.poll(async () => (await caTile.innerText()).trim()).not.toBe(today);
+  await page.getByRole('button', { name: 'Today', exact: true }).click();
+  await expect.poll(async () => (await caTile.innerText()).trim()).toBe(today);
+  const total = /([\d\s\u202f]+,\d{2}\u00a0DA)/.exec(today)?.[1];
+  expect(total).toBeTruthy();
+
+  // "Sales by depot": one dépôt in this tenant, so its bar carries the whole CA.
+  const panel = page.locator('[data-slot="card"]').filter({ hasText: 'Sales by depot' });
+  await panel.locator('.recharts-bar-rectangle').first().click();
+  await page.waitForURL(/\/ventes\?/);
+  expect(page.url()).toContain('validatedFrom=');
+  await expect(page.getByTestId('sales-summary')).toContainText(total!);
+});
+
 test('logging out ends the session for good', async ({ page }) => {
   await useEnglish(page);
   await open(page, '/tableau-de-bord');
