@@ -1,11 +1,4 @@
 class ApiConstants {
-  /// Compiled-in fallback used only when neither `--dart-define=API_BASE_URL`
-  /// nor `API_BASE_URL` in the env file is set. Deliberately a non-routable
-  /// placeholder: a white-label client that forgets to set the key gets a
-  /// clear failure instead of silently hitting another tenant's backend.
-  /// Override per client via `API_BASE_URL`.
-  static const String baseUrl = 'https://api.example.com';
-
   static const String authLogin = '/auth/login';
   static const String authRegister = '/auth/register';
   static String authWithSocailMedia(String provider) => '/auth/$provider';

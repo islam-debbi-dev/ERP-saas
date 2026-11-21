@@ -1,196 +1,117 @@
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart' show Color;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:orvynt_starter/core/service/api_constants.dart';
 
-/// Environment values. Loads from [assets/config/env.default] in main, then
+/// Environment values. Loaded from `assets/config/env.default` in main, with
 /// optional `--dart-define=KEY=...` overrides (CI / local flags).
 ///
-/// Priority order for every key: `--dart-define` > `.env` (the file bundled as
-/// `assets/config/env.default`) > hardcoded fallback below.
+/// Priority for every key: `--dart-define` > env file > fallback below.
+/// The template with every key is `apps/mobile/.env.example`.
 class AppEnv {
   AppEnv._();
 
+  /// The production API (Vercel). No global prefix: routes are `/auth/login`...
+  static const String productionApiUrl = 'https://erp-saas-pi.vercel.app';
+
   static String _e(String k) {
-    // Safe before/without a loaded dotenv (e.g. in widget tests or the splash
-    // screen which may render before async env load finishes): uninitialized
-    // simply means the fallback chain applies.
+    // Safe before / without a loaded dotenv (widget tests, a splash that renders
+    // before the async load): uninitialized means the fallback applies.
     if (!dotenv.isInitialized) return '';
     return dotenv.env[k]?.trim() ?? '';
   }
 
-  /// Resolves a string key: `--dart-define` > `.env` > hardcoded [fallback].
+  /// `--dart-define` > env file > [fallback].
   static String _str(String fromDefine, String key, String fallback) {
     if (fromDefine.isNotEmpty) return fromDefine;
     final env = _e(key);
     return env.isNotEmpty ? env : fallback;
   }
 
-  // ── Hardcoded fallbacks (only used when the key is missing everywhere) ──
-  // These must stay brand-neutral: a white-label client that forgets to set a
-  // key should see a generic placeholder, never the previous client's brand.
-  static const String _fallbackAppName = 'My App';
-  static const String _fallbackLogoAsset = 'assets/main-logo.png';
-  static const String _fallbackSupportEmail = 'support@jibli.org';
-  static const String _fallbackPrivacyEmail = 'jiblimsila@gmail.com';
+  static const String _fallbackAppName = 'Debvora';
   static const Color _fallbackPrimaryColor = Color(0xFFFFD83A);
   static const Color _fallbackSecondaryColor = Color(0xFF1E1E1E);
 
-  /// Optional override, e.g. `flutter run --dart-define=API_BASE_URL=https://...`
-  static const String _apiFromDefine = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: '',
+  static const String _apiFromDefine = String.fromEnvironment('API_BASE_URL');
+  static const String _dashboardFromDefine = String.fromEnvironment(
+    'DASHBOARD_URL',
   );
-  static const String _appNameFromDefine = String.fromEnvironment(
-    'APP_NAME',
-    defaultValue: '',
-  );
+  static const String _appNameFromDefine = String.fromEnvironment('APP_NAME');
   static const String _primaryColorFromDefine = String.fromEnvironment(
     'APP_PRIMARY_COLOR',
-    defaultValue: '',
   );
   static const String _secondaryColorFromDefine = String.fromEnvironment(
     'APP_SECONDARY_COLOR',
-    defaultValue: '',
-  );
-  static const String _googleWebClientIdFromDefine = String.fromEnvironment(
-    'GOOGLE_WEB_CLIENT_ID',
-    defaultValue: '',
-  );
-  static const String _appleServiceIdFromDefine = String.fromEnvironment(
-    'APPLE_SERVICE_ID',
-    defaultValue: '',
-  );
-  static const String _logoAssetFromDefine = String.fromEnvironment(
-    'APP_LOGO_ASSET',
-    defaultValue: '',
   );
   static const String _supportEmailFromDefine = String.fromEnvironment(
     'SUPPORT_EMAIL',
-    defaultValue: '',
   );
   static const String _privacyEmailFromDefine = String.fromEnvironment(
     'PRIVACY_EMAIL',
-    defaultValue: '',
-  );
-  static const String _dashboardFromDefine = String.fromEnvironment(
-    'DASHBOARD_URL',
-    defaultValue: '',
   );
 
-  static String get apiBaseUrl {
-    if (_apiFromDefine.isNotEmpty) return _apiFromDefine;
-    if (_e('API_BASE_URL').isNotEmpty) return _e('API_BASE_URL');
-    return ApiConstants.baseUrl;
-  }
+  // ── Backend ────────────────────────────────────────────────────────────────
 
-  /// Web dashboard a store manager opens from "Manage my store".
-  /// `DASHBOARD_URL` when set, else derived from the API host following the
-  /// deploy convention (`api.<domain>` → `admin.<domain>`, see infra/Caddyfile).
-  static String get dashboardUrl {
-    final explicit = _str(_dashboardFromDefine, 'DASHBOARD_URL', '');
-    if (explicit.isNotEmpty) return explicit;
-    return dashboardUrlFromApi(apiBaseUrl);
-  }
+  /// Base URL of the ERP API, without a trailing slash.
+  static String get apiBaseUrl => _trimSlash(
+    _str(_apiFromDefine, 'API_BASE_URL', productionApiUrl),
+  );
 
-  /// `https://api.jibli.org/api/v1` → `https://admin.jibli.org`. Any other
-  /// host keeps its origin (local dev: the API origin itself).
-  static String dashboardUrlFromApi(String apiUrl) {
-    final uri = Uri.tryParse(apiUrl);
-    if (uri == null || uri.host.isEmpty) return '';
-    final host = uri.host.startsWith('api.')
-        ? 'dashboard.${uri.host.substring(4)}'
-        : uri.host;
-    return Uri(
-      scheme: uri.scheme,
-      host: host,
-      port: uri.hasPort && host == uri.host ? uri.port : null,
-    ).toString();
-  }
+  /// The web dashboard. Office roles (owner, manager) are refused in the app
+  /// and sent there. Empty when not configured: the link is then hidden.
+  static String get dashboardUrl =>
+      _trimSlash(_str(_dashboardFromDefine, 'DASHBOARD_URL', ''));
 
-  // ── App name / branding ────────────────────────────────────────────────────
+  static String _trimSlash(String url) =>
+      url.endsWith('/') ? url.substring(0, url.length - 1) : url;
 
-  /// In-app name used as the MaterialApp `title` (task-switcher label).
-  /// The home-screen launcher label is a separate native step (see the
-  /// white-label onboarding doc).
+  // ── Branding ───────────────────────────────────────────────────────────────
+
+  /// In-app name (wordmark, MaterialApp title). The launcher label is native:
+  /// see `package_rename_config.yaml` and docs/branding.md.
   static String get appName =>
       _str(_appNameFromDefine, 'APP_NAME', _fallbackAppName);
 
-  /// Asset path of the client's logo, drawn on the auth screen. Replace the
-  /// file (or point this key elsewhere) per client — no code change needed.
-  static String get logoAsset =>
-      _str(_logoAssetFromDefine, 'APP_LOGO_ASSET', _fallbackLogoAsset);
-
-  /// Contact address shown in Help Center. Shown only when non-empty.
+  /// Contact address shown in the help screen. Hidden when empty.
   static String get supportEmail =>
-      _str(_supportEmailFromDefine, 'SUPPORT_EMAIL', _fallbackSupportEmail);
+      _str(_supportEmailFromDefine, 'SUPPORT_EMAIL', '');
 
-  /// Contact address shown in Privacy Policy. Shown only when non-empty.
+  /// Contact address shown in the privacy screen. Hidden when empty.
   static String get privacyEmail =>
-      _str(_privacyEmailFromDefine, 'PRIVACY_EMAIL', _fallbackPrivacyEmail);
+      _str(_privacyEmailFromDefine, 'PRIVACY_EMAIL', '');
 
-  // ── Brand colors ───────────────────────────────────────────────────────────
+  static Color get primaryColor => _color(
+    'APP_PRIMARY_COLOR',
+    _primaryColorFromDefine,
+    _fallbackPrimaryColor,
+  );
 
-  static Color get primaryColor {
-    if (_primaryColorFromDefine.isNotEmpty) {
-      return _parseHexColor('APP_PRIMARY_COLOR', _primaryColorFromDefine);
-    }
-    final env = _e('APP_PRIMARY_COLOR');
-    if (env.isNotEmpty) return _parseHexColor('APP_PRIMARY_COLOR', env);
-    return _fallbackPrimaryColor;
+  static Color get secondaryColor => _color(
+    'APP_SECONDARY_COLOR',
+    _secondaryColorFromDefine,
+    _fallbackSecondaryColor,
+  );
+
+  static Color _color(String key, String fromDefine, Color fallback) {
+    final raw = fromDefine.isNotEmpty ? fromDefine : _e(key);
+    if (raw.isEmpty) return fallback;
+    return parseHexColor(key, raw, fallback);
   }
 
-  static Color get secondaryColor {
-    if (_secondaryColorFromDefine.isNotEmpty) {
-      return _parseHexColor('APP_SECONDARY_COLOR', _secondaryColorFromDefine);
-    }
-    final env = _e('APP_SECONDARY_COLOR');
-    if (env.isNotEmpty) return _parseHexColor('APP_SECONDARY_COLOR', env);
-    return _fallbackSecondaryColor;
-  }
-
-  /// Parses `#RRGGBB` or `#AARRGGBB` (the leading `#` is optional). Fails
-  /// loudly in debug builds with a clear error on malformed input instead of
-  /// silently falling back. In release builds a bad value falls back to the
-  /// default brand color so the app still boots.
-  static Color _parseHexColor(String key, String raw) {
+  /// Parses `#RRGGBB` or `#AARRGGBB` (the `#` is optional). A malformed value
+  /// throws in debug builds (clear message) and falls back in release builds,
+  /// so the app still boots.
+  static Color parseHexColor(String key, String raw, Color fallback) {
     var hex = raw.trim();
     if (hex.startsWith('#')) hex = hex.substring(1);
     final int? value = int.tryParse(hex, radix: 16);
-    if (value != null && hex.length == 6) {
-      return Color(0xFF000000 | value);
-    }
-    if (value != null && hex.length == 8) {
-      return Color(value);
-    }
+    if (value != null && hex.length == 6) return Color(0xFF000000 | value);
+    if (value != null && hex.length == 8) return Color(value);
     if (kDebugMode) {
       throw StateError(
         'AppEnv: $key must be a hex color like "#1B7F5E" (or "#AARRGGBB"), '
-        'got "$raw". Fix $key in your .env / assets/config/env.default.',
+        'got "$raw". Fix $key in assets/config/env.default.',
       );
     }
-    return key == 'APP_PRIMARY_COLOR'
-        ? _fallbackPrimaryColor
-        : _fallbackSecondaryColor;
+    return fallback;
   }
-
-  // ── Social auth provider keys ──────────────────────────────────────────────
-
-  /// Google OAuth Web/Server client ID used at runtime to request an ID token
-  /// that is sent to the backend (see docs/white-label-client-onboarding.md).
-  static String get googleWebClientId {
-    if (_googleWebClientIdFromDefine.isNotEmpty) {
-      return _googleWebClientIdFromDefine;
-    }
-    return _e('GOOGLE_WEB_CLIENT_ID');
-  }
-
-  static String get appleServiceId {
-    if (_appleServiceIdFromDefine.isNotEmpty) return _appleServiceIdFromDefine;
-    return _e('APPLE_SERVICE_ID');
-  }
-
-  /// Auth button is rendered only when the provider's key is set.
-  static bool get hasGoogleAuth => googleWebClientId.isNotEmpty;
-  static bool get hasAppleAuth => appleServiceId.isNotEmpty;
 }

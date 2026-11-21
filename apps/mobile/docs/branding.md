@@ -11,7 +11,7 @@ decided yet; until then the app uses the current colours and a text logo.
 | Key | Use |
 |---|---|
 | `APP_NAME` | in-app name (wordmark, task switcher) |
-| `APP_PRIMARY_COLOR` | brand accent `#RRGGBB`; its deep and tint shades are derived |
+| `APP_PRIMARY_COLOR` | brand accent `"#RRGGBB"` (quoted: an unquoted # starts a comment); its deep and tint shades are derived |
 | `APP_SECONDARY_COLOR` | action colour (buttons, active tab), shown with a contrasting text |
 | `SUPPORT_EMAIL`, `PRIVACY_EMAIL` | help and privacy screens |
 
