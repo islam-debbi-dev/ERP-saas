@@ -1,3 +1,5 @@
+> **Replaced by [phase 39](phase-39-mobile-field-app.md)** (2026-11-21): the mobile app is built from the Flutter app in `apps/mobile`. Do not run this prompt.
+
 Read AGENTS.md and docs/architecture.md (Offline) before doing anything.
 
 ## Task: Phase 19 — Mobile vendeur (Flutter), offline-first
