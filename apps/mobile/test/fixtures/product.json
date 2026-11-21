@@ -1,0 +1,51 @@
+{
+ "success": true,
+ "data": {
+  "id": "6ad2389c718d2c59fb4923b1",
+  "approvalStatus": "approved",
+  "categoryId": {
+   "id": "6ad2389c718d2c59fb492370",
+   "icon": "🧴",
+   "name": {
+    "ar": "منزلية",
+    "en": "Household"
+   }
+  },
+  "createdAt": "2026-10-16T14:45:48.932Z",
+  "deletedAt": null,
+  "discountPercentage": 0,
+  "images": [],
+  "isActive": true,
+  "isAvailable": true,
+  "isDeleted": false,
+  "name": "صابون يد",
+  "price": 110,
+  "rejectionReason": "",
+  "sortOrder": 0,
+  "stock": 1498,
+  "storeId": {
+   "id": "6ad2389c718d2c59fb492377",
+   "isOpen": true,
+   "logo": "",
+   "name": {
+    "ar": "سوبرماركت Nour",
+    "en": "Nour Supermarket"
+   }
+  },
+  "unit": "piece",
+  "unitStep": 1,
+  "updatedAt": "2026-10-16T14:45:55.000Z",
+  "finalPrice": 110,
+  "store": {
+   "id": "6ad2389c718d2c59fb492377",
+   "name": "سوبرماركت Nour",
+   "logo": "",
+   "isOpen": true
+  },
+  "category": {
+   "id": "6ad2389c718d2c59fb492370",
+   "name": "منزلية",
+   "icon": "🧴"
+  }
+ }
+}

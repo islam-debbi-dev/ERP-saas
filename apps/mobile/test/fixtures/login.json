@@ -1,0 +1,36 @@
+{
+ "success": true,
+ "data": {
+  "accessToken": "test-access",
+  "refreshToken": "test-refresh",
+  "user": {
+   "id": "6ad2389c718d2c59fb49235b",
+   "name": "أحمد بن علي",
+   "phone": "+213555000201",
+   "email": null,
+   "avatar": "",
+   "role": "client",
+   "storeId": null,
+   "preferredLanguage": "ar",
+   "isActive": true,
+   "mustChangePassword": false,
+   "isBlocked": false,
+   "addresses": [
+    {
+     "location": {
+      "lat": 36.7211,
+      "lng": 3.0501
+     },
+     "label": "Home",
+     "fullAddress": "حي 200 مسكن، باب الزوار، الجزائر",
+     "city": "Algiers",
+     "isDefault": true,
+     "id": "6ad2389ce033aabfe489f35d"
+    }
+   ],
+   "lastLoginAt": "2026-10-16T14:46:04.380Z",
+   "createdAt": "2026-10-16T14:45:48.888Z",
+   "updatedAt": "2026-10-16T14:46:04.380Z"
+  }
+ }
+}

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Light-mode splash background – matches LogoSplashScreen bg -->
+    <color name="splash_bg">#FFF8F8FF</color>
+	<color name="ic_launcher_background">#1E1E1E</color>
+</resources>

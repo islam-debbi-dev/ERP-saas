@@ -1,0 +1,7 @@
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
+#include "Generated.xcconfig"
+// Include local overrides (untracked) if present
+#include? "local.xcconfig"
+
+// Optional: set this in your local Xcode configuration or CI to avoid committing secrets.
+// Example (local): create `ios/local.xcconfig` and add it to your project, or set in Xcode Build Settings.

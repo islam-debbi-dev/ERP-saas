@@ -1,0 +1,7 @@
+# Copy to android/key.properties (gitignored) and fill in. Never commit the real file.
+# See docs/play-store-release.md for the keytool command that creates the keystore.
+storePassword=CHANGE_ME
+keyPassword=CHANGE_ME
+keyAlias=upload
+# Absolute path, outside the repo.
+storeFile=/Users/<you>/keystores/debvora/upload-keystore.jks

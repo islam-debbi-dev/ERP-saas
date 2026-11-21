@@ -1,0 +1,38 @@
+import 'package:get_it/get_it.dart';
+
+import '../../features/account/data/repo/account_repository.dart';
+import '../../features/auth/data/repo/auth_repository.dart';
+import '../../features/cart/logic/cart_cubit.dart';
+import '../../features/catalog/data/repo/catalog_repository.dart';
+import '../../features/order/data/repo/orders_repository.dart';
+import '../helpers/connectivity_services.dart';
+import '../localization/localization_service.dart';
+import '../network/api_client.dart';
+import '../service/dio_generate.dart';
+import '../session/session_cubit.dart';
+
+final getIt = GetIt.instance;
+
+Future<void> setupGetIt() async {
+  getIt.registerLazySingleton<ConnectivityService>(() => ConnectivityService());
+  getIt.registerLazySingleton<LocalizationService>(() => LocalizationService());
+
+  // ── JiBLI backend (all on ApiClient) ────────────────────────────────────
+  getIt.registerLazySingleton<ApiClient>(
+    () => ApiClient(dio: DioGenerate.getDio()),
+  );
+  getIt.registerLazySingleton<CatalogRepository>(
+    () => CatalogRepository(getIt()),
+  );
+  getIt.registerLazySingleton<AuthRepository>(() => AuthRepository(getIt()));
+  getIt.registerLazySingleton<AccountRepository>(
+    () => AccountRepository(getIt()),
+  );
+  getIt.registerLazySingleton<OrderRepository>(() => OrderRepository(getIt()));
+
+  // ── App-wide state ──────────────────────────────────────────────────────
+  getIt.registerLazySingleton<SessionCubit>(
+    () => SessionCubit(getIt(), getIt()),
+  );
+  getIt.registerLazySingleton<CartCubit>(() => CartCubit()..restore());
+}
