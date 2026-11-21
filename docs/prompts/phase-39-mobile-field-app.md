@@ -1,6 +1,6 @@
 Read AGENTS.md, docs/ui.md, docs/domain.md (Stock, Tournées, Crédit, Géolocalisation) and docs/architecture.md before doing anything. Use the `/graphify` graph first to find the files a step touches, then open only those.
 
-## Task: Phase 39 — Application mobile terrain (vendeur, livreur, superviseur)
+## Task: Phase 39 — Debvora, l'application mobile terrain (vendeur, livreur, superviseur, magasinier)
 
 Branch: `phase-39-mobile-field-app`. **This phase replaces phase 19** (`phase-19-mobile-vendeur.md`, never built): do not build phase 19 separately. Phases 1–18, 20–22, 24–26, 30, 31, 31b and 33–37 are merged. 23, 27, 28, 29, 32 and 38 are not built: do not build any part of them here. Production is Vercel + Neon: no VPS, no timers, no background jobs on the server.
 
@@ -13,11 +13,11 @@ What it is today (check it, do not trust this list blindly):
 - **Design system** (keep, reuse, do not restyle): `core/design/*` (spacing, text styles, theme builder, `app_widgets.dart`, responsive), `core/theme/*` (light / dark), `core/components/widgets/*` (buttons, text fields, shimmer, net image, staggered entrance), the bottom navigation, the offline banner (`no_connection_banner.dart`), the cart widgets (`qty_stepper`, `floating_cart_bar`, `order_summary`), cards, search input, empty / loading states.
 - **Consumer features to remove or turn into ERP features**: `catalog` (stores, dishes, customizer), `cart`, `checkout`, `order`, `home` feed, `account` addresses, guest mode, register, social login, forgot password, onboarding stories. Reuse their *widgets* where they fit (the cart becomes the sale basket, the product card becomes the product picker row, the order screens become BL / order screens). Delete what has no use; do not leave dead "Jibli" screens behind.
 
-If `apps/mobile` is not committed yet, commit it first as is (`chore(mobile): import the Flutter app as the base of the field app`), without `build/`, `.dart_tool/`, `.env`, `assets/config/env.default`, keystores or `google-services` files (check `.gitignore` of the app and of the repo). Then make every later change in small commits.
+If `apps/mobile` is not committed yet, commit it first (`chore(mobile): import the Flutter app as the base of the field app`), without `build/`, `.dart_tool/`, `.env`, `assets/config/env.default` or `google-services` files (check `.gitignore` of the app and of the repo). **Delete the old signing keystore and everything that points to it** (`*.jks`, `*.keystore`, `android/key.properties`, the `signingConfigs` that read them, any keystore password in env files or docs): it belongs to the other app and must never be used or committed here. Debvora gets a **new upload keystore** that the owner creates on his Mac (document the `keytool` command and the `key.properties` format in `apps/mobile/docs/play-store-release.md`); `*.jks`, `*.keystore` and `key.properties` go in `.gitignore`; debug builds and CI use the debug key. Then make every later change in small commits.
 
 Do not change the stack (AGENTS §2 already says Flutter + BLoC/Cubit + go_router). AGENTS says "Clean Architecture"; this app uses `data / logic / ui` per feature without a separate domain layer. **Keep the app's structure** (owner's decision); put pure business rules (totals, unit conversion, decimal formatting, role → screens) in plain Dart classes under `core/` or `features/<x>/logic/` so they are unit-testable.
 
-### Who uses the app: three roles, each sees only its own screens
+### Who uses the app: four roles, each sees only its own screens
 The API already has the roles and permissions (`packages/shared/src/enums.ts` `Role`, `permissions.ts` `ROLE_PERMISSIONS`, `effectivePermissions`). The app reads `user.role`, `user.permissions` and `user.features` from `GET /auth/me` and **never decides a right by itself that the API does not also enforce** (AGENTS §4). It only hides what the user cannot do.
 
 | App role | API role | What it does | Default rights in the API today |
@@ -25,11 +25,14 @@ The API already has the roles and permissions (`packages/shared/src/enums.ts` `R
 | **Vendeur** | `SELLER` | Sells from his truck (vente directe) or takes orders (prévente), collects versements, records visits | `VIEW_ALL` + `CLIENTS_CREATE/EDIT`, `SALES_CREATE`, `PAYMENTS_CREATE` |
 | **Livreur** | `LIVREUR` | Delivers the confirmed orders put on him or on the truck he drives, collects at delivery | `VIEW_ALL` only (no `SALES_CREATE`, no `PAYMENTS_CREATE`): he collects through `POST /orders/:id/deliver` (`paidAmount`) |
 | **Superviseur** | `SUPERVISOR` | Follows his team (`User.managerId`): their day, cash, orders to assign, GPS flags, location requests, targets | `VIEW_ALL` + `FIELD`, and the planner routes (`PLANNERS` in `tournees/tournee-scope.ts`) for his team only |
+| **Magasinier** | `STOREKEEPER` | At the dépôt: prepares and validates the morning **chargement** of each truck and the evening **déchargement**, counts stock (inventaire), checks a truck's stock | `VIEW_ALL` + `PURCHASES_CREATE`, `STOCK_COUNT`, `STOCK_TRANSFER` (validating an inventory needs `STOCK_ADJUST`, not his by default) |
 
-- `OWNER`, `MANAGER` and `STOREKEEPER` are refused at login with a clear message ("Utilisez le tableau de bord web") and the dashboard URL (`DASHBOARD_URL` in the env). Write it once in the session cubit (it already has the same pattern: `customerRoles` → replace with `fieldRoles = {SELLER, LIVREUR, SUPERVISOR}`).
+If, while reading `enums.ts` and `permissions.ts`, you find another role that works on the road or at the dépôt and has no screen here, stop and list it in the PR summary with the screens it would need; do not invent a role the API does not have.
+
+- `OWNER` and `MANAGER` are refused at login with a clear message ("Utilisez le tableau de bord web") and the dashboard URL (`DASHBOARD_URL` in the env). Write it once in the session cubit (it already has the same pattern: `customerRoles` → replace with `fieldRoles = {SELLER, LIVREUR, SUPERVISOR, STOREKEEPER}`).
 - **Role shell**: one `StatefulShellRoute` per role (or one shell whose branches come from the role), built from a single `RoleScreens` table in `core/router/`. The router redirect sends a user to his role's home and refuses deep links to another role's screens. A permission granted on top of the role (example: a livreur granted `PAYMENTS_CREATE`) shows the matching action; a revoked one hides it.
 - **Feature flags**: the app needs `Feature.MOBILE_APP` (DISTRIBUTION and ENTREPRISE editions). Without it, login shows "Votre offre n'inclut pas l'application mobile". Screens that need `TOURNEES`, `GEO_CHECK`, `INCENTIVES`, `PROMOTIONS`, `PACKAGING`, `AI_ASSISTANT` hide when the flag is off, exactly like the web.
-- **Trucks** (phase 36, owner's rule of 2026-11-15, domain.md "Every truck is loaded each day"): every truck, delivery trucks included, is loaded each morning by a **chargement** (stock transfer dépôt → truck) and unloaded each evening by a **déchargement** (truck → dépôt). A truck is a `Warehouse` of type `VEHICLE`. The user's truck of today comes from `GET /me/today` (`vehicle`). A van sale leaves from the truck's stock; the BL of an order on a delivery truck takes its stock from that truck. In this phase **chargement and déchargement stay on the web** (storekeeper / manager, they need `STOCK_TRANSFER`); the app shows them read-only (see API additions).
+- **Trucks** (phase 36, owner's rule of 2026-11-15, domain.md "Every truck is loaded each day"): every truck, delivery trucks included, is loaded each morning by a **chargement** (stock transfer dépôt → truck) and unloaded each evening by a **déchargement** (truck → dépôt). A truck is a `Warehouse` of type `VEHICLE`. The user's truck of today comes from `GET /me/today` (`vehicle`). A van sale leaves from the truck's stock; the BL of an order on a delivery truck takes its stock from that truck. **Chargement and déchargement are done in the app too** (owner's decision, 2026-11-22), through the existing `/stock-transfers` API: whoever has `STOCK_TRANSFER` (the magasinier by default; a supervisor or a seller only if the owner granted it) creates, edits and validates them; everybody else sees their truck's chargement / déchargement read-only (API A2). The web keeps working the same way.
 
 ### API contract the app must follow (read the real code, these are pointers)
 Read the controllers and the zod schemas in `packages/shared/src/schemas/` before writing each Dart model. The Dart models mirror the DTOs field by field; generate them with `json_serializable`. Do not invent endpoints: when the app needs data no endpoint gives, it is an **API addition** below, with tests.
@@ -48,6 +51,8 @@ Read the controllers and the zod schemas in `packages/shared/src/schemas/` befor
   - Versement: `POST /payments` (`createPaymentSchema`: `clientId`, `amount`, `mode`, cheque `reference/bank/dueDate`, `allocations` optional, `geo`), `GET /payments?…`, receipt `GET /payments/:id/receipt.pdf`.
   - Visite: `POST /visits` (`createVisitSchema`: outcome SALE / ORDER / PAYMENT_ONLY / NO_SALE with `reason`, linked `saleId` / `orderId` / `paymentId`, `geo`).
   - Objectifs: `GET /me/objectives` (INCENTIVES).
+  - Chargement / déchargement (`STOCK_TRANSFER`, `@RequireFeature(WAREHOUSES)`): `GET /warehouses` (dépôts and trucks in reach), `GET /stock-transfers?type=LOAD|UNLOAD&toWarehouseId=&from=&to=&cursor=`, `GET /stock-transfers/:id`, `POST /stock-transfers` (`createStockTransferSchema`: `type`, `fromWarehouseId`, `toWarehouseId`, `note`, lines `{ productId, unitId, qty }`; a draft has no effect), `PUT /stock-transfers/:id` (whole draft), `POST /stock-transfers/:id/validate` (moves the goods at the current CUMP), `POST /stock-transfers/:id/cancel` (`reason`; moves them back). Bon de chargement PDF through `GET /documents/:type/:id/pdf` if the type exists there (check `printing`). Quantities only: **never show CUMP or value** to a user without `VIEW_COST_AND_MARGIN`.
+  - Inventaire (`STOCK_COUNT`): `GET /inventories`, `POST /inventories`, `PUT /inventories/:id/lines`; `validate` only with `STOCK_ADJUST`.
   - Superviseur: `GET /seller-sessions?date=` (team day + expected cash + truck), `POST /seller-sessions` (open), `POST /seller-sessions/:id/close` (`handedCash`, note), `POST /seller-sessions/:id/adjust`, `GET /orders/deliverers`, `PATCH /orders/:id/livreur` (`livreurId` or `deliveryVehicleId`), `GET /location-requests` + `POST /location-requests/:id/approve|reject`, `GET /geo-checks` (read only: only managers give the verdict), `GET /tournees/reports`, `GET /sales-targets`, `POST /warehouses/:id/driver` (who drives today; refused while a session is open).
   - Assistant: see sub-phase M4.
 - **GPS** (phase 17 contract, `schemas/geo.ts` `geoInputSchema`): on every sale, versement, visit (and delivery after A3), send `{ lat, lng, accuracyM, isMocked, capturedAt }` all four or none. High accuracy, 10 s timeout; on timeout send without position and let the API decide. `isMocked` from Android. When the API answers `GEO_NOTE_REQUIRED`, ask for the note and resend **with the same Idempotency-Key**. Permission screen explaining why (loi 18-07 notice). No background location. Add `geolocator` (named in the commit message with the reason, AGENTS §2).
@@ -61,11 +66,11 @@ Only these. Put each in its own commit before the screen that uses it. Any migra
 - **A4 — only in M5 (offline)**: the `/sync/*` endpoints described there.
 
 ### Sub-phases
-This phase is big. Run **one Claude Code session per sub-phase** (`/clear` between them), commit after each numbered step, push after each sub-phase. Order: M0 → M1 → M2 → M3 → M4 → (M5 if the owner confirms offline).
+This phase is big. Run **one Claude Code session per sub-phase** (`/clear` between them), commit after each numbered step, push after each sub-phase. Order (owner's decision): M0 → M1 vendeur → M2 livreur → M3 superviseur → M3b magasinier → M4 assistant. **Online first**: M5 (offline) is not part of this phase; it stays written below for a later phase.
 
 #### M0 — Rewire the core (no new business screens yet)
 1. Inventory `apps/mobile`: list in the summary what is kept, what is replaced, what is deleted.
-2. App identity: app name, Android `applicationId` / iOS bundle id and launcher label from the env and `package_rename` config. Keep the theme colors and fonts as they are unless the owner gave new ones. Keep the Dart package name `orvynt_starter` for now (renaming touches every import; parked).
+2. App identity: the app is called **Debvora** (launcher label, `APP_NAME`, splash, store listing docs, privacy / help screens: remove every "Jibli" text, logo and email). Android `applicationId` / iOS bundle id `com.debvora.app` unless the owner gives another one (ask in the PR if unsure), set through the `package_rename` config. **New colors will come later**: keep the current colors for now but make sure every color comes from `APP_PRIMARY_COLOR` / `APP_SECONDARY_COLOR` and the theme tokens (no hard-coded hex in widgets), so changing them later is one env edit. Replace the Jibli logo and launcher icons by a neutral "Debvora" text logo placeholder until the owner sends the real one. Keep the fonts. Keep the Dart package name `orvynt_starter` for now (renaming touches every import; parked).
 3. Env: `API_BASE_URL` (the API, e.g. `https://erp-saas-pi.vercel.app`), `DASHBOARD_URL`, app name; update `apps/mobile/.env.example`; remove social-login and unrelated keys.
 4. Network: no envelope, `X-Client-Type: native`, `Accept-Language` = app locale (`ar`, `fr`, `en`), error model `{ code, message, details }`, `Idempotency-Key` helper, refresh flow on the new shape.
 5. Session: login (identifier + password), `/auth/me`, forced password change, logout, role and feature checks, refusal of office roles, session expired → login. No guest mode.
@@ -75,7 +80,7 @@ This phase is big. Run **one Claude Code session per sub-phase** (`/clear` betwe
 9. CI: a `mobile` job in `.github/workflows/ci.yml` (Flutter stable pinned to the version that supports Dart 3.12, `flutter pub get`, `dart run build_runner build --delete-conflicting-outputs` check, `flutter analyze`, `flutter test`, `flutter build apk --debug` uploaded as an artifact), path-filtered on `apps/mobile/**`. `apps/mobile` is not a pnpm package: make sure turbo / pnpm ignore it.
 10. API A1 (seat limit) with its tests.
 
-**Accept M0**: a seller, a livreur and a supervisor of the demo tenant each log in on an Android phone and land on their own empty home; an owner is refused with the dashboard link; a tenant without MOBILE_APP is refused; a 3rd seller on a Starter plan (limit 2) is refused with `MOBILE_SELLER_LIMIT`; airplane mode shows the offline banner; `flutter analyze` and `flutter test` green in CI; `pnpm lint && pnpm typecheck && pnpm test` green.
+**Accept M0**: a seller, a livreur, a supervisor and a magasinier of the demo tenant each log in on an Android phone and land on their own empty home; an owner is refused with the dashboard link; a tenant without MOBILE_APP is refused; a 3rd seller on a Starter plan (limit 2) is refused with `MOBILE_SELLER_LIMIT`; airplane mode shows the offline banner; `flutter analyze` and `flutter test` green in CI; `pnpm lint && pnpm typecheck && pnpm test` green.
 
 #### M1 — Vendeur
 Tabs: **Aujourd'hui · Clients · Vendre · Mon camion · Plus** (Plus = objectifs, mes ventes, mes versements, assistant, compte, langue, thème).
@@ -85,7 +90,7 @@ Tabs: **Aujourd'hui · Clients · Vendre · Mon camion · Plus** (Plus = objecti
 4. Prévente: same basket → `POST /orders` (+ confirm), my orders list with status.
 5. Versement: client, amount, mode (espèces / chèque with number, bank, due date / virement), optional allocation to unpaid documents, GPS, receipt PDF share.
 6. Visite: from a stop, outcome SALE / ORDER / PAYMENT_ONLY linked to the document just made, or NO_SALE with a reason (OTHER needs a note).
-7. Mon camion (API A2): truck stock, today's chargement / déchargement (read only), my expected cash of the day, session status.
+7. Mon camion (API A2): truck stock, today's chargement / déchargement (read only unless he has `STOCK_TRANSFER`), my expected cash of the day, session status.
 8. Objectifs: `GET /me/objectives` progress with "dernière mise à jour".
 9. API A2 with its tests (before step 7).
 
@@ -110,7 +115,19 @@ Tabs: **Équipe · Commandes · Contrôles · Plus**.
 
 **Accept M3 (superviseur)**: he sees only his team's members (a seller of another supervisor never appears, even by deep link or id); closing a seller's day with a short handed cash shows the écart and the web shows the same; assigning an order to a delivery truck makes it appear on that truck driver's phone; approving a location request moves the client pin on the web map; he cannot give a GPS verdict.
 
-#### M4 — Assistant IA (all three roles)
+#### M3b — Magasinier
+Tabs: **Chargements · Camions · Inventaire · Plus**.
+1. Chargements: today's LOAD / UNLOAD transfers per truck (drafts and validated), filters by truck and day.
+2. Nouveau chargement: pick the truck (`code · name`) and the source dépôt, add lines with the product picker (search, barcode scan, cartons / pièces, the dépôt's stock shown), save as draft, then **Valider** with a confirm showing the line count and total quantity. Idempotency-Key on create, validate and cancel. Errors `STOCK_INSUFFICIENT` (per the tenant's negative-stock setting) shown per line.
+3. Déchargement du soir: from a truck, "Décharger le reste" pre-fills the lines with the truck's remaining stock (the same list `POST /seller-sessions/:id/close` returns as `vehicleStock`, or `GET /stock?warehouseId=<truck>`), editable, then validate.
+4. Annuler a validated transfer with a reason (moves the goods back; never deleted).
+5. Camions: each truck's stock and today's driver.
+6. Inventaire: start a count on his dépôt, enter counted quantities line by line (barcode scan), save; validation shown only with `STOCK_ADJUST`.
+7. The same chargement screens are shown to a supervisor or seller **only** when the owner granted them `STOCK_TRANSFER`.
+
+**Accept M3b (magasinier)**: a chargement of 5 lines made on the phone and validated moves the stock dépôt → truck (check the web stock of both and the transfer number `TR-YYYY-…`); the seller of that truck sees it at once in "Mon camion"; the evening déchargement pre-filled from the truck's rest empties the truck; a double tap on Valider makes one transfer; no cost or value appears anywhere on his screens; a seller without the grant sees no "Nouveau chargement".
+
+#### M4 — Assistant IA (all four roles)
 Reuse the phase 30 API as is (`apps/api/src/assistant/assistant.controllers.ts`, `schemas/assistant.ts`, the web client `apps/web/src/lib/assistant.ts` and `apps/web/src/components/assistant/` for the behaviour). No API change.
 1. Show the assistant entry (a floating button or a "Plus" item, as fits the app's design) only when `GET /assistant/status` says `available: true` (flag AI_ASSISTANT, permission USE_ASSISTANT, provider configured); show the `provider` name under the input like the web.
 2. Chat: `POST /assistant/chat` `{ conversationId?, message }` is **SSE over POST**: read it with dio `ResponseType.stream`, split on lines, parse each `data:` JSON as `AssistantStreamEvent`: `conversation`, `text` (append `delta`), `replace` (replace the whole answer), `tool` (show "Je consulte …" with the tool name translated), `links`, `done` (`messageId`, `truncated`), `error` (`code`). A refusal before the stream (quota, rate limit, no provider) is a normal JSON error: show its translated message. Cancel the request when the user leaves the screen.
@@ -121,21 +138,21 @@ Reuse the phase 30 API as is (`apps/api/src/assistant/assistant.controllers.ts`,
 
 **Accept M4**: each role asks one how-to question in darja and one data question ("شحال الكريدي تاع الكليان فلان؟"): the answer streams, data answers respect the role's scope (a seller never gets another seller's client), links open the right app screen, the quota error is translated, the button is hidden when the tenant has no provider.
 
-#### M5 — Hors ligne (only after the owner confirms it; else park it)
+#### M5 — Hors ligne (later phase, NOT built now: the owner chose online first)
 Phase 19's design, kept: pull sync `GET /sync/{products,prices,clients,routes,stock,objectives}?since=<cursor>` (cursor on `updatedAt` + id, soft-deleted rows included, only the user's scope and his truck's stock) stored in `drift` (SQLite); an **outbox** for sale, order, versement, visit, delivery, client location: each a local row with its Idempotency-Key, `PENDING / SENT / FAILED`, sent in order with backoff when online, `FAILED` shown with the server message, never dropped; the server stays the source of truth for stock and prices, and the app replaces its local copy by the server's document after sync. Tests: drift in-memory sync (insert / update / delete / resume), outbox against the API test server (cut mid-request → one sale), `/sync/*` scope and tenant isolation, a full day in airplane mode (10 sales, 3 versements, 5 visits) synced with no duplicate and correct balances.
 
 ### UI rules (docs/ui.md applied to Flutter)
 Load the UI / design skills available in the session before building screens, and **follow the app's existing design system first** (owner's choice): reuse `core/design` and `core/components`, do not add a second component kit. Phone first: 360 dp minimum width with no horizontal scroll, Arabic RTL default (`Directionality` from the locale), logical paddings (`EdgeInsetsDirectional`), 48 dp touch targets, main action in a bottom bar reachable with one thumb, amounts never wrapped and LTR inside Arabic text, contrast ≥ 4.5:1 in light and dark (readable in the sun), loading / empty / error states on every list. Printed documents stay French (they come from the API PDFs).
 
 ### Tests (required)
-- Dart unit tests: Decimal totals and formatting, unit conversion, role → screens table, error-code mapping, Idempotency-Key reuse on retry, SSE parser, every Cubit with logic (sale basket, delivery form, session close, assistant).
-- Widget / golden tests of the main screens per role at 360 × 640 in `ar` and `fr` (today, sale basket, delivery, team day, assistant).
+- Dart unit tests: Decimal totals and formatting, unit conversion, role → screens table, error-code mapping, Idempotency-Key reuse on retry, SSE parser, every Cubit with logic (sale basket, delivery form, session close, chargement form, assistant).
+- Widget / golden tests of the main screens per role at 360 × 640 in `ar` and `fr` (today, sale basket, delivery, team day, new chargement, assistant).
 - i18n key-parity test for `ar.json`, `fr.json`, `en.json`.
 - API integration tests for A1, A2, A3 (and A4 in M5) against the real Postgres test DB: happy path, idempotent replay, tenant isolation, scope (seller / livreur / supervisor).
 - Never skip or weaken a test to get green (AGENTS §5).
 
 ### Not in this phase (parked)
-Bluetooth ESC/POS printing (PDF share is the fallback), push notifications (FCM), iOS App Store release, in-app updates, renaming the Dart package, chargement / déchargement created from the phone, GPS verdicts from the phone, a "mobile" hint in the assistant's system prompt.
+Offline mode (M5), Bluetooth ESC/POS printing (PDF share is the fallback), push notifications (FCM), iOS App Store release, in-app updates, renaming the Dart package, the final Debvora colors and logo (waiting for the owner), GPS verdicts from the phone, a "mobile" hint in the assistant's system prompt.
 
 ### Definition of done
 AGENTS §10 for each sub-phase, plus: APK from CI installed on a real Android phone; the acceptance checks of the sub-phase done in `ar` and `fr` at 360 dp and written in the PR; `ROADMAP.md` updated (row 39, row 19 marked "remplacée par 39"). Each sub-phase ends with a PR summary: What was built / How to test manually / Decisions / Parked ideas / Next sub-phase, and the `db:deploy` reminder when it has a migration.
