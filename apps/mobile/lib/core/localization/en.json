@@ -1686,5 +1686,20 @@
     "cancel": "Cancel",
     "retry": "Try again",
     "loading": "Loading…"
+  },
+  "tabs": {
+    "today": "Today",
+    "clients": "Clients",
+    "sell": "Sell",
+    "my_truck": "My truck",
+    "more": "More",
+    "deliveries": "Deliveries",
+    "team": "Team",
+    "orders": "Orders",
+    "controls": "Checks",
+    "loads": "Loads",
+    "trucks": "Trucks",
+    "inventory": "Stock count",
+    "coming_soon": "This screen comes in the next version."
   }
 }

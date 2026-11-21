@@ -8,15 +8,19 @@ import '../../features/auth/ui/change_password_screen.dart';
 import '../../features/auth/ui/login_screen.dart';
 import '../../features/auth/ui/refused_screen.dart';
 import '../../features/main_screen/ui/main_screen.dart';
+import '../../features/main_screen/ui/placeholder_tab.dart';
 import '../../features/splash/ui/splash_screen.dart';
 import '../di/dependency_injection.dart';
 import '../session/session_cubit.dart';
 import '../session/session_state.dart';
+import 'role_screens.dart';
 import 'routes.dart';
 
 final _rootKey = GlobalKey<NavigatorState>();
 
-/// Where [session] may be, given the requested [path]: null keeps the path.
+/// Where [session] may be, given the requested [path]; null keeps the path.
+/// A signed-in user only reaches his own role's visible tabs and the common
+/// account screens: a deep link to another role's screen goes to his home.
 String? sessionRedirect(SessionState session, String path) {
   // The splash leaves by itself once its animation and the restore are done.
   if (path == Routes.splash) return null;
@@ -30,15 +34,32 @@ String? sessionRedirect(SessionState session, String path) {
     case SessionStatus.refused:
       return path == Routes.refused ? null : Routes.refused;
     case SessionStatus.signedIn:
-      const sessionPaths = {
-        Routes.login,
-        Routes.passwordRequired,
-        Routes.refused,
-        Routes.home,
-      };
-      return sessionPaths.contains(path) ? Routes.account : null;
+      final user = session.user!;
+      return RoleScreens.allows(user, path) ? null : RoleScreens.homeFor(user);
   }
 }
+
+/// The page of a tab. "Plus" is the account screen until M1 adds its menu;
+/// the other tabs are placeholders until their sub-phase.
+Widget _tabPage(RoleTab tab) => tab.path.endsWith('/more')
+    ? const AccountScreen()
+    : PlaceholderTab(tab: tab);
+
+/// One shell per role, one branch per tab (hidden tabs keep their branch:
+/// the redirect refuses them and the bottom bar does not show them).
+List<RouteBase> _roleShells() => [
+  for (final entry in RoleScreens.tabs.entries)
+    StatefulShellRoute.indexedStack(
+      builder: (_, _, shell) =>
+          MainScreen(role: entry.key, navigationShell: shell),
+      branches: [
+        for (final tab in entry.value)
+          StatefulShellBranch(
+            routes: [GoRoute(path: tab.path, builder: (_, _) => _tabPage(tab))],
+          ),
+      ],
+    ),
+];
 
 final GoRouter appRouter = GoRouter(
   navigatorKey: _rootKey,
@@ -71,19 +92,7 @@ final GoRouter appRouter = GoRouter(
       path: Routes.privacyPolicy,
       builder: (_, _) => const PrivacyPolicyScreen(),
     ),
-    StatefulShellRoute.indexedStack(
-      builder: (_, _, shell) => MainScreen(navigationShell: shell),
-      branches: [
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: Routes.account,
-              builder: (_, _) => const AccountScreen(),
-            ),
-          ],
-        ),
-      ],
-    ),
+    ..._roleShells(),
   ],
   errorBuilder: (context, state) => Scaffold(
     appBar: AppBar(),

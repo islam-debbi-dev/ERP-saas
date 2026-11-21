@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/di/dependency_injection.dart';
 import '../../../core/helpers/connectivity_services.dart';
+import '../../../core/localization/tr.dart';
+import '../../../core/router/role_screens.dart';
+import '../../../core/session/session_cubit.dart';
 import 'widgets/custom_bottom_navigation.dart';
 import 'widgets/no_connection_banner.dart';
 
 /// Shell of the role's tabs: keeps each tab's state alive, shows the
 /// floating bottom bar and the offline banner.
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key, required this.navigationShell});
+  const MainScreen({
+    super.key,
+    required this.role,
+    required this.navigationShell,
+  });
 
+  /// The role whose shell this is (branches = `RoleScreens.allTabsFor(role)`).
+  final String role;
   final StatefulNavigationShell navigationShell;
 
   @override
@@ -30,21 +40,30 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  void _onTab(int index) {
+  void _onTab(int branch) {
     widget.navigationShell.goBranch(
-      index,
+      branch,
       // Re-tapping the current tab returns it to its root.
-      initialLocation: index == widget.navigationShell.currentIndex,
+      initialLocation: branch == widget.navigationShell.currentIndex,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<SessionCubit>().state.user;
+    final all = RoleScreens.allTabsFor(widget.role);
+    final visible = user == null
+        ? const <RoleTab>[]
+        : RoleScreens.visibleTabsFor(user);
+    // Bottom-bar position ↔ shell branch (hidden tabs keep their branch).
+    final branches = [for (final t in visible) all.indexOf(t)];
+    final current = branches.indexOf(widget.navigationShell.currentIndex);
+
     return PopScope(
-      // Back on a secondary tab returns to Home before leaving the app.
-      canPop: widget.navigationShell.currentIndex == 0,
+      // Back on a secondary tab returns to the first tab before leaving.
+      canPop: current <= 0,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) widget.navigationShell.goBranch(0);
+        if (!didPop && branches.isNotEmpty) _onTab(branches.first);
       },
       child: Scaffold(
         extendBody: true,
@@ -67,11 +86,15 @@ class _MainScreenState extends State<MainScreen> {
               bottom: 0,
               left: 0,
               right: 0,
-              child: widget.navigationShell.route.branches.length < 2
+              child: visible.length < 2
                   ? const SizedBox.shrink()
                   : CustomBottomNavigation(
-                      currentIndex: widget.navigationShell.currentIndex,
-                      onItemTapped: _onTab,
+                      items: [
+                        for (final t in visible)
+                          NavItem(icon: t.icon, label: context.tr(t.labelKey)),
+                      ],
+                      currentIndex: current < 0 ? 0 : current,
+                      onItemTapped: (i) => _onTab(branches[i]),
                     ),
             ),
           ],

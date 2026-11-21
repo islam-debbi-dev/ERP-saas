@@ -1,24 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart' show SizeExtension;
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:line_icons/line_icons.dart';
 
 import '../../../../core/design/app_spacing.dart';
 import '../../../../core/design/responsive.dart';
-import '../../../../core/localization/tr.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// Floating bottom bar: a white pill with a soft shadow,
-/// and an ink-black pill with a yellow icon for the active tab.
-///
-/// Tabs: Home · Fruits & Vegetables · Supermarket · Account (same order as
-/// the shell branches in `app_router.dart`).
+/// One entry of the bottom bar.
+class NavItem {
+  const NavItem({required this.icon, required this.label});
+  final IconData icon;
+  final String label;
+}
+
+/// Floating bottom bar: a pill with a soft shadow, the active tab in the
+/// action colour with an accent icon. The items are the role's visible tabs
+/// (`RoleScreens`); indexes are positions in [items].
 class CustomBottomNavigation extends StatelessWidget {
+  final List<NavItem> items;
   final int currentIndex;
   final ValueChanged<int> onItemTapped;
 
   const CustomBottomNavigation({
     super.key,
+    required this.items,
     required this.currentIndex,
     required this.onItemTapped,
   });
@@ -28,8 +33,12 @@ class CustomBottomNavigation extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     final Color barColor = isDarkMode ? AppColors.darkSurface : AppColors.white;
-    final Color activePill = isDarkMode ? AppColors.accent : AppColors.ink;
-    final Color activeContent = isDarkMode ? AppColors.ink : Colors.white;
+    final Color activePill = isDarkMode
+        ? AppColors.accent
+        : AppColors.secondaryColor;
+    final Color activeContent = isDarkMode
+        ? AppColors.onPrimary
+        : AppColors.onSecondary;
     final Color inactiveIcon = isDarkMode
         ? AppColors.darkTextSecondary
         : AppColors.textTertiary;
@@ -41,7 +50,7 @@ class CustomBottomNavigation extends StatelessWidget {
       icon: icon,
       text: text,
       iconColor: inactiveIcon,
-      iconActiveColor: isDarkMode ? AppColors.ink : AppColors.accent,
+      iconActiveColor: isDarkMode ? AppColors.onPrimary : AppColors.accent,
       textColor: activeContent,
       semanticLabel: text,
     );
@@ -82,15 +91,7 @@ class CustomBottomNavigation extends StatelessWidget {
                   tabBackgroundColor: activePill,
                   color: inactiveIcon,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  tabs: [
-                    tab(LineIcons.home, context.tr('jb.tabs.home')),
-                    tab(LineIcons.carrot, context.tr('jb.tabs.produce_short')),
-                    tab(
-                      LineIcons.shoppingBasket,
-                      context.tr('jb.tabs.supermarket_short'),
-                    ),
-                    tab(LineIcons.user, context.tr('account.title')),
-                  ],
+                  tabs: [for (final item in items) tab(item.icon, item.label)],
                   selectedIndex: currentIndex,
                   onTabChange: onItemTapped,
                 ),

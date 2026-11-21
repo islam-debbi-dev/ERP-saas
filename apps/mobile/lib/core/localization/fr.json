@@ -1652,5 +1652,20 @@
     "cancel": "Annuler",
     "retry": "Réessayer",
     "loading": "Chargement…"
+  },
+  "tabs": {
+    "today": "Aujourd'hui",
+    "clients": "Clients",
+    "sell": "Vendre",
+    "my_truck": "Mon camion",
+    "more": "Plus",
+    "deliveries": "Livraisons",
+    "team": "Équipe",
+    "orders": "Commandes",
+    "controls": "Contrôles",
+    "loads": "Chargements",
+    "trucks": "Camions",
+    "inventory": "Inventaire",
+    "coming_soon": "Cet écran arrive dans la prochaine version."
   }
 }

@@ -1,5 +1,5 @@
-/// App routes. Tabs live in the shell; everything else is pushed on the root
-/// navigator so it covers the bottom bar.
+/// App routes outside the role tabs (the tabs come from `RoleScreens`).
+/// Pushed on the root navigator so they cover the bottom bar.
 class Routes {
   Routes._();
 
@@ -13,11 +13,10 @@ class Routes {
   /// Office role or no mobile module.
   static const refused = '/refused';
 
-  /// Where the splash sends a signed-in user; the redirect picks the screen.
+  /// Where the splash sends a signed-in user; the redirect picks the role home.
   static const home = '/home';
 
-  // Account.
-  static const account = '/account';
+  // Account (reached from the "Plus" tab of every role).
   static const changePassword = '/account/password';
   static const helpCenter = '/account/help';
   static const privacyPolicy = '/account/privacy';
