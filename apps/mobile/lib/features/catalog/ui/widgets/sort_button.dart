@@ -29,7 +29,7 @@ class SortButton extends StatelessWidget {
     return IconButton.filledTonal(
       tooltip: context.tr('jb.sort.title'),
       style: IconButton.styleFrom(
-        backgroundColor: active ? AppColors.yellow : context.fieldFill,
+        backgroundColor: active ? AppColors.accent : context.fieldFill,
         foregroundColor: active ? AppColors.ink : context.textMain,
       ),
       icon: const Icon(Icons.swap_vert_rounded),
@@ -51,10 +51,7 @@ class SortButton extends StatelessWidget {
                   ListTile(
                     title: Text(sheet.tr(sort.labelKey)),
                     trailing: sort == value
-                        ? const Icon(
-                            Icons.check_rounded,
-                            color: AppColors.yellowDeep,
-                          )
+                        ? Icon(Icons.check_rounded, color: AppColors.accentDeep)
                         : null,
                     onTap: () => Navigator.pop(sheet, sort),
                   ),

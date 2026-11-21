@@ -10,9 +10,7 @@ class HelpCenterScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark
-        ? const Color(0xFF0D0D0D)
-        : AppColors.surface;
+    final backgroundColor = isDark ? AppColors.darkDeep : AppColors.surface;
     final cardColor = isDark ? AppColors.darkSurface : AppColors.surface;
 
     return Scaffold(

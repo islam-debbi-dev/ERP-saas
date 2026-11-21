@@ -204,15 +204,16 @@ class _CommonTextFieldState extends State<CommonTextField>
             ? AppColors.error
             : _isFocused
             ? (widget.focusedBorderColor ??
-                  (isDark ? AppColors.yellow : AppColors.ink))
+                  (isDark ? AppColors.accent : AppColors.ink))
             : (isDark ? AppColors.darkDivider : widget.unfocusedBorderColor),
         width: 1.5,
       ),
       boxShadow: _isFocused
           ? [
               BoxShadow(
-                color: (widget.focusedShadowColor ?? AppColors.ink)
-                    .withValues(alpha: 0.08),
+                color: (widget.focusedShadowColor ?? AppColors.ink).withValues(
+                  alpha: 0.08,
+                ),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),

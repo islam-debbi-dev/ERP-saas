@@ -175,10 +175,10 @@ class _Pill extends StatelessWidget {
     final dark = context.isDarkMode;
     // Ink pill with a yellow count in light mode; inverted in dark mode so
     // it still stands out from the dark surface.
-    final bg = dark ? AppColors.yellow : AppColors.ink;
+    final bg = dark ? AppColors.accent : AppColors.ink;
     final fg = dark ? AppColors.ink : AppColors.white;
-    final badgeBg = dark ? AppColors.ink : AppColors.yellow;
-    final badgeFg = dark ? AppColors.yellow : AppColors.ink;
+    final badgeBg = dark ? AppColors.ink : AppColors.accent;
+    final badgeFg = dark ? AppColors.accent : AppColors.ink;
     final added = addedName != null;
     final label = added
         ? context.tr('jb.cart.added_named', args: {'name': addedName!})

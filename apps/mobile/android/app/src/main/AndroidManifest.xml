@@ -4,7 +4,7 @@
          Google Play reviews (and can reject) undeclared sensitive permissions.
          image_picker uses the system photo picker, which needs none. -->
     <application
-        android:label="Jibli"
+        android:label="Debvora"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

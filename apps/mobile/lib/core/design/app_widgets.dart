@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../components/logo/jibli_loader.dart';
+import '../components/logo/debvora_logo.dart';
 import '../theme/app_theme.dart';
 import 'app_spacing.dart';
 import 'app_text_styles.dart';
 
-/// Reusable building blocks that carry the Jibli look. Use these instead of
+/// Reusable building blocks that carry the app look. Use these instead of
 /// restyling Containers / buttons inside each screen.
 
 enum AppButtonVariant { primary, accent, secondary, outline, text }
@@ -39,11 +39,11 @@ class AppButton extends StatelessWidget {
     BorderSide? side;
     switch (variant) {
       case AppButtonVariant.primary:
-        bg = dark ? AppColors.yellow : AppColors.ink;
+        bg = dark ? AppColors.accent : AppColors.ink;
         fg = dark ? AppColors.ink : Colors.white;
         break;
       case AppButtonVariant.accent:
-        bg = AppColors.yellow;
+        bg = AppColors.accent;
         fg = AppColors.ink;
         break;
       case AppButtonVariant.secondary:
@@ -64,7 +64,7 @@ class AppButton extends StatelessWidget {
     final bool disabled = onPressed == null || loading;
 
     final Widget content = loading
-        ? JibliLoader(
+        ? BrandLoader(
             size: 28,
             color: fg,
             trackColor: fg.withValues(alpha: 0.25),
@@ -226,8 +226,8 @@ class AppEmptyState extends StatelessWidget {
               Container(
                 width: 88,
                 height: 88,
-                decoration: const BoxDecoration(
-                  color: AppColors.yellowTint,
+                decoration: BoxDecoration(
+                  color: AppColors.accentTint,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, size: 40, color: AppColors.ink),
@@ -299,7 +299,7 @@ class AppLoader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: JibliLoader(size: size));
+    return Center(child: BrandLoader(size: size));
   }
 }
 
@@ -398,7 +398,7 @@ class AppChoiceChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool dark = Theme.of(context).brightness == Brightness.dark;
     final Color bg = selected
-        ? AppColors.yellow
+        ? AppColors.accent
         : (dark ? AppColors.darkSurface : AppColors.surface);
     final Color fg = selected
         ? AppColors.ink

@@ -72,7 +72,7 @@ class _AddressTile extends StatelessWidget {
         children: [
           Icon(
             address.isDefault ? Icons.home_rounded : Icons.place_outlined,
-            color: address.isDefault ? AppColors.yellowDeep : context.textMuted,
+            color: address.isDefault ? AppColors.accentDeep : context.textMuted,
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -89,7 +89,7 @@ class _AddressTile extends StatelessWidget {
                       Text(
                         context.tr('jb.address.default'),
                         style: AppTextStyles.caption.copyWith(
-                          color: AppColors.yellowDeep,
+                          color: AppColors.accentDeep,
                           fontWeight: FontWeight.w700,
                         ),
                       ),

@@ -408,7 +408,7 @@ class _AuthFieldState extends State<AuthField> {
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: _focused
-              ? AppColors.yellow
+              ? AppColors.accent
               : isDark
               ? Colors.white.withValues(alpha: 0.08)
               : Colors.black.withValues(alpha: 0.08),
@@ -433,7 +433,7 @@ class _AuthFieldState extends State<AuthField> {
           prefixIcon: Icon(
             widget.icon,
             color: _focused
-                ? (isDark ? AppColors.yellow : AppColors.ink)
+                ? (isDark ? AppColors.accent : AppColors.ink)
                 : (isDark ? Colors.white24 : Colors.black26),
             size: 18.sp,
           ),

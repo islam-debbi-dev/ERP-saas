@@ -95,14 +95,24 @@ class _GuestDialogState extends State<_GuestDialog>
     );
 
     _iconScale = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _ctrl, curve: const Interval(0.0, 0.5, curve: Curves.elasticOut)),
+      CurvedAnimation(
+        parent: _ctrl,
+        curve: const Interval(0.0, 0.5, curve: Curves.elasticOut),
+      ),
     );
     _iconFade = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _ctrl, curve: const Interval(0.0, 0.4, curve: Curves.easeIn)),
+      CurvedAnimation(
+        parent: _ctrl,
+        curve: const Interval(0.0, 0.4, curve: Curves.easeIn),
+      ),
     );
-    _slideUp = Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
-      CurvedAnimation(parent: _ctrl, curve: const Interval(0.25, 0.75, curve: Curves.easeOutCubic)),
-    );
+    _slideUp = Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _ctrl,
+            curve: const Interval(0.25, 0.75, curve: Curves.easeOutCubic),
+          ),
+        );
 
     _ctrl.forward();
   }
@@ -120,8 +130,8 @@ class _GuestDialogState extends State<_GuestDialog>
     final loc = AppLocalizations.of(context);
 
     final bgColor = isDark ? AppColors.darkSurface : AppColors.white;
-    final accentFg = isDark ? AppColors.ink : AppColors.yellow;
-    final accentBg = isDark ? AppColors.yellow : AppColors.ink;
+    final accentFg = isDark ? AppColors.ink : AppColors.accent;
+    final accentBg = isDark ? AppColors.accent : AppColors.ink;
     final subtitleColor = isDark ? Colors.grey.shade400 : Colors.grey.shade600;
 
     return Center(
@@ -154,9 +164,9 @@ class _GuestDialogState extends State<_GuestDialog>
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppColors.yellow,
-                          AppColors.yellow.withValues(alpha: 0.6),
-                          AppColors.yellow.withValues(alpha: 0.2),
+                          AppColors.accent,
+                          AppColors.accent.withValues(alpha: 0.6),
+                          AppColors.accent.withValues(alpha: 0.2),
                         ],
                       ),
                     ),
@@ -170,10 +180,7 @@ class _GuestDialogState extends State<_GuestDialog>
                     builder: (context, child) {
                       return FadeTransition(
                         opacity: _iconFade,
-                        child: ScaleTransition(
-                          scale: _iconScale,
-                          child: child,
-                        ),
+                        child: ScaleTransition(scale: _iconScale, child: child),
                       );
                     },
                     child: Container(
@@ -185,19 +192,19 @@ class _GuestDialogState extends State<_GuestDialog>
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            AppColors.yellow.withValues(alpha: 0.35),
-                            AppColors.yellow.withValues(alpha: 0.1),
+                            AppColors.accent.withValues(alpha: 0.35),
+                            AppColors.accent.withValues(alpha: 0.1),
                           ],
                         ),
                         border: Border.all(
-                          color: AppColors.yellow.withValues(alpha: 0.5),
+                          color: AppColors.accent.withValues(alpha: 0.5),
                           width: 1.5,
                         ),
                       ),
                       child: Icon(
                         Icons.lock_outline_rounded,
                         size: 36.sp,
-                        color: isDark ? AppColors.yellow : AppColors.ink,
+                        color: isDark ? AppColors.accent : AppColors.ink,
                       ),
                     ),
                   ),
@@ -217,7 +224,8 @@ class _GuestDialogState extends State<_GuestDialog>
                         child: Column(
                           children: [
                             Text(
-                              loc?.translate('guest_mode_title') ?? 'Sign In Required',
+                              loc?.translate('guest_mode_title') ??
+                                  'Sign In Required',
                               textAlign: TextAlign.center,
                               style: theme.textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.w700,

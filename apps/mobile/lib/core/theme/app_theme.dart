@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import '../config/app_env.dart';
 
-/// Brand + neutral tokens (Jibli look: clean white surfaces, ink black for
-/// actions, yellow as the accent).
+/// Brand + neutral tokens (clean white surfaces, ink for actions, an accent).
 ///
-/// `primaryColor` / `secondaryColor` are still read live from [AppEnv]
-/// (`.env` / `--dart-define`), so a white-label build can rebrand the app:
-///  * [primaryColor]   = the brand accent (Jibli yellow `#FFD83A`)
+/// Every brand colour comes from [AppEnv] (`APP_PRIMARY_COLOR` /
+/// `APP_SECONDARY_COLOR` in the env file or `--dart-define`), so changing the
+/// Debvora colours is one env edit:
+///  * [primaryColor]   = the brand accent, and its [accentDeep] / [accentTint]
 ///  * [secondaryColor] = the action colour used for buttons and active states
-///    (Jibli ink `#1E1E1E`, always paired with white text)
-/// Everything else below is a fixed neutral token.
+/// Everything else below is a fixed neutral token. Widgets never write a hex
+/// colour: they use these tokens or `Theme.of(context)`.
 class AppColors {
   AppColors._();
 
@@ -19,12 +19,20 @@ class AppColors {
   /// Action colour (buttons, active tab). Maps to `APP_SECONDARY_COLOR`.
   static Color get secondaryColor => AppEnv.secondaryColor;
 
-  // ── Jibli tokens (constants, safe to use in const contexts) ───────────────
+  /// The accent itself (badges, highlights, active chips).
+  static Color get accent => primaryColor;
+
+  /// A deeper shade of the accent (pressed states, borders on the accent).
+  static Color get accentDeep =>
+      Color.lerp(primaryColor, const Color(0xFF000000), 0.08)!;
+
+  /// A soft tint of the accent (chip and highlight backgrounds).
+  static Color get accentTint =>
+      Color.lerp(const Color(0xFFFFFFFF), primaryColor, 0.25)!;
+
+  // ── Neutral tokens (constants, safe to use in const contexts) ─────────────
   static const Color ink = Color(0xFF1E1E1E);
   static const Color inkSoft = Color(0xFF3A3A3C);
-  static const Color yellow = Color(0xFFFFD83A);
-  static const Color yellowDeep = Color(0xFFFFCC00);
-  static const Color yellowTint = Color(0xFFFFF6CC);
 
   static const Color white = Color(0xFFFFFFFF);
   static const Color background = Color(0xFFFFFFFF);
@@ -51,6 +59,22 @@ class AppColors {
   static const Color darkDivider = Color(0xFF38383A);
   static const Color darkTextSecondary = Color(0xFFAEAEB2);
 
+  /// Deepest page background (privacy / help pages in dark mode).
+  static const Color darkDeep = Color(0xFF0D0D0D);
+
+  /// Raised card in dark mode, slightly blue (shimmer cards, dropdowns).
+  static const Color darkCard = Color(0xFF171B22);
+
+  // Loading placeholders (shimmer).
+  static const Color shimmerBase = Color(0xFFE8E8E8);
+  static const Color shimmerBlock = Color(0xFFDDDDDD);
+  static const Color shimmerBaseDark = Color(0xFF2A3441);
+  static const Color shimmerHighlightDark = Color(0xFF3A4758);
+  static const Color shimmerBlockDark = Color(0xFF233041);
+
+  /// Grey veil over an image of something unavailable.
+  static const Color desaturate = Color(0x66808080);
+
   // ── Legacy names kept so existing screens keep compiling ──────────────────
   static const Color threedColor = ink;
   static const Color cardLightColor = surface;
@@ -65,7 +89,7 @@ class AppColors {
   static Color get surfaceDark => darkBackground;
 
   /// Soft tint of the brand accent (chips, highlights).
-  static Color get primaryContainer => yellowTint;
+  static Color get primaryContainer => accentTint;
 
   /// Soft tint of the action colour.
   static Color get secondaryContainer => grouped;

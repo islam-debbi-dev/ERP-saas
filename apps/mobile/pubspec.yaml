@@ -105,11 +105,7 @@ flutter:
   assets:
     - lib/core/cities/cities.json
     - lib/core/localization/ 
-    - assets/svg/
-    - assets/onboarding_images/
     - assets/config/env.default
-    - assets/icons/
-    - assets/social_media/
     - assets/
 
   fonts:
@@ -131,7 +127,7 @@ flutter:
       fonts:
         - asset: fonts/RussoOne-Regular.ttf
 
-# Sources live in assets/branding/ (rasterised from logo_*.svg).
+# Sources live in assets/branding/ (text placeholder until the Debvora logo arrives).
 # Regenerate with: dart run flutter_launcher_icons && dart run flutter_native_splash:create
 flutter_launcher_icons:
   android: "launcher_icon"
@@ -139,7 +135,7 @@ flutter_launcher_icons:
   image_path: "assets/branding/app_icon.png"
   remove_alpha_ios: true
   min_sdk_android: 21
-  adaptive_icon_background: "#1E1E1E"
+  adaptive_icon_background: "#FFD83A"
   adaptive_icon_foreground: "assets/branding/app_icon_foreground.png"
   adaptive_icon_monochrome: "assets/branding/app_icon_monochrome.png"
   image_path_ios_dark_transparent: "assets/branding/app_icon_ios_dark.png"

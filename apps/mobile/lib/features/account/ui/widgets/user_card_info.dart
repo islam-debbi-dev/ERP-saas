@@ -38,10 +38,10 @@ class userCardInfo extends StatelessWidget {
         ? _translateError(localization, errorMessage!)
         : '';
 
-    // Jibli profile header: yellow panel with an ink circle accent
+    // Profile header: yellow panel with an ink circle accent
     // (dark mode: elevated surface with a yellow circle).
-    final headerBg = isDark ? AppColors.darkElevated : AppColors.yellow;
-    final shapeColor = isDark ? AppColors.yellow : AppColors.ink;
+    final headerBg = isDark ? AppColors.darkElevated : AppColors.accent;
+    final shapeColor = isDark ? AppColors.accent : AppColors.ink;
     final onHeader = isDark ? Colors.white : AppColors.ink;
 
     return Container(
@@ -81,7 +81,7 @@ class userCardInfo extends StatelessWidget {
                           padding: EdgeInsets.all(3.w),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: isDark ? AppColors.yellow : AppColors.ink,
+                            color: isDark ? AppColors.accent : AppColors.ink,
                           ),
                           child: Container(
                             padding: EdgeInsets.all(2.w),
@@ -129,7 +129,7 @@ class userCardInfo extends StatelessWidget {
                                 ),
                                 decoration: BoxDecoration(
                                   color: isDark
-                                      ? AppColors.yellow
+                                      ? AppColors.accent
                                       : AppColors.ink,
                                   borderRadius: BorderRadius.circular(20.r),
                                 ),
@@ -303,7 +303,7 @@ class _InfoTile extends StatelessWidget {
           Icon(
             icon,
             size: 16.sp,
-            color: isDark ? AppColors.yellow : AppColors.ink,
+            color: isDark ? AppColors.accent : AppColors.ink,
           ),
           SizedBox(width: 8.w),
           Expanded(

@@ -5,8 +5,6 @@ class Routes {
 
   // Launch.
   static const splash = '/splash';
-  static const onboarding = '/onboarding';
-  static const welcome = '/welcome';
 
   // Tabs.
   static const home = '/home';

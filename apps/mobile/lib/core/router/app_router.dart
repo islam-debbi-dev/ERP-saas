@@ -22,8 +22,6 @@ import '../../features/catalog/ui/store_list_screen.dart';
 import '../../features/checkout/ui/checkout_screen.dart';
 import '../../features/home/ui/home_tab_screen.dart';
 import '../../features/main_screen/ui/main_screen.dart';
-import '../../features/onboarding/ui/onboarding_screen.dart';
-import '../../features/onboarding/ui/welcome_page.dart';
 import '../../features/order/ui/my_orders_screen.dart';
 import '../../features/order/ui/order_details_screen.dart';
 import '../../features/order/ui/order_placed_screen.dart';
@@ -64,11 +62,6 @@ final GoRouter appRouter = GoRouter(
   },
   routes: [
     GoRoute(path: Routes.splash, builder: (_, _) => const LogoSplashScreen()),
-    GoRoute(
-      path: Routes.onboarding,
-      builder: (_, _) => const OnboardingScreen(),
-    ),
-    GoRoute(path: Routes.welcome, builder: (_, _) => const WelcomePage()),
 
     // Auth.
     GoRoute(path: Routes.auth, builder: (_, _) => const AuthScreen()),

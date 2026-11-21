@@ -247,11 +247,13 @@ class _CommonListButtonState extends State<CommonListButton>
         if (hasSubmenu && _isExpanded) ...[
           SizeTransition(
             sizeFactor: _expandAnimation,
-            axisAlignment: -1,
+            alignment: AlignmentDirectional.topStart,
             child: FadeTransition(
               opacity: _expandAnimation,
               child: Padding(
-                padding: EdgeInsets.only(left: widget.elementSpacing),
+                padding: EdgeInsetsDirectional.only(
+                  start: widget.elementSpacing,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [...widget.childButtons!.map((btn) => btn)],
@@ -545,9 +547,7 @@ class _CommonListButtonState extends State<CommonListButton>
     return TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w500,
-      color: type == ListButtonType.logout
-          ? AppColors.error
-          : widget.textColor,
+      color: type == ListButtonType.logout ? AppColors.error : widget.textColor,
     );
   }
 

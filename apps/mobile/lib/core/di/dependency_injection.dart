@@ -17,7 +17,7 @@ Future<void> setupGetIt() async {
   getIt.registerLazySingleton<ConnectivityService>(() => ConnectivityService());
   getIt.registerLazySingleton<LocalizationService>(() => LocalizationService());
 
-  // ── JiBLI backend (all on ApiClient) ────────────────────────────────────
+  // ── Backend (all on ApiClient) ────────────────────────────────────
   getIt.registerLazySingleton<ApiClient>(
     () => ApiClient(dio: DioGenerate.getDio()),
   );

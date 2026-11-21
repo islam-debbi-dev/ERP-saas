@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../shimmer/app_shimmer.dart';
 import '../../../design/app_spacing.dart';
 import '../../../theme/app_theme.dart';
@@ -39,23 +38,12 @@ class CommonButton extends StatefulWidget {
   final IconData successIcon;
   final IconData failureIcon;
 
-  /// Render the button as an icon-only button (no text). When true, the
-  /// button will prefer `socialIcon` or `socialSvg` (if provided) and fall
-  /// back to `leadingIcon`.
+  /// Render the button as an icon-only button (no text), showing
+  /// `leadingIcon` (or the label's first letter).
   final bool iconOnly;
 
   /// Size for the icon when `iconOnly` is true. Falls back to `height * 0.5`.
   final double? iconSize;
-
-  /// If provided, renders a social-style button for the given platform
-  final SocialType? socialType;
-
-  /// Optional override for social icon (IconData) or SVG asset path (socialSvg).
-  final IconData? socialIcon;
-  final String? socialSvg;
-
-  /// If true, render social button as an outlined button (common for Google)
-  final bool socialOutlined;
 
   /// Text style
   final TextStyle? textStyle;
@@ -101,10 +89,6 @@ class CommonButton extends StatefulWidget {
     this.removeWhenInvisible = false,
     this.autoResetAfterStateChange = true,
     this.stateShowDuration = const Duration(milliseconds: 1400),
-    this.socialType,
-    this.socialIcon,
-    this.socialSvg,
-    this.socialOutlined = false,
     this.iconOnly = false,
     this.iconSize,
   });
@@ -215,61 +199,14 @@ class _CommonButtonState extends State<CommonButton>
     final bool isInvisibleButPresent =
         effectiveState == ButtonState.invisible && !widget.removeWhenInvisible;
 
-    // Theme sensitivity
-    final ThemeData theme = Theme.of(context);
-    final bool isDark = theme.brightness == Brightness.dark;
-
-    // Social brand color mapping (simple, high-level). These can be overridden
-    // by providing explicit color parameters if needed in the future.
-    Color? brandColor;
-    if (widget.socialType != null) {
-      switch (widget.socialType!) {
-        case SocialType.google:
-          brandColor = Colors
-              .white; // Google commonly uses white background with colored G
-          break;
-        case SocialType.twitter:
-          brandColor = const Color(0xFF1DA1F2);
-          break;
-        case SocialType.apple:
-          brandColor = Colors.black;
-          break;
-        case SocialType.linkedin:
-          brandColor = const Color(0xFF0A66C2);
-          break;
-      }
-    }
-
-    // Determine background/content colors. If socialType is provided, adapt
-    // visuals for social branding and for dark/light mode. Supports an
-    // "outlined" social style (common for Google sign-in buttons).
-    Color backgroundColor;
-    Color contentColor;
-    BoxBorder? border;
-
-    if (widget.socialType != null && brandColor != null) {
-      if (widget.socialOutlined) {
-        backgroundColor = isDark ? Colors.transparent : Colors.white;
-        border = Border.all(color: brandColor);
-        contentColor = brandColor;
-      } else {
-        backgroundColor = brandColor;
-        // If brand is light (like Google's white), use dark text/icon; otherwise white
-        contentColor = (brandColor.computeLuminance() > 0.6)
-            ? Colors.black
-            : Colors.white;
-      }
-    } else {
-      // Non-social default behavior (respect state)
-      backgroundColor = isSuccess
-          ? widget.successColor
-          : isFailure
-          ? widget.failureColor
-          : (widget.enabled && isVisible)
-          ? (widget.visibleColor ?? AppColors.secondaryColor)
-          : widget.disabledColor;
-      contentColor = widget.textStyle?.color ?? Colors.white;
-    }
+    final Color backgroundColor = isSuccess
+        ? widget.successColor
+        : isFailure
+        ? widget.failureColor
+        : (widget.enabled && isVisible)
+        ? (widget.visibleColor ?? AppColors.secondaryColor)
+        : widget.disabledColor;
+    final Color contentColor = widget.textStyle?.color ?? AppColors.onSecondary;
 
     final bool isIconOnly = widget.iconOnly;
 
@@ -316,7 +253,6 @@ class _CommonButtonState extends State<CommonButton>
           decoration: BoxDecoration(
             color: backgroundColor,
             borderRadius: widget.borderRadius,
-            border: border,
             boxShadow: [
               if (!isInvisibleButPresent)
                 BoxShadow(
@@ -406,34 +342,11 @@ class _CommonButtonState extends State<CommonButton>
           height: widget.height,
         );
       case ButtonState.visible:
-        // Icon-only mode: prefer socialSvg/socialIcon then leadingIcon
+        // Icon-only mode: leadingIcon, else the label's first letter.
         if (widget.iconOnly) {
           final double iconSz = widget.iconSize ?? (widget.height * 0.5);
           Widget iconWidget;
-          if (widget.socialSvg != null) {
-            final String path = widget.socialSvg!;
-            if (path.toLowerCase().endsWith('.svg')) {
-              iconWidget = SvgPicture.asset(
-                path,
-                width: iconSz,
-                height: iconSz,
-                color: contentColor,
-              );
-            } else {
-              iconWidget = Image.asset(
-                path,
-                width: iconSz,
-                height: iconSz,
-                fit: BoxFit.contain,
-              );
-            }
-          } else if (widget.socialIcon != null) {
-            iconWidget = Icon(
-              widget.socialIcon,
-              color: contentColor,
-              size: iconSz,
-            );
-          } else if (widget.leadingIcon != null) {
+          if (widget.leadingIcon != null) {
             iconWidget = Icon(
               widget.leadingIcon,
               color: contentColor,
@@ -458,26 +371,7 @@ class _CommonButtonState extends State<CommonButton>
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Social icon precedence: use `socialIcon` or `socialSvg` (asset image) when socialType provided,
-            // otherwise fall back to leadingIcon.
-            if (widget.socialType != null &&
-                (widget.socialIcon != null || widget.socialSvg != null)) ...[
-              if (widget.socialIcon != null) ...[
-                Icon(
-                  widget.socialIcon,
-                  color: contentColor,
-                  size: widget.height * 0.5,
-                ),
-              ] else ...[
-                // fallback to an asset image for socialSvg; assuming caller provides a suitable raster/SVG asset.
-                SizedBox(
-                  height: widget.height * 0.6,
-                  width: widget.height * 0.6,
-                  child: Image.asset(widget.socialSvg!, fit: BoxFit.contain),
-                ),
-              ],
-              const SizedBox(width: 8),
-            ] else if (widget.leadingIcon != null) ...[
+            if (widget.leadingIcon != null) ...[
               Icon(widget.leadingIcon, color: contentColor),
               const SizedBox(width: 8),
             ],
@@ -511,6 +405,3 @@ class _CommonButtonState extends State<CommonButton>
 }
 
 enum ButtonState { visible, loading, success, failure, invisible }
-
-/// Supported social button platforms. Used for `CommonButton.socialType`.
-enum SocialType { google, twitter, apple, linkedin }

@@ -34,10 +34,10 @@ class CategoryBubble extends StatelessWidget {
                 height: 60,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: selected ? AppColors.yellow : context.fieldFill,
+                  color: selected ? AppColors.accent : context.fieldFill,
                   border: Border.all(
                     color: selected
-                        ? AppColors.yellowDeep
+                        ? AppColors.accentDeep
                         : context.fieldBorder,
                   ),
                 ),

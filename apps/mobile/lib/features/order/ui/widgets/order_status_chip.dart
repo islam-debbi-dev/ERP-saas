@@ -16,7 +16,7 @@ class OrderStatusChip extends StatelessWidget {
   static Color colorOf(OrderStatus status) => switch (status) {
     OrderStatus.pending => AppColors.warning,
     OrderStatus.confirmed => AppColors.info,
-    OrderStatus.outForDelivery => AppColors.yellowDeep,
+    OrderStatus.outForDelivery => AppColors.accentDeep,
     OrderStatus.delivered => AppColors.success,
     OrderStatus.cancelled => AppColors.error,
   };

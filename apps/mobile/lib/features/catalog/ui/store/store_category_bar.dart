@@ -188,9 +188,9 @@ class _StoreCategoryBarState extends State<StoreCategoryBar> {
                   bottom: 4,
                   width: 24,
                   height: 3,
-                  child: const DecoratedBox(
+                  child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: AppColors.yellowDeep,
+                      color: AppColors.accentDeep,
                       borderRadius: AppRadius.pillAll,
                     ),
                   ),
@@ -307,7 +307,7 @@ class CategoryTile extends StatelessWidget {
                             ),
                             border: Border.all(
                               color: selected
-                                  ? AppColors.yellowDeep
+                                  ? AppColors.accentDeep
                                   : Colors.transparent,
                               width: 2.5,
                             ),
@@ -358,7 +358,7 @@ class CategoryTile extends StatelessWidget {
       case CategoryTileVisual.all:
         return ColoredBox(
           key: const ValueKey('tile-all'),
-          color: selected ? AppColors.yellow : fill,
+          color: selected ? AppColors.accent : fill,
           child: Icon(
             Icons.grid_view_rounded,
             size: 26,

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/components/brand_logo.dart';
+import '../../../core/components/logo/debvora_logo.dart';
 import '../../../core/components/widgets/shimmer/app_shimmer.dart';
 import '../../../core/config/app_env.dart';
 import '../../../core/design/app_text_styles.dart';
@@ -139,7 +139,7 @@ class _WelcomeScreenState extends State<_WelcomeScreen>
             right: -80,
             child: AuthGlow(
               size: 300,
-              color: AppColors.yellow.withValues(alpha: isDark ? 0.16 : 0.45),
+              color: AppColors.accent.withValues(alpha: isDark ? 0.16 : 0.45),
             ),
           ),
           Positioned(
@@ -147,7 +147,7 @@ class _WelcomeScreenState extends State<_WelcomeScreen>
             left: -60,
             child: AuthGlow(
               size: 260,
-              color: AppColors.yellowDeep.withValues(
+              color: AppColors.accentDeep.withValues(
                 alpha: isDark ? 0.10 : 0.25,
               ),
             ),
@@ -191,7 +191,7 @@ class _WelcomeScreenState extends State<_WelcomeScreen>
                     AuthGradBtn(
                       label: loc?.translate('sign_in') ?? 'Sign In',
                       onTap: widget.onLogin,
-                      colors: [AppColors.yellow, AppColors.yellowDeep],
+                      colors: [AppColors.accent, AppColors.accentDeep],
                     ),
                     SizedBox(height: 12.h),
                     AuthBorderBtn(
@@ -300,7 +300,7 @@ class _LoginScreenState extends State<_LoginScreen> {
             right: -40,
             child: AuthGlow(
               size: 220,
-              color: AppColors.yellow.withValues(alpha: isDark ? 0.14 : 0.40),
+              color: AppColors.accent.withValues(alpha: isDark ? 0.14 : 0.40),
             ),
           ),
           SafeArea(
@@ -360,7 +360,7 @@ class _LoginScreenState extends State<_LoginScreen> {
                                 'Forgot password?',
                             style: TextStyle(
                               fontFamily: AppTextStyles.fontFamily,
-                              color: isDark ? AppColors.yellow : AppColors.ink,
+                              color: isDark ? AppColors.accent : AppColors.ink,
                               fontSize: 13.sp,
                               fontWeight: FontWeight.w600,
                             ),
@@ -372,7 +372,7 @@ class _LoginScreenState extends State<_LoginScreen> {
                         label: loc?.translate('sign_in') ?? 'Sign In',
                         loading: loading,
                         onTap: _login,
-                        colors: [AppColors.yellow, AppColors.yellowDeep],
+                        colors: [AppColors.accent, AppColors.accentDeep],
                       ),
                       SizedBox(height: 12.h),
                       AuthBorderBtn(
@@ -389,7 +389,7 @@ class _LoginScreenState extends State<_LoginScreen> {
                               loc?.translate('no_account_prompt') ??
                               "Don't have an account? ",
                           action: loc?.translate('sign_up') ?? 'Sign up',
-                          accent: AppColors.yellow,
+                          accent: AppColors.accent,
                           onTap: onGoSignup,
                         ),
                       ),
@@ -609,10 +609,10 @@ class _SignupFormScreenState extends State<_SignupFormScreen> {
                                 ? const LinearGradient(
                                     colors: [Colors.grey, Colors.grey],
                                   )
-                                : const LinearGradient(
+                                : LinearGradient(
                                     colors: [
-                                      AppColors.yellow,
-                                      AppColors.yellowDeep,
+                                      AppColors.accent,
+                                      AppColors.accentDeep,
                                     ],
                                   ),
                             borderRadius: BorderRadius.circular(18.r),

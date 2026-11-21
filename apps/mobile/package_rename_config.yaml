@@ -1,0 +1,13 @@
+# Native identity of the app (launcher label, Android applicationId, iOS bundle id).
+# Apply with: dart run package_rename
+package_rename_config:
+  android:
+    app_name: "Debvora"
+    package_name: "com.debvora.app"
+    override_old_package: "org.jibli.app"
+    lang: "kotlin"
+
+  ios:
+    app_name: "Debvora"
+    bundle_name: "Debvora"
+    package_name: "com.debvora.app"

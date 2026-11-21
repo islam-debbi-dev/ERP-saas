@@ -118,9 +118,9 @@ class _AccountScreenState extends State<AccountScreen> {
                   padding: const EdgeInsetsDirectional.fromSTEB(20, 8, 20, 0),
                   child: Text(
                     context.tr('jb.account.manager_delete_hint'),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: context.textMuted,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: context.textMuted),
                   ),
                 )
               else
@@ -318,9 +318,7 @@ class _StoreCard extends StatelessWidget {
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     context.tr('jb.account.manage_store_hint'),
-                    style: text.bodySmall?.copyWith(
-                      color: context.textMuted,
-                    ),
+                    style: text.bodySmall?.copyWith(color: context.textMuted),
                   ),
                 ],
               ),
@@ -343,7 +341,7 @@ class _GuestCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.xl),
         decoration: BoxDecoration(
-          color: context.isDarkMode ? AppColors.darkElevated : AppColors.yellow,
+          color: context.isDarkMode ? AppColors.darkElevated : AppColors.accent,
           borderRadius: AppRadius.xlAll,
         ),
         child: Column(

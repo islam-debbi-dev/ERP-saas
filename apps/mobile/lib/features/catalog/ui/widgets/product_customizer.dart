@@ -172,8 +172,8 @@ class _SectionHeader extends StatelessWidget {
             decoration: BoxDecoration(
               color: required
                   ? (context.isDarkMode
-                        ? AppColors.yellow.withValues(alpha: 0.18)
-                        : AppColors.yellowTint)
+                        ? AppColors.accent.withValues(alpha: 0.18)
+                        : AppColors.accentTint)
                   : context.fieldFill,
               borderRadius: AppRadius.pillAll,
             ),
@@ -250,10 +250,10 @@ class _SizePill extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 160),
           decoration: ShapeDecoration(
-            color: selected ? AppColors.yellow : Colors.transparent,
+            color: selected ? AppColors.accent : Colors.transparent,
             shape: StadiumBorder(
               side: BorderSide(
-                color: selected ? AppColors.yellow : context.fieldBorder,
+                color: selected ? AppColors.accent : context.fieldBorder,
               ),
             ),
           ),
@@ -444,7 +444,7 @@ class _CheckMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fill = context.isDarkMode ? AppColors.yellow : AppColors.ink;
+    final fill = context.isDarkMode ? AppColors.accent : AppColors.ink;
     final tick = context.isDarkMode ? AppColors.ink : AppColors.white;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 140),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orvynt_starter/core/config/app_env.dart';
 import 'package:orvynt_starter/core/localization/app_localizations.dart';
-import '../../../core/helpers/url_helper.dart';
 import '../../../core/theme/app_theme.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
@@ -11,9 +10,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark
-        ? const Color(0xFF0D0D0D)
-        : AppColors.surface;
+    final backgroundColor = isDark ? AppColors.darkDeep : AppColors.surface;
     final cardColor = isDark ? AppColors.darkSurface : AppColors.surface;
 
     return Scaffold(
@@ -61,12 +58,6 @@ class PrivacyPolicyScreen extends StatelessWidget {
               title: 'Contact',
               body:
                   'For any privacy questions, contact us at ${AppEnv.privacyEmail}.',
-            ),
-            TextButton.icon(
-              onPressed: () =>
-                  UrlHelper.launchUrl(context, 'https://jibli.org/privacy'),
-              icon: const Icon(Icons.open_in_new),
-              label: const Text('jibli.org/privacy'),
             ),
           ],
         ),

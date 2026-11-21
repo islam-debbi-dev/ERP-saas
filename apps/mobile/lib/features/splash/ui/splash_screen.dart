@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../core/components/logo/jibli_logo.dart';
+import '../../../core/components/logo/debvora_logo.dart';
 import '../../../core/router/routes.dart';
 import '../../../core/session/session_cubit.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../onboarding/logic/onboarding_store.dart';
 
 // --- SPLASH SCREEN ---
 class LogoSplashScreen extends StatefulWidget {
@@ -55,10 +54,9 @@ class _LogoSplashScreenState extends State<LogoSplashScreen>
     _controller.addStatusListener((status) async {
       if (status != AnimationStatus.completed) return;
       await restored;
-      final introSeen = await OnboardingStore.seen();
       if (!mounted) return;
       if (session.state.isAuthenticated) return context.go(Routes.home);
-      context.go(introSeen ? Routes.auth : Routes.onboarding);
+      context.go(Routes.auth);
     });
 
     // Start the splash sequence
@@ -87,7 +85,7 @@ class _LogoSplashScreenState extends State<LogoSplashScreen>
             right: -80,
             child: AuthGlow(
               size: 300,
-              color: AppColors.yellow.withValues(alpha: isDark ? 0.18 : 0.30),
+              color: AppColors.accent.withValues(alpha: isDark ? 0.18 : 0.30),
             ),
           ),
           Positioned(
@@ -95,7 +93,7 @@ class _LogoSplashScreenState extends State<LogoSplashScreen>
             left: -60,
             child: AuthGlow(
               size: 260,
-              color: AppColors.yellow.withValues(alpha: isDark ? 0.12 : 0.18),
+              color: AppColors.accent.withValues(alpha: isDark ? 0.12 : 0.18),
             ),
           ),
           Center(
@@ -105,11 +103,7 @@ class _LogoSplashScreenState extends State<LogoSplashScreen>
                 opacity: _exitOpacity.value,
                 child: Transform.scale(scale: _exitScale.value, child: child),
               ),
-              child: JibliLogo(
-                size: logoSize,
-                idle: false,
-                duration: const Duration(milliseconds: 2200),
-              ),
+              child: AnimatedBrandLogo(size: logoSize),
             ),
           ),
         ],

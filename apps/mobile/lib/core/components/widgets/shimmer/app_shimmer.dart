@@ -23,15 +23,15 @@ class ShimmerColors {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     if (isDark) {
       return const ShimmerColors(
-        base: Color(0xFF2A3441),
-        highlight: Color(0xFF3A4758),
-        block: Color(0xFF233041),
+        base: AppColors.shimmerBaseDark,
+        highlight: AppColors.shimmerHighlightDark,
+        block: AppColors.shimmerBlockDark,
       );
     }
     return const ShimmerColors(
-      base: Color(0xFFE8E8E8),
+      base: AppColors.shimmerBase,
       highlight: AppColors.surface,
-      block: Color(0xFFDDDDDD),
+      block: AppColors.shimmerBlock,
     );
   }
 }
@@ -336,7 +336,7 @@ class DeliveryTaskCardShimmer extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF171B22) : Colors.white,
+          color: isDark ? AppColors.darkCard : Colors.white,
           borderRadius: BorderRadius.circular(24.r),
           border: Border.all(
             color: isDark
@@ -625,7 +625,7 @@ class DeliveryOrderDetailsShimmer extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF171B22) : Colors.white,
+          color: isDark ? AppColors.darkCard : Colors.white,
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: isDark

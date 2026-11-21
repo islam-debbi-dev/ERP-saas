@@ -13,7 +13,7 @@ import 'app_text_styles.dart';
 ThemeData buildAppTheme(Brightness brightness) {
   final bool dark = brightness == Brightness.dark;
 
-  final Color action = dark ? AppColors.yellow : AppColors.secondaryColor;
+  final Color action = dark ? AppColors.accent : AppColors.secondaryColor;
   final Color onAction = dark ? AppColors.ink : Colors.white;
   final Color bg = dark ? AppColors.darkBackground : AppColors.background;
   final Color surface = dark ? AppColors.darkSurface : AppColors.surface;
@@ -29,11 +29,11 @@ ThemeData buildAppTheme(Brightness brightness) {
     brightness: brightness,
     primary: action,
     onPrimary: onAction,
-    primaryContainer: dark ? AppColors.darkElevated : AppColors.yellowTint,
+    primaryContainer: dark ? AppColors.darkElevated : AppColors.accentTint,
     onPrimaryContainer: text,
     secondary: AppColors.primaryColor,
     onSecondary: AppColors.onPrimary,
-    secondaryContainer: dark ? AppColors.darkElevated : AppColors.yellowTint,
+    secondaryContainer: dark ? AppColors.darkElevated : AppColors.accentTint,
     onSecondaryContainer: text,
     error: AppColors.error,
     onError: Colors.white,
@@ -51,7 +51,7 @@ ThemeData buildAppTheme(Brightness brightness) {
     scrim: Colors.black,
     inverseSurface: dark ? Colors.white : AppColors.ink,
     onInverseSurface: dark ? AppColors.ink : Colors.white,
-    inversePrimary: AppColors.yellow,
+    inversePrimary: AppColors.accent,
   );
 
   final TextTheme textTheme = AppTextStyles.textTheme(
@@ -89,9 +89,9 @@ ThemeData buildAppTheme(Brightness brightness) {
     iconTheme: IconThemeData(color: text),
     dividerTheme: DividerThemeData(color: line, thickness: 1, space: 1),
     textSelectionTheme: TextSelectionThemeData(
-      cursorColor: dark ? AppColors.yellow : AppColors.ink,
-      selectionColor: AppColors.yellow.withValues(alpha: 0.45),
-      selectionHandleColor: dark ? AppColors.yellow : AppColors.ink,
+      cursorColor: dark ? AppColors.accent : AppColors.ink,
+      selectionColor: AppColors.accent.withValues(alpha: 0.45),
+      selectionHandleColor: dark ? AppColors.accent : AppColors.ink,
     ),
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: {
@@ -155,7 +155,7 @@ ThemeData buildAppTheme(Brightness brightness) {
       style: IconButton.styleFrom(foregroundColor: text),
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: AppColors.yellow,
+      backgroundColor: AppColors.accent,
       foregroundColor: AppColors.ink,
       elevation: 2,
       shape: const CircleBorder(),
@@ -225,7 +225,7 @@ ThemeData buildAppTheme(Brightness brightness) {
     tabBarTheme: TabBarThemeData(
       labelColor: text,
       unselectedLabelColor: muted,
-      indicatorColor: AppColors.yellow,
+      indicatorColor: AppColors.accent,
       dividerColor: line,
       labelStyle: AppTextStyles.label,
       unselectedLabelStyle: AppTextStyles.label,
@@ -251,7 +251,7 @@ ThemeData buildAppTheme(Brightness brightness) {
       ),
     ),
     progressIndicatorTheme: ProgressIndicatorThemeData(
-      color: dark ? AppColors.yellow : AppColors.ink,
+      color: dark ? AppColors.accent : AppColors.ink,
       linearTrackColor: line,
       circularTrackColor: line,
     ),

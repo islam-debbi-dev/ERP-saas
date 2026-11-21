@@ -24,8 +24,8 @@ class OrderPlacedScreen extends StatelessWidget {
               Container(
                 width: 112,
                 height: 112,
-                decoration: const BoxDecoration(
-                  color: AppColors.yellow,
+                decoration: BoxDecoration(
+                  color: AppColors.accent,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

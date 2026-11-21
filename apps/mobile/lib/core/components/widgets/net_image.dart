@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../design/design.dart';
-import '../logo/jibli_loader.dart';
+import '../logo/debvora_logo.dart';
 import '../../models/media_ref.dart';
 import '../../network/image_url.dart';
 
@@ -16,7 +16,7 @@ import '../../network/image_url.dart';
 /// * Decoding is capped to the slot (`memCacheWidth`), so a big photo never
 ///   sits in RAM at full resolution.
 /// * The blur placeholder (`media.blurDataUrl`) shows while loading; images
-///   without one get the pulsing Jibli mark. Empty or broken URLs fall back to a
+///   without one get the pulsing image placeholder. Empty or broken URLs fall back to a
 ///   neutral icon (catalog items without a photo yet) and log why in debug.
 /// * Non-cover fits (e.g. `BoxFit.contain` for product photos, shown uncropped)
 ///   sit on the neutral field color.
@@ -53,7 +53,7 @@ class NetImage extends StatelessWidget {
   final bool desaturate;
 
   /// Grey at 40 % in `saturation` mode keeps ≈ 60 % of the colour.
-  static const _desaturateColor = Color(0x66808080);
+  static const _desaturateColor = AppColors.desaturate;
 
   static const _fade = Duration(milliseconds: 180);
 
@@ -159,7 +159,7 @@ extension on NetImage {
   }
 }
 
-/// Blur-up placeholder from the backend's 20px LQIP, or the Jibli mark.
+/// Blur-up placeholder from the backend's 20px LQIP, or the image placeholder.
 class _Placeholder extends StatelessWidget {
   const _Placeholder({
     this.blurDataUrl,
@@ -190,7 +190,7 @@ class _Placeholder extends StatelessWidget {
   Widget build(BuildContext context) {
     final bytes = blurDataUrl == null ? null : _decode(blurDataUrl!);
     if (bytes == null) {
-      return JibliImagePlaceholder(background: context.fieldFill);
+      return ImagePlaceholder(background: context.fieldFill);
     }
     return Image.memory(
       bytes,
@@ -201,7 +201,7 @@ class _Placeholder extends StatelessWidget {
       // Smooth upscale of the 20px preview reads as a blur.
       filterQuality: FilterQuality.medium,
       errorBuilder: (_, _, _) =>
-          JibliImagePlaceholder(background: context.fieldFill),
+          ImagePlaceholder(background: context.fieldFill),
     );
   }
 }

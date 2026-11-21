@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/config/app_env.dart';
+import '../../../../core/components/logo/debvora_logo.dart';
 import '../../../../core/design/design.dart';
 
 /// Shared layout of the auth screens: logo, title, subtitle, form, footer.
@@ -39,13 +39,7 @@ class AuthScaffold extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Center(
-                    child: Image.asset(
-                      AppEnv.logoAsset,
-                      height: 72,
-                      errorBuilder: (_, _, _) => const SizedBox(height: 72),
-                    ),
-                  ),
+                  const Center(child: DebvoraWordmark(size: 64)),
                   const SizedBox(height: AppSpacing.xl),
                   Text(
                     title,

@@ -326,7 +326,7 @@ class _StepRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dot = done ? AppColors.yellowDeep : context.fieldBorder;
+    final dot = done ? AppColors.accentDeep : context.fieldBorder;
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,

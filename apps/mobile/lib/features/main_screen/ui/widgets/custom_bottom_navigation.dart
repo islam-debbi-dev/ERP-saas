@@ -8,7 +8,7 @@ import '../../../../core/design/responsive.dart';
 import '../../../../core/localization/tr.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// Floating bottom bar in the Jibli style: a white pill with a soft shadow,
+/// Floating bottom bar: a white pill with a soft shadow,
 /// and an ink-black pill with a yellow icon for the active tab.
 ///
 /// Tabs: Home · Fruits & Vegetables · Supermarket · Account (same order as
@@ -28,7 +28,7 @@ class CustomBottomNavigation extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     final Color barColor = isDarkMode ? AppColors.darkSurface : AppColors.white;
-    final Color activePill = isDarkMode ? AppColors.yellow : AppColors.ink;
+    final Color activePill = isDarkMode ? AppColors.accent : AppColors.ink;
     final Color activeContent = isDarkMode ? AppColors.ink : Colors.white;
     final Color inactiveIcon = isDarkMode
         ? AppColors.darkTextSecondary
@@ -41,7 +41,7 @@ class CustomBottomNavigation extends StatelessWidget {
       icon: icon,
       text: text,
       iconColor: inactiveIcon,
-      iconActiveColor: isDarkMode ? AppColors.ink : AppColors.yellow,
+      iconActiveColor: isDarkMode ? AppColors.ink : AppColors.accent,
       textColor: activeContent,
       semanticLabel: text,
     );

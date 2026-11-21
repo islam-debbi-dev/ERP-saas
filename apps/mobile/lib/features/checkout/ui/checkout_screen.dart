@@ -127,7 +127,9 @@ class _CheckoutViewState extends State<_CheckoutView> {
                   // No address: the admin takes it during the confirmation call.
                   _AddressOption(
                     title: context.tr('jb.checkout.address_by_phone'),
-                    subtitle: context.tr('jb.checkout.address_by_phone_caption'),
+                    subtitle: context.tr(
+                      'jb.checkout.address_by_phone_caption',
+                    ),
                     selected: state.addressId == null,
                     onTap: cubit.selectNoAddress,
                   ),
@@ -222,8 +224,7 @@ class _CheckoutViewState extends State<_CheckoutView> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (blocker != null)
-                        _BlockerHint(message: blocker),
+                      if (blocker != null) _BlockerHint(message: blocker),
                       AppButton(
                         label:
                             '${context.tr('jb.checkout.place_order')} · ${formatDzd(context, cart.total)}',
@@ -270,11 +271,11 @@ class _AddressOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = context.isDarkMode ? AppColors.yellow : AppColors.ink;
+    final accent = context.isDarkMode ? AppColors.accent : AppColors.ink;
     final fill = selected
         ? (context.isDarkMode
-              ? AppColors.yellow.withValues(alpha: 0.12)
-              : AppColors.yellowTint)
+              ? AppColors.accent.withValues(alpha: 0.12)
+              : AppColors.accentTint)
         : context.fieldFill;
     return Material(
       color: fill,
@@ -305,7 +306,10 @@ class _AddressOption extends StatelessWidget {
                   children: [
                     Text(title, style: Theme.of(context).textTheme.titleSmall),
                     const SizedBox(height: AppSpacing.xxs),
-                    Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+                    Text(
+                      subtitle,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ],
                 ),
               ),

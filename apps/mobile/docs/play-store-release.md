@@ -60,10 +60,11 @@ Debug builds and CI keep using the debug key.
 Create `assets/config/env.default` (gitignored) from `.env.example` and set:
 
 ```
-API_BASE_URL=https://api.jibli.org/api/v1
+API_BASE_URL=https://erp-saas-pi.vercel.app
+DASHBOARD_URL=https://<the web dashboard>
 ```
 
-(Use whatever `API_DOMAIN` is in `infra/.env` on the VPS.) You can also pass
+No `/api/v1` suffix: the API has no global prefix. You can also pass
 `--dart-define=API_BASE_URL=...` to the build command instead.
 
 ## 3. Bump the version
@@ -74,50 +75,39 @@ In `pubspec.yaml`, `version: 1.0.0+1` means versionName `1.0.0`, versionCode
 ## 4. Build the bundle
 
 ```bash
-cd mobile
+cd apps/mobile
 flutter clean
 flutter pub get
 flutter build appbundle --release
 ```
 
 Output: `build/app/outputs/bundle/release/app-release.aab`.
-
-If `key.properties` is missing, the build silently signs with the debug key and
-Play will refuse the upload, so check that step 1 is done.
-
-The package id changed from `com.example.soft_smart_app_front`, so uninstall
-the old app from test phones once; Android treats it as a different app.
+Check that step 1 is done: without the Debvora signing config the bundle is
+signed with the debug key and Play refuses the upload.
 
 ## 5. Play Console
 
-1. Developer account at https://play.google.com/console (one-time 25 USD).
-   Decide first whether the account is yours or the client's: transferring an
-   app between accounts later is possible but slow.
-2. Create app → name "Jibli", default language, App, Free.
-3. Fill the "Set up your app" tasks: privacy policy URL (required, host it on
-   jibli.org), app access (give reviewers a test login), ads, content rating,
-   target audience, data safety (the app collects name, phone, address and
-   order history), government apps, financial features.
-4. Store listing: short and full description, 512x512 icon, 1024x500 feature
-   graphic, at least 2 phone screenshots.
-5. Testing → Closed testing → create a release, upload the `.aab`.
-   New personal developer accounts must run a closed test with at least 12
-   testers for 14 days before they can apply for production access.
-   Organisation accounts can go straight to production.
-6. After the test period: Production → create release → upload → send for
-   review (usually a few days for a first app).
+1. Developer account at https://play.google.com/console (one-time 25 USD),
+   owned by the Debvora company account.
+2. Create app → name "Debvora", default language Arabic, App, Free.
+3. Fill the "Set up your app" tasks: privacy policy URL (required; a public
+   page still has to be published), app access (give reviewers a test login of
+   a demo seller), ads (none), content rating, target audience (adults, work
+   app), data safety (name, phone, precise location at sale / versement / visit
+   time only, business data of the grossiste), financial features (none: the
+   app records sales and payments, it does not move money).
+4. Store listing: short and full description in ar / fr, 512x512 icon,
+   1024x500 feature graphic, at least 2 phone screenshots.
+5. Testing → Closed testing → create a release, upload the `.aab`. A new
+   personal developer account must run a closed test with at least 12 testers
+   for 14 days; an organisation account can go straight to production.
+6. Production → create release → upload → send for review.
 
 ## Notes
 
-- Firebase: `android/app/google-services.json` is registered for the old
-  package id and Firebase is not initialised anywhere in `lib/`, so the
-  google-services Gradle plugin was removed. To add push notifications later,
-  register an Android app for `org.jibli.app` in Firebase, download a new
-  `google-services.json`, and re-add the plugin.
-- The Fastlane Firebase App Distribution lane now reads its token from the
-  `FIREBASE_TOKEN` environment variable. The token that used to be committed
-  there must be revoked (`firebase logout --token <old token>` or
-  re-run `firebase login:ci` and stop using the old one).
-- Location, camera and media permissions were removed from the manifest because
-  no code uses them. If a feature needs one later, add it back together with
-  the matching Play Console declaration.
+- Package id: `com.debvora.app` (`package_rename_config.yaml`, applied with
+  `dart run package_rename`). It can never change once published.
+- No Firebase and no push notifications for now (parked).
+- Location (GPS at sale time) and camera (barcode scan) permissions are added
+  with the features that use them, together with the matching Play Console
+  declarations.

@@ -385,11 +385,11 @@ class _Frame extends StatelessWidget {
     // Warm, not loud: a light yellow wash over the disc.
     final warm = Color.lerp(
       rest,
-      AppColors.yellow.withValues(alpha: dark ? 0.35 : 0.45),
+      AppColors.accent.withValues(alpha: dark ? 0.35 : 0.45),
       tint * discOpacity,
     )!;
     // In the translucent bar there is no disc: the bag itself warms up.
-    final iconWarm = dark ? AppColors.yellow : AppColors.yellowDeep;
+    final iconWarm = dark ? AppColors.accent : AppColors.accentDeep;
     final iconColor = Color.lerp(
       context.textMain,
       iconWarm,
@@ -539,7 +539,7 @@ class _Badge extends StatelessWidget {
       height: height,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: AppColors.yellow,
+        color: AppColors.accent,
         borderRadius: AppRadius.pillAll,
         border: Border.all(color: context.pageBackground, width: 1.5),
       ),
@@ -562,7 +562,7 @@ class _RingPainter extends CustomPainter {
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.5 * (1 - 0.5 * t)
-      ..color = AppColors.yellow.withValues(alpha: alpha);
+      ..color = AppColors.accent.withValues(alpha: alpha);
     canvas.drawCircle(size.center(Offset.zero), radius, paint);
   }
 

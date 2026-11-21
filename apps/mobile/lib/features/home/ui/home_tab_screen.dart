@@ -547,10 +547,10 @@ class _AddressChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.location_on_rounded,
               size: 16,
-              color: AppColors.yellowDeep,
+              color: AppColors.accentDeep,
             ),
             const SizedBox(width: AppSpacing.xs),
             Flexible(
@@ -832,7 +832,7 @@ class _PromoBanner extends StatelessWidget {
 
     final bg = closed != null
         ? (context.isDarkMode ? AppColors.darkElevated : AppColors.ink)
-        : AppColors.yellow;
+        : AppColors.accent;
     final fg = closed != null ? AppColors.white : AppColors.ink;
 
     return Container(
@@ -877,11 +877,11 @@ class _PromoBanner extends StatelessWidget {
                 height: 56,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: closed != null ? AppColors.yellow : AppColors.ink,
+                  color: closed != null ? AppColors.accent : AppColors.ink,
                 ),
                 child: Icon(
                   icon,
-                  color: closed != null ? AppColors.ink : AppColors.yellow,
+                  color: closed != null ? AppColors.ink : AppColors.accent,
                 ),
               ),
             ],

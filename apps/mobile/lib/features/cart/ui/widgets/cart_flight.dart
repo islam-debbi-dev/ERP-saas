@@ -255,7 +255,7 @@ class _Thumb extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: hasImage ? context.fieldFill : AppColors.yellow,
+        color: hasImage ? context.fieldFill : AppColors.accent,
         border: Border.all(color: context.pageBackground, width: 2),
         boxShadow: const [
           BoxShadow(

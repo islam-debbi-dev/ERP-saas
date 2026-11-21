@@ -307,7 +307,7 @@ class _Photo extends StatelessWidget {
               if (product.hasDiscount) ...[
                 _PhotoChip(
                   label: '-${product.discountPercentage.round()}%',
-                  fill: AppColors.yellow,
+                  fill: AppColors.accent,
                   foreground: AppColors.ink,
                   border: const Color(0x00000000),
                 ),
@@ -370,7 +370,7 @@ class _DishFallback extends StatelessWidget {
           end: AlignmentDirectional.bottomEnd,
           colors: dark
               ? const [AppColors.darkElevated, AppColors.darkSurface]
-              : const [AppColors.yellowTint, Color(0xFFFFE883)],
+              : [AppColors.accentTint, Color(0xFFFFE883)],
         ),
       ),
       child: Align(

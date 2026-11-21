@@ -170,7 +170,7 @@ class InCartBadge extends StatelessWidget {
         vertical: AppSpacing.xxs + 1,
       ),
       decoration: BoxDecoration(
-        color: context.isDarkMode ? AppColors.yellow : AppColors.ink,
+        color: context.isDarkMode ? AppColors.accent : AppColors.ink,
         borderRadius: AppRadius.pillAll,
       ),
       child: Text(
@@ -279,8 +279,8 @@ class DiscountBadge extends StatelessWidget {
         horizontal: AppSpacing.sm,
         vertical: AppSpacing.xxs + 1,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.yellow,
+      decoration: BoxDecoration(
+        color: AppColors.accent,
         borderRadius: AppRadius.pillAll,
       ),
       child: Text(

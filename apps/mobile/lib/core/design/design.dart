@@ -1,4 +1,4 @@
-// Single import for the Jibli design system.
+// Single import for the app design system.
 export '../theme/app_theme.dart' show AppColors;
 export 'app_spacing.dart';
 export 'app_text_styles.dart';

@@ -345,8 +345,8 @@ class _Hint extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: context.isDarkMode
-            ? AppColors.yellow.withValues(alpha: 0.12)
-            : AppColors.yellowTint,
+            ? AppColors.accent.withValues(alpha: 0.12)
+            : AppColors.accentTint,
         borderRadius: AppRadius.mdAll,
       ),
       child: Row(

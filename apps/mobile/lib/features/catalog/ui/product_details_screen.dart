@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/components/logo/jibli_logo.dart';
+import '../../../core/components/logo/debvora_logo.dart';
 import '../../../core/components/widgets/net_image.dart';
 import '../../../core/design/design.dart';
 import '../../../core/di/dependency_injection.dart';
@@ -872,12 +872,9 @@ class _PhotoPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     return ColoredBox(
       key: const ValueKey('photo-placeholder'),
-      color: context.isDarkMode ? AppColors.darkSurface : AppColors.yellowTint,
+      color: context.isDarkMode ? AppColors.darkSurface : AppColors.accentTint,
       child: const Center(
-        child: Opacity(
-          opacity: 0.9,
-          child: JibliLogo(size: 96, animate: false, idle: false),
-        ),
+        child: Opacity(opacity: 0.9, child: DebvoraWordmark(size: 96)),
       ),
     );
   }

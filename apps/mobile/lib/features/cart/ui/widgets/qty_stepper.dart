@@ -127,7 +127,7 @@ class QtyStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = context.isDarkMode ? AppColors.yellow : AppColors.ink;
+    final bg = context.isDarkMode ? AppColors.accent : AppColors.ink;
     final fg = context.isDarkMode ? AppColors.ink : AppColors.white;
     final text = Text(
       label,
@@ -207,7 +207,7 @@ class _RoundButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = context.isDarkMode ? AppColors.yellow : AppColors.ink;
+    final bg = context.isDarkMode ? AppColors.accent : AppColors.ink;
     final fg = context.isDarkMode ? AppColors.ink : AppColors.white;
     return Tooltip(
       message: tooltip,

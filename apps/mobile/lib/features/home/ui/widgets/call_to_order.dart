@@ -116,14 +116,14 @@ class _CallFab extends StatelessWidget {
       excludeSemantics: true,
       child: Material(
         color: AppColors.ink,
-        shape: const StadiumBorder(
-          side: BorderSide(color: AppColors.yellow, width: 1.5),
+        shape: StadiumBorder(
+          side: BorderSide(color: AppColors.accent, width: 1.5),
         ),
         elevation: 6,
         shadowColor: Colors.black.withValues(alpha: 0.35),
         child: InkWell(
           customBorder: const StadiumBorder(),
-          splashColor: AppColors.yellow.withValues(alpha: 0.2),
+          splashColor: AppColors.accent.withValues(alpha: 0.2),
           onTap: onPressed,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minWidth: 56, minHeight: 56),
@@ -139,9 +139,9 @@ class _CallFab extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.phone_in_talk_rounded,
-                      color: AppColors.yellow,
+                      color: AppColors.accent,
                       size: 24,
                     ),
                     if (extended) ...[
@@ -209,9 +209,9 @@ Future<void> showCallToOrderSheet(
               child: Container(
                 width: 64,
                 height: 64,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.yellow,
+                  color: AppColors.accent,
                 ),
                 child: const Icon(
                   Icons.support_agent_rounded,
@@ -268,7 +268,7 @@ class _PhoneLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = primary ? AppColors.yellow : context.fieldFill;
+    final bg = primary ? AppColors.accent : context.fieldFill;
     final fg = primary ? AppColors.ink : context.textMain;
     final sub = primary
         ? AppColors.ink.withValues(alpha: 0.7)
@@ -328,11 +328,11 @@ class _PhoneLine extends StatelessWidget {
                   height: 48,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: primary ? AppColors.ink : AppColors.yellow,
+                    color: primary ? AppColors.ink : AppColors.accent,
                   ),
                   child: Icon(
                     Icons.call_rounded,
-                    color: primary ? AppColors.yellow : AppColors.ink,
+                    color: primary ? AppColors.accent : AppColors.ink,
                   ),
                 ),
               ],

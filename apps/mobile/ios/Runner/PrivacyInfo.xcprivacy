@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!-- App privacy manifest. Keep it in sync with the App Privacy answers in
-     App Store Connect and with the policy at jibli.org/privacy.
-     Data is used only to run orders and the account; no tracking, no ads. -->
+     App Store Connect and with the published Debvora privacy policy.
+     Data is used only to run the grossiste's business; no tracking, no ads. -->
 <plist version="1.0">
 <dict>
 	<key>NSPrivacyTracking</key>
