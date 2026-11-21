@@ -25,7 +25,7 @@ Each phase is one branch, one PR and one Claude Code session. Prompts live in [`
 | 16 | [Tournées, visites, commandes](prompts/phase-16-tournees-orders.md) | Routes, visits with outcome, bon de commande → BL, livreur, clôture de tournée with cash écart | 15 | v2 |
 | 17 | [Géolocalisation](prompts/phase-17-geolocation.md) | Client GPS + change approval, GeoCheck on sale / versement / visit, flag or block, review map | 14 | v2 |
 | 18 | [Objectifs & primes](prompts/phase-18-incentives.md) | Targets, configurable bonus rules (5 types + gates + cap), live progress, monthly run → approve → export | 14 | v2 |
-| 19 | [Mobile vendeur (Flutter)](prompts/phase-19-mobile-vendeur.md) | Offline-first Android app: sync, outbox, sale / order / versement / visit, GPS, Bluetooth BL print, objectives | 16, 17, 18 | v2 |
+| 19 | ~~[Mobile vendeur (Flutter)](prompts/phase-19-mobile-vendeur.md)~~ | **Replaced by phase 39** (never built) | 16, 17, 18 | v2 |
 | 20 | [Mode distributeur](prompts/phase-20-distribution-mode.md) | Promotions & UG, emballages consignés ledger, sell-out report par marque | 14, 15, 16 | v2 |
 | 21 | [Crédit avancé](prompts/phase-21-credit-advanced.md) | Supplier ledger + règlements, client aging, relances WhatsApp, share links, cheques à échéance | 13b | v1.1 |
 | 22 | [Importateur](prompts/phase-22-import-landed-cost.md) | Dossiers d'importation, devises + taux, coût de revient (landed cost) into CUMP, late costs | 13b, 21 | v2 |
@@ -46,6 +46,7 @@ Each phase is one branch, one PR and one Claude Code session. Prompts live in [`
 | 36 | [Distribution par véhicule](prompts/phase-36-vehicle-first-distribution.md) | Tenant-defined vehicle types and codes, truck identity (wilaya, plate, capacity), driver history, tournées planned per truck, truck frozen on visits and orders | 15, 16, 24 | v2 |
 | 37 | [Statistiques distribution](prompts/phase-37-distribution-statistics.md) | `/statistiques`: one measure / dimension engine, per truck / type / dépôt / wilaya / family / segment, visits funnel, delivery rate, loads, avaries, targets per truck, récap journée véhicule, shadcn charts | 36 | v2 |
 | 38 | [Offres sur mesure](prompts/phase-38-platform-packages.md) | Super-admin package templates (plan + edition + modules + limit overrides + custom price), usage per company, platform overview (MRR), announcements | 13b | v2 |
+| 39 | [Debvora, application mobile terrain](prompts/phase-39-mobile-field-app.md) | The Flutter app in `apps/mobile` (theme and structure kept) rewired to this API: vendeur / livreur / superviseur / magasinier screens per role, van sale, prévente, livraison from the truck, chargement / déchargement, inventaire, versements, visits, GPS, team day and cash closing, AI assistant; online first (offline later) | 16, 17, 18, 30, 36 | v2 |
 
 **MVP = phases 1 to 12b.** Put the pilot grossiste on it after phase 12b (traders open it on their phones); phase 13 can follow during the free pilot month.
 
