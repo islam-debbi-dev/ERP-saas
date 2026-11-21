@@ -85,8 +85,8 @@ class ConnectivityService with WidgetsBindingObserver {
   /// as stream events, including reconnect callback when leaving offline).
   Future<void> _refreshFromPlatform() async {
     try {
-      final List<ConnectivityResult> results =
-          await Connectivity().checkConnectivity();
+      final List<ConnectivityResult> results = await Connectivity()
+          .checkConnectivity();
       await _applyConnectivityResults(results);
     } on PlatformException {
       debugPrint('⚠️ Platform Exception during connectivity check');
@@ -144,7 +144,6 @@ class ConnectivityService with WidgetsBindingObserver {
     }
 
     if (wasOffline && !offline) {
-      Connectionresfrech.resfrechAfterconn = true;
       _onReconnect?.call();
     }
 
@@ -197,8 +196,8 @@ class ConnectivityService with WidgetsBindingObserver {
   /// Check current connectivity status and log to console
   Future<void> logCurrentStatus() async {
     try {
-      final List<ConnectivityResult> results =
-          await Connectivity().checkConnectivity();
+      final List<ConnectivityResult> results = await Connectivity()
+          .checkConnectivity();
       final offline = _isOffline(results);
 
       debugPrint('📊 Current Connectivity Status:');

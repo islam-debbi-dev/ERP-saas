@@ -4,44 +4,42 @@ import 'package:flutter/foundation.dart';
 import 'api_language.dart';
 import 'token_storage.dart';
 
-/// Adds `Authorization` + `Accept-Language` to every request and transparently
-/// refreshes an expired access token once, then retries the original request.
+/// Adds `Authorization` and `Accept-Language` to every request and, on a 401,
+/// refreshes the access token once (`POST /auth/refresh { refreshToken }`)
+/// then replays the request.
 ///
-/// Queued so concurrent 401s trigger a single `POST /auth/refresh` — the
-/// backend rotates refresh tokens (single use), so a second parallel refresh
-/// with the same token would be treated as reuse and revoke every session.
+/// Queued so concurrent 401s make a single refresh: the API rotates refresh
+/// tokens (single use), and a second refresh with the same token would be
+/// seen as reuse and close the session.
+///
+/// A refresh the API rejects (revoked, expired, reused) ends the session.
+/// A refresh that fails because the phone is offline does not: the tokens are
+/// kept and the request fails with its network error.
 class AuthInterceptor extends QueuedInterceptor {
-  AuthInterceptor(this._dio);
+  AuthInterceptor(this._dio, {TokenStore? store})
+    : _store = store ?? const SecureTokenStore();
 
-  /// The app's main client (its base URL is reused for refresh + retry).
   final Dio _dio;
+  final TokenStore _store;
 
-  /// Client without this interceptor, for `POST /auth/refresh` and for the
-  /// replay. Replaying through [_dio] would deadlock: if the replay fails,
-  /// its `onError` waits in this queue behind the `onError` awaiting it.
-  late final Dio _bare = Dio(
+  /// Client without this interceptor, for the refresh and the replay.
+  /// Replaying through [_dio] would deadlock in the queue.
+  late final Dio bare = Dio(
     BaseOptions(
       baseUrl: _dio.options.baseUrl,
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 20),
-      headers: {'Accept': 'application/json'},
+      connectTimeout: _dio.options.connectTimeout,
+      receiveTimeout: _dio.options.receiveTimeout,
+      headers: Map<String, dynamic>.of(_dio.options.headers),
     ),
-  );
+  )..httpClientAdapter = _dio.httpClientAdapter;
 
-  /// Called after a refresh fails (revoked/expired session) so the app can
-  /// drop the user back to the guest state.
+  /// Called when the API rejects the refresh token: the app goes to login.
   static VoidCallback? onSessionExpired;
 
   static const _retriedKey = 'auth_retried';
 
-  /// Endpoints where a 401 means "bad credentials", not "expired token".
-  static const _noRefreshPaths = [
-    '/auth/login',
-    '/auth/register',
-    '/auth/refresh',
-    '/auth/forgot-password',
-    '/auth/reset-password',
-  ];
+  /// Where a 401 means "bad credentials", not "expired access token".
+  static const _noRefreshPaths = ['/auth/login', '/auth/refresh'];
 
   @override
   Future<void> onRequest(
@@ -49,10 +47,8 @@ class AuthInterceptor extends QueuedInterceptor {
     RequestInterceptorHandler handler,
   ) async {
     options.headers['Accept-Language'] = await ApiLanguage.resolve();
-    final token = await TokenStorage.readAccessToken();
-    if (token.isNotEmpty) {
-      options.headers['Authorization'] = 'Bearer $token';
-    }
+    final token = await _store.readAccessToken();
+    if (token.isNotEmpty) options.headers['Authorization'] = 'Bearer $token';
     handler.next(options);
   }
 
@@ -68,50 +64,62 @@ class AuthInterceptor extends QueuedInterceptor {
         !_noRefreshPaths.any(options.path.endsWith);
     if (!shouldRefresh) return handler.next(err);
 
-    final refreshToken = await TokenStorage.readRefreshToken();
+    final refreshToken = await _store.readRefreshToken();
     if (refreshToken.isEmpty) return handler.next(err);
 
-    // Another queued request may already have refreshed while this one waited.
-    final sentToken = (options.headers['Authorization'] as String?)
-        ?.replaceFirst('Bearer ', '');
-    final currentToken = await TokenStorage.readAccessToken();
-    final alreadyRefreshed =
-        currentToken.isNotEmpty && currentToken != sentToken;
+    // Another queued request may have refreshed while this one waited.
+    final sent = (options.headers['Authorization'] as String?)?.replaceFirst(
+      'Bearer ',
+      '',
+    );
+    final current = await _store.readAccessToken();
+    final alreadyRefreshed = current.isNotEmpty && current != sent;
 
-    if (!alreadyRefreshed && !await _refresh(refreshToken)) {
-      await TokenStorage.clear();
-      onSessionExpired?.call();
-      return handler.next(err);
+    if (!alreadyRefreshed) {
+      final outcome = await _refresh(refreshToken);
+      if (outcome == _Refresh.rejected) {
+        await _store.clear();
+        onSessionExpired?.call();
+        return handler.next(err);
+      }
+      if (outcome == _Refresh.unreachable) return handler.next(err);
     }
 
     try {
       options.extra[_retriedKey] = true;
       options.headers['Authorization'] =
-          'Bearer ${await TokenStorage.readAccessToken()}';
-      handler.resolve(await _bare.fetch<dynamic>(options));
+          'Bearer ${await _store.readAccessToken()}';
+      handler.resolve(await bare.fetch<dynamic>(options));
     } on DioException catch (e) {
       handler.next(e);
     }
   }
 
-  /// `POST /auth/refresh` on the bare client so this interceptor never re-enters.
-  Future<bool> _refresh(String refreshToken) async {
+  Future<_Refresh> _refresh(String refreshToken) async {
     try {
-      debugPrint('AuthInterceptor: access token expired, refreshing');
-      final response = await _bare.post<Map<String, dynamic>>(
+      final response = await bare.post<Map<String, dynamic>>(
         '/auth/refresh',
         data: {'refreshToken': refreshToken},
       );
-      final data = response.data?['data'];
-      if (data is! Map<String, dynamic>) return false;
-      final access = data['accessToken'] as String?;
-      final refresh = data['refreshToken'] as String?;
-      if (access == null || refresh == null) return false;
-      await TokenStorage.save(accessToken: access, refreshToken: refresh);
-      return true;
-    } catch (e) {
-      debugPrint('AuthInterceptor: token refresh failed: $e');
-      return false;
+      final body = response.data;
+      final access = body?['accessToken'];
+      final refresh = body?['refreshToken'];
+      if (access is! String || refresh is! String) {
+        debugPrint('AuthInterceptor: refresh answer without tokens');
+        return _Refresh.rejected;
+      }
+      await _store.save(accessToken: access, refreshToken: refresh);
+      return _Refresh.ok;
+    } on DioException catch (e) {
+      final status = e.response?.statusCode;
+      // The API answered no (401 / 403): the session is over.
+      if (status != null && status >= 400 && status < 500) {
+        return _Refresh.rejected;
+      }
+      debugPrint('AuthInterceptor: refresh unreachable: ${e.type}');
+      return _Refresh.unreachable;
     }
   }
 }
+
+enum _Refresh { ok, rejected, unreachable }

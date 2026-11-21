@@ -89,7 +89,7 @@ class CustomBottomNavigation extends StatelessWidget {
                       LineIcons.shoppingBasket,
                       context.tr('jb.tabs.supermarket_short'),
                     ),
-                    tab(LineIcons.user, context.tr('account')),
+                    tab(LineIcons.user, context.tr('account.title')),
                   ],
                   selectedIndex: currentIndex,
                   onTabChange: onItemTapped,

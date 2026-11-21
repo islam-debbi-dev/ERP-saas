@@ -1,8 +1,6 @@
 import 'dart:io';
 
-Future<bool> connectivityProbeReachability({
-  required Duration timeout,
-}) async {
+Future<bool> connectivityProbeReachability({required Duration timeout}) async {
   try {
     final addrs = await InternetAddress.lookup(
       'google.com',

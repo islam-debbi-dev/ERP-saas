@@ -8,7 +8,10 @@ void main() {
   test('resolve keeps absolute URLs and drops empty ones', () {
     expect(ImageUrl.resolve(null), isNull);
     expect(ImageUrl.resolve('  '), isNull);
-    expect(ImageUrl.resolve('https://cdn.example/a.jpg'), 'https://cdn.example/a.jpg');
+    expect(
+      ImageUrl.resolve('https://cdn.example/a.jpg'),
+      'https://cdn.example/a.jpg',
+    );
   });
 
   test('sized swaps the variant of optimized URLs only', () {

@@ -16,7 +16,8 @@ class AppBlocObserver extends BlocObserver {
     super.onEvent(bloc, event);
     if (kDebugMode) {
       debugPrint(
-          'BlocObserver: 📤 onEvent -- Bloc: ${bloc.runtimeType}, Event: $event');
+        'BlocObserver: 📤 onEvent -- Bloc: ${bloc.runtimeType}, Event: $event',
+      );
     }
   }
 

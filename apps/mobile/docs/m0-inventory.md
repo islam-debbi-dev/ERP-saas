@@ -11,8 +11,9 @@ business. This is what M0 does with each part (status at the start of M0).
 | Design system | `core/design/*` (spacing, text styles, theme builder, `app_widgets`, responsive, theme colors), `core/theme/*` (light / dark, theme cubit) |
 | Components | `core/components/widgets/*` (buttons, text field, shimmer, net image, staggered entrance) |
 | Shell | `features/main_screen/ui/widgets/custom_bottom_navigation.dart`, `no_connection_banner.dart` |
-| Reusable business widgets (moved to `core/components/` for M1) | `qty_stepper`, `floating_cart_bar`, `order_summary`, `search_input`, `pressable_card`, `load_state_view`, `order_status_chip` |
-| Plumbing | `core/di`, `core/paging/*`, `core/perf`, `core/localization/*` (loader, `context.tr`, locale cubit), `core/network/token_storage.dart`, connectivity helpers, `bloc_observer`, `url_helper`, `phone_validate`, `format_date`, `core/models/{paginated,json_readers,geo_point}` |
+| Standalone widgets (moved to `core/components/widgets/`) | `search_input`, `pressable_card`, `load_state_view` |
+| Cart widgets (rebuilt in M1 from git history) | `qty_stepper`, `floating_cart_bar`, `order_summary`, `cart_flight`, `order_status_chip` were bound to the consumer cart cubit and product model, so they were deleted with them; M1 adapts them for the sale basket from `git show 8ba2bbb:apps/mobile/lib/features/cart/ui/widgets/<file>` |
+| Plumbing | `core/di`, `core/paging/*`, `core/perf`, `core/localization/*` (loader, `context.tr`, locale cubit), `core/network/token_storage.dart`, connectivity helpers, `bloc_observer`, `url_helper`, `phone_validate`, `format_date`, `core/models/{paginated,media_ref}` |
 | Fonts | Almarai (UI), PoiretOne / RussoOne (kept for now) |
 
 ## Replaced (same place, ERP contract)
@@ -43,4 +44,6 @@ business. This is what M0 does with each part (status at the start of M0).
   `integration_test/zz_*`, `home_feed_scroll_perf_test`, `test_driver/perf_driver.dart`,
   `test_cities.dart`, the consumer JSON fixtures.
 
-Each deletion lands in the commit of the step that replaces it.
+The consumer features, the old error type and the old auth / account screens
+were deleted together with the new API client and session (one commit for
+steps 4 and 5: they were bound to the old API contract).

@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../models/paginated.dart';
-import '../service/api_error_handler.dart';
-import '../service/api_result.dart';
+import '../network/api_error.dart';
+import '../network/api_result.dart';
 
 enum PagedStatus { initial, loading, ready, failure }
 
@@ -10,22 +10,22 @@ enum PagedStatus { initial, loading, ready, failure }
 class PagedState<T> {
   final PagedStatus status;
   final List<T> items;
-  final int page;
+
+  /// Cursor of the next page (null on the first load and on the last page).
+  final String? cursor;
   final bool hasMore;
   final bool loadingMore;
-  final int total;
 
   /// Failure of the first page (full-screen error) or of the last
   /// "load more" (inline retry) — [items] tells which.
-  final ErrorHandler? error;
+  final ApiError? error;
 
   const PagedState({
     this.status = PagedStatus.initial,
     this.items = const [],
-    this.page = 0,
+    this.cursor,
     this.hasMore = true,
     this.loadingMore = false,
-    this.total = 0,
     this.error,
   });
 
@@ -37,26 +37,26 @@ class PagedState<T> {
   PagedState<T> copyWith({
     PagedStatus? status,
     List<T>? items,
-    int? page,
+    String? cursor,
     bool? hasMore,
     bool? loadingMore,
-    int? total,
-    ErrorHandler? error,
+    ApiError? error,
     bool clearError = false,
   }) => PagedState(
     status: status ?? this.status,
     items: items ?? this.items,
-    page: page ?? this.page,
+    cursor: cursor ?? this.cursor,
     hasMore: hasMore ?? this.hasMore,
     loadingMore: loadingMore ?? this.loadingMore,
-    total: total ?? this.total,
     error: clearError ? null : (error ?? this.error),
   );
 }
 
-typedef PageFetcher<T> = Future<ApiResult<Paginated<T>>> Function(int page);
+/// Fetches one page; [cursor] is null for the first page.
+typedef PageFetcher<T> =
+    Future<ApiResult<Paginated<T>>> Function(String? cursor);
 
-/// Loads page 1 on [refresh] and appends on [loadMore]. Stale responses
+/// Loads the first page on [refresh] and appends on [loadMore]. Stale responses
 /// (a refresh that started after them) are dropped.
 class PagedCubit<T> extends Cubit<PagedState<T>> {
   PagedCubit(this._fetch) : super(PagedState<T>());
@@ -64,7 +64,7 @@ class PagedCubit<T> extends Cubit<PagedState<T>> {
   PageFetcher<T> _fetch;
   int _generation = 0;
 
-  /// Swaps the query (new filter / search) and reloads from page 1.
+  /// Swaps the query (new filter / search) and reloads from the first page.
   Future<void> reset(PageFetcher<T> fetch) {
     _fetch = fetch;
     emit(PagedState<T>(status: PagedStatus.loading));
@@ -83,7 +83,7 @@ class PagedCubit<T> extends Cubit<PagedState<T>> {
     if (state.items.isEmpty) {
       emit(state.copyWith(status: PagedStatus.loading, clearError: true));
     }
-    final result = await _fetch(1);
+    final result = await _fetch(null);
     if (isClosed || generation != _generation) return;
     switch (result) {
       case Success(:final data):
@@ -91,13 +91,12 @@ class PagedCubit<T> extends Cubit<PagedState<T>> {
           PagedState<T>(
             status: PagedStatus.ready,
             items: data.items,
-            page: data.page,
+            cursor: data.nextCursor,
             hasMore: data.hasMore,
-            total: data.total,
           ),
         );
-      case Failure(:final message):
-        emit(state.copyWith(status: PagedStatus.failure, error: message));
+      case Failure(:final error):
+        emit(state.copyWith(status: PagedStatus.failure, error: error));
     }
   }
 
@@ -106,21 +105,20 @@ class PagedCubit<T> extends Cubit<PagedState<T>> {
     if (state.status != PagedStatus.ready) return;
     final generation = _generation;
     emit(state.copyWith(loadingMore: true, clearError: true));
-    final result = await _fetch(state.page + 1);
+    final result = await _fetch(state.cursor);
     if (isClosed || generation != _generation) return;
     switch (result) {
       case Success(:final data):
         emit(
           state.copyWith(
             items: [...state.items, ...data.items],
-            page: data.page,
+            cursor: data.nextCursor,
             hasMore: data.hasMore,
-            total: data.total,
             loadingMore: false,
           ),
         );
-      case Failure(:final message):
-        emit(state.copyWith(loadingMore: false, error: message));
+      case Failure(:final error):
+        emit(state.copyWith(loadingMore: false, error: error));
     }
   }
 

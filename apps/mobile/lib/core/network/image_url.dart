@@ -34,7 +34,9 @@ class ImageUrl {
   static String? resolve(String? raw) {
     final value = raw?.trim() ?? '';
     if (value.isEmpty) return null;
-    if (value.startsWith('http://') || value.startsWith('https://')) return value;
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      return value;
+    }
     if (value.startsWith('data:')) return value;
     final origin = Uri.parse(AppEnv.apiBaseUrl).origin;
     return value.startsWith('/') ? '$origin$value' : '$origin/$value';

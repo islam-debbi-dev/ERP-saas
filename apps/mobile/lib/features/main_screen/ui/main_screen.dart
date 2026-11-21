@@ -3,11 +3,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/di/dependency_injection.dart';
 import '../../../core/helpers/connectivity_services.dart';
-import '../../cart/ui/widgets/floating_cart_bar.dart';
 import 'widgets/custom_bottom_navigation.dart';
 import 'widgets/no_connection_banner.dart';
 
-/// Shell of the four client tabs: keeps each tab's state alive, shows the
+/// Shell of the role's tabs: keeps each tab's state alive, shows the
 /// floating bottom bar and the offline banner.
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key, required this.navigationShell});
@@ -68,20 +67,12 @@ class _MainScreenState extends State<MainScreen> {
               bottom: 0,
               left: 0,
               right: 0,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Shopping tabs only; Account has nothing to add.
-                  if (widget.navigationShell.currentIndex != 3)
-                    const FloatingCartBar(
-                      padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
+              child: widget.navigationShell.route.branches.length < 2
+                  ? const SizedBox.shrink()
+                  : CustomBottomNavigation(
+                      currentIndex: widget.navigationShell.currentIndex,
+                      onItemTapped: _onTab,
                     ),
-                  CustomBottomNavigation(
-                    currentIndex: widget.navigationShell.currentIndex,
-                    onItemTapped: _onTab,
-                  ),
-                ],
-              ),
             ),
           ],
         ),

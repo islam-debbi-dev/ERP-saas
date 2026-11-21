@@ -13,8 +13,9 @@ class SvgHelper {
       assetName,
       width: width,
       height: height,
-      colorFilter:
-          color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
+      colorFilter: color != null
+          ? ColorFilter.mode(color, BlendMode.srcIn)
+          : null,
       fit: fit,
       // Suppress warnings for unsupported SVG elements
       semanticsLabel: assetName,

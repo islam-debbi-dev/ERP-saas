@@ -77,9 +77,6 @@ dev_dependencies:
     sdk: flutter
   integration_test:
     sdk: flutter
-  # Host side of the scroll benchmark (test_driver/perf_driver.dart).
-  flutter_driver:
-    sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -103,7 +100,6 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - lib/core/cities/cities.json
     - lib/core/localization/ 
     - assets/config/env.default
     - assets/

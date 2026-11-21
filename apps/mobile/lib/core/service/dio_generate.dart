@@ -1,68 +1,43 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 
 import '../config/app_env.dart';
 import '../network/auth_interceptor.dart';
 
+/// The app's single [Dio]: base URL from the env, the native client header,
+/// auth + language + refresh, and request logs in debug builds.
 class DioGenerate {
-  static Dio? _dio; // Renamed for convention
-  DioGenerate._internal();
+  DioGenerate._();
 
-  // getDio can now be synchronous as token fetching is deferred to the interceptor
-  static Dio getDio() {
-    if (_dio == null) {
-      _dio = Dio();
-      _dio!
-        ..options.baseUrl = AppEnv.apiBaseUrl
-        ..options.connectTimeout = const Duration(seconds: 15)
-        ..options.receiveTimeout = const Duration(seconds: 30);
+  /// Tells the API this is the phone app: the refresh token comes back in the
+  /// body (not a cookie) and the session counts as a mobile seat.
+  static const clientTypeHeader = 'X-Client-Type';
+  static const clientTypeNative = 'native';
 
-      // Web-specific configuration for UTF-8 encoding
-      if (kIsWeb) {
-        _dio!.options.responseType = ResponseType.json;
-        _dio!.options.validateStatus = (status) {
-          return status != null && status < 500;
-        };
-      }
+  static Dio? _dio;
 
-      _setStaticHeaders(); // Sets non-dynamic headers
-      _addDioInterceptors(); // Adds all interceptors including AuthInterceptor
-    }
-    return _dio!;
-  }
+  static Dio getDio() => _dio ??= create(AppEnv.apiBaseUrl);
 
-  // Renamed and modified to set only static headers
-  static void _setStaticHeaders() {
-    if (kIsWeb) {
-      // Web-specific headers for proper UTF-8 handling
-      _dio!.options.headers = {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Accept': 'application/json; charset=utf-8',
-        'Accept-Charset': 'utf-8',
-        // Authorization header will be added by AuthInterceptor
-      };
-    } else {
-      // Mobile headers
-      _dio!.options.headers = {
-        'Accept': 'application/json',
-        // Authorization header will be added by AuthInterceptor
-      };
-    }
-  }
-
-  /// Auth (bearer + refresh-on-401) and language headers, then debug logging.
-  static void _addDioInterceptors() {
-    _dio!.interceptors.add(AuthInterceptor(_dio!));
-    if (kDebugMode) {
-      _dio!.interceptors.add(
-        PrettyDioLogger(
-          requestHeader: true,
-          requestBody: true,
-          responseBody: true,
-          error: true,
-        ),
+  /// A configured client for [baseUrl] (tests build their own).
+  static Dio create(String baseUrl, {bool log = kDebugMode}) {
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 30),
+        headers: {
+          'Accept': 'application/json',
+          clientTypeHeader: clientTypeNative,
+        },
+      ),
+    );
+    dio.interceptors.add(AuthInterceptor(dio));
+    if (log) {
+      dio.interceptors.add(
+        PrettyDioLogger(requestBody: true, responseBody: false, error: true),
       );
     }
+    return dio;
   }
 }

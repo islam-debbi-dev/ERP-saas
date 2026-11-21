@@ -17,8 +17,10 @@ class PerformanceMonitor {
   void startTimer(String operationName) {
     _timers[operationName] = Stopwatch()..start();
     if (kDebugMode) {
-      developer.log('⏱️ Started timer: $operationName',
-          name: 'PerformanceMonitor');
+      developer.log(
+        '⏱️ Started timer: $operationName',
+        name: 'PerformanceMonitor',
+      );
     }
   }
 
@@ -29,8 +31,10 @@ class PerformanceMonitor {
       timer.stop();
       final duration = timer.elapsedMilliseconds;
       if (kDebugMode) {
-        developer.log('⏱️ $operationName took ${duration}ms',
-            name: 'PerformanceMonitor');
+        developer.log(
+          '⏱️ $operationName took ${duration}ms',
+          name: 'PerformanceMonitor',
+        );
       }
       _timers.remove(operationName);
     }
@@ -63,8 +67,9 @@ class PerformanceMonitor {
     _memoryUsage[operation] = bytes;
     if (kDebugMode) {
       developer.log(
-          '💾 Memory usage for $operation: ${(bytes / 1024 / 1024).toStringAsFixed(2)}MB',
-          name: 'PerformanceMonitor');
+        '💾 Memory usage for $operation: ${(bytes / 1024 / 1024).toStringAsFixed(2)}MB',
+        name: 'PerformanceMonitor',
+      );
     }
   }
 
@@ -98,12 +103,18 @@ class PerformanceMonitor {
 
     final report = getPerformanceReport();
     developer.log('📊 Performance Report:', name: 'PerformanceMonitor');
-    developer.log('Frame Rates: ${report['frameRates']}',
-        name: 'PerformanceMonitor');
-    developer.log('Memory Usage: ${report['memoryUsage']}',
-        name: 'PerformanceMonitor');
-    developer.log('Active Timers: ${report['activeTimers']}',
-        name: 'PerformanceMonitor');
+    developer.log(
+      'Frame Rates: ${report['frameRates']}',
+      name: 'PerformanceMonitor',
+    );
+    developer.log(
+      'Memory Usage: ${report['memoryUsage']}',
+      name: 'PerformanceMonitor',
+    );
+    developer.log(
+      'Active Timers: ${report['activeTimers']}',
+      name: 'PerformanceMonitor',
+    );
   }
 
   /// Clear all data
@@ -119,10 +130,7 @@ extension PerformanceExtension on Widget {
   Widget withPerformanceMonitoring(String widgetName, {bool enable = true}) {
     if (!kDebugMode || !enable) return this;
 
-    return _PerformanceWidget(
-      widgetName: widgetName,
-      child: this,
-    );
+    return _PerformanceWidget(widgetName: widgetName, child: this);
   }
 }
 
@@ -131,10 +139,7 @@ class _PerformanceWidget extends StatefulWidget {
   final Widget child;
   final String widgetName;
 
-  const _PerformanceWidget({
-    required this.child,
-    required this.widgetName,
-  });
+  const _PerformanceWidget({required this.child, required this.widgetName});
 
   @override
   State<_PerformanceWidget> createState() => _PerformanceWidgetState();
@@ -166,8 +171,9 @@ class _PerformanceWidgetState extends State<_PerformanceWidget> {
 
       if (fps < 30) {
         developer.log(
-            '⚠️ Low frame rate detected for ${widget.widgetName}: ${fps.toStringAsFixed(1)} FPS',
-            name: 'PerformanceMonitor');
+          '⚠️ Low frame rate detected for ${widget.widgetName}: ${fps.toStringAsFixed(1)} FPS',
+          name: 'PerformanceMonitor',
+        );
       }
 
       _frameCount = 0;

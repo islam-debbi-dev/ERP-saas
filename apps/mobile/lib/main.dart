@@ -55,9 +55,6 @@ Future<void> main() async {
 
       await getIt<LocalizationService>().init();
 
-      // Initialize background uploader service
-      // This should be registered in GetIt if you want to access it from elsewhere
-
       final ThemeMode savedThemeMode = await ThemeCubit.getSavedThemeMode();
       final Locale savedLocale = await LocaleCubit.getSavedLocale();
       runApp(

@@ -52,9 +52,8 @@ class AppEnv {
   // ── Backend ────────────────────────────────────────────────────────────────
 
   /// Base URL of the ERP API, without a trailing slash.
-  static String get apiBaseUrl => _trimSlash(
-    _str(_apiFromDefine, 'API_BASE_URL', productionApiUrl),
-  );
+  static String get apiBaseUrl =>
+      _trimSlash(_str(_apiFromDefine, 'API_BASE_URL', productionApiUrl));
 
   /// The web dashboard. Office roles (owner, manager) are refused in the app
   /// and sent there. Empty when not configured: the link is then hidden.

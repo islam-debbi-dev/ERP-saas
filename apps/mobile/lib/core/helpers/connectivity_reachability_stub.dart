@@ -1,4 +1,2 @@
-Future<bool> connectivityProbeReachability({
-  required Duration timeout,
-}) async =>
+Future<bool> connectivityProbeReachability({required Duration timeout}) async =>
     false;

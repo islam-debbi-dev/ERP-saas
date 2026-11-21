@@ -1,136 +1,112 @@
 import 'package:dio/dio.dart';
 
-import '../service/api_error_handler.dart';
-import '../service/api_result.dart';
 import '../service/dio_generate.dart';
+import 'api_error.dart';
+import 'api_result.dart';
+import 'idempotency_key.dart';
 
-/// Decodes a single typed value from the JSON object the API returns.
-typedef FromJson<T> = T Function(Map<String, dynamic> json);
+/// Decodes the JSON body of a successful response (an object, a list or a
+/// scalar, depending on the endpoint).
+typedef Decode<T> = T Function(Object? json);
 
-/// Thin, typed HTTP client shared by every feature repository.
+/// Thin typed HTTP client shared by every repository.
 ///
-/// Built on the app's single [Dio] instance ([DioGenerate.getDio]) so the
-/// auth/refresh/logging interceptors keep applying to every request. Every
-/// call returns an [ApiResult<T>] — never a bare `dynamic` — and every
-/// failure funnels through the shared [ErrorHandler.handle], mirroring the
-/// per-call-site mapping the legacy `Api` class used but centralized here.
+/// The ERP API answers the DTO itself (no `{ data }` envelope) and errors as
+/// `{ code, message, details? }`. Every call returns an [ApiResult]; failures
+/// are [ApiError]s. Money / stock POSTs pass the form's [IdempotencyKey].
 class ApiClient {
   ApiClient({Dio? dio}) : _dio = dio ?? DioGenerate.getDio();
 
   final Dio _dio;
 
-  /// The underlying [Dio], for the rare legacy call sites that still need raw
-  /// access (e.g. multipart uploads done through `Api().dio`).
   Dio get dio => _dio;
 
   Future<ApiResult<T>> get<T>(
     String path, {
     Map<String, dynamic>? query,
-    FromJson<T>? fromJson,
-  }) async {
-    try {
-      final response = await _dio.get<dynamic>(path, queryParameters: query);
-      return _map(response, fromJson);
-    } on DioException catch (e) {
-      return ApiResult.failure(ErrorHandler.handle(e));
-    }
-  }
+    Decode<T>? decode,
+    CancelToken? cancelToken,
+  }) => _send(
+    () => _dio.get<Object?>(
+      path,
+      queryParameters: _clean(query),
+      cancelToken: cancelToken,
+    ),
+    decode,
+  );
 
   Future<ApiResult<T>> post<T>(
     String path, {
-    dynamic data,
+    Object? data,
     Map<String, dynamic>? query,
-    FromJson<T>? fromJson,
-  }) async {
-    try {
-      final response =
-          await _dio.post<dynamic>(path, data: data, queryParameters: query);
-      return _map(response, fromJson);
-    } on DioException catch (e) {
-      return ApiResult.failure(ErrorHandler.handle(e));
-    }
-  }
+    Decode<T>? decode,
+    IdempotencyKey? idempotencyKey,
+    CancelToken? cancelToken,
+  }) => _send(
+    () => _dio.post<Object?>(
+      path,
+      data: data,
+      queryParameters: _clean(query),
+      options: idempotencyKey?.options,
+      cancelToken: cancelToken,
+    ),
+    decode,
+  );
 
   Future<ApiResult<T>> put<T>(
     String path, {
-    dynamic data,
-    Map<String, dynamic>? query,
-    FromJson<T>? fromJson,
-  }) async {
-    try {
-      final response =
-          await _dio.put<dynamic>(path, data: data, queryParameters: query);
-      return _map(response, fromJson);
-    } on DioException catch (e) {
-      return ApiResult.failure(ErrorHandler.handle(e));
-    }
-  }
+    Object? data,
+    Decode<T>? decode,
+    IdempotencyKey? idempotencyKey,
+  }) => _send(
+    () => _dio.put<Object?>(path, data: data, options: idempotencyKey?.options),
+    decode,
+  );
 
   Future<ApiResult<T>> patch<T>(
     String path, {
-    dynamic data,
-    Map<String, dynamic>? query,
-    FromJson<T>? fromJson,
-  }) async {
+    Object? data,
+    Decode<T>? decode,
+  }) => _send(() => _dio.patch<Object?>(path, data: data), decode);
+
+  Future<ApiResult<T>> delete<T>(String path, {Decode<T>? decode}) =>
+      _send(() => _dio.delete<Object?>(path), decode);
+
+  Future<ApiResult<T>> _send<T>(
+    Future<Response<Object?>> Function() call,
+    Decode<T>? decode,
+  ) async {
+    final Response<Object?> response;
     try {
-      final response =
-          await _dio.patch<dynamic>(path, data: data, queryParameters: query);
-      return _map(response, fromJson);
+      response = await call();
     } on DioException catch (e) {
-      return ApiResult.failure(ErrorHandler.handle(e));
+      return ApiResult.failure(ApiError.fromDio(e));
     }
-  }
-
-  Future<ApiResult<void>> delete(
-    String path, {
-    dynamic data,
-    Map<String, dynamic>? query,
-  }) async {
+    final status = response.statusCode ?? 0;
+    if (status < 200 || status >= 300) {
+      return ApiResult.failure(ApiError.fromResponse(response));
+    }
+    if (decode == null) return ApiResult.success(response.data as T);
     try {
-      final response =
-          await _dio.delete<dynamic>(path, data: data, queryParameters: query);
-      if (_isSuccess(response.statusCode)) {
-        return const ApiResult<void>.success(null);
-      }
-      return ApiResult.failure(_failure(response));
-    } on DioException catch (e) {
-      return ApiResult.failure(ErrorHandler.handle(e));
+      return ApiResult.success(decode(response.data));
+    } catch (e) {
+      // A DTO the app cannot read is a bug to report, not a silent null.
+      return ApiResult.failure(ApiError.unexpected('Cannot read response: $e'));
     }
   }
 
-  ApiResult<T> _map<T>(Response<dynamic> response, FromJson<T>? fromJson) {
-    if (_isSuccess(response.statusCode)) {
-      if (fromJson == null) {
-        return ApiResult<T>.success(response.data as T);
-      }
-      final data = response.data;
-      if (data is Map<String, dynamic>) {
-        try {
-          return ApiResult<T>.success(fromJson(data));
-        } catch (e) {
-          return ApiResult.failure(ErrorHandler.handle(e));
-        }
-      }
-      return ApiResult.failure(
-        ErrorHandler.fromMessage('Unexpected response format'),
-      );
-    }
-    return ApiResult.failure(_failure(response));
+  /// Drops null query values, so `?cursor=` is not sent when there is none.
+  static Map<String, dynamic>? _clean(Map<String, dynamic>? query) {
+    if (query == null) return null;
+    return {
+      for (final e in query.entries)
+        if (e.value != null) e.key: e.value,
+    };
   }
+}
 
-  bool _isSuccess(int? statusCode) =>
-      statusCode != null && statusCode >= 200 && statusCode < 300;
-
-  /// Builds the failure for a non-2xx response the same way Dio's `badResponse`
-  /// path does, so the shared [ErrorHandler.handle] decodes the body into an
-  /// [ApiErrorModel] (used on web, where 4xx responses are returned, not thrown).
-  ErrorHandler _failure(Response<dynamic> response) {
-    return ErrorHandler.handle(
-      DioException.badResponse(
-        statusCode: response.statusCode ?? -1,
-        requestOptions: response.requestOptions,
-        response: response,
-      ),
-    );
-  }
+/// Decoder helpers for repositories.
+extension DecodeJson on Object? {
+  Map<String, dynamic> get asMap => this! as Map<String, dynamic>;
+  List<Object?> get asList => this! as List<Object?>;
 }

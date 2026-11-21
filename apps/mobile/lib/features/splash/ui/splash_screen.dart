@@ -55,8 +55,7 @@ class _LogoSplashScreenState extends State<LogoSplashScreen>
       if (status != AnimationStatus.completed) return;
       await restored;
       if (!mounted) return;
-      if (session.state.isAuthenticated) return context.go(Routes.home);
-      context.go(Routes.auth);
+      context.go(Routes.home);
     });
 
     // Start the splash sequence

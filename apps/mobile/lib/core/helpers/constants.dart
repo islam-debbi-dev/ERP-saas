@@ -1,38 +1,17 @@
+/// Keys of the values kept on the phone (secure storage / shared prefs).
 class SharedPrefKeys {
+  SharedPrefKeys._();
+
   static const String userToken = 'userToken';
   static const String refreshToken = 'refreshToken';
-  static const String role = 'role';
-  static const String id = 'id';
-  static const String email = 'email';
-  static const String username = 'username';
-  static const String isAdmin = 'isAdmin';
-  static const String userData = 'userData';
-  bool isLoggedInUser = false;
-  static const String remember = 'remember';
-  static const String lastNotificationCheckTime = 'lastNotificationCheckTime';
-  static const String isnotfirstTime = 'firstTime';
-  static const String emailOtp = 'emailOtp';
-  static const String userTokenOtp = 'userTokenOtp';
-  static const String likedProducts = 'likedProducts';
+
+  /// Last `GET /auth/me` answer, for an offline start.
+  static const String cachedUser = 'cachedUser';
 }
 
-class Connectionresfrech {
-  static bool resfrechAfterconn = false;
-}
-
-class NewNotifications {
-  static bool hasNewNotificationsIcon = false;
-}
-
-// Global connectivity state
+/// Global connectivity state, written by `ConnectivityService`.
 class ConnectivityState {
+  ConnectivityState._();
+
   static bool isOffline = false;
-}
-
-bool firstTime = true;
-
-int pageNumberProperty = 1;
-
-void clearPageNumbers() {
-  pageNumberProperty = 1;
 }

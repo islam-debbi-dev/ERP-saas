@@ -33,3 +33,34 @@ class TokenStorage {
     await SharedPrefHelper.removeSecuredData(SharedPrefKeys.refreshToken);
   }
 }
+
+/// What [AuthInterceptor] needs from token persistence (a fake in tests).
+abstract class TokenStore {
+  Future<String> readAccessToken();
+  Future<String> readRefreshToken();
+  Future<void> save({
+    required String accessToken,
+    required String refreshToken,
+  });
+  Future<void> clear();
+}
+
+/// [TokenStore] on `flutter_secure_storage`, through [TokenStorage].
+class SecureTokenStore implements TokenStore {
+  const SecureTokenStore();
+
+  @override
+  Future<String> readAccessToken() => TokenStorage.readAccessToken();
+
+  @override
+  Future<String> readRefreshToken() => TokenStorage.readRefreshToken();
+
+  @override
+  Future<void> save({
+    required String accessToken,
+    required String refreshToken,
+  }) => TokenStorage.save(accessToken: accessToken, refreshToken: refreshToken);
+
+  @override
+  Future<void> clear() => TokenStorage.clear();
+}

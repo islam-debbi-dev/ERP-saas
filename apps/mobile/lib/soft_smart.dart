@@ -11,7 +11,6 @@ import 'core/theme/app_theme_dark.dart';
 import 'core/theme/app_theme_light.dart';
 import 'core/theme/cubit/theme_cubit.dart';
 import 'core/session/session_cubit.dart';
-import 'features/cart/logic/cart_cubit.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/config/app_env.dart';
 import 'core/design/responsive.dart';
@@ -54,15 +53,8 @@ class _SoftSmartState extends State<SoftSmart> {
         BlocProvider(create: (_) => ThemeCubit(widget.initialThemeMode)),
         BlocProvider(create: (_) => LocaleCubit(widget.initialLocale)),
         BlocProvider<SessionCubit>.value(value: getIt<SessionCubit>()),
-        BlocProvider<CartCubit>.value(value: getIt<CartCubit>()),
       ],
-      // The backend localizes by the user's saved language first, so keep it
-      // in step whenever the app language changes.
-      child: BlocListener<LocaleCubit, LocaleState>(
-        listener: (context, state) => context
-            .read<SessionCubit>()
-            .syncLanguage(state.locale.languageCode),
-        child: ScreenUtilInit(
+      child: ScreenUtilInit(
         designSize: _designSize,
         minTextAdapt: true,
         builder: (context, child) {
@@ -75,9 +67,9 @@ class _SoftSmartState extends State<SoftSmart> {
                     theme: appThemeLight,
                     locale: localeState.locale,
                     supportedLocales: const [
-                      Locale('en'), // LTR
-                      Locale('ar'), // RTL
-                      Locale('fr'), // French
+                      Locale('ar'), // default, RTL
+                      Locale('fr'),
+                      Locale('en'),
                     ],
                     localizationsDelegates: [
                       const AppLocalizationsDelegate(),
@@ -101,7 +93,6 @@ class _SoftSmartState extends State<SoftSmart> {
             },
           );
         },
-      ),
       ),
     );
   }
@@ -133,9 +124,7 @@ class _SoftSmartState extends State<SoftSmart> {
               child: SizedBox(
                 width: maxWidth,
                 child: MediaQuery(
-                  data: inner.copyWith(
-                    size: Size(maxWidth, inner.size.height),
-                  ),
+                  data: inner.copyWith(size: Size(maxWidth, inner.size.height)),
                   child: content,
                 ),
               ),
