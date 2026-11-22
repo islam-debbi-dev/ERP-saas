@@ -1,0 +1,14 @@
+source "https://rubygems.org"
+
+gem "fastlane"
+
+# Ruby 3.4 removed some stdlib from the default gems (e.g. "abbrev").
+# Add the abbrev gem so fastlane and its dependencies load correctly on Ruby 3.4+.
+gem "abbrev"
+gem "net-smtp"
+
+# Pin rubyzip to a version before the breaking changes in 3.0.
+gem "rubyzip", "< 3.0"
+
+plugins_path = File.join(File.dirname(__FILE__), 'fastlane', 'Pluginfile')
+eval_gemfile(plugins_path) if File.exist?(plugins_path)

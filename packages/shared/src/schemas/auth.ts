@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { type Role } from '../enums';
+import { Role } from '../enums';
 import { ACTIVITIES, Activity, type Edition, type Feature } from '../features';
 import { type Permission } from '../permissions';
 
@@ -57,6 +57,19 @@ export const refreshSchema = z
   })
   .optional();
 export type RefreshInput = z.infer<typeof refreshSchema>;
+
+/** Where a session was opened (stored on the session, phase 39 A1). */
+export const SessionClientType = {
+  WEB: 'WEB',
+  NATIVE: 'NATIVE',
+} as const;
+export type SessionClientType = (typeof SessionClientType)[keyof typeof SessionClientType];
+
+/**
+ * Roles whose phone logins need the MOBILE_APP module and take a seat of the plan's
+ * maxMobileSellers (phase 39 A1). The magasinier is not counted (owner's decision).
+ */
+export const MOBILE_SEAT_ROLES: readonly Role[] = [Role.SELLER, Role.LIVREUR, Role.SUPERVISOR];
 
 export interface AuthUser {
   id: string;

@@ -17,6 +17,7 @@ const STATUS_BY_CODE: Record<ErrorCode, HttpStatus> = {
   [ErrorCode.IMPORT_NOT_PENDING]: HttpStatus.CONFLICT,
   [ErrorCode.PLAN_LIMIT_REACHED]: HttpStatus.CONFLICT,
   [ErrorCode.FEATURE_NOT_IN_PLAN]: HttpStatus.FORBIDDEN,
+  [ErrorCode.MOBILE_SELLER_LIMIT]: HttpStatus.CONFLICT,
   [ErrorCode.SUBSCRIPTION_SUSPENDED]: HttpStatus.FORBIDDEN,
   [ErrorCode.IMPERSONATION_READ_ONLY]: HttpStatus.FORBIDDEN,
   [ErrorCode.ADMIN_TOTP_INVALID]: HttpStatus.UNAUTHORIZED,

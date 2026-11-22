@@ -10,3 +10,4 @@ docs
 *.md
 apps/api/src/generated
 apps/api/src/assistant/help/help-bundle.ts
+apps/mobile

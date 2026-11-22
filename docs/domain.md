@@ -78,6 +78,7 @@
 - Turning a module off never deletes its data: its screens and writes are refused, its reports and exports stay readable, and everything comes back when it is on again.
 - Two axes: the **plan** (Starter / Pro / Business) sets the price and the limits (users, products, documents, mobile sellers); the **edition** sets the modules. Price = plan + edition supplement. The super-admin can add or remove one module for one company on top of its edition.
 - At signup the company says what it does (grossiste, importateur, distributeur de marque); the trial starts on the matching edition.
+- **Mobile seats** (phase 39): a phone login (the Debvora app, header `X-Client-Type: native`) of a vendeur, livreur or superviseur needs the mobile app module and takes one seat of the plan's "mobile sellers" limit (Starter 2, Pro 5, Business unlimited). A seat is a person, not a phone: the same user on a second phone keeps his one seat. Logging out, a session closed from "Sessions", or an expired session frees it. Web logins never count; the magasinier is not counted. The limit is checked when the phone logs in, never at refresh, so a smaller plan does not log phones out in the middle of the day. Owners and managers are refused by the app itself and sent to the web dashboard.
 
 ## Sales force & distribution (phases 14–20)
 - **Vendeur** (SELLER) sells in the shop or on the road; **superviseur** (SUPERVISOR) and **chef des ventes** manage a team through `User.managerId`; **livreur** (LIVREUR) delivers pre-sale orders.

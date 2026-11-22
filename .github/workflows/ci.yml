@@ -61,3 +61,59 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: infra/ci/backup-drill-test.sh
+
+  # Which parts of the repo changed, so the Flutter job only runs for the app.
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      mobile: ${{ steps.filter.outputs.mobile }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            mobile:
+              - 'apps/mobile/**'
+              - '.github/workflows/ci.yml'
+
+  # The field app (apps/mobile, Flutter). Not a pnpm package: pnpm and turbo
+  # ignore it, this job checks it.
+  mobile:
+    needs: changes
+    if: needs.changes.outputs.mobile == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      # Pinned to the Flutter the app is developed with (Dart 3.12).
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.7
+          cache: true
+      # The env file is gitignored but declared as an asset: CI builds with the
+      # template (production API, no secret in it).
+      - run: cp .env.example assets/config/env.default
+      - run: flutter pub get
+      # Generated code (json_serializable) must be committed and up to date.
+      - run: dart run build_runner build --delete-conflicting-outputs
+      - run: git diff --exit-code -- lib
+      - run: flutter analyze
+      - run: flutter test
+      # Debug key only: CI never sees an upload keystore.
+      - run: flutter build apk --debug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: debvora-debug-apk
+          path: apps/mobile/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 14

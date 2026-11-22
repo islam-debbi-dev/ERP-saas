@@ -30,6 +30,7 @@ import {
   type RegisteredTenant,
   type TenantCatalog,
   type TestApp,
+  withMobileApp,
   withoutGeoCheck,
 } from './helpers';
 
@@ -215,6 +216,8 @@ describe('sales force: sellers, teams, brands, sectors (phase 14)', () => {
     d = await registerTenant(t, 'Distrib SARL', { activity: Activity.DISTRIBUTEUR });
     await withoutGeoCheck(t, d);
     e = await registerTenant(t, 'Grossiste SARL');
+    // Sellers log in as native clients (A1 needs the mobile module); SALES_FORCE stays off.
+    await withMobileApp(t, e);
     catD = await catalogOf(t, d);
     catE = await catalogOf(t, e);
   });
