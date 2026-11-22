@@ -592,5 +592,10 @@
     "r_delivered": "Commandes livrées",
     "r_short": "Lignes en rupture",
     "r_ecart": "Écart de caisse"
+  },
+  "assistant": {
+    "title": "Assistant",
+    "soon_title": "Bientôt disponible",
+    "soon_message": "L'assistant répondra à vos questions sur l'équipe, les ventes et la caisse dans la prochaine version."
   }
 }

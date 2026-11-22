@@ -592,5 +592,10 @@
     "r_delivered": "Orders delivered",
     "r_short": "Short lines",
     "r_ecart": "Cash difference"
+  },
+  "assistant": {
+    "title": "Assistant",
+    "soon_title": "Coming soon",
+    "soon_message": "The assistant will answer your questions on the team, sales and cash in the next version."
   }
 }

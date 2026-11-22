@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/account/ui/account_screen.dart';
+import '../../features/assistant/ui/assistant_placeholder_screen.dart';
 import '../../features/clients/ui/client_detail_screen.dart';
 import '../../features/clients/ui/client_statement_screen.dart';
 import '../../features/clients/ui/clients_screen.dart';
@@ -141,6 +142,10 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
       GoRoute(
         path: 'objectives',
         builder: (_, _) => const TeamObjectivesScreen(),
+      ),
+      GoRoute(
+        path: 'assistant',
+        builder: (_, _) => const AssistantPlaceholderScreen(),
       ),
     ];
   }
@@ -305,7 +310,9 @@ List<MoreItem> livreurMenu(BuildContext context) {
   ];
 }
 
-/// The supervisor's "Plus" menu: his team's targets (INCENTIVES).
+/// The supervisor's "Plus" menu: his team's targets (INCENTIVES) and the
+/// assistant (AI_ASSISTANT, a placeholder until M4). Account, language and
+/// theme follow in [AccountScreen].
 List<MoreItem> supervisorMenu(BuildContext context) {
   final user = context.watch<SessionCubit>().state.user;
   if (user == null) return const [];
@@ -315,6 +322,12 @@ List<MoreItem> supervisorMenu(BuildContext context) {
         labelKey: 'objectives.team_title',
         icon: Icons.flag_outlined,
         onTap: (c) => c.push('/supervisor/more/objectives'),
+      ),
+    if (user.hasFeature(Feature.aiAssistant))
+      MoreItem(
+        labelKey: 'assistant.title',
+        icon: Icons.auto_awesome_outlined,
+        onTap: (c) => c.push('/supervisor/more/assistant'),
       ),
   ];
 }
