@@ -1,22 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/account/ui/account_screen.dart';
 import '../../features/account/ui/help_center_screen.dart';
 import '../../features/account/ui/privacy_policy_screen.dart';
 import '../../features/auth/ui/change_password_screen.dart';
 import '../../features/auth/ui/login_screen.dart';
 import '../../features/auth/ui/refused_screen.dart';
 import '../../features/main_screen/ui/main_screen.dart';
-import '../../features/main_screen/ui/placeholder_tab.dart';
 import '../../features/splash/ui/splash_screen.dart';
 import '../di/dependency_injection.dart';
 import '../session/session_cubit.dart';
 import '../session/session_state.dart';
 import 'role_screens.dart';
 import 'routes.dart';
-
-final _rootKey = GlobalKey<NavigatorState>();
+import 'tab_routes.dart';
 
 /// Where [session] may be, given the requested [path]; null keeps the path.
 /// A signed-in user only reaches his own role's visible tabs and the common
@@ -39,12 +36,6 @@ String? sessionRedirect(SessionState session, String path) {
   }
 }
 
-/// The page of a tab. "Plus" is the account screen until M1 adds its menu;
-/// the other tabs are placeholders until their sub-phase.
-Widget _tabPage(RoleTab tab) => tab.path.endsWith('/more')
-    ? const AccountScreen()
-    : PlaceholderTab(tab: tab);
-
 /// One shell per role, one branch per tab (hidden tabs keep their branch:
 /// the redirect refuses them and the bottom bar does not show them).
 List<RouteBase> _roleShells() => [
@@ -55,14 +46,20 @@ List<RouteBase> _roleShells() => [
       branches: [
         for (final tab in entry.value)
           StatefulShellBranch(
-            routes: [GoRoute(path: tab.path, builder: (_, _) => _tabPage(tab))],
+            routes: [
+              GoRoute(
+                path: tab.path,
+                builder: (_, _) => tabPage(tab),
+                routes: tabSubRoutes(tab),
+              ),
+            ],
           ),
       ],
     ),
 ];
 
 final GoRouter appRouter = GoRouter(
-  navigatorKey: _rootKey,
+  navigatorKey: rootNavigatorKey,
   initialLocation: Routes.splash,
   refreshListenable: _SessionListenable(getIt<SessionCubit>()),
   redirect: (context, state) =>

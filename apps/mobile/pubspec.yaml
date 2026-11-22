@@ -60,8 +60,12 @@ dependencies:
   json_annotation: ^4.11.0
   flutter_dotenv: ^5.2.1
   decimal: ^3.2.6
-  # geocoding: ^4.0.0
-  # geolocator: ^13.0.1
+  # GPS on sale, versement and visit (phase 17 GeoCheck); no background location.
+  geolocator: ^14.0.1
+  # Share sheet for the PDFs the API renders (BL, reçu, relevé).
+  share_plus: ^13.3.1
+  # Camera barcode scan in the product picker (EAN of pièces and cartons).
+  mobile_scanner: ^7.5.0
   # ── Social auth (white-label: buttons shown per .env keys) ────────────────
   # google_sign_in: ^7.2.0
   # sign_in_with_apple: ^7.0.1

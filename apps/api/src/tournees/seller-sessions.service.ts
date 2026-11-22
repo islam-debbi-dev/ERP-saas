@@ -6,6 +6,7 @@ import {
   type CloseSellerSessionInput,
   ErrorCode,
   type ExpectedCashDto,
+  type MeDayDto,
   money,
   type OpenSellerSessionInput,
   PaymentMode,
@@ -27,6 +28,7 @@ import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { fromIsoDate, toIsoDate } from '../sales/sale.mapper';
 import { ScopeService } from '../sales-force/scope.service';
+import { StockTransfersService } from '../stock/stock-transfers.service';
 import { VehiclesService } from '../stock/vehicles.service';
 import { WarehousesService } from '../stock/warehouses.service';
 import { assertVisible, tourneeSellerIds } from './tournee-scope';
@@ -64,6 +66,7 @@ export class SellerSessionsService implements OnModuleInit {
     private readonly audit: AuditService,
     private readonly clock: ClockService,
     private readonly vehicles: VehiclesService,
+    private readonly transfers: StockTransfersService,
   ) {}
 
   /**
@@ -184,6 +187,49 @@ export class SellerSessionsService implements OnModuleInit {
         vehicle: this.vehicleRef(vehicles.get(u.id)),
       };
     });
+  }
+
+  /**
+   * The caller's own day (phase 39, A2): his truck, his session, his expected cash, what
+   * is on the truck and today's validated chargements / déchargements. Only his: no
+   * other user is ever read, so no scope check is needed beyond the role guard.
+   */
+  async myDay(user: CurrentUserInfo): Promise<MeDayDto> {
+    const day = algiersDay(this.clock.now());
+    const [vehicle, sessionId] = await Promise.all([
+      this.vehicles.currentVehicleOf(user.id),
+      this.find(user.id, day),
+    ]);
+    const session = sessionId
+      ? await this.prisma.db.sellerSession.findUniqueOrThrow({
+          where: { id: sessionId },
+          include: sessionInclude,
+        })
+      : null;
+    const sessionDto = session
+      ? this.toDto(session, await this.liveFor([session]), await this.names([session]))
+      : null;
+    // A closed day keeps the figures frozen at the clôture; otherwise the live rule.
+    const expected =
+      sessionDto && session!.status !== SellerSessionStatus.OPEN
+        ? sessionDto.expected
+        : ((await this.expectedMany(this.prisma.db, [user.id], day)).get(user.id) ?? ZERO);
+    const [stock, transfers] = vehicle
+      ? await Promise.all([
+          this.vehicleStock(vehicle.id),
+          this.transfers.validatedForVehicle(vehicle.id, day),
+        ])
+      : [[], []];
+    return {
+      day,
+      vehicle: vehicle
+        ? { id: vehicle.id, code: vehicle.code, name: vehicle.name, wilayaCode: vehicle.wilayaCode }
+        : null,
+      session: sessionDto,
+      expected,
+      stock,
+      transfers,
+    };
   }
 
   private vehicleRef(v: { id: string; name: string } | undefined) {
