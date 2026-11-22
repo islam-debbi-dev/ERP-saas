@@ -23,6 +23,7 @@ import {
   registerTenant,
   type RegisteredTenant,
   type TestApp,
+  withMobileApp,
 } from './helpers';
 
 /** A fresh mobile number in national form (`0550…`): phones are unique platform-wide. */
@@ -133,6 +134,9 @@ describe('users, permissions, sessions and audit', () => {
     t = await createTestApp();
     a = await registerTenant(t, 'Utilisateurs A');
     b = await registerTenant(t, 'Utilisateurs B');
+    // Employees log in as native clients below (A1 needs the mobile module for that).
+    await withMobileApp(t, a);
+    await withMobileApp(t, b);
     const cat = await catalogOf(t, a);
     piece = cat.units['PIECE']!.id;
     carton = cat.units['CARTON']!.id;

@@ -110,6 +110,17 @@ export async function withoutGeoCheck(t: TestApp, who: RegisteredTenant): Promis
   await tamper(t)`UPDATE tenants SET "geoCheckMode" = 'OFF' WHERE id = ${who.tenantId}::uuid`;
 }
 
+/**
+ * Grants the mobile app module (phase 39 A1) to a tenant whose edition lacks it, for
+ * suites that log employees in as a native client (refresh token in the body): since
+ * A1, a native login of a seller, livreur or supervisor needs MOBILE_APP.
+ */
+export async function withMobileApp(t: TestApp, who: RegisteredTenant): Promise<void> {
+  await tamper(t)`
+    UPDATE tenants SET "featureGrants" = array_append("featureGrants", 'MOBILE_APP')
+    WHERE id = ${who.tenantId}::uuid AND NOT ('MOBILE_APP' = ANY("featureGrants"))`;
+}
+
 /** Runs `fn` as if inside an authenticated request of `tenantId`. */
 export function asTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> {
   return tenantContext.run({ tenantId }, fn);

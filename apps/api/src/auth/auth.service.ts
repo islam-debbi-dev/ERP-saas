@@ -11,12 +11,15 @@ import {
   type ChangePasswordInput,
   effectivePermissions,
   ErrorCode,
+  Feature,
   type InvitationInfoDto,
   isEmailIdentifier,
   type LoginInput,
+  MOBILE_SEAT_ROLES,
   normalizePhone,
   type RegisterInput,
   Role,
+  SessionClientType,
   type SessionInfo,
   type TenantSessionDto,
   WarehouseType,
@@ -195,6 +198,8 @@ export class AuthService {
         await this.recordFailure(user, meta, now);
         throw new AppException(ErrorCode.INVALID_CREDENTIALS, 'Invalid email or password');
       }
+      const takesMobileSeat = this.takesMobileSeat(user, meta);
+      if (takesMobileSeat) this.assertMobileApp(user);
 
       return this.prisma.db.$transaction(async (tx) => {
         if (user.failedLoginCount > 0 || user.lockedUntil) {
@@ -202,6 +207,11 @@ export class AuthService {
             where: { id: user.id },
             data: { failedLoginCount: 0, lockedUntil: null },
           });
+        }
+        if (takesMobileSeat) {
+          await this.billing.assertMobileSeat(tx, user.tenantId, () =>
+            this.countOtherMobileSeats(tx, user.tenantId, user.id, now),
+          );
         }
         const issued = await this.openSession(tx, user, { ...meta, deviceName: input.deviceName });
         await this.audit.log(tx, {
@@ -381,7 +391,15 @@ export class AuthService {
    * Rotates the refresh token. Presenting a token that is no longer the current one
    * for its session means it was stolen or replayed: the whole session is revoked.
    */
-  async refresh(refreshToken: string | undefined): Promise<IssuedTokens> {
+  /**
+   * [clientType] fills the session's client type when it has none (sessions opened
+   * before phase 39). It never changes a known type, and the seat limit is checked at
+   * login only: a plan downgrade does not log phones out in the middle of the day.
+   */
+  async refresh(
+    refreshToken: string | undefined,
+    clientType?: SessionClientType,
+  ): Promise<IssuedTokens> {
     const parsed = refreshToken ? TokenService.parseRefreshToken(refreshToken) : null;
     if (!parsed) throw new AppException(ErrorCode.INVALID_TOKEN, 'Invalid refresh token');
 
@@ -411,6 +429,7 @@ export class AuthService {
             previousRefreshTokenHash: presentedHash,
             rotatedAt: now,
             lastUsedAt: now,
+            ...(session.clientType === null && clientType ? { clientType } : {}),
           },
         });
       }
@@ -573,6 +592,54 @@ export class AuthService {
     });
   }
 
+  /** A phone login of a road role: needs MOBILE_APP and takes a seat (phase 39 A1). */
+  private takesMobileSeat(user: UserForToken, meta: ClientMeta): boolean {
+    return meta.clientType === SessionClientType.NATIVE && MOBILE_SEAT_ROLES.includes(user.role);
+  }
+
+  /** Same features as /auth/me returns, read from the user loaded for the token. */
+  private assertMobileApp(user: UserForToken): void {
+    const edition = user.tenant.subscription?.edition ?? Edition.ESSENTIEL;
+    const features = effectiveFeatures(
+      edition,
+      user.tenant.featureGrants,
+      user.tenant.featureRevokes,
+    );
+    if (!features.includes(Feature.MOBILE_APP)) {
+      throw new AppException(
+        ErrorCode.FEATURE_NOT_IN_PLAN,
+        'Your edition does not include the mobile app',
+        { feature: Feature.MOBILE_APP },
+      );
+    }
+  }
+
+  /**
+   * Distinct OTHER users of the tenant holding a live native session (not revoked, not
+   * expired) with a seat role and an active account. Sessions belong to this module, so
+   * the count is here; billing only compares it to the plan.
+   */
+  private async countOtherMobileSeats(
+    tx: Tx,
+    tenantId: string,
+    userId: string,
+    now: Date,
+  ): Promise<number> {
+    const rows = await tx.session.findMany({
+      where: {
+        tenantId,
+        clientType: SessionClientType.NATIVE,
+        revokedAt: null,
+        expiresAt: { gt: now },
+        userId: { not: userId },
+        user: { deletedAt: null, role: { in: [...MOBILE_SEAT_ROLES] } },
+      },
+      distinct: ['userId'],
+      select: { userId: true },
+    });
+    return rows.length;
+  }
+
   private async openSession(
     tx: Tx,
     user: UserForToken,
@@ -587,6 +654,7 @@ export class AuthService {
         deviceName: meta.deviceName?.slice(0, 100) ?? null,
         userAgent: meta.userAgent?.slice(0, 255) ?? null,
         ip: meta.ip?.slice(0, 45) ?? null,
+        clientType: meta.clientType ?? SessionClientType.WEB,
         expiresAt: this.tokens.refreshExpiry(),
       },
     });

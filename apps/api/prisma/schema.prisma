@@ -361,11 +361,15 @@ model Session {
   revokedAt                DateTime? @db.Timestamptz(3)
   /// LOGOUT | REVOKED | REUSE_DETECTED
   revokedReason            String?   @db.VarChar(30)
+  /// WEB | NATIVE (X-Client-Type: native). Set at login, filled at refresh for sessions
+  /// opened before phase 39; live NATIVE sessions count against maxMobileSellers.
+  clientType               String?   @db.VarChar(10)
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
 
   @@index([tenantId, userId, revokedAt])
+  @@index([tenantId, clientType, revokedAt])
   @@map("sessions")
 }
 

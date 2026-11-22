@@ -511,6 +511,7 @@
     "PLAN_LIMIT_REACHED": "Your plan’s limit is reached. Move to a bigger plan to add more.",
     "ADMIN_TOTP_INVALID": "Wrong or expired code. Enter the code shown now.",
     "FEATURE_NOT_IN_PLAN": "This module is not in your edition. Contact us to add it.",
+    "MOBILE_SELLER_LIMIT": "Your plan’s number of phones is reached. Close another phone’s session in “Sessions” or move to a bigger plan.",
     "SUPPLIER_CODE_TAKEN": "This supplier code is already used.",
     "SUPPLIER_OPENING_ALREADY_SET": "This supplier already has an opening balance.",
     "SUPPLIER_PAYMENT_NOT_VALID": "This payment is already cancelled.",

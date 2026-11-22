@@ -204,6 +204,33 @@ export class BillingService {
   }
 
   /**
+   * Refuses a phone login that would take one seat too many of the plan's
+   * maxMobileSellers (phase 39 A1). Same lock as assertCanAdd, so two phones logging in
+   * at once cannot both take the last seat. `countOthers` is the auth module's count of
+   * the OTHER users holding a live native session (the same user on a second phone does
+   * not take a second seat). Login runs outside a tenant context: tenantId is explicit.
+   */
+  async assertMobileSeat(
+    tx: Tx,
+    tenantId: string,
+    countOthers: () => Promise<number>,
+  ): Promise<void> {
+    await tx.$queryRaw`SELECT id FROM subscriptions WHERE "tenantId" = ${tenantId}::uuid FOR UPDATE`;
+    const sub = await this.load(tx, tenantId);
+    if (sub.isFree) return;
+    const limit = sub.plan.maxMobileSellers;
+    if (limit === null) return;
+    const current = await countOthers();
+    if (current >= limit) {
+      throw new AppException(
+        ErrorCode.MOBILE_SELLER_LIMIT,
+        `Your plan allows ${limit} phones for the field team`,
+        { limit, current, plan: sub.plan.name },
+      );
+    }
+  }
+
+  /**
    * Usage counters (a read model over other modules' tables, like the reports module).
    * Raw SQL is not rewritten by the tenant extension, so tenantId is explicit.
    */

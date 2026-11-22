@@ -1,5 +1,5 @@
 import type { Request } from 'express';
-import type { Permission, Role } from '@erp/shared';
+import type { Permission, Role, SessionClientType } from '@erp/shared';
 
 /** Claims inside the access token. */
 export interface AccessTokenPayload {
@@ -40,4 +40,6 @@ export interface ClientMeta {
   deviceName?: string | null;
   userAgent?: string | null;
   ip?: string | null;
+  /** NATIVE when the request carries X-Client-Type: native (the phone app). */
+  clientType?: SessionClientType;
 }

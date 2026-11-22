@@ -511,6 +511,7 @@
     "PLAN_LIMIT_REACHED": "Limite de votre formule atteinte. Passez à la formule supérieure pour en ajouter.",
     "ADMIN_TOTP_INVALID": "Code incorrect ou expiré. Saisissez le code affiché maintenant.",
     "FEATURE_NOT_IN_PLAN": "Ce module n’est pas inclus dans votre édition. Contactez-nous pour l’ajouter.",
+    "MOBILE_SELLER_LIMIT": "Le nombre de téléphones de votre formule est atteint. Fermez la session d’un autre téléphone dans « Sessions » ou passez à la formule supérieure.",
     "SUPPLIER_CODE_TAKEN": "Ce code fournisseur est déjà utilisé.",
     "SUPPLIER_OPENING_ALREADY_SET": "Ce fournisseur a déjà un solde initial.",
     "SUPPLIER_PAYMENT_NOT_VALID": "Ce règlement est déjà annulé.",

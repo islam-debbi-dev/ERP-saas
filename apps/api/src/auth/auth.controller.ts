@@ -21,6 +21,7 @@ import {
   type ChangePasswordInput,
   changePasswordSchema,
   CLIENT_TYPE_HEADER,
+  CLIENT_TYPE_NATIVE,
   type InvitationInfoDto,
   type LoginInput,
   loginSchema,
@@ -28,6 +29,7 @@ import {
   refreshSchema,
   type RegisterInput,
   registerSchema,
+  SessionClientType,
   type SessionInfo,
   type TenantSessionDto,
 } from '@erp/shared';
@@ -80,7 +82,7 @@ export class AuthController {
     const cookies = req.cookies as Record<string, string | undefined>;
     const token = body?.refreshToken ?? cookies[REFRESH_COOKIE];
     try {
-      return this.respond(req, res, await this.auth.refresh(token));
+      return this.respond(req, res, await this.auth.refresh(token, this.clientType(req)));
     } catch (err) {
       this.clearCookie(res);
       throw err;
@@ -151,13 +153,23 @@ export class AuthController {
   }
 
   private meta(req: Request): ClientMeta {
-    return { userAgent: req.get('user-agent') ?? null, ip: req.ip ?? null };
+    return {
+      userAgent: req.get('user-agent') ?? null,
+      ip: req.ip ?? null,
+      clientType: this.clientType(req),
+    };
+  }
+
+  private clientType(req: Request): SessionClientType {
+    return req.get(CLIENT_TYPE_HEADER) === CLIENT_TYPE_NATIVE
+      ? SessionClientType.NATIVE
+      : SessionClientType.WEB;
   }
 
   /** Web: refresh token in an httpOnly cookie. Native clients: in the body. */
   private respond(req: Request, res: Response, tokens: IssuedTokens): AuthResponse {
     const { refreshToken, ...rest } = tokens;
-    if (req.get(CLIENT_TYPE_HEADER) === 'native') return { ...rest, refreshToken };
+    if (req.get(CLIENT_TYPE_HEADER) === CLIENT_TYPE_NATIVE) return { ...rest, refreshToken };
     res.cookie(REFRESH_COOKIE, refreshToken, {
       httpOnly: true,
       secure: this.config.COOKIE_SECURE,

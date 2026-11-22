@@ -107,6 +107,8 @@ export const ErrorCode = {
   IMPERSONATION_READ_ONLY: 'IMPERSONATION_READ_ONLY',
   PLAN_LIMIT_REACHED: 'PLAN_LIMIT_REACHED',
   FEATURE_NOT_IN_PLAN: 'FEATURE_NOT_IN_PLAN',
+  /** A phone login would exceed the plan's maxMobileSellers (phase 39, A1). */
+  MOBILE_SELLER_LIMIT: 'MOBILE_SELLER_LIMIT',
   ADMIN_TOTP_INVALID: 'ADMIN_TOTP_INVALID',
   // Sales force (phase 14)
   MANAGER_CYCLE: 'MANAGER_CYCLE',
@@ -283,3 +285,5 @@ export interface ApiError {
 export const IDEMPOTENCY_HEADER = 'Idempotency-Key';
 /** Header native clients (Flutter) send to receive the refresh token in the body. */
 export const CLIENT_TYPE_HEADER = 'X-Client-Type';
+/** Value of CLIENT_TYPE_HEADER sent by the phone app. */
+export const CLIENT_TYPE_NATIVE = 'native';
