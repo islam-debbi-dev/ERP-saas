@@ -68,9 +68,10 @@
 			<string>UIInterfaceOrientationLandscapeLeft</string>
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
-		<!-- Purpose strings for image_picker (linked by pubspec). Location keys were
-	     removed: no location plugin is in the app. Add them back only together
-	     with a feature that asks for location. -->
+		<!-- Location: read once, in the foreground, when a sale, versement or
+	     visit is saved (phase 17 GeoCheck). Never in the background. -->
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Debvora records where you are only when you save a sale, a payment or a visit, so your company can check field operations.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>Debvora opens your photo library only when you choose a picture inside the app.</string>
 		<key>NSCameraUsageDescription</key>

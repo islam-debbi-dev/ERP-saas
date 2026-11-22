@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 
 import '../service/dio_generate.dart';
@@ -34,6 +37,48 @@ class ApiClient {
     ),
     decode,
   );
+
+  /// A binary body (a PDF). Errors still come back as JSON `{ code, ... }`.
+  Future<ApiResult<Uint8List>> getBytes(
+    String path, {
+    Map<String, dynamic>? query,
+  }) async {
+    try {
+      final response = await _dio.get<List<int>>(
+        path,
+        queryParameters: _clean(query),
+        options: Options(responseType: ResponseType.bytes),
+      );
+      final status = response.statusCode ?? 0;
+      if (status < 200 || status >= 300) {
+        return ApiResult.failure(ApiError.fromResponse(_decodeError(response)));
+      }
+      return ApiResult.success(Uint8List.fromList(response.data ?? const []));
+    } on DioException catch (e) {
+      final r = e.response;
+      if (r != null && r.data is List<int>) {
+        return ApiResult.failure(ApiError.fromResponse(_decodeError(r)));
+      }
+      return ApiResult.failure(ApiError.fromDio(e));
+    }
+  }
+
+  /// An error answered to a bytes request: its JSON body arrives as bytes.
+  static Response<Object?> _decodeError(Response<dynamic> r) {
+    Object? body = r.data;
+    if (body is List<int>) {
+      try {
+        body = jsonDecode(utf8.decode(body));
+      } catch (_) {
+        body = null;
+      }
+    }
+    return Response<Object?>(
+      requestOptions: r.requestOptions,
+      statusCode: r.statusCode,
+      data: body,
+    );
+  }
 
   Future<ApiResult<T>> post<T>(
     String path, {

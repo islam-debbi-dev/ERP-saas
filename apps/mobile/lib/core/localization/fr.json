@@ -40,7 +40,11 @@
     "load_failed": "Chargement impossible.",
     "clear": "Effacer",
     "search": "Rechercher",
-    "offline": "Pas de connexion internet"
+    "offline": "Pas de connexion internet",
+    "confirm": "Confirmer",
+    "save": "Enregistrer",
+    "required": "Champ obligatoire",
+    "share_pdf": "Partager PDF"
   },
   "errors": {
     "offline": "Pas de connexion internet. Vérifiez le réseau puis réessayez.",
@@ -100,7 +104,8 @@
     "AI_RATE_LIMITED": "Le fournisseur reçoit trop de demandes. Réessayez dans un instant.",
     "AI_DAILY_LIMIT": "Vous avez atteint la limite de questions pour aujourd'hui.",
     "AI_NOT_CONFIGURED": "L'assistant n'est pas disponible pour cette société.",
-    "AI_UNAVAILABLE": "L'assistant ne répond pas pour le moment. Réessayez dans un instant."
+    "AI_UNAVAILABLE": "L'assistant ne répond pas pour le moment. Réessayez dans un instant.",
+    "cannot_open": "Impossible d'ouvrir l'application"
   },
   "help": {
     "title": "Centre d'aide",
@@ -174,5 +179,59 @@
     "no_tournees_title": "Tournées non activées",
     "no_tournees_message": "Votre offre n'inclut pas les tournées. Travaillez depuis la liste des clients.",
     "open_clients": "Voir les clients"
+  },
+  "geo": {
+    "why_title": "Pourquoi votre position ?",
+    "why_body": "L'application enregistre votre position une seule fois, au moment où vous enregistrez une vente, un versement ou une visite, pour que votre entreprise puisse vérifier les opérations terrain. Vous n'êtes jamais suivi en arrière-plan.",
+    "law_notice": "Conformément à la loi 18-07 relative à la protection des personnes physiques dans le traitement des données à caractère personnel.",
+    "allow": "Autoriser",
+    "open_settings": "Ouvrir les réglages",
+    "not_now": "Plus tard",
+    "locating": "Localisation…",
+    "no_fix": "Position introuvable"
+  },
+  "clients": {
+    "title": "Clients",
+    "client": "Client",
+    "new": "Nouveau client",
+    "search_hint": "Nom, code ou téléphone",
+    "debtors": "Débiteurs",
+    "near_me": "Près de moi",
+    "empty_title": "Aucun client",
+    "empty_message": "Modifiez la recherche ou les filtres.",
+    "distance_km": "{km} km",
+    "distance_m": "{m} m",
+    "over_limit": "Plafond dépassé",
+    "balance": "Solde",
+    "credit_limit": "Plafond de crédit",
+    "no_limit": "Sans plafond",
+    "credit_left": "Reste sous le plafond",
+    "call": "Appeler",
+    "whatsapp": "WhatsApp",
+    "set_location": "Enregistrer la position",
+    "update_location": "Changer la position",
+    "location_saved": "Position du client enregistrée",
+    "location_request_title": "Demande de changement",
+    "location_request_message": "Ce client a déjà une position. Une demande sera envoyée au superviseur pour validation.",
+    "location_request_note": "Note (facultatif)",
+    "location_request_send": "Envoyer la demande",
+    "location_request_sent": "Demande envoyée",
+    "unpaid": "Documents impayés",
+    "no_unpaid": "Aucun document impayé",
+    "last_sales": "Dernières ventes",
+    "no_sales": "Aucune vente",
+    "statement": "Relevé",
+    "statement_range": "Du {from} au {to}",
+    "opening_balance": "Solde d'ouverture",
+    "closing_balance": "Solde de clôture",
+    "total_debit": "Total débit",
+    "total_credit": "Total crédit",
+    "no_entries": "Aucun mouvement sur la période",
+    "code": "Code",
+    "name": "Nom",
+    "phone": "Téléphone",
+    "address": "Adresse",
+    "commune": "Commune",
+    "professional": "Client professionnel"
   }
 }

@@ -1,8 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- No location / camera / media permissions: nothing in lib/ uses them and
-         Google Play reviews (and can reject) undeclared sensitive permissions.
-         image_picker uses the system photo picker, which needs none. -->
+    <!-- Foreground location only, read once per sale / versement / visit
+         (phase 17 GeoCheck, loi 18-07): no ACCESS_BACKGROUND_LOCATION. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <application
         android:label="Debvora"
         android:name="${applicationName}"
