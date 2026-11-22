@@ -75,7 +75,7 @@
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>Debvora opens your photo library only when you choose a picture inside the app.</string>
 		<key>NSCameraUsageDescription</key>
-		<string>Debvora uses the camera only when you choose to take a picture inside the app.</string>
+		<string>Debvora uses the camera only when you scan a product barcode or choose to take a picture inside the app.</string>
 		<!-- The app only uses HTTPS (exempt encryption), so App Store Connect
 	     does not ask the export-compliance question on every upload. -->
 		<key>ITSAppUsesNonExemptEncryption</key>

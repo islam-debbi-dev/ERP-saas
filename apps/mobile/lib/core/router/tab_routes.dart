@@ -7,6 +7,9 @@ import '../../features/clients/ui/client_statement_screen.dart';
 import '../../features/clients/ui/clients_screen.dart';
 import '../../features/clients/ui/new_client_screen.dart';
 import '../../features/main_screen/ui/placeholder_tab.dart';
+import '../../features/sales/logic/basket.dart';
+import '../../features/sales/ui/sale_screen.dart';
+import '../../features/sales/ui/sell_screen.dart';
 import '../../features/today/ui/today_screen.dart';
 import 'role_screens.dart';
 
@@ -28,6 +31,7 @@ Widget tabPage(RoleTab tab) {
     );
   }
   if (p == '/seller/clients') return ClientsScreen(basePath: p);
+  if (p == '/seller/sell') return SellScreen(basePath: p);
   if (p.endsWith('/more')) return const AccountScreen();
   return PlaceholderTab(tab: tab);
 }
@@ -36,6 +40,7 @@ Widget tabPage(RoleTab tab) {
 /// so `RoleScreens.allows` keeps them to the tab's role.
 List<RouteBase> tabSubRoutes(RoleTab tab) {
   if (tab.path == '/seller/clients') return clientRoutes(tab.path);
+  if (tab.path == '/seller/sell') return [_saleRoute('new')];
   return const [];
 }
 
@@ -53,6 +58,7 @@ List<RouteBase> clientRoutes(String base) => [
       return ClientDetailScreen(clientId: id, basePath: '$base/$id');
     },
     routes: [
+      _saleRoute('sell'),
       GoRoute(
         path: 'statement',
         builder: (_, state) =>
@@ -61,3 +67,10 @@ List<RouteBase> clientRoutes(String base) => [
     ],
   ),
 ];
+
+/// The basket of a van sale; `extra` is the [BasketClient] (none = comptoir).
+GoRoute _saleRoute(String path) => GoRoute(
+  path: path,
+  parentNavigatorKey: rootNavigatorKey,
+  builder: (_, state) => SaleScreen(client: state.extra as BasketClient?),
+);

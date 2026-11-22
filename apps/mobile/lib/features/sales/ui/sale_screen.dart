@@ -1,0 +1,615 @@
+import 'package:decimal/decimal.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../core/components/widgets/amount_text.dart';
+import '../../../core/components/widgets/text_prompt.dart';
+import '../../../core/di/dependency_injection.dart';
+import '../../../core/design/design.dart';
+import '../../../core/geo/geo_capture.dart';
+import '../../../core/helpers/money.dart';
+import '../../../core/localization/tr.dart';
+import '../../../core/models/erp_codes.dart';
+import '../../../core/network/api_error.dart';
+import '../../../core/network/api_result.dart';
+import '../../../core/network/error_messages.dart';
+import '../../../core/network/money_action.dart';
+import '../../../core/session/session_cubit.dart';
+import '../../auth/ui/widgets/form_error_banner.dart';
+import '../../catalog/ui/product_picker_screen.dart';
+import '../../truck/data/current_truck.dart';
+import '../data/models/pricing.dart';
+import '../data/models/sale.dart';
+import '../data/repo/sales_repository.dart';
+import '../logic/basket.dart';
+import '../logic/sale_basket_cubit.dart';
+import 'sale_result_view.dart';
+import 'widgets/basket_summary.dart';
+import 'widgets/qty_stepper.dart';
+
+/// Vente directe from the truck: basket priced by the API, packaging returned,
+/// payment, GPS, `POST /sales/quick`. Pops with the saved [SaleResult] (the
+/// visit links it), or null.
+class SaleScreen extends StatelessWidget {
+  const SaleScreen({super.key, required this.client});
+
+  /// Null = vente comptoir (paid in full).
+  final BasketClient? client;
+
+  @override
+  Widget build(BuildContext context) {
+    final user = context.read<SessionCubit>().state.user;
+    return BlocProvider(
+      create: (_) {
+        final cubit = SaleBasketCubit(
+          getIt<SalesRepository>(),
+          client: client,
+          policy: DiscountPolicy(
+            canDiscount: user?.can(Permission.priceOverride) ?? false,
+            aboveCeiling: user?.can(Permission.discountAboveX) ?? false,
+            ceiling: null,
+          ),
+        );
+        if (user?.can(Permission.priceOverride) ?? false) {
+          getIt<SalesRepository>().maxDiscountPct().then((r) {
+            if (r is Success<Decimal>) {
+              cubit.policy = DiscountPolicy(
+                canDiscount: true,
+                aboveCeiling: cubit.policy.aboveCeiling,
+                ceiling: r.data,
+              );
+            }
+          });
+        }
+        return cubit;
+      },
+      child: const _SaleView(),
+    );
+  }
+}
+
+class _SaleView extends StatefulWidget {
+  const _SaleView();
+
+  @override
+  State<_SaleView> createState() => _SaleViewState();
+}
+
+class _SaleViewState extends State<_SaleView> {
+  String? _truckId;
+  List<PackagingType> _packagingTypes = const [];
+  bool _locating = false;
+  final _paidText = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    getIt<CurrentTruck>().get(refresh: true).then((v) {
+      if (mounted) setState(() => _truckId = v?.id);
+    });
+    final user = context.read<SessionCubit>().state.user;
+    if (user?.hasFeature(Feature.packaging) ?? false) {
+      getIt<SalesRepository>().packagingTypes().then((r) {
+        if (mounted && r is Success<List<PackagingType>>) {
+          setState(() => _packagingTypes = r.data);
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _paidText.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pick() async {
+    final cubit = context.read<SaleBasketCubit>();
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: cubit,
+          child: ProductPickerScreen(truckId: _truckId),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submit() async {
+    final cubit = context.read<SaleBasketCubit>();
+    if (cubit.state.submitting) return;
+    setState(() => _locating = true);
+    final geo = await captureGeo(context);
+    if (!mounted) return;
+    setState(() => _locating = false);
+    await cubit.submit(
+      truckId: _truckId,
+      geo: geo,
+      runner: MoneyActionRunner(askGeoNote: (error) => _askGeoNote(error)),
+    );
+  }
+
+  Future<String?> _askGeoNote(ApiError error) => askText(
+    context,
+    title: context.tr('geo.note_title'),
+    message: apiErrorText(context, error),
+    label: context.tr('geo.note_label'),
+    minLength: 3,
+    confirmLabel: context.tr('geo.note_send'),
+  );
+
+  void _setPaidText(Decimal? v) {
+    _paidText.text = v == null
+        ? ''
+        : Money.format(v, currency: false, isolate: false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<SaleBasketCubit, SaleBasketState>(
+      builder: (context, state) {
+        final result = state.result;
+        if (result != null) {
+          return SaleResultView(
+            result: result,
+            onDone: () => Navigator.of(context).pop(result),
+          );
+        }
+        return Scaffold(
+          appBar: AppBar(
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(context.tr('sale.title')),
+                Text(
+                  state.client?.name ?? context.tr('sale.counter'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+            actions: [
+              IconButton(
+                tooltip: context.tr('catalog.pick_title'),
+                onPressed: _pick,
+                icon: const Icon(Icons.add_box_outlined),
+              ),
+            ],
+          ),
+          bottomNavigationBar: _SubmitBar(
+            state: state,
+            busy: _locating || state.submitting,
+            onSubmit: state.isEmpty ? null : _submit,
+          ),
+          body: ListView(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            children: [
+              if (state.error != null) ...[
+                SaleErrorCard(error: state.error!, lines: state.lines),
+                AppSpacing.gapLg,
+              ],
+              if (state.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+                  child: AppEmptyState(
+                    icon: Icons.shopping_basket_outlined,
+                    title: context.tr('sale.empty_title'),
+                    message: context.tr('sale.empty_message'),
+                    actionLabel: context.tr('sale.add_products'),
+                    onAction: _pick,
+                  ),
+                )
+              else ...[
+                for (var i = 0; i < state.lines.length; i++) ...[
+                  BasketLineTile(
+                    index: i,
+                    line: state.lines[i],
+                    preview: state.preview,
+                  ),
+                  AppSpacing.gapSm,
+                ],
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(AppSpacing.minTouch),
+                  ),
+                  onPressed: _pick,
+                  icon: const Icon(Icons.add),
+                  label: Text(context.tr('sale.add_products')),
+                ),
+                if (state.pricingError != null) ...[
+                  AppSpacing.gapSm,
+                  Text(
+                    apiErrorText(context, state.pricingError!),
+                    style: TextStyle(color: AppColors.error),
+                  ),
+                ],
+                if (_packagingTypes.isNotEmpty) ...[
+                  AppSpacing.gapXl,
+                  AppSectionHeader(
+                    title: context.tr('sale.packaging_returned'),
+                  ),
+                  for (final t in _packagingTypes)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.xs,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(child: Text(t.name)),
+                          QtyStepper(
+                            label: '${state.packaging[t.id] ?? 0}',
+                            onDecrement: () =>
+                                context.read<SaleBasketCubit>().setPackaging(
+                                  t.id,
+                                  (state.packaging[t.id] ?? 0) - 1,
+                                ),
+                            onIncrement: () =>
+                                context.read<SaleBasketCubit>().setPackaging(
+                                  t.id,
+                                  (state.packaging[t.id] ?? 0) + 1,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+                AppSpacing.gapXl,
+                AppSectionHeader(title: context.tr('sale.payment')),
+                AppSpacing.gapSm,
+                TextField(
+                  controller: _paidText,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  textDirection: TextDirection.ltr,
+                  decoration: InputDecoration(
+                    labelText: context.tr('sale.paid_now'),
+                    suffixText: 'DA',
+                    errorText:
+                        _paidText.text.isNotEmpty &&
+                            Money.parseInput(_paidText.text) == null
+                        ? context.tr('sale.invalid_amount')
+                        : null,
+                  ),
+                  onChanged: (v) {
+                    context.read<SaleBasketCubit>().setPaid(
+                      v.trim().isEmpty ? null : Money.parseInput(v),
+                    );
+                    setState(() {});
+                  },
+                ),
+                AppSpacing.gapSm,
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: [
+                    ActionChip(
+                      avatar: const Icon(Icons.done_all, size: 18),
+                      label: Text(context.tr('sale.pay_all')),
+                      onPressed: state.estimatedTtc == null
+                          ? null
+                          : () {
+                              context.read<SaleBasketCubit>().payAll();
+                              _setPaidText(state.estimatedTtc);
+                            },
+                    ),
+                    if (state.client != null)
+                      ActionChip(
+                        avatar: const Icon(Icons.schedule, size: 18),
+                        label: Text(context.tr('sale.all_credit')),
+                        onPressed: () {
+                          context.read<SaleBasketCubit>().setPaid(Decimal.zero);
+                          _setPaidText(Decimal.zero);
+                        },
+                      ),
+                  ],
+                ),
+                AppSpacing.gapMd,
+                SegmentedButton<PaymentModeValue>(
+                  segments: [
+                    for (final m in PaymentModeValue.values)
+                      ButtonSegment(
+                        value: m,
+                        label: Text(context.tr('payment.mode_${m.api}')),
+                      ),
+                  ],
+                  selected: {state.mode},
+                  showSelectedIcon: false,
+                  onSelectionChanged: (s) =>
+                      context.read<SaleBasketCubit>().setMode(s.first),
+                ),
+                AppSpacing.gapXl,
+                if (state.preview != null)
+                  BasketSummary(
+                    totalHt: state.preview!.totalHt,
+                    totalTva: state.preview!.totalTva,
+                    totalTtc: state.preview!.totalTtc,
+                    paid: state.paidOrZero,
+                    credit: state.estimatedCredit,
+                  ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Total and "Valider la vente", one thumb away.
+class _SubmitBar extends StatelessWidget {
+  const _SubmitBar({required this.state, required this.busy, this.onSubmit});
+
+  final SaleBasketState state;
+  final bool busy;
+  final VoidCallback? onSubmit;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final ttc = state.estimatedTtc;
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.sm,
+          AppSpacing.lg,
+          AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          border: Border(top: BorderSide(color: context.fieldBorder)),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.tr('sale.total_ttc'),
+                    style: text.bodySmall?.copyWith(color: context.textMuted),
+                  ),
+                  if (state.pricing || ttc == null)
+                    Text(
+                      state.isEmpty ? '—' : context.tr('sale.pricing'),
+                      style: text.titleMedium,
+                    )
+                  else
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: AlignmentDirectional.centerStart,
+                      child: AmountText(ttc, style: text.titleLarge),
+                    ),
+                ],
+              ),
+            ),
+            AppSpacing.gapMd,
+            Expanded(
+              child: AppButton(
+                label: context.tr('sale.validate'),
+                icon: Icons.check_circle_outline,
+                loading: busy,
+                onPressed: onSubmit,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One basket line: product, unit, quantity, the API's price (promotion,
+/// remise, free units).
+class BasketLineTile extends StatelessWidget {
+  const BasketLineTile({
+    super.key,
+    required this.index,
+    required this.line,
+    this.preview,
+  });
+
+  final int index;
+  final BasketLine line;
+  final PricingPreview? preview;
+
+  Future<void> _discount(BuildContext context) async {
+    final cubit = context.read<SaleBasketCubit>();
+    final max = cubit.policy.maxPct;
+    final typed = await askText(
+      context,
+      title: context.tr('sale.discount'),
+      message: context.tr(
+        'sale.discount_max',
+        args: {'max': Qty.format(max, isolate: false)},
+      ),
+      label: '%',
+      minLength: 1,
+      maxLength: 6,
+    );
+    if (typed == null) return;
+    final pct = Money.parseInput(typed);
+    if (pct != null) cubit.setDiscount(index, pct);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final cubit = context.read<SaleBasketCubit>();
+    final priced = preview?.paidLineOf(index);
+    final free = preview?.freeLinesOf(index) ?? const <PricedLine>[];
+    final units = line.product.units;
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  line.product.designation,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: text.titleSmall,
+                ),
+              ),
+              IconButton(
+                tooltip: context.tr('sale.remove_line'),
+                visualDensity: VisualDensity.compact,
+                onPressed: () => cubit.remove(index),
+                icon: const Icon(Icons.delete_outline),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              if (units.length > 1)
+                PopupMenuButton<String>(
+                  tooltip: context.tr('sale.unit'),
+                  initialValue: line.unit.unitId,
+                  onSelected: (id) => cubit.setUnit(
+                    index,
+                    units.firstWhere((u) => u.unitId == id),
+                  ),
+                  itemBuilder: (_) => [
+                    for (final u in units)
+                      PopupMenuItem(value: u.unitId, child: Text(u.label)),
+                  ],
+                  child: Chip(
+                    label: Text(line.unit.label),
+                    avatar: const Icon(Icons.swap_vert, size: 18),
+                  ),
+                )
+              else
+                Chip(label: Text(line.unit.label)),
+              const Spacer(),
+              QtyStepper(
+                label: Qty.format(line.qty),
+                onDecrement: () => cubit.decrement(index),
+                onIncrement: () => cubit.increment(index),
+                decrementTooltip: context.tr('sale.less'),
+                incrementTooltip: context.tr('sale.more'),
+              ),
+            ],
+          ),
+          if (priced != null) ...[
+            AppSpacing.gapXs,
+            Row(
+              children: [
+                Expanded(
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text:
+                              '${Money.format(priced.unitPriceHt)} × ${Qty.format(priced.qty)}',
+                        ),
+                        if (priced.discountPct > Decimal.zero)
+                          TextSpan(
+                            text: '  −${Qty.format(priced.discountPct)} %',
+                            style: const TextStyle(color: AppColors.success),
+                          ),
+                      ],
+                    ),
+                    style: text.bodySmall?.copyWith(color: context.textMuted),
+                  ),
+                ),
+                AmountText(priced.lineHt, style: text.titleSmall),
+              ],
+            ),
+            if (priced.promotion != null)
+              Text(
+                context.tr(
+                  'sale.promo',
+                  args: {'name': priced.promotion!.name},
+                ),
+                style: text.labelSmall?.copyWith(color: AppColors.success),
+              ),
+          ],
+          for (final f in free)
+            Text(
+              context.tr(
+                'sale.free_line',
+                args: {
+                  'qty': Qty.format(f.qty),
+                  'unit': f.unitLabel,
+                  'name': f.designation,
+                },
+              ),
+              style: text.labelSmall?.copyWith(color: AppColors.success),
+            ),
+          if (cubit.policy.canDiscount)
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: TextButton.icon(
+                onPressed: () => _discount(context),
+                icon: const Icon(Icons.percent, size: 18),
+                label: Text(
+                  line.discountPct == null
+                      ? context.tr('sale.discount')
+                      : '${Qty.format(line.discountPct!)} %',
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A refused save, said clearly: over the plafond (with the figures), stock
+/// short (with the product), or the API's message.
+class SaleErrorCard extends StatelessWidget {
+  const SaleErrorCard({super.key, required this.error, required this.lines});
+
+  final ApiError error;
+  final List<BasketLine> lines;
+
+  @override
+  Widget build(BuildContext context) {
+    final parts = <String>[apiErrorText(context, error)];
+    if (error.code == 'CREDIT_LIMIT_EXCEEDED') {
+      String amount(String key) {
+        final v = error.detail(key);
+        return v is String ? Money.format(Decimal.parse(v)) : '—';
+      }
+
+      parts.add(
+        context.tr(
+          'sale.credit_details',
+          args: {
+            'balance': amount('balance'),
+            'limit': amount('limit'),
+            'projected': amount('projected'),
+          },
+        ),
+      );
+    }
+    if (error.code == 'STOCK_INSUFFICIENT') {
+      final productId = error.detail('productId');
+      final available = error.detail('available');
+      final match = lines.where((l) => l.product.id == productId);
+      if (match.isNotEmpty) {
+        final product = match.first.product;
+        parts.add(
+          context.tr(
+            'sale.stock_details',
+            args: {
+              'name': product.designation,
+              'qty': available is String
+                  ? stockText(product, Decimal.parse(available))
+                  : '—',
+            },
+          ),
+        );
+      }
+    }
+    if (error.isOffline) parts.add(context.tr('sale.retry_safe'));
+    return FormErrorBanner(message: parts.join('\n'));
+  }
+}

@@ -64,6 +64,8 @@ dependencies:
   geolocator: ^14.0.1
   # Share sheet for the PDFs the API renders (BL, reçu, relevé).
   share_plus: ^13.3.1
+  # Camera barcode scan in the product picker (EAN of pièces and cartons).
+  mobile_scanner: ^7.5.0
   # ── Social auth (white-label: buttons shown per .env keys) ────────────────
   # google_sign_in: ^7.2.0
   # sign_in_with_apple: ^7.0.1
