@@ -15,6 +15,7 @@ import {
   parseDA,
   qty,
 } from '@erp/shared';
+import { GeoPrivacyNotice, isGeoCancelled, useGeoSubmit } from '@/components/geo/use-geo-submit';
 import { Amount } from '@/components/shared/amount';
 import { usePrint } from '@/components/shared/print-button';
 import { Button } from '@/components/ui/button';
@@ -49,24 +50,38 @@ export function DeliverDialog({
   onClose: () => void;
   onDelivered: (order: OrderDto) => void;
 }) {
+  // Phase 39, A3: a livreur's position goes with the delivery (a note if asked). The
+  // note dialog sits outside the form so its submit never reaches the delivery form.
+  const geo = useGeoSubmit();
   return (
-    <ResponsiveDialog open={order !== null} onOpenChange={(o) => !o && onClose()}>
-      <ResponsiveDialogContent className="md:max-w-lg">
-        {/* Remounted per order: the quantities start from what was ordered. */}
-        {order ? (
-          <Form key={order.id} order={order} onClose={onClose} onDelivered={onDelivered} />
-        ) : null}
-      </ResponsiveDialogContent>
-    </ResponsiveDialog>
+    <>
+      <ResponsiveDialog open={order !== null} onOpenChange={(o) => !o && onClose()}>
+        <ResponsiveDialogContent className="md:max-w-lg">
+          {/* Remounted per order: the quantities start from what was ordered. */}
+          {order ? (
+            <Form
+              key={order.id}
+              order={order}
+              geo={geo}
+              onClose={onClose}
+              onDelivered={onDelivered}
+            />
+          ) : null}
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
+      {geo.dialog}
+    </>
   );
 }
 
 function Form({
   order,
+  geo,
   onClose,
   onDelivered,
 }: {
   order: OrderDto;
+  geo: ReturnType<typeof useGeoSubmit>;
   onClose: () => void;
   onDelivered: (order: OrderDto) => void;
 }) {
@@ -106,16 +121,23 @@ function Form({
 
   const deliver = useMutation({
     mutationFn: () =>
-      api.request<DeliverOrderResultDto>(`/orders/${order.id}/deliver`, {
-        method: 'POST',
-        body: {
-          lines: parsed.map((p) => ({ orderLineId: p.line.id, qty: p.value?.toString() ?? '0' })),
-          paidAmount: (paidValue ?? money(0)).toString(),
-          paymentMode: mode,
-        },
-        idempotencyKey: key,
-      }),
+      geo.run((g) =>
+        api.request<DeliverOrderResultDto>(`/orders/${order.id}/deliver`, {
+          method: 'POST',
+          body: {
+            lines: parsed.map((p) => ({
+              orderLineId: p.line.id,
+              qty: p.value?.toString() ?? '0',
+            })),
+            paidAmount: (paidValue ?? money(0)).toString(),
+            paymentMode: mode,
+            ...(g ? { geo: g } : {}),
+          },
+          idempotencyKey: key,
+        }),
+      ),
     onSuccess: (res) => {
+      geo.after(res.geoCheck, order.client.id);
       onDelivered(res.order);
       void queryClient.invalidateQueries({ queryKey: tourneeKeys.orders });
       void queryClient.invalidateQueries({ queryKey: stockKeys.all });
@@ -134,7 +156,9 @@ function Form({
         toast.warning(t('deliveredWarnings', { count: res.warnings.length }));
       onClose();
     },
-    onError: (err) => toast.error(errorMessage(err)),
+    onError: (err) => {
+      if (!isGeoCancelled(err)) toast.error(errorMessage(err));
+    },
   });
 
   return (
@@ -221,6 +245,8 @@ function Form({
           </NativeSelect>
         </div>
       </div>
+
+      {geo.on ? <GeoPrivacyNotice /> : null}
 
       <ResponsiveDialogFooter>
         <Button type="button" variant="ghost" onClick={onClose}>
