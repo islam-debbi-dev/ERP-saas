@@ -27,9 +27,9 @@ class LoadStateView<T> extends StatelessWidget {
     if (data != null) return builder(context, data);
     if (state.loading) return skeleton ?? const AppLoader(size: 72);
     return AppErrorState(
-      title: context.tr('jb.common.load_failed'),
+      title: context.tr('common.load_failed'),
       message: state.error == null ? null : apiErrorText(context, state.error!),
-      retryLabel: context.tr('retry'),
+      retryLabel: context.tr('common.retry'),
       onRetry: onRetry,
     );
   }

@@ -39,7 +39,7 @@ class UrlHelper {
       if (!context.mounted) return;
       final localizations = AppLocalizations.of(context);
       final errorMessage =
-          localizations?.translate('error_unknown') ??
+          localizations?.translate('errors.unknown') ??
           'An unknown error occurred';
       ScaffoldMessenger.of(
         context,

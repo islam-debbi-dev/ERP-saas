@@ -58,12 +58,12 @@ class _SearchInputState extends State<SearchInput> {
         widget.onChanged(v.trim());
       },
       decoration: InputDecoration(
-        hintText: widget.hint ?? context.tr('jb.search.hint'),
+        hintText: widget.hint ?? context.tr('common.search'),
         prefixIcon: const Icon(Icons.search_rounded),
         suffixIcon: _controller.text.isEmpty
             ? null
             : IconButton(
-                tooltip: context.tr('jb.common.clear'),
+                tooltip: context.tr('common.clear'),
                 icon: const Icon(Icons.close_rounded),
                 onPressed: () {
                   _controller.clear();

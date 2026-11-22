@@ -35,7 +35,7 @@ class NoConnectionBanner extends StatelessWidget {
             SizedBox(width: 12.w),
             Expanded(
               child: Text(
-                AppLocalizations.of(context)?.translate('no_connection') ??
+                AppLocalizations.of(context)?.translate('common.offline') ??
                     'No connection',
                 style: TextStyle(
                   color: AppColors.error,

@@ -1,4 +1,0 @@
-class NetworkImagesUrls {
-  static const String avatarUrlGoogle =
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuA5B3uLkNqnC1Y03mHYmIfecSnw4V9U7QoHVgq2WSxgNyGYOiJvqR9ioiHDFkkIJPC9w48DbfN1fJbf0TQJJOWv5e0dENgSiZx3EoqQe0wKkPqCly8wqm1CvS0dMJUes55NrJL9KBLb4yNkgqD6iAl-mBwPfWsdHguRKNJZGEjZkijyyKd94AUmnAEF5pfwXICA2UbZ6c345SteDD-csEIphsedNtxc2iXwqZ41YAM-UXXmIFV4uB0DiwkORrUsz-BuvLmO-bQgjl8';
-}

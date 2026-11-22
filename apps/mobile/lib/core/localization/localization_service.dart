@@ -12,7 +12,7 @@ class LocalizationService {
   LocalizationService._internal();
 
   Map<String, String> _localizedStrings = {};
-  String _currentLanguageCode = 'en'; // Default language
+  String _currentLanguageCode = 'ar'; // Arabic by default (RTL)
 
   /// Initializes the localization service by loading the strings for the current locale.
   Future<void> init() async {
@@ -23,7 +23,7 @@ class LocalizationService {
     } catch (e) {
       debugPrint('Error initializing LocalizationService: $e');
       // Fallback to default language if something goes wrong
-      await _loadLocalizedStrings('en');
+      await _loadLocalizedStrings('ar');
     }
   }
 
