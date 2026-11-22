@@ -304,7 +304,9 @@
   "payment": {
     "mode_ESPECES": "نقدا",
     "mode_CHEQUE": "صك",
-    "mode_VIREMENT": "تحويل"
+    "mode_VIREMENT": "تحويل",
+    "status_CANCELLED": "ملغاة",
+    "status_BOUNCED": "صك مرفوض"
   },
   "status": {
     "DRAFT": "مسودة",
@@ -333,5 +335,31 @@
   },
   "more": {
     "my_work": "عملي"
+  },
+  "versement": {
+    "title": "دفعة",
+    "action": "دفعة",
+    "save": "حفظ الدفعة",
+    "amount": "المبلغ",
+    "cheque_number": "رقم الصك",
+    "transfer_reference": "مرجع التحويل",
+    "bank": "البنك",
+    "due_date": "تاريخ الاستحقاق",
+    "pick_date": "اختر التاريخ",
+    "allocate": "تخصيص على الوثائق",
+    "allocate_hint": "اختياري: بدون تخصيص تُسدد الوثائق الأقدم أولا.",
+    "allocated": "المبلغ المخصص",
+    "allocations": "التخصيصات",
+    "error_amount": "أدخل مبلغا موجبا (رقمان بعد الفاصلة كحد أقصى)",
+    "error_cheque_number": "رقم الصك إجباري",
+    "error_bank": "البنك إجباري",
+    "error_due_date": "تاريخ الاستحقاق إجباري",
+    "error_allocation": "مبلغ التخصيص يجب أن يكون موجبا ولا يتجاوز المتبقي من الوثيقة",
+    "error_allocated_sum": "مجموع التخصيصات يتجاوز مبلغ الدفعة",
+    "retry_safe": "يمكنك إعادة المحاولة بأمان: لن تسجل الدفعة مرتين.",
+    "saved_title": "تم حفظ الدفعة",
+    "share_receipt": "مشاركة الوصل",
+    "mine": "دفعاتي",
+    "none": "لا توجد دفعات"
   }
 }

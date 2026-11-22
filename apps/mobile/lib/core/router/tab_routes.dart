@@ -9,6 +9,8 @@ import '../../features/clients/ui/clients_screen.dart';
 import '../../features/clients/ui/new_client_screen.dart';
 import '../../features/main_screen/ui/placeholder_tab.dart';
 import '../../features/orders/ui/my_orders_screen.dart';
+import '../../features/payments/ui/my_payments_screen.dart';
+import '../../features/payments/ui/versement_screen.dart';
 import '../models/erp_codes.dart';
 import '../session/session_cubit.dart';
 import '../../features/sales/logic/basket.dart';
@@ -50,15 +52,21 @@ Widget tabPage(RoleTab tab) {
 List<RouteBase> tabSubRoutes(RoleTab tab) {
   if (tab.path == '/seller/clients') return clientRoutes(tab.path);
   if (tab.path == '/seller/sell') {
-    return [_saleRoute('new'), _saleRoute('order', mode: SaleMode.order)];
+    return [
+      _saleRoute('new'),
+      _saleRoute('order', mode: SaleMode.order, needsClient: true),
+    ];
   }
   if (tab.path == '/seller/more') {
-    return [GoRoute(path: 'orders', builder: (_, _) => const MyOrdersScreen())];
+    return [
+      GoRoute(path: 'orders', builder: (_, _) => const MyOrdersScreen()),
+      GoRoute(path: 'payments', builder: (_, _) => const MyPaymentsScreen()),
+    ];
   }
   return const [];
 }
 
-/// Client list → new client, client detail, statement.
+/// Client list → new client, client detail (and its actions), statement.
 List<RouteBase> clientRoutes(String base) => [
   GoRoute(
     path: 'new',
@@ -72,8 +80,15 @@ List<RouteBase> clientRoutes(String base) => [
       return ClientDetailScreen(clientId: id, basePath: '$base/$id');
     },
     routes: [
-      _saleRoute('sell'),
-      _saleRoute('order', mode: SaleMode.order),
+      _saleRoute('sell', needsClient: true),
+      _saleRoute('order', mode: SaleMode.order, needsClient: true),
+      GoRoute(
+        path: 'versement',
+        parentNavigatorKey: rootNavigatorKey,
+        redirect: _needsClient,
+        builder: (_, state) =>
+            VersementScreen(client: state.extra! as BasketClient),
+      ),
       GoRoute(
         path: 'statement',
         builder: (_, state) =>
@@ -83,13 +98,27 @@ List<RouteBase> clientRoutes(String base) => [
   ),
 ];
 
-/// The basket of a van sale; `extra` is the [BasketClient] (none = comptoir).
-GoRoute _saleRoute(String path, {SaleMode mode = SaleMode.direct}) => GoRoute(
+/// The basket of a sale or an order; `extra` is the [BasketClient]
+/// (none = vente comptoir, only from the Vendre tab).
+GoRoute _saleRoute(
+  String path, {
+  SaleMode mode = SaleMode.direct,
+  bool needsClient = false,
+}) => GoRoute(
   path: path,
   parentNavigatorKey: rootNavigatorKey,
+  redirect: needsClient ? _needsClient : null,
   builder: (_, state) =>
       SaleScreen(client: state.extra as BasketClient?, mode: mode),
 );
+
+/// A form that needs its client as `extra`: a deep link without one goes
+/// back to the parent screen.
+String? _needsClient(BuildContext _, GoRouterState state) {
+  if (state.extra is BasketClient) return null;
+  final path = state.uri.path;
+  return path.substring(0, path.lastIndexOf('/'));
+}
 
 /// The seller's "Plus" menu, each entry only with its module / right.
 List<MoreItem> sellerMenu(BuildContext context) {
@@ -101,6 +130,12 @@ List<MoreItem> sellerMenu(BuildContext context) {
         labelKey: 'order.mine',
         icon: Icons.receipt_long_outlined,
         onTap: (c) => c.push('/seller/more/orders'),
+      ),
+    if (user.can(Permission.paymentsCreate))
+      MoreItem(
+        labelKey: 'versement.mine',
+        icon: Icons.payments_outlined,
+        onTap: (c) => c.push('/seller/more/payments'),
       ),
   ];
 }

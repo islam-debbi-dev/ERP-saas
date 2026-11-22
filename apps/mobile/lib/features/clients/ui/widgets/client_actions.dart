@@ -45,5 +45,12 @@ List<Widget> clientActions(
         icon: const Icon(Icons.receipt_long_outlined),
         label: Text(context.tr('sale.mode_order')),
       ),
+    if (user.can(Permission.paymentsCreate))
+      OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(minimumSize: const Size(0, 48)),
+        onPressed: () => open('versement'),
+        icon: const Icon(Icons.payments_outlined),
+        label: Text(context.tr('versement.action')),
+      ),
   ];
 }

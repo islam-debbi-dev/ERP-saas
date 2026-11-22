@@ -217,6 +217,9 @@ void main() {
           ),
           locale: locale,
         );
+        // The action buttons push the documents below the fold.
+        await tester.drag(find.byType(ListView).first, const Offset(0, -300));
+        await tester.pumpAndSettle();
         expect(find.text('BL-2026-000101'), findsOneWidget);
         await tester.drag(find.byType(ListView).first, const Offset(0, -600));
         await tester.pumpAndSettle();

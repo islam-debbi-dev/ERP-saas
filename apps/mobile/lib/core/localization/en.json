@@ -304,7 +304,9 @@
   "payment": {
     "mode_ESPECES": "Cash",
     "mode_CHEQUE": "Cheque",
-    "mode_VIREMENT": "Transfer"
+    "mode_VIREMENT": "Transfer",
+    "status_CANCELLED": "Cancelled",
+    "status_BOUNCED": "Bounced cheque"
   },
   "status": {
     "DRAFT": "Draft",
@@ -333,5 +335,31 @@
   },
   "more": {
     "my_work": "My work"
+  },
+  "versement": {
+    "title": "Payment",
+    "action": "Payment",
+    "save": "Save the payment",
+    "amount": "Amount",
+    "cheque_number": "Cheque number",
+    "transfer_reference": "Transfer reference",
+    "bank": "Bank",
+    "due_date": "Due date",
+    "pick_date": "Pick the date",
+    "allocate": "Allocate to documents",
+    "allocate_hint": "Optional: without allocation the oldest documents are paid first.",
+    "allocated": "Allocated amount",
+    "allocations": "Allocations",
+    "error_amount": "Enter a positive amount (2 decimals at most)",
+    "error_cheque_number": "The cheque number is required",
+    "error_bank": "The bank is required",
+    "error_due_date": "The due date is required",
+    "error_allocation": "Each allocation must be positive and at most the document's remaining amount",
+    "error_allocated_sum": "Allocations exceed the payment amount",
+    "retry_safe": "You can retry safely: the payment will not be recorded twice.",
+    "saved_title": "Payment saved",
+    "share_receipt": "Share receipt",
+    "mine": "My payments",
+    "none": "No payments"
   }
 }

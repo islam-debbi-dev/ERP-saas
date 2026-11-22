@@ -304,7 +304,9 @@
   "payment": {
     "mode_ESPECES": "Espèces",
     "mode_CHEQUE": "Chèque",
-    "mode_VIREMENT": "Virement"
+    "mode_VIREMENT": "Virement",
+    "status_CANCELLED": "Annulé",
+    "status_BOUNCED": "Chèque impayé"
   },
   "status": {
     "DRAFT": "Brouillon",
@@ -333,5 +335,31 @@
   },
   "more": {
     "my_work": "Mon activité"
+  },
+  "versement": {
+    "title": "Versement",
+    "action": "Versement",
+    "save": "Enregistrer le versement",
+    "amount": "Montant",
+    "cheque_number": "Numéro du chèque",
+    "transfer_reference": "Référence du virement",
+    "bank": "Banque",
+    "due_date": "Date d'échéance",
+    "pick_date": "Choisir la date",
+    "allocate": "Imputer sur des documents",
+    "allocate_hint": "Facultatif : sans imputation, les documents les plus anciens sont réglés d'abord.",
+    "allocated": "Montant imputé",
+    "allocations": "Imputations",
+    "error_amount": "Saisissez un montant positif (2 décimales au plus)",
+    "error_cheque_number": "Le numéro du chèque est obligatoire",
+    "error_bank": "La banque est obligatoire",
+    "error_due_date": "La date d'échéance est obligatoire",
+    "error_allocation": "Chaque imputation doit être positive et au plus le reste du document",
+    "error_allocated_sum": "Les imputations dépassent le montant du versement",
+    "retry_safe": "Vous pouvez réessayer sans risque : le versement ne sera pas enregistré deux fois.",
+    "saved_title": "Versement enregistré",
+    "share_receipt": "Partager le reçu",
+    "mine": "Mes versements",
+    "none": "Aucun versement"
   }
 }
