@@ -62,11 +62,12 @@ class TeamObjectivesScreen extends StatelessWidget {
                 return RefreshIndicator(
                   onRefresh: cubit.load,
                   child: ListView(
-                    padding: const EdgeInsets.fromLTRB(
+                    // Under the Plus tab: no bottom bar, only the safe area.
+                    padding: EdgeInsets.fromLTRB(
                       AppSpacing.lg,
                       AppSpacing.lg,
                       AppSpacing.lg,
-                      AppSpacing.navClearance,
+                      AppSpacing.xl + MediaQuery.paddingOf(context).bottom,
                     ),
                     children: [
                       Text(

@@ -154,6 +154,12 @@ class RoleScreens {
     user.role,
   ).where((t) => t.visibleFor(user)).toList(growable: false);
 
+  /// Whether [path] (without query) is the root page of one of [role]'s
+  /// tabs: the only pages that show the bottom bar. Any deeper screen of a
+  /// tab, and every screen outside the shell, hides it.
+  static bool isTabRoot(String role, String path) =>
+      allTabsFor(role).any((t) => t.path == path);
+
   /// Where the user lands: his role's first visible tab. The last tab (Plus)
   /// has no condition, so a field role always has a home.
   static String homeFor(AuthUser user) {

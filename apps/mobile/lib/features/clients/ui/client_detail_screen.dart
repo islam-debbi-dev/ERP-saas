@@ -142,12 +142,13 @@ class _DetailBody extends StatelessWidget {
       onDocument: onDocument,
     );
     final canVisit = user?.hasFeature(Feature.tournees) ?? false;
+    // A screen under a tab: no bottom bar to clear, only the safe area.
     return ListView(
-      padding: const EdgeInsetsDirectional.fromSTEB(
+      padding: EdgeInsetsDirectional.fromSTEB(
         AppSpacing.lg,
         AppSpacing.md,
         AppSpacing.lg,
-        AppSpacing.navClearance,
+        AppSpacing.xl + MediaQuery.paddingOf(context).bottom,
       ),
       children: [
         _BalanceCard(client: client),

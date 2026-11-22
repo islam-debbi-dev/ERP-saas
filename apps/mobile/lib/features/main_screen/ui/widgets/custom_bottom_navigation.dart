@@ -101,26 +101,28 @@ class CustomBottomNavigation extends StatelessWidget {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.sm),
-                child: GNav(
-                  rippleColor: AppColors.grouped,
-                  hoverColor: AppColors.surface,
-                  gap: 6,
-                  activeColor: activeContent,
-                  iconSize: 22,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 12,
+                child: _FitRow(
+                  child: GNav(
+                    rippleColor: AppColors.grouped,
+                    hoverColor: AppColors.surface,
+                    gap: 6,
+                    activeColor: activeContent,
+                    iconSize: 22,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    duration: const Duration(milliseconds: 300),
+                    tabBackgroundColor: activePill,
+                    color: inactiveIcon,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    tabs: [
+                      for (var i = 0; i < items.length; i++)
+                        tab(items[i], i == currentIndex),
+                    ],
+                    selectedIndex: currentIndex,
+                    onTabChange: onItemTapped,
                   ),
-                  duration: const Duration(milliseconds: 300),
-                  tabBackgroundColor: activePill,
-                  color: inactiveIcon,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  tabs: [
-                    for (var i = 0; i < items.length; i++)
-                      tab(items[i], i == currentIndex),
-                  ],
-                  selectedIndex: currentIndex,
-                  onTabChange: onItemTapped,
                 ),
               ),
             ),
@@ -129,4 +131,24 @@ class CustomBottomNavigation extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Lays [child] (the tab row) out at least as wide as the bar, so its
+/// `spaceBetween` spreads the tabs as before; when the tabs need more (five
+/// tabs with a long active label at 360 px, a large text size) it scales the
+/// row down a little instead of overflowing.
+class _FitRow extends StatelessWidget {
+  const _FitRow({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => FittedBox(
+      fit: BoxFit.scaleDown,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minWidth: constraints.maxWidth),
+        child: child,
+      ),
+    ),
+  );
 }

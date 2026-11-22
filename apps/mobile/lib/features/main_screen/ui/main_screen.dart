@@ -12,7 +12,9 @@ import 'widgets/custom_bottom_navigation.dart';
 import 'widgets/no_connection_banner.dart';
 
 /// Shell of the role's tabs: keeps each tab's state alive, shows the
-/// floating bottom bar and the offline banner.
+/// offline banner, and shows the floating bottom bar on the tabs' root pages
+/// only (`RoleScreens.isTabRoot`): any screen under a tab hides it, so a new
+/// sub-screen needs nothing to get this.
 class MainScreen extends StatefulWidget {
   const MainScreen({
     super.key,
@@ -89,27 +91,71 @@ class _MainScreenState extends State<MainScreen> {
               right: 0,
               child: visible.length < 2
                   ? const SizedBox.shrink()
-                  : ListenableBuilder(
-                      listenable: Listenable.merge([
-                        for (final t in visible) TabBadges.of(t.path),
-                      ]),
-                      builder: (context, _) => CustomBottomNavigation(
-                        items: [
-                          for (final t in visible)
-                            NavItem(
-                              icon: t.icon,
-                              label: context.tr(t.labelKey),
-                              badge: TabBadges.of(t.path).value,
-                            ),
-                        ],
-                        currentIndex: current < 0 ? 0 : current,
-                        onItemTapped: (i) => _onTab(branches[i]),
+                  : _OnTabRoot(
+                      role: widget.role,
+                      child: ListenableBuilder(
+                        listenable: Listenable.merge([
+                          for (final t in visible) TabBadges.of(t.path),
+                        ]),
+                        builder: (context, _) => CustomBottomNavigation(
+                          items: [
+                            for (final t in visible)
+                              NavItem(
+                                icon: t.icon,
+                                label: context.tr(t.labelKey),
+                                badge: TabBadges.of(t.path).value,
+                              ),
+                          ],
+                          currentIndex: current < 0 ? 0 : current,
+                          onItemTapped: (i) => _onTab(branches[i]),
+                        ),
                       ),
                     ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Shows [child] (the bottom bar) only while the router's top location is a
+/// tab root of [role]; elsewhere it slides out and stops taking taps.
+class _OnTabRoot extends StatelessWidget {
+  const _OnTabRoot({required this.role, required this.child});
+
+  final String role;
+  final Widget child;
+
+  static const _duration = Duration(milliseconds: 150);
+
+  @override
+  Widget build(BuildContext context) {
+    final delegate = GoRouter.of(context).routerDelegate;
+    return ListenableBuilder(
+      listenable: delegate,
+      builder: (context, child) {
+        // The top state: the last `go` or `push`, query left out.
+        final shown =
+            delegate.currentConfiguration.isNotEmpty &&
+            RoleScreens.isTabRoot(role, delegate.state.uri.path);
+        return IgnorePointer(
+          ignoring: !shown,
+          child: ExcludeSemantics(
+            excluding: !shown,
+            child: AnimatedSlide(
+              offset: shown ? Offset.zero : const Offset(0, 1),
+              duration: _duration,
+              child: AnimatedOpacity(
+                opacity: shown ? 1 : 0,
+                duration: _duration,
+                child: child,
+              ),
+            ),
+          ),
+        );
+      },
+      child: child,
     );
   }
 }
