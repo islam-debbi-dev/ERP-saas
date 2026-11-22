@@ -5,11 +5,18 @@ import 'package:dio/dio.dart';
 
 /// A recorded request.
 class SentRequest {
-  SentRequest(this.method, this.path, this.headers, this.body);
+  SentRequest(
+    this.method,
+    this.path,
+    this.headers,
+    this.body, [
+    this.query = const {},
+  ]);
   final String method;
   final String path;
   final Map<String, dynamic> headers;
   final Object? body;
+  final Map<String, dynamic> query;
 }
 
 /// What the fake API answers: a status and a JSON body, or a thrown
@@ -41,6 +48,7 @@ class FakeAdapter implements HttpClientAdapter {
         options.path,
         Map.of(options.headers),
         options.data,
+        Map.of(options.queryParameters),
       ),
     );
     final reply = handler(options);

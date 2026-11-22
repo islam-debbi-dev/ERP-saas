@@ -15,6 +15,7 @@ import '../../features/objectives/ui/objectives_screen.dart';
 import '../../features/orders/ui/my_orders_screen.dart';
 import '../../features/payments/ui/my_payments_screen.dart';
 import '../../features/payments/ui/versement_screen.dart';
+import '../helpers/algiers_day.dart';
 import '../models/auth_user.dart';
 import '../models/erp_codes.dart';
 import '../session/session_cubit.dart';
@@ -22,6 +23,8 @@ import '../../features/sales/logic/basket.dart';
 import '../../features/sales/ui/my_sales_screen.dart';
 import '../../features/sales/ui/sale_screen.dart';
 import '../../features/sales/ui/sell_screen.dart';
+import '../../features/team/ui/member_day_screen.dart';
+import '../../features/team/ui/team_screen.dart';
 import '../../features/today/ui/today_screen.dart';
 import '../../features/truck/ui/truck_screen.dart';
 import '../../features/visits/logic/visit_form.dart';
@@ -67,6 +70,12 @@ Widget tabPage(RoleTab tab) {
       onOpenOrder: (context, order) => context.push('$p/${order.id}'),
     );
   }
+  if (p == '/supervisor/team') {
+    return TeamScreen(
+      onOpenMember: (context, member, date) =>
+          context.push('$p/${member.seller.id}?date=$date'),
+    );
+  }
   if (p == '/seller/more') {
     return Builder(
       builder: (context) => AccountScreen(menu: sellerMenu(context)),
@@ -103,6 +112,17 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
         parentNavigatorKey: rootNavigatorKey,
         builder: (_, state) =>
             OrderDeliveryScreen(orderId: state.pathParameters['orderId']!),
+      ),
+    ];
+  }
+  if (tab.path == '/supervisor/team') {
+    return [
+      GoRoute(
+        path: ':sellerId',
+        builder: (_, state) => MemberDayScreen(
+          sellerId: state.pathParameters['sellerId']!,
+          date: state.uri.queryParameters['date'] ?? AlgiersDay.of(),
+        ),
       ),
     ];
   }

@@ -93,11 +93,13 @@ class RoleScreens {
         path: '/supervisor/team',
         labelKey: 'tabs.team',
         icon: Icons.groups_outlined,
+        feature: Feature.tournees,
       ),
       RoleTab(
         path: '/supervisor/orders',
         labelKey: 'tabs.orders',
         icon: Icons.receipt_long_outlined,
+        feature: Feature.tournees,
       ),
       RoleTab(
         path: '/supervisor/controls',
