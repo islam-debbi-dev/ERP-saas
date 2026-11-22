@@ -597,5 +597,22 @@
     "title": "Assistant",
     "soon_title": "Bientôt disponible",
     "soon_message": "L'assistant répondra à vos questions sur l'équipe, les ventes et la caisse dans la prochaine version."
+  },
+  "transfer": {
+    "title": "Chargements",
+    "status_draft": "Brouillon",
+    "status_validated": "Validé",
+    "status_cancelled": "Annulé",
+    "created": "Créé",
+    "validated": "Validé",
+    "cancelled": "Annulé",
+    "cancel_reason": "Motif d'annulation",
+    "note": "Note",
+    "no_lines": "Aucune ligne pour l'instant",
+    "all_trucks": "Tous les camions",
+    "new_load": "Nouveau chargement",
+    "empty": "Aucun chargement ni déchargement ce jour-là",
+    "drafts": "Brouillons en cours",
+    "done": "Validés ce jour"
   }
 }

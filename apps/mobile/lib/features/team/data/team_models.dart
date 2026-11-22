@@ -200,12 +200,17 @@ class TruckOption {
     this.code,
     this.driver,
     this.activity,
+    this.parentId,
   });
 
   final String id;
   final String name;
   final String? code;
   final UserRef? driver;
+
+  /// The dépôt the truck belongs to (`WarehouseDto.parent`), if any: where a
+  /// chargement takes its goods by default.
+  final String? parentId;
 
   /// The vehicle type's activity (CASH_VAN, PRESALE, DELIVERY, MIXED).
   final String? activity;
@@ -222,6 +227,7 @@ class TruckOption {
     driver: _user(json['assignedUser']),
     activity:
         (json['vehicleType'] as Map<String, dynamic>?)?['activity'] as String?,
+    parentId: (json['parent'] as Map<String, dynamic>?)?['id'] as String?,
   );
 
   /// Live trucks only, from `GET /warehouses?type=VEHICLE`.

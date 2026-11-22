@@ -26,6 +26,8 @@ import '../../features/sales/logic/basket.dart';
 import '../../features/sales/ui/my_sales_screen.dart';
 import '../../features/sales/ui/sale_screen.dart';
 import '../../features/sales/ui/sell_screen.dart';
+import '../../features/stock_transfers/ui/transfer_detail_screen.dart';
+import '../../features/stock_transfers/ui/transfers_screen.dart';
 import '../../features/team/ui/member_day_screen.dart';
 import '../../features/team/ui/team_screen.dart';
 import '../../features/team_orders/ui/team_orders_screen.dart';
@@ -82,6 +84,7 @@ Widget tabPage(RoleTab tab) {
   }
   if (p == '/supervisor/orders') return TeamOrdersScreen(tabPath: p);
   if (p == '/supervisor/controls') return const ControlsScreen();
+  if (p == '/storekeeper/loads') return TransfersScreen(basePath: p);
   if (p == '/seller/more') {
     return Builder(
       builder: (context) => AccountScreen(menu: sellerMenu(context)),
@@ -137,6 +140,7 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
       ),
     ];
   }
+  if (tab.path == '/storekeeper/loads') return transferRoutes();
   if (tab.path == '/supervisor/more') {
     return [
       GoRoute(
@@ -168,6 +172,18 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
   }
   return const [];
 }
+
+/// A chargement / déchargement under a list (`[list]/:transferId`). Every
+/// screen needs STOCK_TRANSFER: without it a deep link goes back to the list.
+List<RouteBase> transferRoutes() => [
+  GoRoute(
+    path: ':transferId',
+    redirect: (context, state) =>
+        _needsRight(context, state, (u) => u.can(Permission.stockTransfer)),
+    builder: (_, state) =>
+        TransferDetailScreen(transferId: state.pathParameters['transferId']!),
+  ),
+];
 
 /// Client list → new client, client detail (and its actions), statement.
 List<RouteBase> clientRoutes(String base) => [

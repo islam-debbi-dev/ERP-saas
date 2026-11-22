@@ -597,5 +597,22 @@
     "title": "Assistant",
     "soon_title": "Coming soon",
     "soon_message": "The assistant will answer your questions on the team, sales and cash in the next version."
+  },
+  "transfer": {
+    "title": "Loads",
+    "status_draft": "Draft",
+    "status_validated": "Validated",
+    "status_cancelled": "Cancelled",
+    "created": "Created",
+    "validated": "Validated",
+    "cancelled": "Cancelled",
+    "cancel_reason": "Cancel reason",
+    "note": "Note",
+    "no_lines": "No lines yet",
+    "all_trucks": "All trucks",
+    "new_load": "New load",
+    "empty": "No load or unload on this day",
+    "drafts": "Open drafts",
+    "done": "Validated this day"
   }
 }

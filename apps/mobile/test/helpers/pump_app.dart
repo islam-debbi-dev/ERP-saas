@@ -91,6 +91,31 @@ AuthUser supervisor({
   features: features,
 );
 
+/// A magasinier of the demo tenant: VIEW_ALL + PURCHASES_CREATE,
+/// STOCK_COUNT and STOCK_TRANSFER by default (STOCK_ADJUST is not his).
+AuthUser storekeeper({
+  List<String> permissions = const [
+    Permission.purchasesCreate,
+    Permission.stockCount,
+    Permission.stockTransfer,
+  ],
+  List<String> features = const [
+    Feature.mobileApp,
+    Feature.tournees,
+    Feature.warehouses,
+    Feature.aiAssistant,
+  ],
+}) => AuthUser(
+  id: 'store-1',
+  fullName: 'Rachid Magasinier',
+  role: Role.storekeeper,
+  tenantId: 't',
+  tenantName: 'Grossiste Demo',
+  edition: 'DISTRIBUTION',
+  permissions: permissions,
+  features: features,
+);
+
 /// A session already signed in as [user]; never touches storage or network.
 class FakeSession extends SessionCubit {
   FakeSession(AuthUser user) : super(AuthRepository(ApiClient(dio: Dio()))) {
@@ -166,4 +191,23 @@ Future<void> pumpScreen(
 void expectNoOverflow(WidgetTester tester) {
   final error = tester.takeException();
   expect(error, isNull, reason: 'layout error: $error');
+}
+
+/// Fails when any text on screen looks like money: an amount in DA (the
+/// app's money format) or one of [figures] (costs / prices the fixtures
+/// carry, e.g. `85,50`). The storekeeper's screens show quantities only.
+void expectNoMoney(WidgetTester tester, {List<String> figures = const []}) {
+  final texts = <String>[
+    for (final w in tester.widgetList<Text>(find.byType(Text)))
+      w.data ?? w.textSpan?.toPlainText() ?? '',
+    for (final w in tester.widgetList<RichText>(find.byType(RichText)))
+      w.text.toPlainText(),
+  ];
+  final money = RegExp(r'\bDA\b|د\.ج|دج');
+  for (final t in texts) {
+    expect(money.hasMatch(t), isFalse, reason: 'money shown: "$t"');
+    for (final f in figures) {
+      expect(t.contains(f), isFalse, reason: 'figure $f shown in "$t"');
+    }
+  }
 }
