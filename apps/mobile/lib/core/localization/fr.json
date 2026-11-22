@@ -163,5 +163,16 @@
     "trucks": "Camions",
     "inventory": "Inventaire",
     "coming_soon": "Cet écran arrive dans la prochaine version."
+  },
+  "today": {
+    "title": "Aujourd'hui",
+    "no_truck": "Sans camion aujourd'hui",
+    "progress": "{visited} visités sur {planned}",
+    "visited": "Visité",
+    "no_stops_title": "Aucun arrêt aujourd'hui",
+    "no_stops_message": "Aucune tournée n'est prévue pour vous ce jour.",
+    "no_tournees_title": "Tournées non activées",
+    "no_tournees_message": "Votre offre n'inclut pas les tournées. Travaillez depuis la liste des clients.",
+    "open_clients": "Voir les clients"
   }
 }

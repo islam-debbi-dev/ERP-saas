@@ -163,5 +163,16 @@
     "trucks": "Trucks",
     "inventory": "Stock count",
     "coming_soon": "This screen comes in the next version."
+  },
+  "today": {
+    "title": "Today",
+    "no_truck": "No truck today",
+    "progress": "{visited} of {planned} visited",
+    "visited": "Visited",
+    "no_stops_title": "No stops today",
+    "no_stops_message": "No route is planned for you today.",
+    "no_tournees_title": "Routes not enabled",
+    "no_tournees_message": "Your plan has no routes. Work from the client list.",
+    "open_clients": "Open clients"
   }
 }

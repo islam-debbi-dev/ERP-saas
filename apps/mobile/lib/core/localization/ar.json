@@ -163,5 +163,16 @@
     "trucks": "الشاحنات",
     "inventory": "الجرد",
     "coming_soon": "هذه الشاشة قادمة في التحديث القادم."
+  },
+  "today": {
+    "title": "اليوم",
+    "no_truck": "بدون شاحنة اليوم",
+    "progress": "تمت زيارة {visited} من {planned}",
+    "visited": "تمت الزيارة",
+    "no_stops_title": "لا توجد محطات اليوم",
+    "no_stops_message": "لا توجد جولة مبرمجة لك هذا اليوم.",
+    "no_tournees_title": "الجولات غير مفعلة",
+    "no_tournees_message": "عرضك لا يتضمن الجولات. يمكنك العمل من قائمة الزبائن.",
+    "open_clients": "الزبائن"
   }
 }

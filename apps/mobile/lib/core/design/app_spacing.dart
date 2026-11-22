@@ -23,6 +23,10 @@ class AppSpacing {
   /// Minimum touch target recommended by Material / Apple HIG.
   static const double minTouch = 48;
 
+  /// Space a tab's scrolling content keeps at its end so the last row clears
+  /// the floating bottom bar.
+  static const double navClearance = 130;
+
   static const SizedBox gapXs = SizedBox(height: xs, width: xs);
   static const SizedBox gapSm = SizedBox(height: sm, width: sm);
   static const SizedBox gapMd = SizedBox(height: md, width: md);

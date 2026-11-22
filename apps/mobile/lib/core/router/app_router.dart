@@ -10,6 +10,7 @@ import '../../features/auth/ui/refused_screen.dart';
 import '../../features/main_screen/ui/main_screen.dart';
 import '../../features/main_screen/ui/placeholder_tab.dart';
 import '../../features/splash/ui/splash_screen.dart';
+import '../../features/today/ui/today_screen.dart';
 import '../di/dependency_injection.dart';
 import '../session/session_cubit.dart';
 import '../session/session_state.dart';
@@ -39,11 +40,20 @@ String? sessionRedirect(SessionState session, String path) {
   }
 }
 
-/// The page of a tab. "Plus" is the account screen until M1 adds its menu;
-/// the other tabs are placeholders until their sub-phase.
-Widget _tabPage(RoleTab tab) => tab.path.endsWith('/more')
-    ? const AccountScreen()
-    : PlaceholderTab(tab: tab);
+/// The page of a tab. Tabs of a later sub-phase stay placeholders; "Plus"
+/// is the account screen until its menu exists.
+Widget _tabPage(RoleTab tab) {
+  switch (tab.path) {
+    case '/seller/today':
+      return Builder(
+        builder: (context) =>
+            TodayScreen(onOpenClients: () => context.go('/seller/clients')),
+      );
+  }
+  return tab.path.endsWith('/more')
+      ? const AccountScreen()
+      : PlaceholderTab(tab: tab);
+}
 
 /// One shell per role, one branch per tab (hidden tabs keep their branch:
 /// the redirect refuses them and the bottom bar does not show them).
