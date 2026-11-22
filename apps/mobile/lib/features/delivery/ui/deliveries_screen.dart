@@ -111,9 +111,17 @@ class _Body extends StatelessWidget {
 
 /// The client of a group, with his stop number in today's tournée.
 class DeliveryGroupHeader extends StatelessWidget {
-  const DeliveryGroupHeader({super.key, required this.group});
+  const DeliveryGroupHeader({
+    super.key,
+    required this.group,
+    this.showStop = true,
+  });
 
   final DeliveryGroup group;
+
+  /// The tournée stop / "hors tournée" label (the livreur's list); the
+  /// supervisor's list has no route order.
+  final bool showStop;
 
   @override
   Widget build(BuildContext context) {
@@ -148,13 +156,15 @@ class DeliveryGroupHeader extends StatelessWidget {
               style: text.titleSmall,
             ),
           ),
-          AppSpacing.gapSm,
-          Text(
-            group.onRoute
-                ? context.tr('delivery.stop', args: {'n': group.stop!})
-                : context.tr('delivery.off_route'),
-            style: text.bodySmall?.copyWith(color: context.textMuted),
-          ),
+          if (showStop) ...[
+            AppSpacing.gapSm,
+            Text(
+              group.onRoute
+                  ? context.tr('delivery.stop', args: {'n': group.stop!})
+                  : context.tr('delivery.off_route'),
+              style: text.bodySmall?.copyWith(color: context.textMuted),
+            ),
+          ],
         ],
       ),
     );
@@ -163,10 +173,13 @@ class DeliveryGroupHeader extends StatelessWidget {
 
 /// One order to deliver: number, requested date, lines, TTC, short stock.
 class DeliveryTile extends StatelessWidget {
-  const DeliveryTile({super.key, required this.order, this.onTap});
+  const DeliveryTile({super.key, required this.order, this.onTap, this.detail});
 
   final OrderSummary order;
   final VoidCallback? onTap;
+
+  /// An extra line under the date (the supervisor's list: who delivers it).
+  final String? detail;
 
   @override
   Widget build(BuildContext context) {
@@ -207,6 +220,15 @@ class DeliveryTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: text.bodySmall?.copyWith(color: context.textMuted),
                   ),
+                  if (detail != null) ...[
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      detail!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: text.bodySmall?.copyWith(color: scheme.primary),
+                    ),
+                  ],
                   if (order.shortLines > 0) ...[
                     const SizedBox(height: AppSpacing.xxs),
                     Row(

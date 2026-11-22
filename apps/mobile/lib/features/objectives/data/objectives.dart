@@ -39,6 +39,7 @@ class Objective {
     required this.metric,
     required this.team,
     required this.subjectName,
+    this.subjectId = '',
     this.scopeLabel,
     this.achieved,
     this.target,
@@ -51,6 +52,9 @@ class Objective {
   final String? scopeLabel;
   final bool team;
   final String subjectName;
+
+  /// Whose target it is: the user, or one of his team (supervisor).
+  final String subjectId;
 
   /// Null when the API hides them (margin without VIEW_COST_AND_MARGIN).
   final Decimal? achieved;
@@ -86,6 +90,8 @@ class Objective {
       team: json['team'] as bool? ?? false,
       subjectName:
           (json['subject'] as Map<String, dynamic>)['fullName'] as String,
+      subjectId:
+          (json['subject'] as Map<String, dynamic>)['id'] as String? ?? '',
       achieved: d(json['achieved']),
       target: d(json['target']),
       pct: d(json['pct']),

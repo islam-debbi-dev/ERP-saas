@@ -3,18 +3,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/account/ui/account_screen.dart';
+import '../../features/assistant/ui/assistant_placeholder_screen.dart';
 import '../../features/clients/ui/client_detail_screen.dart';
 import '../../features/clients/ui/client_statement_screen.dart';
 import '../../features/clients/ui/clients_screen.dart';
 import '../../features/clients/ui/new_client_screen.dart';
+import '../../features/controls/ui/controls_screen.dart';
 import '../../features/delivery/ui/deliveries_screen.dart';
 import '../../features/delivery/ui/my_deliveries_screen.dart';
 import '../../features/delivery/ui/order_delivery_screen.dart';
 import '../../features/main_screen/ui/placeholder_tab.dart';
 import '../../features/objectives/ui/objectives_screen.dart';
+import '../../features/objectives/ui/team_objectives_screen.dart';
 import '../../features/orders/ui/my_orders_screen.dart';
 import '../../features/payments/ui/my_payments_screen.dart';
 import '../../features/payments/ui/versement_screen.dart';
+import '../helpers/algiers_day.dart';
 import '../models/auth_user.dart';
 import '../models/erp_codes.dart';
 import '../session/session_cubit.dart';
@@ -22,6 +26,9 @@ import '../../features/sales/logic/basket.dart';
 import '../../features/sales/ui/my_sales_screen.dart';
 import '../../features/sales/ui/sale_screen.dart';
 import '../../features/sales/ui/sell_screen.dart';
+import '../../features/team/ui/member_day_screen.dart';
+import '../../features/team/ui/team_screen.dart';
+import '../../features/team_orders/ui/team_orders_screen.dart';
 import '../../features/today/ui/today_screen.dart';
 import '../../features/truck/ui/truck_screen.dart';
 import '../../features/visits/logic/visit_form.dart';
@@ -67,6 +74,14 @@ Widget tabPage(RoleTab tab) {
       onOpenOrder: (context, order) => context.push('$p/${order.id}'),
     );
   }
+  if (p == '/supervisor/team') {
+    return TeamScreen(
+      onOpenMember: (context, member, date) =>
+          context.push('$p/${member.seller.id}?date=$date'),
+    );
+  }
+  if (p == '/supervisor/orders') return TeamOrdersScreen(tabPath: p);
+  if (p == '/supervisor/controls') return const ControlsScreen();
   if (p == '/seller/more') {
     return Builder(
       builder: (context) => AccountScreen(menu: sellerMenu(context)),
@@ -75,6 +90,11 @@ Widget tabPage(RoleTab tab) {
   if (p == '/livreur/more') {
     return Builder(
       builder: (context) => AccountScreen(menu: livreurMenu(context)),
+    );
+  }
+  if (p == '/supervisor/more') {
+    return Builder(
+      builder: (context) => AccountScreen(menu: supervisorMenu(context)),
     );
   }
   if (p.endsWith('/more')) return const AccountScreen();
@@ -103,6 +123,29 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
         parentNavigatorKey: rootNavigatorKey,
         builder: (_, state) =>
             OrderDeliveryScreen(orderId: state.pathParameters['orderId']!),
+      ),
+    ];
+  }
+  if (tab.path == '/supervisor/team') {
+    return [
+      GoRoute(
+        path: ':sellerId',
+        builder: (_, state) => MemberDayScreen(
+          sellerId: state.pathParameters['sellerId']!,
+          date: state.uri.queryParameters['date'] ?? AlgiersDay.of(),
+        ),
+      ),
+    ];
+  }
+  if (tab.path == '/supervisor/more') {
+    return [
+      GoRoute(
+        path: 'objectives',
+        builder: (_, _) => const TeamObjectivesScreen(),
+      ),
+      GoRoute(
+        path: 'assistant',
+        builder: (_, _) => const AssistantPlaceholderScreen(),
       ),
     ];
   }
@@ -263,6 +306,28 @@ List<MoreItem> livreurMenu(BuildContext context) {
         labelKey: 'versement.mine',
         icon: Icons.payments_outlined,
         onTap: (c) => c.push('/livreur/more/payments'),
+      ),
+  ];
+}
+
+/// The supervisor's "Plus" menu: his team's targets (INCENTIVES) and the
+/// assistant (AI_ASSISTANT, a placeholder until M4). Account, language and
+/// theme follow in [AccountScreen].
+List<MoreItem> supervisorMenu(BuildContext context) {
+  final user = context.watch<SessionCubit>().state.user;
+  if (user == null) return const [];
+  return [
+    if (user.hasFeature(Feature.incentives))
+      MoreItem(
+        labelKey: 'objectives.team_title',
+        icon: Icons.flag_outlined,
+        onTap: (c) => c.push('/supervisor/more/objectives'),
+      ),
+    if (user.hasFeature(Feature.aiAssistant))
+      MoreItem(
+        labelKey: 'assistant.title',
+        icon: Icons.auto_awesome_outlined,
+        onTap: (c) => c.push('/supervisor/more/assistant'),
       ),
   ];
 }

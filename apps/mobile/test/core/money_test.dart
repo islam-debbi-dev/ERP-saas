@@ -87,7 +87,7 @@ void main() {
       expect(Money.ltr('−5 %'), '$lri−5 %$pdi');
     });
 
-        test('rounds to 3 decimals for the API', () {
+    test('rounds to 3 decimals for the API', () {
       expect(Qty.toApi(d('1.2345')), '1.235');
       expect(Qty.toApi(d('2')), '2.000');
       expect(Qty.isWhole(d('48.000')), isTrue);

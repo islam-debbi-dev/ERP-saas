@@ -74,6 +74,25 @@ void main() {
       expect(paths(mag), ['/storekeeper/inventory', '/storekeeper/more']);
     });
 
+    test('a supervisor without TOURNEES keeps Contrôles and Plus', () {
+      final sup = user('SUPERVISOR', features: const ['MOBILE_APP']);
+      expect(paths(sup), ['/supervisor/controls', '/supervisor/more']);
+      expect(RoleScreens.homeFor(sup), '/supervisor/controls');
+      expect(RoleScreens.allows(sup, '/supervisor/team/u1'), isFalse);
+    });
+
+    test('a supervisor\'s member screens stay in his Équipe tab', () {
+      final s = SessionState.signedIn(user('SUPERVISOR'));
+      expect(sessionRedirect(s, '/supervisor/team/u1'), isNull);
+      expect(
+        sessionRedirect(
+          SessionState.signedIn(user('SELLER')),
+          '/supervisor/team/u1',
+        ),
+        '/seller/today',
+      );
+    });
+
     test('home is the first visible tab', () {
       expect(RoleScreens.homeFor(user('SELLER')), '/seller/today');
       expect(RoleScreens.homeFor(user('LIVREUR')), '/livreur/deliveries');

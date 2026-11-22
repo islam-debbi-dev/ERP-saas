@@ -51,6 +51,20 @@ class OrdersRepository {
     decode: (json) => DeliverResult.fromJson(json.asMap),
   );
 
+  /// Puts a confirmed order on a delivery truck (its driver delivers it) or
+  /// on a person (`PATCH /orders/:id/livreur`, planners only).
+  Future<ApiResult<Order>> assign(
+    String id, {
+    String? livreurId,
+    String? deliveryVehicleId,
+  }) => _api.patch(
+    '/orders/$id/livreur',
+    data: deliveryVehicleId != null
+        ? {'deliveryVehicleId': deliveryVehicleId}
+        : {'livreurId': livreurId},
+    decode: (json) => Order.fromJson(json.asMap),
+  );
+
   Future<ApiResult<Order>> get(String id) =>
       _api.get('/orders/$id', decode: (json) => Order.fromJson(json.asMap));
 

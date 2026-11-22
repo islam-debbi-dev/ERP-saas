@@ -68,6 +68,29 @@ AuthUser livreur({
   features: features,
 );
 
+/// A supervisor of the demo tenant: VIEW_ALL + FIELD by default; his team
+/// comes from the API (`User.managerId`).
+AuthUser supervisor({
+  List<String> permissions = const [],
+  List<String> features = const [
+    Feature.mobileApp,
+    Feature.tournees,
+    Feature.warehouses,
+    Feature.geoCheck,
+    Feature.incentives,
+    Feature.aiAssistant,
+  ],
+}) => AuthUser(
+  id: 'sup-1',
+  fullName: 'Nadia Superviseur',
+  role: Role.supervisor,
+  tenantId: 't',
+  tenantName: 'Grossiste Demo',
+  edition: 'DISTRIBUTION',
+  permissions: permissions,
+  features: features,
+);
+
 /// A session already signed in as [user]; never touches storage or network.
 class FakeSession extends SessionCubit {
   FakeSession(AuthUser user) : super(AuthRepository(ApiClient(dio: Dio()))) {
