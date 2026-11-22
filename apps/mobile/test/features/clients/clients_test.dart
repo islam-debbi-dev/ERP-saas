@@ -2,11 +2,17 @@ import 'package:decimal/decimal.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:orvynt_starter/core/di/dependency_injection.dart';
 import 'package:orvynt_starter/core/geo/geo_fix.dart';
 import 'package:orvynt_starter/core/helpers/algiers_day.dart';
 import 'package:orvynt_starter/core/helpers/phone_links.dart';
+import 'package:orvynt_starter/core/models/erp_codes.dart';
 import 'package:orvynt_starter/core/network/api_client.dart';
+import 'package:orvynt_starter/core/router/tab_routes.dart';
+import 'package:orvynt_starter/core/session/session_cubit.dart';
+import 'package:orvynt_starter/features/sales/logic/basket.dart';
 import 'package:orvynt_starter/core/paging/paged_cubit.dart';
 import 'package:orvynt_starter/features/clients/data/models/client.dart';
 import 'package:orvynt_starter/features/clients/data/repo/clients_repository.dart';
@@ -208,6 +214,18 @@ void main() {
         expectNoOverflow(tester);
       });
 
+      testWidgets('livreur clients in $locale: read only', (tester) async {
+        await pumpScreen(
+          tester,
+          const ClientsScreen(basePath: '/livreur/clients'),
+          locale: locale,
+          user: livreur(),
+        );
+        expect(find.byType(ClientTile), findsNWidgets(2));
+        expect(find.byType(FloatingActionButton), findsNothing);
+        expectNoOverflow(tester);
+      });
+
       testWidgets('client detail in $locale', (tester) async {
         await pumpScreen(
           tester,
@@ -227,5 +245,77 @@ void main() {
         expectNoOverflow(tester);
       });
     }
+  });
+
+  group('livreur on a client', () {
+    setUp(() {
+      final (repo, _) = repoWith(defaultApi);
+      getIt.registerSingleton<ClientsRepository>(repo);
+    });
+    tearDown(() => getIt.reset());
+
+    Future<void> pumpDetail(WidgetTester tester, List<String> grants) =>
+        pumpScreen(
+          tester,
+          ClientDetailScreen(clientId: 'c1', basePath: '/livreur/clients/c1'),
+          locale: 'fr',
+          user: livreur(permissions: grants),
+        );
+
+    testWidgets('sees no sale, no order, no versement by default', (
+      tester,
+    ) async {
+      await pumpDetail(tester, const []);
+      expect(find.text('Vendre'), findsNothing);
+      expect(find.text('Commande'), findsNothing);
+      expect(find.text('Versement'), findsNothing);
+      expect(find.text('Relevé'), findsWidgets);
+      expectNoOverflow(tester);
+    });
+
+    testWidgets('a PAYMENTS_CREATE grant shows Versement', (tester) async {
+      await pumpDetail(tester, const [Permission.paymentsCreate]);
+      expect(find.text('Versement'), findsOneWidget);
+      expect(find.text('Vendre'), findsNothing);
+      expect(find.text('Commande'), findsNothing);
+    });
+
+    testWidgets('typed paths to sell, order or versement go back', (
+      tester,
+    ) async {
+      final router = GoRouter(
+        navigatorKey: rootNavigatorKey,
+        initialLocation: '/livreur/clients',
+        routes: [
+          GoRoute(
+            path: '/livreur/clients',
+            builder: (_, _) => const SizedBox(),
+            routes: clientRoutes('/livreur/clients'),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        BlocProvider<SessionCubit>(
+          create: (_) => FakeSession(livreur()),
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+      const client = BasketClient(id: 'c1', code: 'CL-001', name: 'S');
+      for (final sub in ['sell', 'order', 'versement']) {
+        router.go('/livreur/clients/c1/$sub', extra: client);
+        await tester.pump();
+        expect(
+          router.routerDelegate.currentConfiguration.uri.path,
+          '/livreur/clients/c1',
+          reason: sub,
+        );
+      }
+      // Let the client screen's load (real dio I/O) finish.
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pumpAndSettle();
+    });
   });
 }

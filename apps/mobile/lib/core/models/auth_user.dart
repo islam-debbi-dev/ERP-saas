@@ -51,6 +51,10 @@ class AuthUser {
 
   bool get isFieldRole => Role.fieldRoles.contains(role);
 
+  /// Takes pre-sale orders (TOURNEES on, and a role the API lets order).
+  bool get canTakeOrders =>
+      Role.orderTakers.contains(role) && hasFeature(Feature.tournees);
+
   factory AuthUser.fromJson(Map<String, dynamic> json) =>
       _$AuthUserFromJson(json);
 

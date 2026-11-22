@@ -40,7 +40,7 @@ List<Widget> clientActions(
         icon: const Icon(Icons.point_of_sale_outlined),
         label: Text(context.tr('sale.action_sell')),
       ),
-    if (user.hasFeature(Feature.tournees))
+    if (user.canTakeOrders)
       OutlinedButton.icon(
         style: OutlinedButton.styleFrom(minimumSize: const Size(0, 48)),
         onPressed: () => open('order'),

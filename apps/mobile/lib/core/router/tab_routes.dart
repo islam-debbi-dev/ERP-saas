@@ -14,6 +14,7 @@ import '../../features/objectives/ui/objectives_screen.dart';
 import '../../features/orders/ui/my_orders_screen.dart';
 import '../../features/payments/ui/my_payments_screen.dart';
 import '../../features/payments/ui/versement_screen.dart';
+import '../models/auth_user.dart';
 import '../models/erp_codes.dart';
 import '../session/session_cubit.dart';
 import '../../features/sales/logic/basket.dart';
@@ -52,7 +53,9 @@ Widget tabPage(RoleTab tab) {
       ),
     );
   }
-  if (p == '/seller/clients') return ClientsScreen(basePath: p);
+  if (p == '/seller/clients' || p == '/livreur/clients') {
+    return ClientsScreen(basePath: p);
+  }
   if (p == '/seller/sell') return SellScreen(basePath: p);
   if (p == '/seller/truck') return const TruckScreen();
   if (p == '/livreur/deliveries') {
@@ -73,7 +76,9 @@ Widget tabPage(RoleTab tab) {
 /// Screens under a tab (`<tab>/:id`...). Their paths start with the tab's,
 /// so `RoleScreens.allows` keeps them to the tab's role.
 List<RouteBase> tabSubRoutes(RoleTab tab) {
-  if (tab.path == '/seller/clients') return clientRoutes(tab.path);
+  if (tab.path == '/seller/clients' || tab.path == '/livreur/clients') {
+    return clientRoutes(tab.path);
+  }
   if (tab.path == '/seller/today') {
     return [clientDetailRoute(tab.path, prefix: 'client/')];
   }
@@ -132,7 +137,13 @@ GoRoute clientDetailRoute(String base, {String prefix = ''}) => GoRoute(
     GoRoute(
       path: 'versement',
       parentNavigatorKey: rootNavigatorKey,
-      redirect: _needsClient,
+      redirect: (context, state) =>
+          _needsRight(
+            context,
+            state,
+            (u) => u.can(Permission.paymentsCreate),
+          ) ??
+          _needsClient(context, state),
       builder: (_, state) =>
           VersementScreen(client: state.extra! as BasketClient),
     ),
@@ -153,10 +164,32 @@ GoRoute _saleRoute(
 }) => GoRoute(
   path: path,
   parentNavigatorKey: rootNavigatorKey,
-  redirect: needsClient ? _needsClient : null,
+  redirect: (context, state) =>
+      _needsRight(
+        context,
+        state,
+        (u) => mode == SaleMode.order
+            ? u.canTakeOrders
+            : u.can(Permission.salesCreate),
+      ) ??
+      (needsClient ? _needsClient(context, state) : null),
   builder: (_, state) =>
       SaleScreen(client: state.extra as BasketClient?, mode: mode),
 );
+
+/// A form the user has no right to (a livreur on `…/sell`, a seller whose
+/// PAYMENTS_CREATE was revoked on `…/versement`) goes back to the parent
+/// screen. The API refuses it anyway; this keeps the phone from offering it.
+String? _needsRight(
+  BuildContext context,
+  GoRouterState state,
+  bool Function(AuthUser user) allowed,
+) {
+  final user = context.read<SessionCubit>().state.user;
+  if (user != null && allowed(user)) return null;
+  final path = state.uri.path;
+  return path.substring(0, path.lastIndexOf('/'));
+}
 
 /// A form that needs its client as `extra`: a deep link without one goes
 /// back to the parent screen.
