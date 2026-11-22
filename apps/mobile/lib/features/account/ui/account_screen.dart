@@ -10,10 +10,25 @@ import '../../../core/router/routes.dart';
 import '../../../core/session/session_cubit.dart';
 import 'widgets/user_card.dart';
 
-/// The signed-in user, settings (language, theme), password, help, privacy
-/// and logout. Every role reaches it (M1 puts it under "Plus").
+/// An entry of the role's "Plus" menu (objectifs, mes ventes...).
+class MoreItem {
+  const MoreItem({
+    required this.labelKey,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String labelKey;
+  final IconData icon;
+  final void Function(BuildContext context) onTap;
+}
+
+/// The "Plus" tab: the role's own menu ([menu]), then the signed-in user,
+/// settings (language, theme), password, help, privacy and logout.
 class AccountScreen extends StatefulWidget {
-  const AccountScreen({super.key});
+  const AccountScreen({super.key, this.menu = const []});
+
+  final List<MoreItem> menu;
 
   @override
   State<AccountScreen> createState() => _AccountScreenState();
@@ -31,13 +46,27 @@ class _AccountScreenState extends State<AccountScreen> {
   Widget build(BuildContext context) {
     final user = context.watch<SessionCubit>().state.user;
     return Scaffold(
-      appBar: AppBar(title: Text(context.tr('account.title'))),
+      appBar: AppBar(
+        title: Text(
+          context.tr(widget.menu.isEmpty ? 'account.title' : 'tabs.more'),
+        ),
+      ),
       body: RefreshIndicator(
         onRefresh: context.read<SessionCubit>().refreshUser,
         child: ListView(
           padding: const EdgeInsets.only(top: AppSpacing.md, bottom: 130),
           children: [
             if (user != null) UserCard(user: user),
+            if (widget.menu.isNotEmpty) ...[
+              SectionTitle(context.tr('more.my_work')),
+              for (final item in widget.menu)
+                _item(
+                  context,
+                  item.labelKey,
+                  item.icon,
+                  () => item.onTap(context),
+                ),
+            ],
             SectionTitle(context.tr('account.settings')),
             const ThemeAndLangWidget(),
             _item(

@@ -297,7 +297,9 @@
     "retry_safe": "You can retry safely: the document will not be created twice.",
     "warning_NEGATIVE_STOCK": "Warning: stock went negative",
     "warning_CREDIT_LIMIT": "Warning: credit limit exceeded",
-    "warning_PACKAGING_NEGATIVE": "Warning: more packaging returned than recorded"
+    "warning_PACKAGING_NEGATIVE": "Warning: more packaging returned than recorded",
+    "mode_direct": "Van sale",
+    "mode_order": "Order"
   },
   "payment": {
     "mode_ESPECES": "Cash",
@@ -310,5 +312,26 @@
     "CONFIRMED": "Confirmed",
     "DELIVERED": "Delivered",
     "CANCELLED": "Cancelled"
+  },
+  "order": {
+    "title": "Order",
+    "save": "Save the order",
+    "confirm_again": "Confirm the order",
+    "draft_pending": "The order is saved as a draft, not confirmed yet. Tap to confirm it: no second order will be created.",
+    "details": "Order details",
+    "requested_date": "Requested delivery",
+    "no_date": "No date",
+    "note": "Note",
+    "no_number": "No number",
+    "for_date": "For {date}",
+    "mine": "My orders",
+    "all": "All",
+    "none": "No orders",
+    "cancel": "Cancel the order",
+    "cancel_title": "Cancel the order",
+    "cancel_reason": "Reason"
+  },
+  "more": {
+    "my_work": "My work"
   }
 }

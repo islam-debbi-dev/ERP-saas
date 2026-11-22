@@ -7,6 +7,7 @@ import '../../../core/components/widgets/text_prompt.dart';
 import '../../../core/di/dependency_injection.dart';
 import '../../../core/design/design.dart';
 import '../../../core/geo/geo_capture.dart';
+import '../../../core/helpers/algiers_day.dart';
 import '../../../core/helpers/money.dart';
 import '../../../core/localization/tr.dart';
 import '../../../core/models/erp_codes.dart';
@@ -17,6 +18,8 @@ import '../../../core/network/money_action.dart';
 import '../../../core/session/session_cubit.dart';
 import '../../auth/ui/widgets/form_error_banner.dart';
 import '../../catalog/ui/product_picker_screen.dart';
+import '../../orders/data/repo/orders_repository.dart';
+import '../../orders/ui/order_result_view.dart';
 import '../../truck/data/current_truck.dart';
 import '../data/models/pricing.dart';
 import '../data/models/sale.dart';
@@ -27,14 +30,29 @@ import 'sale_result_view.dart';
 import 'widgets/basket_summary.dart';
 import 'widgets/qty_stepper.dart';
 
+/// What the basket becomes.
+enum SaleMode {
+  /// Vente directe from the truck (`POST /sales/quick`).
+  direct,
+
+  /// Prévente: a bon de commande, confirmed, delivered later.
+  order,
+}
+
 /// Vente directe from the truck: basket priced by the API, packaging returned,
 /// payment, GPS, `POST /sales/quick`. Pops with the saved [SaleResult] (the
-/// visit links it), or null.
+/// visit links it), or null. In [SaleMode.order] the same basket becomes a
+/// confirmed bon de commande and pops with the [Order].
 class SaleScreen extends StatelessWidget {
-  const SaleScreen({super.key, required this.client});
+  const SaleScreen({
+    super.key,
+    required this.client,
+    this.mode = SaleMode.direct,
+  });
 
-  /// Null = vente comptoir (paid in full).
+  /// Null = vente comptoir (paid in full); required for an order.
   final BasketClient? client;
+  final SaleMode mode;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +61,7 @@ class SaleScreen extends StatelessWidget {
       create: (_) {
         final cubit = SaleBasketCubit(
           getIt<SalesRepository>(),
+          orders: mode == SaleMode.order ? getIt<OrdersRepository>() : null,
           client: client,
           policy: DiscountPolicy(
             canDiscount: user?.can(Permission.priceOverride) ?? false,
@@ -63,13 +82,15 @@ class SaleScreen extends StatelessWidget {
         }
         return cubit;
       },
-      child: const _SaleView(),
+      child: _SaleView(mode: mode),
     );
   }
 }
 
 class _SaleView extends StatefulWidget {
-  const _SaleView();
+  const _SaleView({required this.mode});
+
+  final SaleMode mode;
 
   @override
   State<_SaleView> createState() => _SaleViewState();
@@ -80,6 +101,10 @@ class _SaleViewState extends State<_SaleView> {
   List<PackagingType> _packagingTypes = const [];
   bool _locating = false;
   final _paidText = TextEditingController();
+  final _note = TextEditingController();
+  String? _requestedDate;
+
+  bool get _isOrder => widget.mode == SaleMode.order;
 
   @override
   void initState() {
@@ -88,7 +113,7 @@ class _SaleViewState extends State<_SaleView> {
       if (mounted) setState(() => _truckId = v?.id);
     });
     final user = context.read<SessionCubit>().state.user;
-    if (user?.hasFeature(Feature.packaging) ?? false) {
+    if (!_isOrder && (user?.hasFeature(Feature.packaging) ?? false)) {
       getIt<SalesRepository>().packagingTypes().then((r) {
         if (mounted && r is Success<List<PackagingType>>) {
           setState(() => _packagingTypes = r.data);
@@ -100,6 +125,7 @@ class _SaleViewState extends State<_SaleView> {
   @override
   void dispose() {
     _paidText.dispose();
+    _note.dispose();
     super.dispose();
   }
 
@@ -118,6 +144,10 @@ class _SaleViewState extends State<_SaleView> {
   Future<void> _submit() async {
     final cubit = context.read<SaleBasketCubit>();
     if (cubit.state.submitting) return;
+    if (_isOrder) {
+      await cubit.submitOrder(requestedDate: _requestedDate, note: _note.text);
+      return;
+    }
     setState(() => _locating = true);
     final geo = await captureGeo(context);
     if (!mounted) return;
@@ -138,6 +168,23 @@ class _SaleViewState extends State<_SaleView> {
     confirmLabel: context.tr('geo.note_send'),
   );
 
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: now.add(const Duration(days: 1)),
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 60)),
+    );
+    if (picked != null) {
+      setState(
+        () => _requestedDate = AlgiersDay.of(
+          DateTime.utc(picked.year, picked.month, picked.day, 12),
+        ),
+      );
+    }
+  }
+
   void _setPaidText(Decimal? v) {
     _paidText.text = v == null
         ? ''
@@ -148,6 +195,13 @@ class _SaleViewState extends State<_SaleView> {
   Widget build(BuildContext context) {
     return BlocBuilder<SaleBasketCubit, SaleBasketState>(
       builder: (context, state) {
+        final order = state.order;
+        if (order != null) {
+          return OrderResultView(
+            order: order,
+            onDone: () => Navigator.of(context).pop(order),
+          );
+        }
         final result = state.result;
         if (result != null) {
           return SaleResultView(
@@ -160,7 +214,7 @@ class _SaleViewState extends State<_SaleView> {
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(context.tr('sale.title')),
+                Text(context.tr(_isOrder ? 'order.title' : 'sale.title')),
                 Text(
                   state.client?.name ?? context.tr('sale.counter'),
                   maxLines: 1,
@@ -180,6 +234,13 @@ class _SaleViewState extends State<_SaleView> {
           bottomNavigationBar: _SubmitBar(
             state: state,
             busy: _locating || state.submitting,
+            label: context.tr(
+              !_isOrder
+                  ? 'sale.validate'
+                  : state.orderDraft != null
+                  ? 'order.confirm_again'
+                  : 'order.save',
+            ),
             onSubmit: state.isEmpty ? null : _submit,
           ),
           body: ListView(
@@ -187,6 +248,10 @@ class _SaleViewState extends State<_SaleView> {
             children: [
               if (state.error != null) ...[
                 SaleErrorCard(error: state.error!, lines: state.lines),
+                AppSpacing.gapLg,
+              ],
+              if (state.orderDraft != null) ...[
+                AppCard(child: Text(context.tr('order.draft_pending'))),
                 AppSpacing.gapLg,
               ],
               if (state.isEmpty)
@@ -224,7 +289,35 @@ class _SaleViewState extends State<_SaleView> {
                     style: TextStyle(color: AppColors.error),
                   ),
                 ],
-                if (_packagingTypes.isNotEmpty) ...[
+                if (_isOrder) ...[
+                  AppSpacing.gapXl,
+                  AppSectionHeader(title: context.tr('order.details')),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.event_outlined),
+                    title: Text(context.tr('order.requested_date')),
+                    subtitle: Text(
+                      _requestedDate == null
+                          ? context.tr('order.no_date')
+                          : AlgiersDay.display(_requestedDate!),
+                    ),
+                    onTap: _pickDate,
+                  ),
+                  TextField(
+                    controller: _note,
+                    maxLength: 255,
+                    decoration: InputDecoration(
+                      labelText: context.tr('order.note'),
+                    ),
+                  ),
+                  if (state.preview != null)
+                    BasketSummary(
+                      totalHt: state.preview!.totalHt,
+                      totalTva: state.preview!.totalTva,
+                      totalTtc: state.preview!.totalTtc,
+                    ),
+                ],
+                if (!_isOrder && _packagingTypes.isNotEmpty) ...[
                   AppSpacing.gapXl,
                   AppSectionHeader(
                     title: context.tr('sale.packaging_returned'),
@@ -254,80 +347,84 @@ class _SaleViewState extends State<_SaleView> {
                       ),
                     ),
                 ],
-                AppSpacing.gapXl,
-                AppSectionHeader(title: context.tr('sale.payment')),
-                AppSpacing.gapSm,
-                TextField(
-                  controller: _paidText,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  textDirection: TextDirection.ltr,
-                  decoration: InputDecoration(
-                    labelText: context.tr('sale.paid_now'),
-                    suffixText: 'DA',
-                    errorText:
-                        _paidText.text.isNotEmpty &&
-                            Money.parseInput(_paidText.text) == null
-                        ? context.tr('sale.invalid_amount')
-                        : null,
-                  ),
-                  onChanged: (v) {
-                    context.read<SaleBasketCubit>().setPaid(
-                      v.trim().isEmpty ? null : Money.parseInput(v),
-                    );
-                    setState(() {});
-                  },
-                ),
-                AppSpacing.gapSm,
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: [
-                    ActionChip(
-                      avatar: const Icon(Icons.done_all, size: 18),
-                      label: Text(context.tr('sale.pay_all')),
-                      onPressed: state.estimatedTtc == null
-                          ? null
-                          : () {
-                              context.read<SaleBasketCubit>().payAll();
-                              _setPaidText(state.estimatedTtc);
-                            },
+                if (!_isOrder) ...[
+                  AppSpacing.gapXl,
+                  AppSectionHeader(title: context.tr('sale.payment')),
+                  AppSpacing.gapSm,
+                  TextField(
+                    controller: _paidText,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
                     ),
-                    if (state.client != null)
-                      ActionChip(
-                        avatar: const Icon(Icons.schedule, size: 18),
-                        label: Text(context.tr('sale.all_credit')),
-                        onPressed: () {
-                          context.read<SaleBasketCubit>().setPaid(Decimal.zero);
-                          _setPaidText(Decimal.zero);
-                        },
-                      ),
-                  ],
-                ),
-                AppSpacing.gapMd,
-                SegmentedButton<PaymentModeValue>(
-                  segments: [
-                    for (final m in PaymentModeValue.values)
-                      ButtonSegment(
-                        value: m,
-                        label: Text(context.tr('payment.mode_${m.api}')),
-                      ),
-                  ],
-                  selected: {state.mode},
-                  showSelectedIcon: false,
-                  onSelectionChanged: (s) =>
-                      context.read<SaleBasketCubit>().setMode(s.first),
-                ),
-                AppSpacing.gapXl,
-                if (state.preview != null)
-                  BasketSummary(
-                    totalHt: state.preview!.totalHt,
-                    totalTva: state.preview!.totalTva,
-                    totalTtc: state.preview!.totalTtc,
-                    paid: state.paidOrZero,
-                    credit: state.estimatedCredit,
+                    textDirection: TextDirection.ltr,
+                    decoration: InputDecoration(
+                      labelText: context.tr('sale.paid_now'),
+                      suffixText: 'DA',
+                      errorText:
+                          _paidText.text.isNotEmpty &&
+                              Money.parseInput(_paidText.text) == null
+                          ? context.tr('sale.invalid_amount')
+                          : null,
+                    ),
+                    onChanged: (v) {
+                      context.read<SaleBasketCubit>().setPaid(
+                        v.trim().isEmpty ? null : Money.parseInput(v),
+                      );
+                      setState(() {});
+                    },
                   ),
+                  AppSpacing.gapSm,
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.sm,
+                    children: [
+                      ActionChip(
+                        avatar: const Icon(Icons.done_all, size: 18),
+                        label: Text(context.tr('sale.pay_all')),
+                        onPressed: state.estimatedTtc == null
+                            ? null
+                            : () {
+                                context.read<SaleBasketCubit>().payAll();
+                                _setPaidText(state.estimatedTtc);
+                              },
+                      ),
+                      if (state.client != null)
+                        ActionChip(
+                          avatar: const Icon(Icons.schedule, size: 18),
+                          label: Text(context.tr('sale.all_credit')),
+                          onPressed: () {
+                            context.read<SaleBasketCubit>().setPaid(
+                              Decimal.zero,
+                            );
+                            _setPaidText(Decimal.zero);
+                          },
+                        ),
+                    ],
+                  ),
+                  AppSpacing.gapMd,
+                  SegmentedButton<PaymentModeValue>(
+                    segments: [
+                      for (final m in PaymentModeValue.values)
+                        ButtonSegment(
+                          value: m,
+                          label: Text(context.tr('payment.mode_${m.api}')),
+                        ),
+                    ],
+                    selected: {state.mode},
+                    showSelectedIcon: false,
+                    onSelectionChanged: (s) =>
+                        context.read<SaleBasketCubit>().setMode(s.first),
+                  ),
+                  AppSpacing.gapXl,
+                  if (state.preview != null)
+                    BasketSummary(
+                      totalHt: state.preview!.totalHt,
+                      totalTva: state.preview!.totalTva,
+                      totalTtc: state.preview!.totalTtc,
+                      paid: state.paidOrZero,
+                      credit: state.estimatedCredit,
+                    ),
+                ],
               ],
             ],
           ),
@@ -339,7 +436,14 @@ class _SaleViewState extends State<_SaleView> {
 
 /// Total and "Valider la vente", one thumb away.
 class _SubmitBar extends StatelessWidget {
-  const _SubmitBar({required this.state, required this.busy, this.onSubmit});
+  const _SubmitBar({
+    required this.state,
+    required this.busy,
+    required this.label,
+    this.onSubmit,
+  });
+
+  final String label;
 
   final SaleBasketState state;
   final bool busy;
@@ -389,7 +493,7 @@ class _SubmitBar extends StatelessWidget {
             AppSpacing.gapMd,
             Expanded(
               child: AppButton(
-                label: context.tr('sale.validate'),
+                label: label,
                 icon: Icons.check_circle_outline,
                 loading: busy,
                 onPressed: onSubmit,

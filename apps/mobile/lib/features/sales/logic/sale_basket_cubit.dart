@@ -11,6 +11,9 @@ import '../../../core/network/api_result.dart';
 import '../../../core/network/idempotency_key.dart';
 import '../../../core/network/money_action.dart';
 import '../../catalog/data/models/product.dart';
+import '../../orders/data/models/order.dart';
+import '../../orders/data/repo/orders_repository.dart';
+import '../../orders/logic/order_submitter.dart';
 import '../data/models/pricing.dart';
 import '../data/models/sale.dart';
 import '../data/repo/sales_repository.dart';
@@ -29,6 +32,8 @@ class SaleBasketState {
     this.submitting = false,
     this.error,
     this.result,
+    this.order,
+    this.orderDraft,
   });
 
   /// Null = vente comptoir (nothing may stay on credit).
@@ -53,6 +58,13 @@ class SaleBasketState {
 
   /// The saved sale, as the API answered it.
   final SaleResult? result;
+
+  /// The confirmed order (prévente), as the API answered it.
+  final Order? order;
+
+  /// An order created but not confirmed yet: the basket is locked and the
+  /// next tap only confirms it.
+  final Order? orderDraft;
 
   bool get isEmpty => lines.isEmpty;
   int get lineCount => lines.length;
@@ -89,6 +101,8 @@ class SaleBasketState {
     bool clearError = false,
     SaleResult? result,
     bool clearResult = false,
+    Order? order,
+    Order? orderDraft,
   }) => SaleBasketState(
     client: clearClient ? null : (client ?? this.client),
     lines: lines ?? this.lines,
@@ -103,6 +117,8 @@ class SaleBasketState {
     submitting: submitting ?? this.submitting,
     error: clearError ? null : (error ?? this.error),
     result: clearResult ? null : (result ?? this.result),
+    order: order ?? this.order,
+    orderDraft: orderDraft ?? this.orderDraft,
   );
 }
 
@@ -116,12 +132,16 @@ class SaleBasketState {
 class SaleBasketCubit extends Cubit<SaleBasketState> {
   SaleBasketCubit(
     this._repo, {
+    OrdersRepository? orders,
     BasketClient? client,
     this.policy = const DiscountPolicy.none(),
     this.debounce = const Duration(milliseconds: 350),
     DateTime Function()? clock,
   }) : _clock = clock ?? DateTime.now,
+       _orders = orders == null ? null : OrderSubmitter(orders),
        super(SaleBasketState(client: client));
+
+  final OrderSubmitter? _orders;
 
   final SalesRepository _repo;
   final Duration debounce;
@@ -208,6 +228,8 @@ class SaleBasketCubit extends Cubit<SaleBasketState> {
   }
 
   void _setLines(List<BasketLine> lines) {
+    // A draft order exists on the API with these lines: only confirm it now.
+    if (state.orderDraft != null) return;
     emit(state.copyWith(lines: lines, clearError: true));
     _schedulePricing();
   }
@@ -321,6 +343,39 @@ class SaleBasketCubit extends Cubit<SaleBasketState> {
         return data;
       case Failure(:final error):
         emit(state.copyWith(submitting: false, error: error));
+        return null;
+    }
+  }
+
+  /// Records the basket as a confirmed order (no GPS in the order schema).
+  /// Needs a client and the orders repository.
+  Future<Order?> submitOrder({String? requestedDate, String? note}) async {
+    final orders = _orders;
+    final client = state.client;
+    if (orders == null || client == null) return null;
+    if (state.submitting || state.lines.isEmpty) return null;
+    emit(state.copyWith(submitting: true, clearError: true));
+    final result = await orders.submit(
+      orderBody(
+        clientId: client.id,
+        lines: [for (final l in state.lines) l.toJson()],
+        requestedDate: requestedDate,
+        note: note,
+      ),
+    );
+    if (isClosed) return null;
+    switch (result) {
+      case Success(:final data):
+        emit(state.copyWith(submitting: false, order: data));
+        return data;
+      case Failure(:final error):
+        emit(
+          state.copyWith(
+            submitting: false,
+            error: error,
+            orderDraft: orders.draft,
+          ),
+        );
         return null;
     }
   }

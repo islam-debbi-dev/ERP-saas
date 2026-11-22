@@ -297,7 +297,9 @@
     "retry_safe": "يمكنك إعادة المحاولة بأمان: لن يتم إنشاء وصل مرتين.",
     "warning_NEGATIVE_STOCK": "تنبيه: المخزون أصبح سالبا",
     "warning_CREDIT_LIMIT": "تنبيه: تم تجاوز سقف الكريدي",
-    "warning_PACKAGING_NEGATIVE": "تنبيه: تغليف مسترجع أكثر من المسجل"
+    "warning_PACKAGING_NEGATIVE": "تنبيه: تغليف مسترجع أكثر من المسجل",
+    "mode_direct": "بيع مباشر",
+    "mode_order": "طلبية"
   },
   "payment": {
     "mode_ESPECES": "نقدا",
@@ -310,5 +312,26 @@
     "CONFIRMED": "مؤكدة",
     "DELIVERED": "مسلّمة",
     "CANCELLED": "ملغاة"
+  },
+  "order": {
+    "title": "طلبية",
+    "save": "حفظ وتأكيد الطلبية",
+    "confirm_again": "إعادة تأكيد الطلبية",
+    "draft_pending": "الطلبية محفوظة كمسودة ولم تؤكد بعد. اضغط لتأكيدها؛ لن تنشأ طلبية ثانية.",
+    "details": "تفاصيل الطلبية",
+    "requested_date": "تاريخ التسليم المطلوب",
+    "no_date": "بدون تاريخ",
+    "note": "ملاحظة",
+    "no_number": "بدون رقم",
+    "for_date": "للتسليم يوم {date}",
+    "mine": "طلبياتي",
+    "all": "الكل",
+    "none": "لا توجد طلبيات",
+    "cancel": "إلغاء الطلبية",
+    "cancel_title": "إلغاء الطلبية",
+    "cancel_reason": "سبب الإلغاء"
+  },
+  "more": {
+    "my_work": "عملي"
   }
 }

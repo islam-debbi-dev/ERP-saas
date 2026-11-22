@@ -297,7 +297,9 @@
     "retry_safe": "Vous pouvez réessayer sans risque : le bon ne sera pas créé deux fois.",
     "warning_NEGATIVE_STOCK": "Attention : stock devenu négatif",
     "warning_CREDIT_LIMIT": "Attention : plafond de crédit dépassé",
-    "warning_PACKAGING_NEGATIVE": "Attention : plus d'emballages rendus qu'enregistrés"
+    "warning_PACKAGING_NEGATIVE": "Attention : plus d'emballages rendus qu'enregistrés",
+    "mode_direct": "Vente directe",
+    "mode_order": "Commande"
   },
   "payment": {
     "mode_ESPECES": "Espèces",
@@ -310,5 +312,26 @@
     "CONFIRMED": "Confirmée",
     "DELIVERED": "Livrée",
     "CANCELLED": "Annulé"
+  },
+  "order": {
+    "title": "Bon de commande",
+    "save": "Enregistrer la commande",
+    "confirm_again": "Confirmer la commande",
+    "draft_pending": "La commande est enregistrée en brouillon, pas encore confirmée. Appuyez pour la confirmer : aucune deuxième commande ne sera créée.",
+    "details": "Détails de la commande",
+    "requested_date": "Livraison souhaitée",
+    "no_date": "Sans date",
+    "note": "Note",
+    "no_number": "Sans numéro",
+    "for_date": "Pour le {date}",
+    "mine": "Mes commandes",
+    "all": "Toutes",
+    "none": "Aucune commande",
+    "cancel": "Annuler la commande",
+    "cancel_title": "Annuler la commande",
+    "cancel_reason": "Motif d'annulation"
+  },
+  "more": {
+    "my_work": "Mon activité"
   }
 }
