@@ -13,6 +13,7 @@ import '../../features/delivery/ui/my_deliveries_screen.dart';
 import '../../features/delivery/ui/order_delivery_screen.dart';
 import '../../features/main_screen/ui/placeholder_tab.dart';
 import '../../features/objectives/ui/objectives_screen.dart';
+import '../../features/objectives/ui/team_objectives_screen.dart';
 import '../../features/orders/ui/my_orders_screen.dart';
 import '../../features/payments/ui/my_payments_screen.dart';
 import '../../features/payments/ui/versement_screen.dart';
@@ -90,6 +91,11 @@ Widget tabPage(RoleTab tab) {
       builder: (context) => AccountScreen(menu: livreurMenu(context)),
     );
   }
+  if (p == '/supervisor/more') {
+    return Builder(
+      builder: (context) => AccountScreen(menu: supervisorMenu(context)),
+    );
+  }
   if (p.endsWith('/more')) return const AccountScreen();
   return PlaceholderTab(tab: tab);
 }
@@ -127,6 +133,14 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
           sellerId: state.pathParameters['sellerId']!,
           date: state.uri.queryParameters['date'] ?? AlgiersDay.of(),
         ),
+      ),
+    ];
+  }
+  if (tab.path == '/supervisor/more') {
+    return [
+      GoRoute(
+        path: 'objectives',
+        builder: (_, _) => const TeamObjectivesScreen(),
       ),
     ];
   }
@@ -287,6 +301,20 @@ List<MoreItem> livreurMenu(BuildContext context) {
         labelKey: 'versement.mine',
         icon: Icons.payments_outlined,
         onTap: (c) => c.push('/livreur/more/payments'),
+      ),
+  ];
+}
+
+/// The supervisor's "Plus" menu: his team's targets (INCENTIVES).
+List<MoreItem> supervisorMenu(BuildContext context) {
+  final user = context.watch<SessionCubit>().state.user;
+  if (user == null) return const [];
+  return [
+    if (user.hasFeature(Feature.incentives))
+      MoreItem(
+        labelKey: 'objectives.team_title',
+        icon: Icons.flag_outlined,
+        onTap: (c) => c.push('/supervisor/more/objectives'),
       ),
   ];
 }

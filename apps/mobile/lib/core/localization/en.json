@@ -435,7 +435,8 @@
     "metric_VISITS": "Visits",
     "metric_STRIKE_RATE": "Strike rate",
     "metric_RECOUVREMENT_PCT": "Recovery rate",
-    "metric_GEO_FLAGS": "GPS flags"
+    "metric_GEO_FLAGS": "GPS flags",
+    "team_title": "Team targets"
   },
   "delivery": {
     "title": "Deliveries",

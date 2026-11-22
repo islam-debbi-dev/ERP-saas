@@ -435,7 +435,8 @@
     "metric_VISITS": "الزيارات",
     "metric_STRIKE_RATE": "نسبة الزيارات المنتجة",
     "metric_RECOUVREMENT_PCT": "نسبة التحصيل",
-    "metric_GEO_FLAGS": "تنبيهات الموقع"
+    "metric_GEO_FLAGS": "تنبيهات الموقع",
+    "team_title": "أهداف الفريق"
   },
   "delivery": {
     "title": "التوصيلات",

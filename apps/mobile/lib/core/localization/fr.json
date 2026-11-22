@@ -435,7 +435,8 @@
     "metric_VISITS": "Visites",
     "metric_STRIKE_RATE": "Taux de visites productives",
     "metric_RECOUVREMENT_PCT": "Taux de recouvrement",
-    "metric_GEO_FLAGS": "Alertes GPS"
+    "metric_GEO_FLAGS": "Alertes GPS",
+    "team_title": "Objectifs de l'équipe"
   },
   "delivery": {
     "title": "Livraisons",
