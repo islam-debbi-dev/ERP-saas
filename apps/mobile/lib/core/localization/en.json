@@ -384,5 +384,27 @@
     "error_reason": "Choose a reason",
     "error_note": "Add a note for \"Other\"",
     "error_document": "No document for this outcome"
+  },
+  "truck": {
+    "title": "My truck",
+    "no_tournees": "Your plan has no routes: there is no truck day to show.",
+    "stock": "Truck stock",
+    "no_truck_stock": "No truck is assigned to you today.",
+    "empty": "The truck is empty",
+    "transfers": "Today's loading and unloading",
+    "no_transfers": "No validated loading today",
+    "load": "Loading",
+    "unload": "Unloading",
+    "line_count": "{n} lines",
+    "new_load_soon": "New loading (soon)",
+    "session_none": "Day not opened",
+    "session_open": "Day open",
+    "session_closed": "Day closed",
+    "expected_cash": "Cash to hand over",
+    "from_sales": "From sales",
+    "from_versements": "From payments",
+    "handed": "Handed over",
+    "ecart": "Difference",
+    "cash_note": "Cash only (cheques and transfers are not counted)."
   }
 }

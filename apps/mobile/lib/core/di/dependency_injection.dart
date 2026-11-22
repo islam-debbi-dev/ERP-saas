@@ -6,6 +6,7 @@ import '../../features/orders/data/repo/orders_repository.dart';
 import '../../features/payments/data/repo/payments_repository.dart';
 import '../../features/sales/data/repo/sales_repository.dart';
 import '../../features/truck/data/current_truck.dart';
+import '../../features/truck/data/truck_repository.dart';
 import '../../features/visits/data/visits_repository.dart';
 import '../../features/clients/data/repo/clients_repository.dart';
 import '../../features/today/data/repo/today_repository.dart';
@@ -48,6 +49,8 @@ Future<void> setupGetIt() async {
   getIt.registerLazySingleton<VisitsRepository>(
     () => VisitsRepository(getIt()),
   );
+
+  getIt.registerLazySingleton<TruckRepository>(() => TruckRepository(getIt()));
 
   // ── App-wide state ──────────────────────────────────────────────────────
   getIt.registerLazySingleton<SessionCubit>(() => SessionCubit(getIt()));

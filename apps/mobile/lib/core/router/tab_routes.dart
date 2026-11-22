@@ -17,6 +17,7 @@ import '../../features/sales/logic/basket.dart';
 import '../../features/sales/ui/sale_screen.dart';
 import '../../features/sales/ui/sell_screen.dart';
 import '../../features/today/ui/today_screen.dart';
+import '../../features/truck/ui/truck_screen.dart';
 import '../../features/visits/logic/visit_form.dart';
 import 'role_screens.dart';
 
@@ -49,6 +50,7 @@ Widget tabPage(RoleTab tab) {
   }
   if (p == '/seller/clients') return ClientsScreen(basePath: p);
   if (p == '/seller/sell') return SellScreen(basePath: p);
+  if (p == '/seller/truck') return const TruckScreen();
   if (p == '/seller/more') {
     return Builder(
       builder: (context) => AccountScreen(menu: sellerMenu(context)),

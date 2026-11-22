@@ -384,5 +384,27 @@
     "error_reason": "Choisissez un motif",
     "error_note": "Ajoutez une note pour « Autre »",
     "error_document": "Aucun document pour ce résultat"
+  },
+  "truck": {
+    "title": "Mon camion",
+    "no_tournees": "Votre offre n'inclut pas les tournées : pas de journée camion à afficher.",
+    "stock": "Stock du camion",
+    "no_truck_stock": "Aucun camion ne vous est attribué aujourd'hui.",
+    "empty": "Camion vide",
+    "transfers": "Chargements et déchargements du jour",
+    "no_transfers": "Aucun chargement validé aujourd'hui",
+    "load": "Chargement",
+    "unload": "Déchargement",
+    "line_count": "{n} lignes",
+    "new_load_soon": "Nouveau chargement (bientôt)",
+    "session_none": "Journée non ouverte",
+    "session_open": "Journée ouverte",
+    "session_closed": "Journée clôturée",
+    "expected_cash": "Ma caisse attendue",
+    "from_sales": "Des ventes",
+    "from_versements": "Des versements",
+    "handed": "Montant remis",
+    "ecart": "Écart",
+    "cash_note": "Espèces seulement (chèques et virements non comptés)."
   }
 }
