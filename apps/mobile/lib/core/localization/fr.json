@@ -526,5 +526,24 @@
     "driver_warn_leaves": "{truck} restera sans chauffeur.",
     "driver_done": "{name} conduit maintenant {truck}.",
     "driver_no_trucks": "Aucun camion dans votre périmètre."
+  },
+  "team_orders": {
+    "title": "Commandes de l'équipe",
+    "to_assign": "À assigner ({count})",
+    "assigned": "Assignées ({count})",
+    "empty_to_assign": "Rien à assigner",
+    "empty_to_assign_message": "Les commandes confirmées de votre équipe sans livreur apparaissent ici.",
+    "empty_assigned": "Aucune commande assignée",
+    "on_truck": "Camion {truck} · {name}",
+    "on_truck_free": "Camion {truck} · sans chauffeur",
+    "on_person": "Livreur : {name}",
+    "assign_title": "Qui livre cette commande ?",
+    "trucks": "Camions",
+    "people": "Livreurs de l'équipe",
+    "no_trucks": "Aucun camion dans votre périmètre.",
+    "no_people": "Aucun livreur dans votre équipe.",
+    "delivery_truck": "Livraison",
+    "done_truck": "{number} est sur le camion {truck}.",
+    "done_person": "{number} est confiée à {name}."
   }
 }

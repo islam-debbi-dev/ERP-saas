@@ -25,6 +25,7 @@ import '../../features/sales/ui/sale_screen.dart';
 import '../../features/sales/ui/sell_screen.dart';
 import '../../features/team/ui/member_day_screen.dart';
 import '../../features/team/ui/team_screen.dart';
+import '../../features/team_orders/ui/team_orders_screen.dart';
 import '../../features/today/ui/today_screen.dart';
 import '../../features/truck/ui/truck_screen.dart';
 import '../../features/visits/logic/visit_form.dart';
@@ -76,6 +77,7 @@ Widget tabPage(RoleTab tab) {
           context.push('$p/${member.seller.id}?date=$date'),
     );
   }
+  if (p == '/supervisor/orders') return TeamOrdersScreen(tabPath: p);
   if (p == '/seller/more') {
     return Builder(
       builder: (context) => AccountScreen(menu: sellerMenu(context)),

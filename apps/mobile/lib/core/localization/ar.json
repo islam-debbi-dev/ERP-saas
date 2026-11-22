@@ -526,5 +526,24 @@
     "driver_warn_leaves": "ستبقى {truck} بدون سائق.",
     "driver_done": "{name} يقود الآن {truck}.",
     "driver_no_trucks": "لا توجد شاحنات ضمن نطاقك."
+  },
+  "team_orders": {
+    "title": "طلبات الفريق",
+    "to_assign": "للتعيين ({count})",
+    "assigned": "معيّنة ({count})",
+    "empty_to_assign": "لا شيء للتعيين",
+    "empty_to_assign_message": "تظهر هنا طلبات فريقك المؤكدة التي ليس لها موزع.",
+    "empty_assigned": "لا توجد طلبات معيّنة",
+    "on_truck": "الشاحنة {truck} · {name}",
+    "on_truck_free": "الشاحنة {truck} · بدون سائق",
+    "on_person": "الموزع: {name}",
+    "assign_title": "من يسلّم هذا الطلب؟",
+    "trucks": "الشاحنات",
+    "people": "موزعو الفريق",
+    "no_trucks": "لا توجد شاحنات ضمن نطاقك.",
+    "no_people": "لا يوجد موزع في فريقك.",
+    "delivery_truck": "توصيل",
+    "done_truck": "{number} على الشاحنة {truck}.",
+    "done_person": "تم إسناد {number} إلى {name}."
   }
 }

@@ -153,6 +153,8 @@ class OrderSummary {
     this.requestedDate,
     this.lineCount = 0,
     this.shortLines = 0,
+    this.seller,
+    this.livreur,
     this.deliveryVehicle,
     this.sale,
   });
@@ -168,6 +170,15 @@ class OrderSummary {
 
   /// Lines whose ordered quantity is above the delivering stock right now.
   final int shortLines;
+
+  /// Who took the order.
+  @JsonKey(fromJson: _userRef)
+  final UserRef? seller;
+
+  /// Who delivers it: the person put on it, or the driver of its delivery
+  /// truck (phase 36). Null with no truck = not assigned yet.
+  @JsonKey(fromJson: _userRef)
+  final UserRef? livreur;
   @JsonKey(fromJson: _vehicleRef)
   final VehicleRef? deliveryVehicle;
 
@@ -175,6 +186,9 @@ class OrderSummary {
   @JsonKey(fromJson: _docRef)
   final DocRef? sale;
   final DateTime createdAt;
+
+  /// Neither a livreur nor a delivery truck (the supervisor assigns it).
+  bool get isUnassigned => livreur == null && deliveryVehicle == null;
 
   factory OrderSummary.fromJson(Map<String, dynamic> json) =>
       _$OrderSummaryFromJson(json);

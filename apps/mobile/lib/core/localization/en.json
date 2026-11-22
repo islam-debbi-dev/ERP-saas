@@ -526,5 +526,24 @@
     "driver_warn_leaves": "{truck} will be left without a driver.",
     "driver_done": "{name} now drives {truck}.",
     "driver_no_trucks": "No truck in your reach."
+  },
+  "team_orders": {
+    "title": "Team orders",
+    "to_assign": "To assign ({count})",
+    "assigned": "Assigned ({count})",
+    "empty_to_assign": "Nothing to assign",
+    "empty_to_assign_message": "Your team's confirmed orders with no driver appear here.",
+    "empty_assigned": "No assigned order",
+    "on_truck": "Truck {truck} · {name}",
+    "on_truck_free": "Truck {truck} · no driver",
+    "on_person": "Driver: {name}",
+    "assign_title": "Who delivers this order?",
+    "trucks": "Trucks",
+    "people": "Team drivers",
+    "no_trucks": "No truck in your reach.",
+    "no_people": "No driver in your team.",
+    "delivery_truck": "Delivery",
+    "done_truck": "{number} is on truck {truck}.",
+    "done_person": "{number} is given to {name}."
   }
 }
