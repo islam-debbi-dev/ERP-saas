@@ -33,6 +33,7 @@ import {
   type DeliverOrderResultDto,
   deliverOrderSchema,
   Feature,
+  type MeDayDto,
   type OpenSellerSessionInput,
   openSellerSessionSchema,
   type OrderDto,
@@ -164,12 +165,26 @@ export class RoutesController {
 @Controller('me')
 @RequireFeature(Feature.TOURNEES)
 export class MeTodayController {
-  constructor(private readonly routes: RoutesService) {}
+  constructor(
+    private readonly routes: RoutesService,
+    private readonly sessions: SellerSessionsService,
+  ) {}
 
   /** The caller's tournée of today (Algiers weekday). */
   @Get('today')
   today(@CurrentUser() user: CurrentUserInfo): Promise<TodayDto> {
     return this.routes.today(user);
+  }
+
+  /**
+   * The caller's own day on the road (phase 39, A2): truck, session, expected cash, truck
+   * stock and today's chargements / déchargements, quantities only. Road roles and a
+   * supervisor for himself.
+   */
+  @Get('day')
+  @Roles(Role.SELLER, Role.LIVREUR, Role.SUPERVISOR)
+  day(@CurrentUser() user: CurrentUserInfo): Promise<MeDayDto> {
+    return this.sessions.myDay(user);
   }
 }
 

@@ -15,6 +15,7 @@ import { amountString, normalizeDecimal, quantityString } from './common';
 import { type GeoCheckResultDto, geoInputSchema } from './geo';
 import { packagingReturnedSchema, saleLineInputSchema, type SaleWarning } from './sales';
 import { type VehicleRef, type VehicleTypeRef } from './vehicles';
+import { type StockTransferLineDto } from './warehouses';
 
 const id = z.uuid();
 const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'invalid_date');
@@ -503,6 +504,43 @@ export interface VehicleStockLineDto {
   unitId: string;
   unitCode: string;
   qtyBase: string;
+}
+
+// ---------------------------------------------------------------- my day (phase 39, A2)
+
+/**
+ * A validated chargement / déchargement of the caller's truck today, as the road roles
+ * see it in the app: number, time and quantities only (no CUMP, no value).
+ */
+export interface MeDayTransferDto {
+  id: string;
+  number: string | null;
+  type: 'LOAD' | 'UNLOAD';
+  validatedAt: string;
+  from: { id: string; name: string };
+  to: { id: string; name: string };
+  /** In the unit that was typed (`qty`) and in the base unit (`qtyBase`). */
+  lines: StockTransferLineDto[];
+}
+
+/**
+ * `GET /me/day`: the caller's own day on the road (SELLER, LIVREUR, a SUPERVISOR for
+ * himself). `/seller-sessions` is for planners and `/stock-transfers` needs
+ * STOCK_TRANSFER; this is the read-only view of the same facts for one user.
+ */
+export interface MeDayDto {
+  /** Algiers day, `YYYY-MM-DD`. */
+  day: string;
+  /** The truck the caller drives now; null = none. */
+  vehicle: (VehicleRef & { wilayaCode: number | null }) | null;
+  /** His session of today (open or closed), if one was opened. */
+  session: SellerSessionDto | null;
+  /** Live expected cash, the clôture's rule (frozen figures once the session is closed). */
+  expected: ExpectedCashDto;
+  /** What is on the truck now, in the base unit. Empty without a truck. */
+  stock: VehicleStockLineDto[];
+  /** Today's validated LOAD / UNLOAD of that truck, oldest first. Empty without a truck. */
+  transfers: MeDayTransferDto[];
 }
 
 export interface SellerSessionCloseResultDto {

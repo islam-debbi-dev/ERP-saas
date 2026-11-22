@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import {
+  algiersDayBounds,
   type CreateStockTransferInput,
+  type MeDayTransferDto,
   DocType,
   ErrorCode,
   type StockTransferDto,
@@ -31,6 +33,18 @@ import { toBaseLines } from './unit-conversion';
 import { WarehousesService } from './warehouses.service';
 
 export type TransferResult = StockTransferResultDto;
+
+/** What a transfer DTO is built from: header, warehouses, lines with the product names. */
+const transferInclude = {
+  fromWarehouse: { select: { id: true, name: true, type: true } },
+  toWarehouse: { select: { id: true, name: true, type: true } },
+  lines: {
+    orderBy: { createdAt: 'asc' },
+    include: { product: { select: { reference: true, designation: true } } },
+  },
+} satisfies Prisma.StockTransferInclude;
+
+type TransferRow = Prisma.StockTransferGetPayload<{ include: typeof transferInclude }>;
 
 /** LOAD fills a truck, UNLOAD empties one, TRANSFER is anything else. */
 export function transferTypeOf(fromType: WarehouseType, toType: WarehouseType): StockTransferType {
@@ -260,29 +274,59 @@ export class StockTransfersService {
   async get(id: string, user?: CurrentUserInfo): Promise<StockTransferDto> {
     const t = await this.prisma.db.stockTransfer.findFirst({
       where: { id, ...(user ? await this.visibleWhere(user) : {}) },
-      include: {
-        fromWarehouse: { select: { id: true, name: true, type: true } },
-        toWarehouse: { select: { id: true, name: true, type: true } },
-        lines: {
-          orderBy: { createdAt: 'asc' },
-          include: { product: { select: { reference: true, designation: true } } },
-        },
-      },
+      include: transferInclude,
     });
     if (!t) throw new AppException(ErrorCode.NOT_FOUND, 'Transfer not found');
-    const unitIds = [...new Set(t.lines.map((l) => l.unitId))];
-    const units = await this.prisma.db.unit.findMany({
-      where: { id: { in: unitIds } },
-      select: { id: true, code: true },
-    });
-    const unitCode = new Map(units.map((u) => [u.id, u.code]));
     const creator = t.createdBy
       ? await this.prisma.db.user.findUnique({
           where: { id: t.createdBy },
           select: { id: true, fullName: true },
         })
       : null;
-    return {
+    const [dto] = await this.toDtos([t]);
+    return { ...dto!, createdBy: creator };
+  }
+
+  /**
+   * Today's validated chargements / déchargements of one truck (phase 39, A2: the road
+   * roles' "Mon camion"). Quantities only: the lines carry no cost or value, and none is
+   * read here. The caller decides who may see which truck.
+   */
+  async validatedForVehicle(vehicleId: string, day: string): Promise<MeDayTransferDto[]> {
+    const { start, end } = algiersDayBounds(day);
+    const rows = await this.prisma.db.stockTransfer.findMany({
+      where: {
+        status: StockTransferStatus.VALIDATED,
+        type: { in: [StockTransferType.LOAD, StockTransferType.UNLOAD] },
+        OR: [{ fromWarehouseId: vehicleId }, { toWarehouseId: vehicleId }],
+        validatedAt: { gte: start, lt: end },
+      },
+      orderBy: [{ validatedAt: 'asc' }, { id: 'asc' }],
+      include: transferInclude,
+    });
+    const dtos = await this.toDtos(rows);
+    return dtos.map((t) => ({
+      id: t.id,
+      number: t.number,
+      type: t.type as MeDayTransferDto['type'],
+      validatedAt: t.validatedAt!,
+      from: { id: t.from.id, name: t.from.name },
+      to: { id: t.to.id, name: t.to.name },
+      lines: t.lines,
+    }));
+  }
+
+  /** Header and lines of transfers (unit codes read once); `createdBy` left null. */
+  private async toDtos(rows: TransferRow[]): Promise<StockTransferDto[]> {
+    const unitIds = [...new Set(rows.flatMap((t) => t.lines.map((l) => l.unitId)))];
+    const units = unitIds.length
+      ? await this.prisma.db.unit.findMany({
+          where: { id: { in: unitIds } },
+          select: { id: true, code: true },
+        })
+      : [];
+    const unitCode = new Map(units.map((u) => [u.id, u.code]));
+    return rows.map((t) => ({
       id: t.id,
       number: t.number,
       type: t.type,
@@ -291,7 +335,7 @@ export class StockTransfersService {
       to: t.toWarehouse,
       note: t.note,
       cancelReason: t.cancelReason,
-      createdBy: creator,
+      createdBy: null,
       createdAt: t.createdAt.toISOString(),
       validatedAt: t.validatedAt?.toISOString() ?? null,
       cancelledAt: t.cancelledAt?.toISOString() ?? null,
@@ -304,7 +348,7 @@ export class StockTransfersService {
         qty: toQtyString(l.qty.toString()),
         qtyBase: toQtyString(l.qtyBase.toString()),
       })),
-    };
+    }));
   }
 
   /**
