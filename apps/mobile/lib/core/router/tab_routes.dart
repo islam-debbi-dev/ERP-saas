@@ -8,6 +8,7 @@ import '../../features/clients/ui/client_statement_screen.dart';
 import '../../features/clients/ui/clients_screen.dart';
 import '../../features/clients/ui/new_client_screen.dart';
 import '../../features/delivery/ui/deliveries_screen.dart';
+import '../../features/delivery/ui/order_delivery_screen.dart';
 import '../../features/main_screen/ui/placeholder_tab.dart';
 import '../../features/objectives/ui/objectives_screen.dart';
 import '../../features/orders/ui/my_orders_screen.dart';
@@ -54,7 +55,12 @@ Widget tabPage(RoleTab tab) {
   if (p == '/seller/clients') return ClientsScreen(basePath: p);
   if (p == '/seller/sell') return SellScreen(basePath: p);
   if (p == '/seller/truck') return const TruckScreen();
-  if (p == '/livreur/deliveries') return DeliveriesScreen(tabPath: p);
+  if (p == '/livreur/deliveries') {
+    return DeliveriesScreen(
+      tabPath: p,
+      onOpenOrder: (context, order) => context.push('$p/${order.id}'),
+    );
+  }
   if (p == '/seller/more') {
     return Builder(
       builder: (context) => AccountScreen(menu: sellerMenu(context)),
@@ -75,6 +81,16 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
     return [
       _saleRoute('new'),
       _saleRoute('order', mode: SaleMode.order, needsClient: true),
+    ];
+  }
+  if (tab.path == '/livreur/deliveries') {
+    return [
+      GoRoute(
+        path: ':orderId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (_, state) =>
+            OrderDeliveryScreen(orderId: state.pathParameters['orderId']!),
+      ),
     ];
   }
   if (tab.path == '/seller/more') {

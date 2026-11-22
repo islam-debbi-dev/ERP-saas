@@ -2,6 +2,7 @@ import '../../../../core/models/paginated.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_result.dart';
 import '../../../../core/network/idempotency_key.dart';
+import '../../../delivery/data/deliver_result.dart';
 import '../models/order.dart';
 
 /// Bons de commande (prévente, TOURNEES). A SELLER's orders are always his.
@@ -35,6 +36,19 @@ class OrdersRepository {
     data: {'reason': reason},
     idempotencyKey: key,
     decode: (json) => Order.fromJson(json.asMap),
+  );
+
+  /// `POST /orders/:id/deliver` (@Idempotent): the BL of the delivered
+  /// quantities, from the truck the order was put on (`deliverOrderSchema`).
+  Future<ApiResult<DeliverResult>> deliver(
+    String id,
+    Map<String, dynamic> body,
+    IdempotencyKey key,
+  ) => _api.post(
+    '/orders/$id/deliver',
+    data: body,
+    idempotencyKey: key,
+    decode: (json) => DeliverResult.fromJson(json.asMap),
   );
 
   Future<ApiResult<Order>> get(String id) =>

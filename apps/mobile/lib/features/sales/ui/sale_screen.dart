@@ -677,6 +677,33 @@ class SaleErrorCard extends StatelessWidget {
   final List<BasketLine> lines;
 
   @override
+  Widget build(BuildContext context) => MoneyErrorCard(
+    error: error,
+    stockShort: (productId, available) {
+      final match = lines.where((l) => l.product.id == productId);
+      if (match.isEmpty) return null;
+      final product = match.first.product;
+      return (product.designation, stockText(product, available));
+    },
+  );
+}
+
+/// The error of a money action (sale, delivery): the API's translated
+/// message, plus the plafond figures for CREDIT_LIMIT_EXCEEDED, the product
+/// and what is left for STOCK_INSUFFICIENT ([stockShort] names them from the
+/// product id and the available base quantity), and "retry is safe" when the
+/// network failed.
+class MoneyErrorCard extends StatelessWidget {
+  const MoneyErrorCard({super.key, required this.error, this.stockShort});
+
+  final ApiError error;
+  final (String name, String qty)? Function(
+    String productId,
+    Decimal available,
+  )?
+  stockShort;
+
+  @override
   Widget build(BuildContext context) {
     final parts = <String>[apiErrorText(context, error)];
     if (error.code == 'CREDIT_LIMIT_EXCEEDED') {
@@ -696,21 +723,17 @@ class SaleErrorCard extends StatelessWidget {
         ),
       );
     }
-    if (error.code == 'STOCK_INSUFFICIENT') {
+    if (error.code == 'STOCK_INSUFFICIENT' && stockShort != null) {
       final productId = error.detail('productId');
       final available = error.detail('available');
-      final match = lines.where((l) => l.product.id == productId);
-      if (match.isNotEmpty) {
-        final product = match.first.product;
+      final named = productId is String && available is String
+          ? stockShort!(productId, Decimal.parse(available))
+          : null;
+      if (named != null) {
         parts.add(
           context.tr(
             'sale.stock_details',
-            args: {
-              'name': product.designation,
-              'qty': available is String
-                  ? stockText(product, Decimal.parse(available))
-                  : '—',
-            },
+            args: {'name': named.$1, 'qty': named.$2},
           ),
         );
       }
