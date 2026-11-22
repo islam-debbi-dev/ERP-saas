@@ -310,16 +310,17 @@ String stockText(Product product, Decimal qtyBase) {
   ]..sort((a, b) => b.factorToBase.compareTo(a.factorToBase));
   final baseLabel = base?.unitCode ?? '';
   if (packs.isEmpty || qtyBase <= Decimal.zero) {
-    return '${Qty.format(qtyBase)} $baseLabel'.trim();
+    return Qty.withUnit(qtyBase, baseLabel);
   }
   final pack = packs.first;
   final whole = (qtyBase / pack.factorToBase).floor().toDecimal();
   final rest = qtyBase - whole * pack.factorToBase;
   final parts = [
-    if (whole > Decimal.zero) '${Qty.format(whole)} ${pack.unitCode}',
-    if (rest > Decimal.zero) '${Qty.format(rest)} $baseLabel',
+    if (whole > Decimal.zero)
+      '${Qty.format(whole, isolate: false)} ${pack.unitCode}',
+    if (rest > Decimal.zero) '${Qty.format(rest, isolate: false)} $baseLabel',
   ];
-  return parts.join(' + ');
+  return Money.ltr(parts.join(' + '));
 }
 
 /// Unit choice and quantity for one product. Pops with (unit, quantity).

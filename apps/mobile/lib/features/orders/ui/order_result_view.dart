@@ -139,7 +139,9 @@ class _OrderResultViewState extends State<OrderResultView> {
                                     'unit': l.unitCode,
                                   },
                                 )
-                              : '${Qty.format(l.qty)} ${l.unitCode} × ${Money.format(l.unitPriceHt)}',
+                              : Money.ltr(
+                                  '${Qty.format(l.qty, isolate: false)} ${l.unitCode} × ${Money.format(l.unitPriceHt, isolate: false)}',
+                                ),
                           style: text.bodySmall?.copyWith(
                             color: l.isFree
                                 ? AppColors.success

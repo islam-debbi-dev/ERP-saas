@@ -142,7 +142,7 @@ class _TruckBody extends StatelessWidget {
                         ),
                         AppSpacing.gapSm,
                         Text(
-                          '${Qty.format(l.qtyBase)} ${l.unitCode}',
+                          Qty.withUnit(l.qtyBase, l.unitCode),
                           style: text.titleSmall,
                         ),
                       ],
@@ -337,7 +337,7 @@ class _TransferTile extends StatelessWidget {
                       child: Text(l.designation, style: text.bodyMedium),
                     ),
                     Text(
-                      '${Qty.format(l.qty)} ${l.unitCode}',
+                      Qty.withUnit(l.qty, l.unitCode),
                       style: text.titleSmall,
                     ),
                   ],

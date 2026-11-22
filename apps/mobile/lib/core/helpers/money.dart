@@ -67,6 +67,10 @@ class Money {
     return Decimal.parse(cleaned.replaceFirst(',', '.'));
   }
 
+  /// [text] kept left to right inside Arabic text (a figure with its unit,
+  /// `2 CRT × 960,00 DA`, `−5 %`). Parts inside should not be isolated again.
+  static String ltr(String text) => '$ltrIsolateStart$text$ltrIsolateEnd';
+
   static String _group(String digits) {
     final out = StringBuffer();
     for (var i = 0; i < digits.length; i++) {
@@ -92,6 +96,10 @@ class Qty {
   static String toApi(Decimal value) => round3(value).toStringAsFixed(decimals);
 
   static bool isWhole(Decimal value) => value.isInteger;
+
+  /// `96 PCE`, `2,5 KG`: the quantity and its unit as one LTR run.
+  static String withUnit(Decimal value, String unit) =>
+      Money.ltr('${format(value, isolate: false)} $unit');
 
   /// Display: `1 250`, `2,5`, `0,125` (no trailing zeros), LTR-isolated.
   static String format(Decimal value, {bool isolate = true}) {

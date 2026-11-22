@@ -143,7 +143,9 @@ class _SaleResultViewState extends State<SaleResultView> {
                                     'unit': l.unitLabel,
                                   },
                                 )
-                              : '${Qty.format(l.qty)} ${l.unitLabel} × ${Money.format(l.unitPriceHt)}',
+                              : Money.ltr(
+                                  '${Qty.format(l.qty, isolate: false)} ${l.unitLabel} × ${Money.format(l.unitPriceHt, isolate: false)}',
+                                ),
                           style: text.bodySmall?.copyWith(
                             color: l.isFree
                                 ? AppColors.success

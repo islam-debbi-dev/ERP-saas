@@ -27,7 +27,12 @@ class AmountText extends StatelessWidget {
     Color? color = style?.color;
     if (colorBySign && value > Decimal.zero) color = scheme.error;
     return Text(
-      Money.format(value, currency: currency),
+      // The bold Almarai weights have no narrow no-break space (U+202F): it
+      // would vanish and glue the thousands; a no-break space always draws.
+      Money.format(
+        value,
+        currency: currency,
+      ).replaceAll(Money.thousandsSeparator, Money.currencySpace),
       maxLines: 1,
       softWrap: false,
       textDirection: TextDirection.ltr,

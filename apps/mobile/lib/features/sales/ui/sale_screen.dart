@@ -610,12 +610,14 @@ class BasketLineTile extends StatelessWidget {
                     TextSpan(
                       children: [
                         TextSpan(
-                          text:
-                              '${Money.format(priced.unitPriceHt)} × ${Qty.format(priced.qty)}',
+                          text: Money.ltr(
+                            '${Qty.format(priced.qty, isolate: false)} × ${Money.format(priced.unitPriceHt, isolate: false)}',
+                          ),
                         ),
                         if (priced.discountPct > Decimal.zero)
                           TextSpan(
-                            text: '  −${Qty.format(priced.discountPct)} %',
+                            text:
+                                '  ${Money.ltr('−${Qty.format(priced.discountPct, isolate: false)} %')}',
                             style: const TextStyle(color: AppColors.success),
                           ),
                       ],

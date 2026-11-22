@@ -78,7 +78,16 @@ void main() {
       expect(Qty.format(d('-3'), isolate: false), '-3');
     });
 
-    test('rounds to 3 decimals for the API', () {
+    test('a quantity with its unit is one LTR run', () {
+      // Isolates as Dart escapes: raw bidi characters get lost in files.
+      const lri = '\u2066';
+      const pdi = '\u2069';
+      expect(Qty.withUnit(d('96'), 'PCE'), '${lri}96 PCE$pdi');
+      expect(Qty.withUnit(d('1250'), 'CRT'), '${lri}1${nnbsp}250 CRT$pdi');
+      expect(Money.ltr('−5 %'), '$lri−5 %$pdi');
+    });
+
+        test('rounds to 3 decimals for the API', () {
       expect(Qty.toApi(d('1.2345')), '1.235');
       expect(Qty.toApi(d('2')), '2.000');
       expect(Qty.isWhole(d('48.000')), isTrue);
