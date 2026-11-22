@@ -414,17 +414,17 @@ class OrderHeaderCard extends StatelessWidget {
             ],
           ),
           AppSpacing.gapXs,
+          // Name and date on their own lines: a French name and an Arabic
+          // date in one wrapped line read out of order in RTL.
+          Text(order.client.name, style: text.bodyMedium),
           Text(
-            [
-              order.client.name,
-              date == null
-                  ? context.tr('order.no_date')
-                  : context.tr(
-                      'order.for_date',
-                      args: {'date': AlgiersDay.display(date)},
-                    ),
-            ].join(' · '),
-            style: text.bodyMedium?.copyWith(color: context.textMuted),
+            date == null
+                ? context.tr('order.no_date')
+                : context.tr(
+                    'order.for_date',
+                    args: {'date': AlgiersDay.display(date)},
+                  ),
+            style: text.bodySmall?.copyWith(color: context.textMuted),
           ),
           if (order.deliveryVehicle != null) ...[
             AppSpacing.gapXs,
@@ -595,8 +595,7 @@ class DeliveryLineTile extends StatelessWidget {
               context.tr(
                 'sale.free_line',
                 args: {
-                  'qty': Qty.format(form.freeQtyOf(f)),
-                  'unit': f.unitCode,
+                  'qty': Qty.withUnit(form.freeQtyOf(f), f.unitCode),
                   'name': f.designation,
                 },
               ),

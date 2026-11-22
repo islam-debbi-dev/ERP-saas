@@ -642,8 +642,7 @@ class BasketLineTile extends StatelessWidget {
               context.tr(
                 'sale.free_line',
                 args: {
-                  'qty': Qty.format(f.qty),
-                  'unit': f.unitLabel,
+                  'qty': Qty.withUnit(f.qty, f.unitLabel),
                   'name': f.designation,
                 },
               ),

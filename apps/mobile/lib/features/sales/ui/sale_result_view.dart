@@ -146,8 +146,7 @@ class _SaleResultViewState extends State<SaleResultView> {
                               ? context.tr(
                                   'sale.free_qty',
                                   args: {
-                                    'qty': Qty.format(l.qty),
-                                    'unit': l.unitLabel,
+                                    'qty': Qty.withUnit(l.qty, l.unitLabel),
                                   },
                                 )
                               : Money.ltr(
