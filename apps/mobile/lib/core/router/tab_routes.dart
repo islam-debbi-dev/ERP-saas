@@ -8,6 +8,7 @@ import '../../features/clients/ui/client_statement_screen.dart';
 import '../../features/clients/ui/clients_screen.dart';
 import '../../features/clients/ui/new_client_screen.dart';
 import '../../features/delivery/ui/deliveries_screen.dart';
+import '../../features/delivery/ui/my_deliveries_screen.dart';
 import '../../features/delivery/ui/order_delivery_screen.dart';
 import '../../features/main_screen/ui/placeholder_tab.dart';
 import '../../features/objectives/ui/objectives_screen.dart';
@@ -57,7 +58,9 @@ Widget tabPage(RoleTab tab) {
     return ClientsScreen(basePath: p);
   }
   if (p == '/seller/sell') return SellScreen(basePath: p);
-  if (p == '/seller/truck') return const TruckScreen();
+  if (p == '/seller/truck' || p == '/livreur/truck') {
+    return const TruckScreen();
+  }
   if (p == '/livreur/deliveries') {
     return DeliveriesScreen(
       tabPath: p,
@@ -67,6 +70,11 @@ Widget tabPage(RoleTab tab) {
   if (p == '/seller/more') {
     return Builder(
       builder: (context) => AccountScreen(menu: sellerMenu(context)),
+    );
+  }
+  if (p == '/livreur/more') {
+    return Builder(
+      builder: (context) => AccountScreen(menu: livreurMenu(context)),
     );
   }
   if (p.endsWith('/more')) return const AccountScreen();
@@ -96,6 +104,15 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
         builder: (_, state) =>
             OrderDeliveryScreen(orderId: state.pathParameters['orderId']!),
       ),
+    ];
+  }
+  if (tab.path == '/livreur/more') {
+    return [
+      GoRoute(
+        path: 'deliveries',
+        builder: (_, _) => const MyDeliveriesScreen(),
+      ),
+      GoRoute(path: 'payments', builder: (_, _) => const MyPaymentsScreen()),
     ];
   }
   if (tab.path == '/seller/more') {
@@ -226,6 +243,26 @@ List<MoreItem> sellerMenu(BuildContext context) {
         labelKey: 'versement.mine',
         icon: Icons.payments_outlined,
         onTap: (c) => c.push('/seller/more/payments'),
+      ),
+  ];
+}
+
+/// The livreur's "Plus" menu: his deliveries, and his versements only when
+/// PAYMENTS_CREATE was granted to him.
+List<MoreItem> livreurMenu(BuildContext context) {
+  final user = context.watch<SessionCubit>().state.user;
+  if (user == null) return const [];
+  return [
+    MoreItem(
+      labelKey: 'delivery.history',
+      icon: Icons.inventory_2_outlined,
+      onTap: (c) => c.push('/livreur/more/deliveries'),
+    ),
+    if (user.can(Permission.paymentsCreate))
+      MoreItem(
+        labelKey: 'versement.mine',
+        icon: Icons.payments_outlined,
+        onTap: (c) => c.push('/livreur/more/payments'),
       ),
   ];
 }

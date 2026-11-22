@@ -253,7 +253,10 @@ class _CashCard extends StatelessWidget {
           ),
           AppSpacing.gapSm,
           row(
-            'truck.from_sales',
+            // A livreur's cash comes from the BLs of his deliveries.
+            context.read<SessionCubit>().state.user?.role == Role.livreur
+                ? 'truck.from_deliveries'
+                : 'truck.from_sales',
             AmountText(day.expected.fromSales, style: text.bodyMedium),
           ),
           row(

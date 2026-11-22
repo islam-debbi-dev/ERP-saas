@@ -136,6 +136,18 @@ void main() {
       });
     }
 
+    testWidgets('a livreur\'s cash comes from his deliveries', (tester) async {
+      await pumpScreen(
+        tester,
+        const TruckScreen(),
+        locale: 'fr',
+        user: livreur(),
+      );
+      expect(find.text('Des livraisons'), findsOneWidget);
+      expect(find.text('Des ventes'), findsNothing);
+      expectNoOverflow(tester);
+    });
+
     testWidgets('a closed day shows the écart', (tester) async {
       body = meDayJson(closed: true);
       await pumpScreen(tester, const TruckScreen(), locale: 'fr');

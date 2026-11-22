@@ -107,6 +107,37 @@ void main() {
       expect(sessionRedirect(livreur, '/seller/sell'), '/livreur/deliveries');
     });
 
+    test('a livreur keeps to his four tabs and their screens', () {
+      final s = SessionState.signedIn(user('LIVREUR'));
+      expect(paths(user('LIVREUR')), [
+        '/livreur/deliveries',
+        '/livreur/clients',
+        '/livreur/truck',
+        '/livreur/more',
+      ]);
+      expect(sessionRedirect(s, '/livreur/deliveries/o1'), isNull);
+      expect(sessionRedirect(s, '/livreur/clients/c1/statement'), isNull);
+      expect(sessionRedirect(s, '/livreur/more/deliveries'), isNull);
+      expect(
+        sessionRedirect(s, '/seller/clients/c1/sell'),
+        '/livreur/deliveries',
+      );
+      expect(
+        sessionRedirect(s, '/supervisor/orders/o1'),
+        '/livreur/deliveries',
+      );
+    });
+
+    test('only order-taking roles take orders', () {
+      expect(user('SELLER').canTakeOrders, isTrue);
+      expect(user('SUPERVISOR').canTakeOrders, isTrue);
+      expect(user('LIVREUR').canTakeOrders, isFalse);
+      expect(
+        user('SELLER', features: const ['MOBILE_APP']).canTakeOrders,
+        isFalse,
+      );
+    });
+
     test('own tabs and common screens stay', () {
       final s = SessionState.signedIn(user('SUPERVISOR'));
       expect(sessionRedirect(s, '/supervisor/orders'), isNull);

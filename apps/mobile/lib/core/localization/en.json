@@ -408,7 +408,8 @@
     "from_versements": "From payments",
     "handed": "Handed over",
     "ecart": "Difference",
-    "cash_note": "Cash only (cheques and transfers are not counted)."
+    "cash_note": "Cash only (cheques and transfers are not counted).",
+    "from_deliveries": "From deliveries"
   },
   "objectives": {
     "title": "Objectives",
@@ -452,6 +453,8 @@
     "confirm_title": "Confirm the delivery?",
     "confirm_body": "Lines delivered: {lines}\nEstimated total: {total}\nCollected: {paid}\nThe BL is made from the truck's stock.",
     "saved_title": "Delivery saved",
-    "not_deliverable": "This order is no longer to deliver (status: {status})."
+    "not_deliverable": "This order is no longer to deliver (status: {status}).",
+    "history": "My deliveries",
+    "history_empty": "No deliveries yet"
   }
 }

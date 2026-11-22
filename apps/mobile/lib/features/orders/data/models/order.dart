@@ -154,6 +154,7 @@ class OrderSummary {
     this.lineCount = 0,
     this.shortLines = 0,
     this.deliveryVehicle,
+    this.sale,
   });
 
   final String id;
@@ -169,6 +170,10 @@ class OrderSummary {
   final int shortLines;
   @JsonKey(fromJson: _vehicleRef)
   final VehicleRef? deliveryVehicle;
+
+  /// The BL of the delivery, once delivered.
+  @JsonKey(fromJson: _docRef)
+  final DocRef? sale;
   final DateTime createdAt;
 
   factory OrderSummary.fromJson(Map<String, dynamic> json) =>

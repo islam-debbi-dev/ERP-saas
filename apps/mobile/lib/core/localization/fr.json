@@ -408,7 +408,8 @@
     "from_versements": "Des versements",
     "handed": "Montant remis",
     "ecart": "Écart",
-    "cash_note": "Espèces seulement (chèques et virements non comptés)."
+    "cash_note": "Espèces seulement (chèques et virements non comptés).",
+    "from_deliveries": "Des livraisons"
   },
   "objectives": {
     "title": "Objectifs",
@@ -452,6 +453,8 @@
     "confirm_title": "Valider la livraison ?",
     "confirm_body": "Lignes livrées : {lines}\nTotal estimé : {total}\nEncaissé : {paid}\nLe BL sera fait depuis le stock du camion.",
     "saved_title": "Livraison enregistrée",
-    "not_deliverable": "Cette commande n'est plus à livrer (statut : {status})."
+    "not_deliverable": "Cette commande n'est plus à livrer (statut : {status}).",
+    "history": "Mes livraisons",
+    "history_empty": "Aucune livraison pour l'instant"
   }
 }

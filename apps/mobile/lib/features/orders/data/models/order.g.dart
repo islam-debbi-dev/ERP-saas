@@ -73,4 +73,5 @@ OrderSummary _$OrderSummaryFromJson(Map<String, dynamic> json) => OrderSummary(
   lineCount: (json['lineCount'] as num?)?.toInt() ?? 0,
   shortLines: (json['shortLines'] as num?)?.toInt() ?? 0,
   deliveryVehicle: _vehicleRef(json['deliveryVehicle']),
+  sale: _docRef(json['sale']),
 );
