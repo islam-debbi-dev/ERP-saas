@@ -272,8 +272,8 @@
     "discount": "تخفيض",
     "discount_max": "الحد الأقصى المسموح: {max} %",
     "promo": "عرض: {name}",
-    "free_line": "مجاني: {qty} {unit} {name}",
-    "free_qty": "مجاني: {qty} {unit}",
+    "free_line": "مجاني: {qty} {name}",
+    "free_qty": "مجاني: {qty}",
     "packaging_returned": "التغليف المسترجع",
     "payment": "الدفع",
     "paid_now": "المبلغ المقبوض الآن",
@@ -408,7 +408,8 @@
     "from_versements": "من الدفعات",
     "handed": "المبلغ المسلم",
     "ecart": "الفارق",
-    "cash_note": "النقد فقط (الصكوك والتحويلات لا تحسب)."
+    "cash_note": "النقد فقط (الصكوك والتحويلات لا تحسب).",
+    "from_deliveries": "من التوصيلات"
   },
   "objectives": {
     "title": "أهدافي",
@@ -427,5 +428,33 @@
     "metric_STRIKE_RATE": "نسبة الزيارات المنتجة",
     "metric_RECOUVREMENT_PCT": "نسبة التحصيل",
     "metric_GEO_FLAGS": "تنبيهات الموقع"
+  },
+  "delivery": {
+    "title": "التوصيلات",
+    "empty_title": "لا توجد توصيلات",
+    "empty_message": "تظهر هنا الطلبيات المؤكدة المسندة إليك أو إلى شاحنتك.",
+    "stop": "المحطة {n}",
+    "off_route": "خارج جولة اليوم",
+    "line_count": "عدد الأسطر: {count}",
+    "short_lines": "مخزون غير كافٍ: {count}",
+    "deliver": "توصيل الطلبية",
+    "lines": "الكميات المسلَّمة",
+    "all": "تسليم الكل",
+    "full": "الكل",
+    "none": "لا شيء",
+    "ordered": "المطلوب: {qty}",
+    "truck_stock": "الشاحنة: {qty}",
+    "over_stock": "أكثر من مخزون الشاحنة ({qty})",
+    "qty_label": "الكمية المسلَّمة (الحد الأقصى {max})",
+    "nothing": "سلِّم سطرًا واحدًا على الأقل.",
+    "collected": "التحصيل",
+    "to_deliver_ttc": "للتسليم (شامل الرسوم)",
+    "validate": "تأكيد التسليم",
+    "confirm_title": "تأكيد التسليم؟",
+    "confirm_body": "الأسطر المسلَّمة: {lines}\nالمجموع التقديري: {total}\nالمحصَّل: {paid}\nيُنشأ وصل التسليم من مخزون الشاحنة.",
+    "saved_title": "تم تسجيل التسليم",
+    "not_deliverable": "هذه الطلبية لم تعد للتسليم (الحالة: {status}).",
+    "history": "توصيلاتي",
+    "history_empty": "لا توجد توصيلات بعد"
   }
 }

@@ -19,6 +19,10 @@ Order _$OrderFromJson(Map<String, dynamic> json) => Order(
   requestedDate: json['requestedDate'] as String?,
   note: json['note'] as String?,
   cancelReason: json['cancelReason'] as String?,
+  assujettiTva: json['assujettiTva'] as bool? ?? true,
+  livreur: _userRef(json['livreur']),
+  deliveryVehicle: _vehicleRef(json['deliveryVehicle']),
+  sale: _docRef(json['sale']),
   lines:
       (json['lines'] as List<dynamic>?)
           ?.map((e) => OrderLine.fromJson(e as Map<String, dynamic>))
@@ -43,7 +47,19 @@ OrderLine _$OrderLineFromJson(Map<String, dynamic> json) => OrderLine(
   unitPriceHt: const DecimalConverter().fromJson(json['unitPriceHt'] as String),
   discountPct: const DecimalConverter().fromJson(json['discountPct'] as String),
   lineHt: const DecimalConverter().fromJson(json['lineHt'] as String),
+  factorToBase: const DecimalConverter().fromJson(
+    json['factorToBase'] as String,
+  ),
+  tvaRate: const DecimalConverter().fromJson(json['tvaRate'] as String),
   isFree: json['isFree'] as bool? ?? false,
+  freeOfPosition: (json['freeOfPosition'] as num?)?.toInt(),
+  promotion: _promotionName(json['promotion']),
+  availableBase: const NullableDecimalConverter().fromJson(
+    json['availableBase'] as String?,
+  ),
+  qtyDelivered: const NullableDecimalConverter().fromJson(
+    json['qtyDelivered'] as String?,
+  ),
 );
 
 OrderSummary _$OrderSummaryFromJson(Map<String, dynamic> json) => OrderSummary(
@@ -55,4 +71,7 @@ OrderSummary _$OrderSummaryFromJson(Map<String, dynamic> json) => OrderSummary(
   number: json['number'] as String?,
   requestedDate: json['requestedDate'] as String?,
   lineCount: (json['lineCount'] as num?)?.toInt() ?? 0,
+  shortLines: (json['shortLines'] as num?)?.toInt() ?? 0,
+  deliveryVehicle: _vehicleRef(json['deliveryVehicle']),
+  sale: _docRef(json['sale']),
 );

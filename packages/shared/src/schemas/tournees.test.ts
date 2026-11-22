@@ -94,6 +94,18 @@ describe('deliverOrderSchema', () => {
       }).success,
     ).toBe(false);
   });
+
+  it('takes the four geo fields or none (A3)', () => {
+    const lines = [{ orderLineId: uuid, qty: '1' }];
+    const full = { lat: 36.75, lng: 3.05, accuracyM: 12, isMocked: false, capturedAt: at };
+    expect(deliverOrderSchema.safeParse({ lines }).success).toBe(true);
+    expect(deliverOrderSchema.safeParse({ lines, geo: full }).data?.geo).toMatchObject(full);
+    expect(deliverOrderSchema.safeParse({ lines, geo: { isMocked: false } }).success).toBe(true);
+    expect(
+      deliverOrderSchema.safeParse({ lines, geo: { lat: 36.75, lng: 3.05, isMocked: false } })
+        .success,
+    ).toBe(false);
+  });
 });
 
 describe('tourneeReportQuerySchema', () => {

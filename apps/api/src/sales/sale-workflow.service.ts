@@ -126,7 +126,9 @@ export class SaleWorkflowService {
    * The BL of a delivered bon de commande (phase 16), inside the order's transaction: a
    * draft at the order's frozen prices (checked at confirmation, so no override check
    * here) and with the order's seller, then the normal validation (stock, ledger, number, credit check, payment).
-   * `collectedBy` is whoever hands over the goods and takes the cash.
+   * `collectedBy` is whoever hands over the goods and takes the cash. The deliverer's
+   * position is checked on the BL like a van sale (phase 39, A3): a refusal undoes the
+   * whole delivery.
    */
   async deliverOrderInTx(
     tx: Tx,
@@ -138,7 +140,12 @@ export class SaleWorkflowService {
       collectedBy: string;
       promotions: PromotionFields[];
     },
-  ): Promise<{ saleId: string; warnings: SaleWarning[]; change: string }> {
+  ): Promise<{
+    saleId: string;
+    warnings: SaleWarning[];
+    change: string;
+    geoCheck: GeoCheckResultDto | null;
+  }> {
     const saleId = await this.sales.createDraftInTx(tx, draft, user, {
       sellerId: order.sellerId,
       promotions: order.promotions,
@@ -146,7 +153,8 @@ export class SaleWorkflowService {
     const result = await this.validateInTx(tx, saleId, payment, user, {
       collectedBy: order.collectedBy,
     });
-    return { saleId, ...result };
+    const geoCheck = await this.checkGeoInTx(tx, saleId, payment, user);
+    return { saleId, ...result, geoCheck };
   }
 
   private async validateInTx(

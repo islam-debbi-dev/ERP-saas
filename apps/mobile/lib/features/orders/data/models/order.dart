@@ -21,6 +21,10 @@ class Order {
     this.requestedDate,
     this.note,
     this.cancelReason,
+    this.assujettiTva = true,
+    this.livreur,
+    this.deliveryVehicle,
+    this.sale,
     this.lines = const [],
   });
 
@@ -28,6 +32,19 @@ class Order {
   final String? number;
   final String status;
   final OrderClient client;
+
+  /// Who delivers it, and the delivery truck it was put on (phase 36).
+  @JsonKey(fromJson: _userRef)
+  final UserRef? livreur;
+  @JsonKey(fromJson: _vehicleRef)
+  final VehicleRef? deliveryVehicle;
+
+  /// The BL of the delivery, once delivered.
+  @JsonKey(fromJson: _docRef)
+  final DocRef? sale;
+
+  /// The tenant's TVA regime when the order was priced.
+  final bool assujettiTva;
   final String? requestedDate;
   final String? note;
   @DecimalConverter()
@@ -42,6 +59,7 @@ class Order {
   final List<OrderLine> lines;
 
   bool get isDraft => status == 'DRAFT';
+  bool get isConfirmed => status == 'CONFIRMED';
 
   factory Order.fromJson(Map<String, dynamic> json) => _$OrderFromJson(json);
 }
@@ -76,7 +94,13 @@ class OrderLine {
     required this.unitPriceHt,
     required this.discountPct,
     required this.lineHt,
+    required this.factorToBase,
+    required this.tvaRate,
     this.isFree = false,
+    this.freeOfPosition,
+    this.promotion,
+    this.availableBase,
+    this.qtyDelivered,
   });
 
   final String id;
@@ -94,6 +118,24 @@ class OrderLine {
   final Decimal lineHt;
   final bool isFree;
 
+  /// A free line (UG) goes with the paid line at this position.
+  final int? freeOfPosition;
+  @JsonKey(fromJson: _promotionName)
+  final String? promotion;
+
+  /// Pieces in one unit of the line (`CRT` = 24).
+  @DecimalConverter()
+  final Decimal factorToBase;
+  @DecimalConverter()
+  final Decimal tvaRate;
+
+  /// Stock now in the dépôt or truck that delivers it (base unit), for
+  /// information: the server decides with the tenant's negative-stock rule.
+  @NullableDecimalConverter()
+  final Decimal? availableBase;
+  @NullableDecimalConverter()
+  final Decimal? qtyDelivered;
+
   factory OrderLine.fromJson(Map<String, dynamic> json) =>
       _$OrderLineFromJson(json);
 }
@@ -110,6 +152,9 @@ class OrderSummary {
     this.number,
     this.requestedDate,
     this.lineCount = 0,
+    this.shortLines = 0,
+    this.deliveryVehicle,
+    this.sale,
   });
 
   final String id;
@@ -120,8 +165,40 @@ class OrderSummary {
   @DecimalConverter()
   final Decimal totalTtc;
   final int lineCount;
+
+  /// Lines whose ordered quantity is above the delivering stock right now.
+  final int shortLines;
+  @JsonKey(fromJson: _vehicleRef)
+  final VehicleRef? deliveryVehicle;
+
+  /// The BL of the delivery, once delivered.
+  @JsonKey(fromJson: _docRef)
+  final DocRef? sale;
   final DateTime createdAt;
 
   factory OrderSummary.fromJson(Map<String, dynamic> json) =>
       _$OrderSummaryFromJson(json);
 }
+
+/// `{ id, number }` of a linked document (the BL of a delivered order).
+class DocRef {
+  const DocRef({required this.id, this.number});
+
+  final String id;
+  final String? number;
+
+  factory DocRef.fromJson(Map<String, dynamic> json) =>
+      DocRef(id: json['id'] as String, number: json['number'] as String?);
+}
+
+UserRef? _userRef(Object? json) =>
+    json == null ? null : UserRef.fromJson(json as Map<String, dynamic>);
+
+VehicleRef? _vehicleRef(Object? json) =>
+    json == null ? null : VehicleRef.fromJson(json as Map<String, dynamic>);
+
+DocRef? _docRef(Object? json) =>
+    json == null ? null : DocRef.fromJson(json as Map<String, dynamic>);
+
+String? _promotionName(Object? json) =>
+    json == null ? null : (json as Map<String, dynamic>)['name'] as String?;

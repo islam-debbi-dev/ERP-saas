@@ -272,8 +272,8 @@
     "discount": "Remise",
     "discount_max": "Maximum autorisé : {max} %",
     "promo": "Promo : {name}",
-    "free_line": "Gratuit : {qty} {unit} {name}",
-    "free_qty": "Gratuit : {qty} {unit}",
+    "free_line": "Gratuit : {qty} {name}",
+    "free_qty": "Gratuit : {qty}",
     "packaging_returned": "Emballages rendus",
     "payment": "Paiement",
     "paid_now": "Montant encaissé",
@@ -408,7 +408,8 @@
     "from_versements": "Des versements",
     "handed": "Montant remis",
     "ecart": "Écart",
-    "cash_note": "Espèces seulement (chèques et virements non comptés)."
+    "cash_note": "Espèces seulement (chèques et virements non comptés).",
+    "from_deliveries": "Des livraisons"
   },
   "objectives": {
     "title": "Objectifs",
@@ -427,5 +428,33 @@
     "metric_STRIKE_RATE": "Taux de visites productives",
     "metric_RECOUVREMENT_PCT": "Taux de recouvrement",
     "metric_GEO_FLAGS": "Alertes GPS"
+  },
+  "delivery": {
+    "title": "Livraisons",
+    "empty_title": "Aucune livraison",
+    "empty_message": "Les commandes confirmées mises sur vous ou sur votre camion apparaissent ici.",
+    "stop": "Arrêt {n}",
+    "off_route": "Hors tournée",
+    "line_count": "Lignes : {count}",
+    "short_lines": "Stock insuffisant : {count}",
+    "deliver": "Livrer la commande",
+    "lines": "Quantités livrées",
+    "all": "Tout livrer",
+    "full": "Tout",
+    "none": "Rien",
+    "ordered": "Commandé : {qty}",
+    "truck_stock": "Camion : {qty}",
+    "over_stock": "Plus que le stock du camion ({qty})",
+    "qty_label": "Quantité livrée (max {max})",
+    "nothing": "Livrez au moins une ligne.",
+    "collected": "Encaissement",
+    "to_deliver_ttc": "À livrer (TTC)",
+    "validate": "Valider la livraison",
+    "confirm_title": "Valider la livraison ?",
+    "confirm_body": "Lignes livrées : {lines}\nTotal estimé : {total}\nEncaissé : {paid}\nLe BL sera fait depuis le stock du camion.",
+    "saved_title": "Livraison enregistrée",
+    "not_deliverable": "Cette commande n'est plus à livrer (statut : {status}).",
+    "history": "Mes livraisons",
+    "history_empty": "Aucune livraison pour l'instant"
   }
 }

@@ -272,8 +272,8 @@
     "discount": "Discount",
     "discount_max": "Allowed maximum: {max} %",
     "promo": "Promo: {name}",
-    "free_line": "Free: {qty} {unit} {name}",
-    "free_qty": "Free: {qty} {unit}",
+    "free_line": "Free: {qty} {name}",
+    "free_qty": "Free: {qty}",
     "packaging_returned": "Packaging returned",
     "payment": "Payment",
     "paid_now": "Amount collected",
@@ -408,7 +408,8 @@
     "from_versements": "From payments",
     "handed": "Handed over",
     "ecart": "Difference",
-    "cash_note": "Cash only (cheques and transfers are not counted)."
+    "cash_note": "Cash only (cheques and transfers are not counted).",
+    "from_deliveries": "From deliveries"
   },
   "objectives": {
     "title": "Objectives",
@@ -427,5 +428,33 @@
     "metric_STRIKE_RATE": "Strike rate",
     "metric_RECOUVREMENT_PCT": "Recovery rate",
     "metric_GEO_FLAGS": "GPS flags"
+  },
+  "delivery": {
+    "title": "Deliveries",
+    "empty_title": "No deliveries",
+    "empty_message": "Confirmed orders put on you or on your truck show up here.",
+    "stop": "Stop {n}",
+    "off_route": "Not on today's route",
+    "line_count": "Lines: {count}",
+    "short_lines": "Short stock: {count}",
+    "deliver": "Deliver the order",
+    "lines": "Delivered quantities",
+    "all": "Deliver all",
+    "full": "All",
+    "none": "None",
+    "ordered": "Ordered: {qty}",
+    "truck_stock": "Truck: {qty}",
+    "over_stock": "More than the truck's stock ({qty})",
+    "qty_label": "Delivered quantity (max {max})",
+    "nothing": "Deliver at least one line.",
+    "collected": "Payment",
+    "to_deliver_ttc": "To deliver (incl. VAT)",
+    "validate": "Confirm delivery",
+    "confirm_title": "Confirm the delivery?",
+    "confirm_body": "Lines delivered: {lines}\nEstimated total: {total}\nCollected: {paid}\nThe BL is made from the truck's stock.",
+    "saved_title": "Delivery saved",
+    "not_deliverable": "This order is no longer to deliver (status: {status}).",
+    "history": "My deliveries",
+    "history_empty": "No deliveries yet"
   }
 }

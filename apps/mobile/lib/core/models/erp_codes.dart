@@ -14,6 +14,10 @@ class Role {
   /// Roles that use the phone app. Owners and managers use the web dashboard.
   static const fieldRoles = {seller, livreur, supervisor, storekeeper};
 
+  /// Field roles that take bons de commande (`POST /orders` is for SELLERS
+  /// and the planners in tournees.controllers.ts); a livreur only delivers.
+  static const orderTakers = {seller, supervisor};
+
   static const officeRoles = {owner, manager};
 }
 

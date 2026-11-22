@@ -18,9 +18,13 @@ class SaleResultView extends StatefulWidget {
     required this.result,
     this.onDone,
     this.justSaved = true,
+    this.title,
   });
 
   final SaleResult result;
+
+  /// The app bar title; by default "Vente enregistrée" or "Document".
+  final String? title;
 
   /// False when opening a past sale (no "saved" title, no check mark).
   final bool justSaved;
@@ -57,7 +61,10 @@ class _SaleResultViewState extends State<SaleResultView> {
       appBar: AppBar(
         automaticallyImplyLeading: widget.onDone == null,
         title: Text(
-          context.tr(widget.justSaved ? 'sale.saved_title' : 'sale.document'),
+          widget.title ??
+              context.tr(
+                widget.justSaved ? 'sale.saved_title' : 'sale.document',
+              ),
         ),
       ),
       bottomNavigationBar: SafeArea(
@@ -139,8 +146,7 @@ class _SaleResultViewState extends State<SaleResultView> {
                               ? context.tr(
                                   'sale.free_qty',
                                   args: {
-                                    'qty': Qty.format(l.qty),
-                                    'unit': l.unitLabel,
+                                    'qty': Qty.withUnit(l.qty, l.unitLabel),
                                   },
                                 )
                               : Money.ltr(

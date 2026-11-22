@@ -466,7 +466,7 @@ export class OrdersService {
       });
       const deliveryVehicleId =
         blWarehouse?.type === WarehouseType.VEHICLE ? warehouseId : order.deliveryVehicleId;
-      const { saleId, warnings, change } = await this.workflow.deliverOrderInTx(
+      const { saleId, warnings, change, geoCheck } = await this.workflow.deliverOrderInTx(
         tx,
         {
           type: SaleType.BL,
@@ -524,7 +524,7 @@ export class OrdersService {
           })),
         },
       });
-      return { saleId, warnings, change };
+      return { saleId, warnings, change, geoCheck };
     });
     const [order, sale] = await Promise.all([
       this.get(id, user),
@@ -538,6 +538,7 @@ export class OrdersService {
       sale: { id: sale.id, number: sale.number, totalTtc: toMoneyString(sale.totalTtc.toString()) },
       warnings: result.warnings,
       change: result.change,
+      geoCheck: result.geoCheck,
     };
   }
 

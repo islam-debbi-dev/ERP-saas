@@ -7,11 +7,15 @@ import '../../features/clients/ui/client_detail_screen.dart';
 import '../../features/clients/ui/client_statement_screen.dart';
 import '../../features/clients/ui/clients_screen.dart';
 import '../../features/clients/ui/new_client_screen.dart';
+import '../../features/delivery/ui/deliveries_screen.dart';
+import '../../features/delivery/ui/my_deliveries_screen.dart';
+import '../../features/delivery/ui/order_delivery_screen.dart';
 import '../../features/main_screen/ui/placeholder_tab.dart';
 import '../../features/objectives/ui/objectives_screen.dart';
 import '../../features/orders/ui/my_orders_screen.dart';
 import '../../features/payments/ui/my_payments_screen.dart';
 import '../../features/payments/ui/versement_screen.dart';
+import '../models/auth_user.dart';
 import '../models/erp_codes.dart';
 import '../session/session_cubit.dart';
 import '../../features/sales/logic/basket.dart';
@@ -50,12 +54,27 @@ Widget tabPage(RoleTab tab) {
       ),
     );
   }
-  if (p == '/seller/clients') return ClientsScreen(basePath: p);
+  if (p == '/seller/clients' || p == '/livreur/clients') {
+    return ClientsScreen(basePath: p);
+  }
   if (p == '/seller/sell') return SellScreen(basePath: p);
-  if (p == '/seller/truck') return const TruckScreen();
+  if (p == '/seller/truck' || p == '/livreur/truck') {
+    return const TruckScreen();
+  }
+  if (p == '/livreur/deliveries') {
+    return DeliveriesScreen(
+      tabPath: p,
+      onOpenOrder: (context, order) => context.push('$p/${order.id}'),
+    );
+  }
   if (p == '/seller/more') {
     return Builder(
       builder: (context) => AccountScreen(menu: sellerMenu(context)),
+    );
+  }
+  if (p == '/livreur/more') {
+    return Builder(
+      builder: (context) => AccountScreen(menu: livreurMenu(context)),
     );
   }
   if (p.endsWith('/more')) return const AccountScreen();
@@ -65,7 +84,9 @@ Widget tabPage(RoleTab tab) {
 /// Screens under a tab (`<tab>/:id`...). Their paths start with the tab's,
 /// so `RoleScreens.allows` keeps them to the tab's role.
 List<RouteBase> tabSubRoutes(RoleTab tab) {
-  if (tab.path == '/seller/clients') return clientRoutes(tab.path);
+  if (tab.path == '/seller/clients' || tab.path == '/livreur/clients') {
+    return clientRoutes(tab.path);
+  }
   if (tab.path == '/seller/today') {
     return [clientDetailRoute(tab.path, prefix: 'client/')];
   }
@@ -73,6 +94,25 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
     return [
       _saleRoute('new'),
       _saleRoute('order', mode: SaleMode.order, needsClient: true),
+    ];
+  }
+  if (tab.path == '/livreur/deliveries') {
+    return [
+      GoRoute(
+        path: ':orderId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (_, state) =>
+            OrderDeliveryScreen(orderId: state.pathParameters['orderId']!),
+      ),
+    ];
+  }
+  if (tab.path == '/livreur/more') {
+    return [
+      GoRoute(
+        path: 'deliveries',
+        builder: (_, _) => const MyDeliveriesScreen(),
+      ),
+      GoRoute(path: 'payments', builder: (_, _) => const MyPaymentsScreen()),
     ];
   }
   if (tab.path == '/seller/more') {
@@ -114,7 +154,13 @@ GoRoute clientDetailRoute(String base, {String prefix = ''}) => GoRoute(
     GoRoute(
       path: 'versement',
       parentNavigatorKey: rootNavigatorKey,
-      redirect: _needsClient,
+      redirect: (context, state) =>
+          _needsRight(
+            context,
+            state,
+            (u) => u.can(Permission.paymentsCreate),
+          ) ??
+          _needsClient(context, state),
       builder: (_, state) =>
           VersementScreen(client: state.extra! as BasketClient),
     ),
@@ -135,10 +181,32 @@ GoRoute _saleRoute(
 }) => GoRoute(
   path: path,
   parentNavigatorKey: rootNavigatorKey,
-  redirect: needsClient ? _needsClient : null,
+  redirect: (context, state) =>
+      _needsRight(
+        context,
+        state,
+        (u) => mode == SaleMode.order
+            ? u.canTakeOrders
+            : u.can(Permission.salesCreate),
+      ) ??
+      (needsClient ? _needsClient(context, state) : null),
   builder: (_, state) =>
       SaleScreen(client: state.extra as BasketClient?, mode: mode),
 );
+
+/// A form the user has no right to (a livreur on `…/sell`, a seller whose
+/// PAYMENTS_CREATE was revoked on `…/versement`) goes back to the parent
+/// screen. The API refuses it anyway; this keeps the phone from offering it.
+String? _needsRight(
+  BuildContext context,
+  GoRouterState state,
+  bool Function(AuthUser user) allowed,
+) {
+  final user = context.read<SessionCubit>().state.user;
+  if (user != null && allowed(user)) return null;
+  final path = state.uri.path;
+  return path.substring(0, path.lastIndexOf('/'));
+}
 
 /// A form that needs its client as `extra`: a deep link without one goes
 /// back to the parent screen.
@@ -175,6 +243,26 @@ List<MoreItem> sellerMenu(BuildContext context) {
         labelKey: 'versement.mine',
         icon: Icons.payments_outlined,
         onTap: (c) => c.push('/seller/more/payments'),
+      ),
+  ];
+}
+
+/// The livreur's "Plus" menu: his deliveries, and his versements only when
+/// PAYMENTS_CREATE was granted to him.
+List<MoreItem> livreurMenu(BuildContext context) {
+  final user = context.watch<SessionCubit>().state.user;
+  if (user == null) return const [];
+  return [
+    MoreItem(
+      labelKey: 'delivery.history',
+      icon: Icons.inventory_2_outlined,
+      onTap: (c) => c.push('/livreur/more/deliveries'),
+    ),
+    if (user.can(Permission.paymentsCreate))
+      MoreItem(
+        labelKey: 'versement.mine',
+        icon: Icons.payments_outlined,
+        onTap: (c) => c.push('/livreur/more/payments'),
       ),
   ];
 }

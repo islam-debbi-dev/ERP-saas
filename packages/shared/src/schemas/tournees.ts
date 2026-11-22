@@ -314,6 +314,11 @@ export const deliverOrderSchema = z.object({
   forceCredit: z.boolean().default(false),
   /** Empties the client hands back at delivery (phase 20, PACKAGING). */
   packagingReturned: packagingReturnedSchema,
+  /**
+   * Device position when the BL is validated (phase 39, A3; GEO_CHECK), checked like a
+   * van sale: field roles only, FLAG / BLOCK per the tenant.
+   */
+  geo: geoInputSchema.optional(),
 });
 export type DeliverOrderInput = z.infer<typeof deliverOrderSchema>;
 
@@ -426,6 +431,8 @@ export interface DeliverOrderResultDto {
   sale: { id: string; number: string | null; totalTtc: string };
   warnings: SaleWarning[];
   change: string;
+  /** The position check of the delivery (phase 39, A3); absent when not checked. */
+  geoCheck?: GeoCheckResultDto | null;
 }
 
 // ---------------------------------------------------------------- clôture de tournée

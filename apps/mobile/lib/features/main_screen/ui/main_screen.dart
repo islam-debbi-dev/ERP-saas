@@ -6,6 +6,7 @@ import '../../../core/di/dependency_injection.dart';
 import '../../../core/helpers/connectivity_services.dart';
 import '../../../core/localization/tr.dart';
 import '../../../core/router/role_screens.dart';
+import '../../../core/router/tab_badges.dart';
 import '../../../core/session/session_cubit.dart';
 import 'widgets/custom_bottom_navigation.dart';
 import 'widgets/no_connection_banner.dart';
@@ -88,13 +89,22 @@ class _MainScreenState extends State<MainScreen> {
               right: 0,
               child: visible.length < 2
                   ? const SizedBox.shrink()
-                  : CustomBottomNavigation(
-                      items: [
-                        for (final t in visible)
-                          NavItem(icon: t.icon, label: context.tr(t.labelKey)),
-                      ],
-                      currentIndex: current < 0 ? 0 : current,
-                      onItemTapped: (i) => _onTab(branches[i]),
+                  : ListenableBuilder(
+                      listenable: Listenable.merge([
+                        for (final t in visible) TabBadges.of(t.path),
+                      ]),
+                      builder: (context, _) => CustomBottomNavigation(
+                        items: [
+                          for (final t in visible)
+                            NavItem(
+                              icon: t.icon,
+                              label: context.tr(t.labelKey),
+                              badge: TabBadges.of(t.path).value,
+                            ),
+                        ],
+                        currentIndex: current < 0 ? 0 : current,
+                        onItemTapped: (i) => _onTab(branches[i]),
+                      ),
                     ),
             ),
           ],
