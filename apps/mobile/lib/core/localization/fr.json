@@ -427,5 +427,14 @@
     "metric_STRIKE_RATE": "Taux de visites productives",
     "metric_RECOUVREMENT_PCT": "Taux de recouvrement",
     "metric_GEO_FLAGS": "Alertes GPS"
+  },
+  "delivery": {
+    "title": "Livraisons",
+    "empty_title": "Aucune livraison",
+    "empty_message": "Les commandes confirmées mises sur vous ou sur votre camion apparaissent ici.",
+    "stop": "Arrêt {n}",
+    "off_route": "Hors tournée",
+    "line_count": "Lignes : {count}",
+    "short_lines": "Stock insuffisant : {count}"
   }
 }

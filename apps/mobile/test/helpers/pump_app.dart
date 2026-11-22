@@ -46,6 +46,28 @@ AuthUser seller({
   features: features,
 );
 
+/// A livreur of the demo tenant: VIEW_ALL only by default (he collects
+/// through the delivery); [permissions] adds grants.
+AuthUser livreur({
+  List<String> permissions = const [],
+  List<String> features = const [
+    Feature.mobileApp,
+    Feature.tournees,
+    Feature.warehouses,
+    Feature.geoCheck,
+    Feature.packaging,
+  ],
+}) => AuthUser(
+  id: 'livreur-1',
+  fullName: 'Samir Livreur',
+  role: Role.livreur,
+  tenantId: 't',
+  tenantName: 'Grossiste Demo',
+  edition: 'DISTRIBUTION',
+  permissions: permissions,
+  features: features,
+);
+
 /// A session already signed in as [user]; never touches storage or network.
 class FakeSession extends SessionCubit {
   FakeSession(AuthUser user) : super(AuthRepository(ApiClient(dio: Dio()))) {

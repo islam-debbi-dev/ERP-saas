@@ -9,6 +9,7 @@ import '../models/erp_codes.dart';
 import '../network/api_error.dart';
 import '../network/api_result.dart';
 import '../network/auth_interceptor.dart';
+import '../router/tab_badges.dart';
 import 'session_state.dart';
 import 'user_cache.dart';
 
@@ -106,6 +107,7 @@ class SessionCubit extends Cubit<SessionState> {
   Future<void> logout() async {
     await _auth.logout();
     await _cache.clear();
+    TabBadges.reset();
     emit(const SessionState.signedOut());
   }
 

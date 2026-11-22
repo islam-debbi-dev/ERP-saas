@@ -427,5 +427,14 @@
     "metric_STRIKE_RATE": "نسبة الزيارات المنتجة",
     "metric_RECOUVREMENT_PCT": "نسبة التحصيل",
     "metric_GEO_FLAGS": "تنبيهات الموقع"
+  },
+  "delivery": {
+    "title": "التوصيلات",
+    "empty_title": "لا توجد توصيلات",
+    "empty_message": "تظهر هنا الطلبيات المؤكدة المسندة إليك أو إلى شاحنتك.",
+    "stop": "المحطة {n}",
+    "off_route": "خارج جولة اليوم",
+    "line_count": "عدد الأسطر: {count}",
+    "short_lines": "مخزون غير كافٍ: {count}"
   }
 }

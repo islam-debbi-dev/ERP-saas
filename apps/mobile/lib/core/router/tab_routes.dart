@@ -7,6 +7,7 @@ import '../../features/clients/ui/client_detail_screen.dart';
 import '../../features/clients/ui/client_statement_screen.dart';
 import '../../features/clients/ui/clients_screen.dart';
 import '../../features/clients/ui/new_client_screen.dart';
+import '../../features/delivery/ui/deliveries_screen.dart';
 import '../../features/main_screen/ui/placeholder_tab.dart';
 import '../../features/objectives/ui/objectives_screen.dart';
 import '../../features/orders/ui/my_orders_screen.dart';
@@ -53,6 +54,7 @@ Widget tabPage(RoleTab tab) {
   if (p == '/seller/clients') return ClientsScreen(basePath: p);
   if (p == '/seller/sell') return SellScreen(basePath: p);
   if (p == '/seller/truck') return const TruckScreen();
+  if (p == '/livreur/deliveries') return DeliveriesScreen(tabPath: p);
   if (p == '/seller/more') {
     return Builder(
       builder: (context) => AccountScreen(menu: sellerMenu(context)),

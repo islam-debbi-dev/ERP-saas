@@ -8,9 +8,12 @@ import '../../../../core/theme/app_theme.dart';
 
 /// One entry of the bottom bar.
 class NavItem {
-  const NavItem({required this.icon, required this.label});
+  const NavItem({required this.icon, required this.label, this.badge = 0});
   final IconData icon;
   final String label;
+
+  /// A count on the icon (e.g. deliveries left); 0 shows none.
+  final int badge;
 }
 
 /// Floating bottom bar: a pill with a soft shadow, the active tab in the
@@ -46,13 +49,34 @@ class CustomBottomNavigation extends StatelessWidget {
     // Keeps the bar a comfortable width on tablets instead of stretching.
     final double maxBarWidth = Responsive.isTablet(context) ? 520 : 600;
 
-    GButton tab(IconData icon, String text) => GButton(
-      icon: icon,
-      text: text,
+    final Color activeIcon = isDarkMode
+        ? AppColors.onPrimary
+        : AppColors.accent;
+
+    GButton tab(NavItem item, bool active) => GButton(
+      icon: item.icon,
+      // With a count, the icon is drawn here with its badge (GNav then uses
+      // this widget instead of its own animated icon).
+      leading: item.badge <= 0
+          ? null
+          : Badge(
+              label: Text(
+                item.badge > 99 ? '99+' : '${item.badge}',
+                textDirection: TextDirection.ltr,
+              ),
+              child: Icon(
+                item.icon,
+                size: 22,
+                color: active ? activeIcon : inactiveIcon,
+              ),
+            ),
+      text: item.label,
       iconColor: inactiveIcon,
-      iconActiveColor: isDarkMode ? AppColors.onPrimary : AppColors.accent,
+      iconActiveColor: activeIcon,
       textColor: activeContent,
-      semanticLabel: text,
+      semanticLabel: item.badge <= 0
+          ? item.label
+          : '${item.label} (${item.badge})',
     );
 
     // Bottom inset only: the bar sits at the screen bottom, and a top inset
@@ -91,7 +115,10 @@ class CustomBottomNavigation extends StatelessWidget {
                   tabBackgroundColor: activePill,
                   color: inactiveIcon,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  tabs: [for (final item in items) tab(item.icon, item.label)],
+                  tabs: [
+                    for (var i = 0; i < items.length; i++)
+                      tab(items[i], i == currentIndex),
+                  ],
                   selectedIndex: currentIndex,
                   onTabChange: onItemTapped,
                 ),

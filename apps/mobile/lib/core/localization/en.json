@@ -427,5 +427,14 @@
     "metric_STRIKE_RATE": "Strike rate",
     "metric_RECOUVREMENT_PCT": "Recovery rate",
     "metric_GEO_FLAGS": "GPS flags"
+  },
+  "delivery": {
+    "title": "Deliveries",
+    "empty_title": "No deliveries",
+    "empty_message": "Confirmed orders put on you or on your truck show up here.",
+    "stop": "Stop {n}",
+    "off_route": "Not on today's route",
+    "line_count": "Lines: {count}",
+    "short_lines": "Short stock: {count}"
   }
 }
