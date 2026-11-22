@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 
 import '../../features/auth/data/repo/auth_repository.dart';
 import '../../features/catalog/data/repo/catalog_repository.dart';
+import '../../features/controls/data/controls_repository.dart';
 import '../../features/objectives/data/objectives.dart';
 import '../../features/team/data/team_repository.dart';
 import '../../features/team_orders/data/team_orders_repository.dart';
@@ -60,6 +61,9 @@ Future<void> setupGetIt() async {
   getIt.registerLazySingleton<TruckRepository>(() => TruckRepository(getIt()));
 
   getIt.registerLazySingleton<TeamRepository>(() => TeamRepository(getIt()));
+  getIt.registerLazySingleton<ControlsRepository>(
+    () => ControlsRepository(getIt()),
+  );
   getIt.registerLazySingleton<TeamOrdersRepository>(
     () => TeamOrdersRepository(getIt(), getIt(), getIt()),
   );

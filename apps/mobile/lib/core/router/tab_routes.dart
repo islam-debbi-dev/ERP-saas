@@ -7,6 +7,7 @@ import '../../features/clients/ui/client_detail_screen.dart';
 import '../../features/clients/ui/client_statement_screen.dart';
 import '../../features/clients/ui/clients_screen.dart';
 import '../../features/clients/ui/new_client_screen.dart';
+import '../../features/controls/ui/controls_screen.dart';
 import '../../features/delivery/ui/deliveries_screen.dart';
 import '../../features/delivery/ui/my_deliveries_screen.dart';
 import '../../features/delivery/ui/order_delivery_screen.dart';
@@ -78,6 +79,7 @@ Widget tabPage(RoleTab tab) {
     );
   }
   if (p == '/supervisor/orders') return TeamOrdersScreen(tabPath: p);
+  if (p == '/supervisor/controls') return const ControlsScreen();
   if (p == '/seller/more') {
     return Builder(
       builder: (context) => AccountScreen(menu: sellerMenu(context)),
