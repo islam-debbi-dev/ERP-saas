@@ -361,5 +361,28 @@
     "share_receipt": "Share receipt",
     "mine": "My payments",
     "none": "No payments"
+  },
+  "visit": {
+    "title": "Visit outcome",
+    "end": "End the visit",
+    "save": "Save the visit",
+    "saved": "Visit saved",
+    "outcome_SALE": "Sale",
+    "outcome_ORDER": "Order",
+    "outcome_PAYMENT_ONLY": "Payment only",
+    "outcome_NO_SALE": "No sale",
+    "needs_document_SALE": "Make a sale first",
+    "needs_document_ORDER": "Take an order first",
+    "needs_document_PAYMENT_ONLY": "Record a payment first",
+    "reason": "Reason",
+    "reason_CLOSED": "Closed",
+    "reason_HAS_STOCK": "Has stock",
+    "reason_NO_MONEY": "No money",
+    "reason_REFUSED": "Refused",
+    "reason_OTHER": "Other",
+    "note_required": "Note (required)",
+    "error_reason": "Choose a reason",
+    "error_note": "Add a note for \"Other\"",
+    "error_document": "No document for this outcome"
   }
 }

@@ -16,8 +16,9 @@ import '../../logic/client_detail_cubit.dart';
 List<Widget> clientActions(
   BuildContext context,
   Client client,
-  String clientPath,
-) {
+  String clientPath, {
+  void Function(Object doc)? onDocument,
+}) {
   final user = context.watch<SessionCubit>().state.user;
   if (user == null) return const [];
   Future<void> open(String sub) async {
@@ -26,6 +27,7 @@ List<Widget> clientActions(
       extra: basketClientOf(client),
     );
     if (done != null && context.mounted) {
+      onDocument?.call(done);
       await context.read<ClientDetailCubit>().load();
     }
   }

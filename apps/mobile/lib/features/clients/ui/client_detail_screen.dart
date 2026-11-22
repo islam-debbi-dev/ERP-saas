@@ -17,6 +17,11 @@ import '../../../core/network/api_result.dart';
 import '../../../core/network/error_messages.dart';
 import '../../../core/paging/load_cubit.dart';
 import '../../../core/session/session_cubit.dart';
+import '../../orders/data/models/order.dart';
+import '../../payments/data/models/payment.dart';
+import '../../sales/data/models/sale.dart';
+import '../../visits/logic/visit_form.dart';
+import '../../visits/ui/visit_sheet.dart';
 import '../data/models/client.dart';
 import '../data/repo/clients_repository.dart';
 import '../logic/client_detail_cubit.dart';
@@ -25,15 +30,57 @@ import 'widgets/client_actions.dart';
 /// A client: balance and plafond, call / WhatsApp, the field actions (sale,
 /// order, versement, visit), unpaid documents, last sales, statement, and
 /// the GPS point. [basePath] is the client's own path (`/seller/clients/:id`).
-class ClientDetailScreen extends StatelessWidget {
+class ClientDetailScreen extends StatefulWidget {
   const ClientDetailScreen({
     super.key,
     required this.clientId,
     required this.basePath,
+    this.visit,
   });
 
   final String clientId;
   final String basePath;
+
+  /// Opened from a stop of today's route (route, start, today's documents);
+  /// otherwise the visit starts when the screen opens.
+  final VisitStart? visit;
+
+  @override
+  State<ClientDetailScreen> createState() => _ClientDetailScreenState();
+}
+
+class _ClientDetailScreenState extends State<ClientDetailScreen> {
+  late final VisitStart _start =
+      widget.visit ?? VisitStart(startedAt: DateTime.now());
+  late VisitDocs _docs = _start.docs;
+
+  String get clientId => widget.clientId;
+  String get basePath => widget.basePath;
+
+  /// A sale, order or versement made from this screen: the visit links it.
+  void _onDocument(Object doc) {
+    setState(() {
+      _docs = switch (doc) {
+        SaleResult(:final sale) => _docs.merge(saleId: sale.id),
+        Order(:final id) => _docs.merge(orderId: id),
+        Payment(:final id) => _docs.merge(paymentId: id),
+        _ => _docs,
+      };
+    });
+  }
+
+  Future<void> _endVisit() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final saved = await showVisitSheet(
+      context,
+      clientId: clientId,
+      start: _start,
+      docs: _docs,
+    );
+    if (saved == null || !mounted) return;
+    messenger.showSnackBar(SnackBar(content: Text(context.tr('visit.saved'))));
+    if (Navigator.of(context).canPop()) Navigator.of(context).pop(saved);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +102,12 @@ class ClientDetailScreen extends StatelessWidget {
             skeleton: const ListSkeleton(rows: 4, rowHeight: 96),
             builder: (context, detail) => RefreshIndicator(
               onRefresh: context.read<ClientDetailCubit>().load,
-              child: _DetailBody(detail: detail, basePath: basePath),
+              child: _DetailBody(
+                detail: detail,
+                basePath: basePath,
+                onDocument: _onDocument,
+                onEndVisit: _endVisit,
+              ),
             ),
           ),
         ),
@@ -65,10 +117,17 @@ class ClientDetailScreen extends StatelessWidget {
 }
 
 class _DetailBody extends StatelessWidget {
-  const _DetailBody({required this.detail, required this.basePath});
+  const _DetailBody({
+    required this.detail,
+    required this.basePath,
+    required this.onDocument,
+    required this.onEndVisit,
+  });
 
   final ClientDetail detail;
   final String basePath;
+  final void Function(Object doc) onDocument;
+  final VoidCallback onEndVisit;
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +135,13 @@ class _DetailBody extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final user = context.watch<SessionCubit>().state.user;
     final hasGeo = user?.hasFeature(Feature.geoCheck) ?? false;
-    final actions = clientActions(context, client, basePath);
+    final actions = clientActions(
+      context,
+      client,
+      basePath,
+      onDocument: onDocument,
+    );
+    final canVisit = user?.hasFeature(Feature.tournees) ?? false;
     return ListView(
       padding: const EdgeInsetsDirectional.fromSTEB(
         AppSpacing.lg,
@@ -94,6 +159,17 @@ class _DetailBody extends StatelessWidget {
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             children: actions,
+          ),
+        ],
+        if (canVisit) ...[
+          AppSpacing.gapMd,
+          OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(AppSpacing.minTouch),
+            ),
+            onPressed: onEndVisit,
+            icon: const Icon(Icons.flag_outlined),
+            label: Text(context.tr('visit.end')),
           ),
         ],
         AppSpacing.gapXl,

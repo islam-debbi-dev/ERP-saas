@@ -361,5 +361,28 @@
     "share_receipt": "مشاركة الوصل",
     "mine": "دفعاتي",
     "none": "لا توجد دفعات"
+  },
+  "visit": {
+    "title": "نتيجة الزيارة",
+    "end": "إنهاء الزيارة",
+    "save": "حفظ الزيارة",
+    "saved": "تم حفظ الزيارة",
+    "outcome_SALE": "بيع",
+    "outcome_ORDER": "طلبية",
+    "outcome_PAYMENT_ONLY": "دفعة فقط",
+    "outcome_NO_SALE": "بدون بيع",
+    "needs_document_SALE": "قم ببيع أولا",
+    "needs_document_ORDER": "سجل طلبية أولا",
+    "needs_document_PAYMENT_ONLY": "سجل دفعة أولا",
+    "reason": "السبب",
+    "reason_CLOSED": "مغلق",
+    "reason_HAS_STOCK": "لديه مخزون",
+    "reason_NO_MONEY": "لا يملك المال",
+    "reason_REFUSED": "رفض",
+    "reason_OTHER": "آخر",
+    "note_required": "ملاحظة (إجبارية)",
+    "error_reason": "اختر السبب",
+    "error_note": "اكتب ملاحظة للسبب «آخر»",
+    "error_document": "لا توجد وثيقة لهذه النتيجة"
   }
 }

@@ -361,5 +361,28 @@
     "share_receipt": "Partager le reçu",
     "mine": "Mes versements",
     "none": "Aucun versement"
+  },
+  "visit": {
+    "title": "Résultat de la visite",
+    "end": "Terminer la visite",
+    "save": "Enregistrer la visite",
+    "saved": "Visite enregistrée",
+    "outcome_SALE": "Vente",
+    "outcome_ORDER": "Commande",
+    "outcome_PAYMENT_ONLY": "Versement seul",
+    "outcome_NO_SALE": "Pas de vente",
+    "needs_document_SALE": "Faites d'abord une vente",
+    "needs_document_ORDER": "Prenez d'abord une commande",
+    "needs_document_PAYMENT_ONLY": "Enregistrez d'abord un versement",
+    "reason": "Motif",
+    "reason_CLOSED": "Fermé",
+    "reason_HAS_STOCK": "A du stock",
+    "reason_NO_MONEY": "Pas d'argent",
+    "reason_REFUSED": "Refus",
+    "reason_OTHER": "Autre",
+    "note_required": "Note (obligatoire)",
+    "error_reason": "Choisissez un motif",
+    "error_note": "Ajoutez une note pour « Autre »",
+    "error_document": "Aucun document pour ce résultat"
   }
 }

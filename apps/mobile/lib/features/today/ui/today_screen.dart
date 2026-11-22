@@ -19,7 +19,9 @@ import '../data/repo/today_repository.dart';
 class TodayScreen extends StatelessWidget {
   const TodayScreen({super.key, this.onOpenClient, this.onOpenClients});
 
-  final void Function(BuildContext context, TodayStop stop)? onOpenClient;
+  /// Opens the client of a stop; the day reloads when it comes back.
+  final Future<Object?> Function(BuildContext context, TodayStop stop)?
+  onOpenClient;
 
   /// Without TOURNEES there is no tournée: the empty state points here.
   final VoidCallback? onOpenClients;
@@ -50,7 +52,8 @@ class TodayScreen extends StatelessWidget {
 class _TodayBody extends StatelessWidget {
   const _TodayBody({this.onOpenClient});
 
-  final void Function(BuildContext context, TodayStop stop)? onOpenClient;
+  final Future<Object?> Function(BuildContext context, TodayStop stop)?
+  onOpenClient;
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +91,10 @@ class _TodayBody extends StatelessWidget {
                     stop: today.stops[i],
                     onTap: onOpenClient == null
                         ? null
-                        : () => onOpenClient!(context, today.stops[i]),
+                        : () async {
+                            await onOpenClient!(context, today.stops[i]);
+                            await cubit.load();
+                          },
                   ),
                   AppSpacing.gapSm,
                 ],

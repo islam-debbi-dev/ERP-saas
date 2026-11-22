@@ -17,6 +17,7 @@ import '../../features/sales/logic/basket.dart';
 import '../../features/sales/ui/sale_screen.dart';
 import '../../features/sales/ui/sell_screen.dart';
 import '../../features/today/ui/today_screen.dart';
+import '../../features/visits/logic/visit_form.dart';
 import 'role_screens.dart';
 
 /// The root navigator: forms pushed on it cover the bottom bar, so their
@@ -30,8 +31,18 @@ Widget tabPage(RoleTab tab) {
   if (p == '/seller/today') {
     return Builder(
       builder: (context) => TodayScreen(
-        onOpenClient: (context, stop) =>
-            context.push('/seller/clients/${stop.client.id}'),
+        onOpenClient: (context, stop) => context.push(
+          '/seller/today/client/${stop.client.id}',
+          extra: VisitStart(
+            startedAt: DateTime.now(),
+            routeId: stop.routeId,
+            docs: VisitDocs(
+              saleId: stop.today.saleId,
+              orderId: stop.today.orderId,
+              paymentId: stop.today.paymentId,
+            ),
+          ),
+        ),
         onOpenClients: () => context.go('/seller/clients'),
       ),
     );
@@ -51,6 +62,9 @@ Widget tabPage(RoleTab tab) {
 /// so `RoleScreens.allows` keeps them to the tab's role.
 List<RouteBase> tabSubRoutes(RoleTab tab) {
   if (tab.path == '/seller/clients') return clientRoutes(tab.path);
+  if (tab.path == '/seller/today') {
+    return [clientDetailRoute(tab.path, prefix: 'client/')];
+  }
   if (tab.path == '/seller/sell') {
     return [
       _saleRoute('new'),
@@ -73,30 +87,38 @@ List<RouteBase> clientRoutes(String base) => [
     parentNavigatorKey: rootNavigatorKey,
     builder: (_, _) => const NewClientScreen(),
   ),
-  GoRoute(
-    path: ':clientId',
-    builder: (_, state) {
-      final id = state.pathParameters['clientId']!;
-      return ClientDetailScreen(clientId: id, basePath: '$base/$id');
-    },
-    routes: [
-      _saleRoute('sell', needsClient: true),
-      _saleRoute('order', mode: SaleMode.order, needsClient: true),
-      GoRoute(
-        path: 'versement',
-        parentNavigatorKey: rootNavigatorKey,
-        redirect: _needsClient,
-        builder: (_, state) =>
-            VersementScreen(client: state.extra! as BasketClient),
-      ),
-      GoRoute(
-        path: 'statement',
-        builder: (_, state) =>
-            ClientStatementScreen(clientId: state.pathParameters['clientId']!),
-      ),
-    ],
-  ),
+  clientDetailRoute(base),
 ];
+
+/// A client and its actions at `[base]/[prefix]:clientId`; Today opens its
+/// stops at `/seller/today/client/:clientId` so they stay in that tab.
+GoRoute clientDetailRoute(String base, {String prefix = ''}) => GoRoute(
+  path: '$prefix:clientId',
+  builder: (_, state) {
+    final id = state.pathParameters['clientId']!;
+    return ClientDetailScreen(
+      clientId: id,
+      basePath: '$base/$prefix$id',
+      visit: state.extra is VisitStart ? state.extra! as VisitStart : null,
+    );
+  },
+  routes: [
+    _saleRoute('sell', needsClient: true),
+    _saleRoute('order', mode: SaleMode.order, needsClient: true),
+    GoRoute(
+      path: 'versement',
+      parentNavigatorKey: rootNavigatorKey,
+      redirect: _needsClient,
+      builder: (_, state) =>
+          VersementScreen(client: state.extra! as BasketClient),
+    ),
+    GoRoute(
+      path: 'statement',
+      builder: (_, state) =>
+          ClientStatementScreen(clientId: state.pathParameters['clientId']!),
+    ),
+  ],
+);
 
 /// The basket of a sale or an order; `extra` is the [BasketClient]
 /// (none = vente comptoir, only from the Vendre tab).
