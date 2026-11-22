@@ -299,7 +299,10 @@
     "warning_CREDIT_LIMIT": "Warning: credit limit exceeded",
     "warning_PACKAGING_NEGATIVE": "Warning: more packaging returned than recorded",
     "mode_direct": "Van sale",
-    "mode_order": "Order"
+    "mode_order": "Order",
+    "mine": "My sales",
+    "none": "No sales",
+    "document": "Delivery note"
   },
   "payment": {
     "mode_ESPECES": "Cash",
@@ -406,5 +409,23 @@
     "handed": "Handed over",
     "ecart": "Difference",
     "cash_note": "Cash only (cheques and transfers are not counted)."
+  },
+  "objectives": {
+    "title": "Objectives",
+    "header": "Period {period} · {days} days left",
+    "updated": "Last updated at {time}",
+    "none": "No objectives this month",
+    "team": "Team",
+    "hidden": "Values hidden",
+    "remaining": "{value} to the next step",
+    "metric_CA_HT": "Revenue excl. tax",
+    "metric_QTY": "Quantity sold",
+    "metric_ENCAISSEMENT": "Collections",
+    "metric_MARGE": "Margin",
+    "metric_NEW_CLIENTS": "New clients",
+    "metric_VISITS": "Visits",
+    "metric_STRIKE_RATE": "Strike rate",
+    "metric_RECOUVREMENT_PCT": "Recovery rate",
+    "metric_GEO_FLAGS": "GPS flags"
   }
 }

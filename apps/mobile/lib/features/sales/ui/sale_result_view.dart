@@ -13,9 +13,17 @@ import 'widgets/doc_status_chip.dart';
 /// The BL as the API saved it (never the phone's preview), with
 /// "Partager PDF". Also used to open a past sale.
 class SaleResultView extends StatefulWidget {
-  const SaleResultView({super.key, required this.result, this.onDone});
+  const SaleResultView({
+    super.key,
+    required this.result,
+    this.onDone,
+    this.justSaved = true,
+  });
 
   final SaleResult result;
+
+  /// False when opening a past sale (no "saved" title, no check mark).
+  final bool justSaved;
 
   /// "Terminé": back to where the sale started.
   final VoidCallback? onDone;
@@ -48,7 +56,9 @@ class _SaleResultViewState extends State<SaleResultView> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: widget.onDone == null,
-        title: Text(context.tr('sale.saved_title')),
+        title: Text(
+          context.tr(widget.justSaved ? 'sale.saved_title' : 'sale.document'),
+        ),
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
@@ -86,8 +96,10 @@ class _SaleResultViewState extends State<SaleResultView> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.check_circle, color: AppColors.success),
-                    AppSpacing.gapSm,
+                    if (widget.justSaved) ...[
+                      const Icon(Icons.check_circle, color: AppColors.success),
+                      AppSpacing.gapSm,
+                    ],
                     Expanded(
                       child: Text(
                         sale.number ?? '—',

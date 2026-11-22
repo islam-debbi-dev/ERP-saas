@@ -299,7 +299,10 @@
     "warning_CREDIT_LIMIT": "تنبيه: تم تجاوز سقف الكريدي",
     "warning_PACKAGING_NEGATIVE": "تنبيه: تغليف مسترجع أكثر من المسجل",
     "mode_direct": "بيع مباشر",
-    "mode_order": "طلبية"
+    "mode_order": "طلبية",
+    "mine": "مبيعاتي",
+    "none": "لا توجد مبيعات",
+    "document": "وصل التسليم"
   },
   "payment": {
     "mode_ESPECES": "نقدا",
@@ -406,5 +409,23 @@
     "handed": "المبلغ المسلم",
     "ecart": "الفارق",
     "cash_note": "النقد فقط (الصكوك والتحويلات لا تحسب)."
+  },
+  "objectives": {
+    "title": "أهدافي",
+    "header": "الفترة {period} · بقي {days} يوم",
+    "updated": "آخر تحديث على {time}",
+    "none": "لا توجد أهداف لهذا الشهر",
+    "team": "الفريق",
+    "hidden": "القيم مخفية",
+    "remaining": "بقي {value} للمرحلة التالية",
+    "metric_CA_HT": "رقم الأعمال خارج الرسم",
+    "metric_QTY": "الكمية المباعة",
+    "metric_ENCAISSEMENT": "التحصيل",
+    "metric_MARGE": "الهامش",
+    "metric_NEW_CLIENTS": "زبائن جدد",
+    "metric_VISITS": "الزيارات",
+    "metric_STRIKE_RATE": "نسبة الزيارات المنتجة",
+    "metric_RECOUVREMENT_PCT": "نسبة التحصيل",
+    "metric_GEO_FLAGS": "تنبيهات الموقع"
   }
 }

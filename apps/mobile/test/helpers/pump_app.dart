@@ -6,12 +6,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:orvynt_starter/core/localization/app_localizations.dart';
+import 'package:orvynt_starter/core/localization/locale_cubit.dart';
 import 'package:orvynt_starter/core/models/auth_user.dart';
 import 'package:orvynt_starter/core/models/erp_codes.dart';
 import 'package:orvynt_starter/core/network/api_client.dart';
 import 'package:orvynt_starter/core/session/session_cubit.dart';
 import 'package:orvynt_starter/core/session/session_state.dart';
 import 'package:orvynt_starter/core/theme/app_theme_light.dart';
+import 'package:orvynt_starter/core/theme/cubit/theme_cubit.dart';
 import 'package:orvynt_starter/features/auth/data/repo/auth_repository.dart';
 
 /// A seller of the demo tenant with the DISTRIBUTION modules.
@@ -76,8 +78,14 @@ Future<void> pumpScreen(
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
-    BlocProvider<SessionCubit>(
-      create: (_) => FakeSession(user ?? seller()),
+    MultiBlocProvider(
+      providers: [
+        BlocProvider<SessionCubit>(
+          create: (_) => FakeSession(user ?? seller()),
+        ),
+        BlocProvider(create: (_) => ThemeCubit(ThemeMode.light)),
+        BlocProvider(create: (_) => LocaleCubit(Locale(locale))),
+      ],
       child: ScreenUtilInit(
         designSize: const Size(375, 812),
         minTextAdapt: true,

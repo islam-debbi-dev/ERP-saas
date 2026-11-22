@@ -299,7 +299,10 @@
     "warning_CREDIT_LIMIT": "Attention : plafond de crédit dépassé",
     "warning_PACKAGING_NEGATIVE": "Attention : plus d'emballages rendus qu'enregistrés",
     "mode_direct": "Vente directe",
-    "mode_order": "Commande"
+    "mode_order": "Commande",
+    "mine": "Mes ventes",
+    "none": "Aucune vente",
+    "document": "Bon de livraison"
   },
   "payment": {
     "mode_ESPECES": "Espèces",
@@ -406,5 +409,23 @@
     "handed": "Montant remis",
     "ecart": "Écart",
     "cash_note": "Espèces seulement (chèques et virements non comptés)."
+  },
+  "objectives": {
+    "title": "Objectifs",
+    "header": "Période {period} · {days} jours restants",
+    "updated": "Dernière mise à jour à {time}",
+    "none": "Aucun objectif ce mois-ci",
+    "team": "Équipe",
+    "hidden": "Valeurs masquées",
+    "remaining": "Encore {value} pour le palier suivant",
+    "metric_CA_HT": "CA HT",
+    "metric_QTY": "Quantité vendue",
+    "metric_ENCAISSEMENT": "Encaissement",
+    "metric_MARGE": "Marge",
+    "metric_NEW_CLIENTS": "Nouveaux clients",
+    "metric_VISITS": "Visites",
+    "metric_STRIKE_RATE": "Taux de visites productives",
+    "metric_RECOUVREMENT_PCT": "Taux de recouvrement",
+    "metric_GEO_FLAGS": "Alertes GPS"
   }
 }

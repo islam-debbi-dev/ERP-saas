@@ -8,12 +8,14 @@ import '../../features/clients/ui/client_statement_screen.dart';
 import '../../features/clients/ui/clients_screen.dart';
 import '../../features/clients/ui/new_client_screen.dart';
 import '../../features/main_screen/ui/placeholder_tab.dart';
+import '../../features/objectives/ui/objectives_screen.dart';
 import '../../features/orders/ui/my_orders_screen.dart';
 import '../../features/payments/ui/my_payments_screen.dart';
 import '../../features/payments/ui/versement_screen.dart';
 import '../models/erp_codes.dart';
 import '../session/session_cubit.dart';
 import '../../features/sales/logic/basket.dart';
+import '../../features/sales/ui/my_sales_screen.dart';
 import '../../features/sales/ui/sale_screen.dart';
 import '../../features/sales/ui/sell_screen.dart';
 import '../../features/today/ui/today_screen.dart';
@@ -77,6 +79,8 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
     return [
       GoRoute(path: 'orders', builder: (_, _) => const MyOrdersScreen()),
       GoRoute(path: 'payments', builder: (_, _) => const MyPaymentsScreen()),
+      GoRoute(path: 'sales', builder: (_, _) => const MySalesScreen()),
+      GoRoute(path: 'objectives', builder: (_, _) => const ObjectivesScreen()),
     ];
   }
   return const [];
@@ -149,6 +153,17 @@ List<MoreItem> sellerMenu(BuildContext context) {
   final user = context.watch<SessionCubit>().state.user;
   if (user == null) return const [];
   return [
+    if (user.hasFeature(Feature.incentives))
+      MoreItem(
+        labelKey: 'objectives.title',
+        icon: Icons.flag_outlined,
+        onTap: (c) => c.push('/seller/more/objectives'),
+      ),
+    MoreItem(
+      labelKey: 'sale.mine',
+      icon: Icons.receipt_outlined,
+      onTap: (c) => c.push('/seller/more/sales'),
+    ),
     if (user.hasFeature(Feature.tournees))
       MoreItem(
         labelKey: 'order.mine',
