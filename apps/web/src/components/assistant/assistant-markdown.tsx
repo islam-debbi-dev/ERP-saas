@@ -7,13 +7,13 @@ import { splitAmounts } from './split-amounts';
 
 const ALLOWED = ['p', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'br', 'code'];
 
-/** Keeps every amount of a block readable inside right-to-left text. */
+/** Keeps every amount and date of a block readable inside right-to-left text. */
 function withAmounts(children: ReactNode): ReactNode {
   return Children.map(children, (child) =>
     typeof child !== 'string'
       ? child
       : splitAmounts(child).map((part, i) =>
-          part.amount ? (
+          part.kind !== 'text' ? (
             <bdi key={i} dir="ltr" className="num whitespace-nowrap">
               {part.text}
             </bdi>
