@@ -50,6 +50,11 @@ List<RouteBase> _subRoutes(String tab, GlobalKey<NavigatorState> root) =>
         GoRoute(path: 'assistant', builder: (_, _) => const _Page('assistant')),
       ],
       '/livreur/deliveries' => [
+        // M6: the map sheet's "Ouvrir la fiche".
+        GoRoute(
+          path: 'client/:clientId',
+          builder: (_, _) => const _Page('delivery-client'),
+        ),
         GoRoute(
           path: ':orderId',
           parentNavigatorKey: root,
@@ -67,6 +72,10 @@ List<RouteBase> _subRoutes(String tab, GlobalKey<NavigatorState> root) =>
           path: ':sellerId',
           builder: (_, _) => const _Page('member-day', action: true),
         ),
+      ],
+      // M6: the team's client map.
+      '/supervisor/controls' => [
+        GoRoute(path: 'map', builder: (_, _) => const _Page('team-map')),
       ],
       '/supervisor/more' => [
         GoRoute(
@@ -319,6 +328,18 @@ void main() {
           '/supervisor/more',
           '/supervisor/more/objectives',
           'team-objectives',
+        ),
+        (
+          'supervisor',
+          '/supervisor/controls',
+          '/supervisor/controls/map',
+          'team-map',
+        ),
+        (
+          'livreur',
+          '/livreur/deliveries',
+          '/livreur/deliveries/client/c1',
+          'delivery-client',
         ),
         (
           'storekeeper',
