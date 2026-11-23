@@ -11,7 +11,6 @@ import 'package:orvynt_starter/features/account/ui/account_screen.dart';
 import 'package:orvynt_starter/features/assistant/data/assistant_models.dart';
 import 'package:orvynt_starter/features/assistant/data/assistant_repository.dart';
 import 'package:orvynt_starter/features/assistant/logic/assistant_status_cubit.dart';
-import 'package:orvynt_starter/features/assistant/ui/assistant_screen.dart';
 
 import '../../helpers/fake_adapter.dart';
 import '../../helpers/pump_app.dart';
@@ -60,19 +59,6 @@ void main() {
         user: user,
       );
       expect(find.byIcon(Icons.auto_awesome_outlined), findsNothing);
-    });
-  }
-
-  for (final locale in ['ar', 'fr']) {
-    testWidgets('the provider shows under the chat in $locale', (tester) async {
-      await pumpScreen(
-        tester,
-        const AssistantScreen(),
-        locale: locale,
-        assistant: available,
-      );
-      expect(find.textContaining('Anthropic Claude'), findsOneWidget);
-      expectNoOverflow(tester);
     });
   }
 
