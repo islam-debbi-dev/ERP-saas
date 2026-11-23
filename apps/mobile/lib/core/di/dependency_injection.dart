@@ -22,6 +22,7 @@ import '../../features/today/data/repo/today_repository.dart';
 import '../geo/geo_service.dart';
 import '../helpers/connectivity_services.dart';
 import '../localization/localization_service.dart';
+import '../map/client_map_repository.dart';
 import '../network/api_client.dart';
 import '../service/dio_generate.dart';
 import '../session/session_cubit.dart';
@@ -70,6 +71,9 @@ Future<void> setupGetIt() async {
   );
   getIt.registerLazySingleton<InventoriesRepository>(
     () => InventoriesRepository(getIt()),
+  );
+  getIt.registerLazySingleton<ClientMapRepository>(
+    () => ClientMapRepository(getIt()),
   );
   getIt.registerLazySingleton<ControlsRepository>(
     () => ControlsRepository(getIt()),

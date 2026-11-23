@@ -7,21 +7,33 @@ import '../../../core/components/widgets/load_state_view.dart';
 import '../../../core/di/dependency_injection.dart';
 import '../../../core/design/design.dart';
 import '../../../core/localization/tr.dart';
+import '../../../core/map/map_list_toggle.dart';
 import '../../../core/models/erp_codes.dart';
 import '../../../core/paging/load_cubit.dart';
 import '../../../core/session/session_cubit.dart';
 import '../data/models/today.dart';
 import '../data/repo/today_repository.dart';
+import 'today_map.dart';
 
 /// "Aujourd'hui": the seller's truck and today's stops in route order, with
 /// each client's balance and whether he was visited. Tapping a stop opens the
-/// client ([onOpenClient]).
+/// client ([onOpenClient]). With GEO_CHECK a Liste / Carte toggle shows the
+/// same day on a map.
 class TodayScreen extends StatelessWidget {
-  const TodayScreen({super.key, this.onOpenClient, this.onOpenClients});
+  const TodayScreen({
+    super.key,
+    this.onOpenClient,
+    this.onOpenClients,
+    this.onOpenClientId,
+  });
 
   /// Opens the client of a stop; the day reloads when it comes back.
   final Future<Object?> Function(BuildContext context, TodayStop stop)?
   onOpenClient;
+
+  /// Opens a client of the map's "Clients" layer (not a stop of today).
+  final Future<Object?> Function(BuildContext context, String clientId)?
+  onOpenClientId;
 
   /// Without TOURNEES there is no tournée: the empty state points here.
   final VoidCallback? onOpenClients;
@@ -36,7 +48,11 @@ class TodayScreen extends StatelessWidget {
           ? BlocProvider(
               create: (_) =>
                   LoadCubit<Today>(getIt<TodayRepository>().today)..load(),
-              child: _TodayBody(onOpenClient: onOpenClient),
+              child: _TodayBody(
+                onOpenClient: onOpenClient,
+                onOpenClientId: onOpenClientId,
+                withMap: user?.hasFeature(Feature.geoCheck) ?? false,
+              ),
             )
           : AppEmptyState(
               icon: Icons.route_outlined,
@@ -49,61 +65,142 @@ class TodayScreen extends StatelessWidget {
   }
 }
 
-class _TodayBody extends StatelessWidget {
-  const _TodayBody({this.onOpenClient});
+class _TodayBody extends StatefulWidget {
+  const _TodayBody({
+    this.onOpenClient,
+    this.onOpenClientId,
+    this.withMap = false,
+  });
 
   final Future<Object?> Function(BuildContext context, TodayStop stop)?
   onOpenClient;
+  final Future<Object?> Function(BuildContext context, String clientId)?
+  onOpenClientId;
+
+  /// GEO_CHECK: the Liste / Carte toggle shows.
+  final bool withMap;
+
+  @override
+  State<_TodayBody> createState() => _TodayBodyState();
+}
+
+class _TodayBodyState extends State<_TodayBody> {
+  ListOrMap _view = ListOrMap.list;
+
+  /// The map is built the first time it is shown, then kept (as the list).
+  bool _mapBuilt = false;
+
+  Future<void> _openStop(TodayStop stop) async {
+    final open = widget.onOpenClient;
+    if (open == null) return;
+    final cubit = context.read<LoadCubit<Today>>();
+    await open(context, stop);
+    await cubit.load();
+  }
+
+  Future<void> _openClient(String id) async {
+    final open = widget.onOpenClientId;
+    if (open == null) return;
+    final cubit = context.read<LoadCubit<Today>>();
+    await open(context, id);
+    await cubit.load();
+  }
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<LoadCubit<Today>>();
-    return BlocBuilder<LoadCubit<Today>, LoadState<Today>>(
+    final content = BlocBuilder<LoadCubit<Today>, LoadState<Today>>(
       builder: (context, state) => LoadStateView<Today>(
         state: state,
         onRetry: cubit.load,
         skeleton: const ListSkeleton(),
-        builder: (context, today) => RefreshIndicator(
-          onRefresh: cubit.load,
-          child: ListView(
-            padding: const EdgeInsetsDirectional.fromSTEB(
-              AppSpacing.lg,
-              AppSpacing.md,
-              AppSpacing.lg,
-              AppSpacing.navClearance,
+        builder: (context, today) => IndexedStack(
+          index: _view == ListOrMap.list ? 0 : 1,
+          sizing: StackFit.expand,
+          children: [
+            _TodayList(
+              today: today,
+              onRefresh: cubit.load,
+              onOpenStop: widget.onOpenClient == null ? null : _openStop,
             ),
-            children: [
-              TodayHeader(today: today),
-              AppSpacing.gapLg,
-              if (today.stops.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: AppSpacing.xl),
-                  child: AppEmptyState(
-                    icon: Icons.event_available_outlined,
-                    title: context.tr('today.no_stops_title'),
-                    message: context.tr('today.no_stops_message'),
-                  ),
-                )
-              else
-                for (var i = 0; i < today.stops.length; i++) ...[
-                  StopTile(
-                    index: i + 1,
-                    stop: today.stops[i],
-                    onTap: onOpenClient == null
-                        ? null
-                        : () async {
-                            await onOpenClient!(context, today.stops[i]);
-                            await cubit.load();
-                          },
-                  ),
-                  AppSpacing.gapSm,
-                ],
-            ],
-          ),
+            if (_mapBuilt)
+              TodayMap(
+                today: today,
+                onRefresh: cubit.load,
+                onOpenStop: widget.onOpenClient == null ? null : _openStop,
+                onOpenClient: widget.onOpenClientId == null
+                    ? null
+                    : _openClient,
+              )
+            else
+              const SizedBox.shrink(),
+          ],
         ),
       ),
     );
+    if (!widget.withMap) return content;
+    return Column(
+      children: [
+        MapListToggle(
+          value: _view,
+          onChanged: (v) => setState(() {
+            _view = v;
+            if (v == ListOrMap.map) _mapBuilt = true;
+          }),
+        ),
+        Expanded(child: content),
+      ],
+    );
   }
+}
+
+class _TodayList extends StatelessWidget {
+  const _TodayList({
+    required this.today,
+    required this.onRefresh,
+    this.onOpenStop,
+  });
+
+  final Today today;
+  final Future<void> Function() onRefresh;
+  final Future<void> Function(TodayStop stop)? onOpenStop;
+
+  @override
+  Widget build(BuildContext context) => RefreshIndicator(
+    onRefresh: onRefresh,
+    child: ListView(
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.lg,
+        AppSpacing.navClearance,
+      ),
+      children: [
+        TodayHeader(today: today),
+        AppSpacing.gapLg,
+        if (today.stops.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: AppSpacing.xl),
+            child: AppEmptyState(
+              icon: Icons.event_available_outlined,
+              title: context.tr('today.no_stops_title'),
+              message: context.tr('today.no_stops_message'),
+            ),
+          )
+        else
+          for (var i = 0; i < today.stops.length; i++) ...[
+            StopTile(
+              index: i + 1,
+              stop: today.stops[i],
+              onTap: onOpenStop == null
+                  ? null
+                  : () => onOpenStop!(today.stops[i]),
+            ),
+            AppSpacing.gapSm,
+          ],
+      ],
+    ),
+  );
 }
 
 /// Truck chip and the visited / planned progress.

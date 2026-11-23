@@ -4,6 +4,7 @@ import 'package:orvynt_starter/core/design/design.dart';
 import 'package:orvynt_starter/core/di/dependency_injection.dart';
 import 'package:orvynt_starter/core/models/erp_codes.dart';
 import 'package:orvynt_starter/features/controls/data/controls_repository.dart';
+import 'package:orvynt_starter/features/controls/ui/control_maps.dart';
 import 'package:orvynt_starter/features/controls/ui/controls_screen.dart';
 
 import '../../helpers/fake_adapter.dart';
@@ -174,10 +175,20 @@ void main() {
           locale: locale,
           user: supervisor(),
         );
-        expect(find.byType(LocationRequestCard), findsNWidgets(2));
+        // Each card has its mini map: the second one is below the fold.
+        expect(
+          find.byType(LocationRequestCard, skipOffstage: false),
+          findsNWidgets(2),
+        );
+        expect(
+          find.byType(LocationRequestMap, skipOffstage: false),
+          findsNWidgets(2),
+        );
         // canDecide: false hides both buttons of the second request.
-        expect(find.byType(AppButton), findsNWidgets(2));
+        expect(find.byType(AppButton, skipOffstage: false), findsNWidgets(2));
         expectNoOverflow(tester);
+        await tester.ensureVisible(find.byType(AppButton).last);
+        await tester.pumpAndSettle();
         await tester.tap(find.byType(AppButton).last);
         await tester.pumpAndSettle();
         expect(find.byType(AlertDialog), findsOneWidget);
@@ -198,6 +209,8 @@ void main() {
           locale: locale,
           user: supervisor(),
         );
+        await tester.ensureVisible(find.byType(AppButton).first);
+        await tester.pumpAndSettle();
         await tester.tap(find.byType(AppButton).first);
         await tester.pumpAndSettle();
         await tester.enterText(
@@ -222,15 +235,17 @@ void main() {
         );
         await tester.tap(find.byType(AppChoiceChip).at(1));
         await tester.pumpAndSettle();
-        expect(find.byType(GeoFlagCard), findsNWidgets(2));
+        expect(find.byType(GeoFlagCard, skipOffstage: false), findsNWidgets(2));
+        expect(find.byType(GeoFlagMap, skipOffstage: false), findsNWidgets(2));
         // No verdict: no button at all on a flag, and no review call.
         expect(
           find.descendant(
-            of: find.byType(GeoFlagCard),
+            of: find.byType(GeoFlagCard, skipOffstage: false),
             matching: find.byWidgetPredicate(
               (w) =>
                   w is ButtonStyleButton || w is AppButton || w is IconButton,
             ),
+            skipOffstage: false,
           ),
           findsNothing,
         );

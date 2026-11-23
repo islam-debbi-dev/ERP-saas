@@ -117,6 +117,10 @@ class GeoFlagItem {
     this.accuracyM,
     this.note,
     this.flags = const [],
+    this.lat,
+    this.lng,
+    this.clientLat,
+    this.clientLng,
   });
 
   final String id;
@@ -134,6 +138,16 @@ class GeoFlagItem {
 
   /// NONE until a manager gives the verdict.
   final String reviewStatus;
+
+  /// Where the operation was made (null without a fix) and the client's
+  /// saved point (null when he has none): the API sends both.
+  final double? lat;
+  final double? lng;
+  final double? clientLat;
+  final double? clientLng;
+
+  bool get hasPoint => lat != null && lng != null;
+  bool get hasClientPoint => clientLat != null && clientLng != null;
 
   factory GeoFlagItem.fromJson(Map<String, dynamic> json) {
     final client = json['client'] as Map<String, dynamic>?;
@@ -153,6 +167,10 @@ class GeoFlagItem {
       ],
       note: json['note'] as String?,
       reviewStatus: json['reviewStatus'] as String? ?? 'NONE',
+      lat: _num(json['lat']),
+      lng: _num(json['lng']),
+      clientLat: _num(client?['lat']),
+      clientLng: _num(client?['lng']),
     );
   }
 }
