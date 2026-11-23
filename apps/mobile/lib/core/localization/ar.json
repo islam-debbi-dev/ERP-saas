@@ -113,7 +113,9 @@
     "WAREHOUSE_NOT_FOUND": "الشاحنة أو المستودع غير موجود.",
     "WAREHOUSE_INVALID": "لا يمكن تعيين سائق لهذه الشاحنة (معطلة أو مؤرشفة).",
     "ORDER_NOT_FOUND": "طلب الشراء غير موجود.",
-    "GEO_REQUEST_NOT_PENDING": "تمت معالجة هذا الطلب بالفعل."
+    "GEO_REQUEST_NOT_PENDING": "تمت معالجة هذا الطلب بالفعل.",
+    "AI_INVALID_KEY": "رفض المزوّد مفتاح API.",
+    "AI_MODEL_NOT_FOUND": "هذا النموذج غير موجود عند المزوّد."
   },
   "help": {
     "title": "مركز المساعدة",
@@ -595,8 +597,57 @@
   },
   "assistant": {
     "title": "المساعد",
-    "soon_title": "قريبًا",
-    "soon_message": "سيجيب المساعد عن أسئلتك حول الفريق والمبيعات والصندوق في الإصدار القادم."
+    "new_conversation": "محادثة جديدة",
+    "history": "السجل",
+    "history_empty": "لا توجد محادثات بعد.",
+    "load_more": "عرض المزيد",
+    "delete_conversation": "حذف المحادثة {title}",
+    "delete_confirm_title": "حذف هذه المحادثة؟",
+    "delete_confirm_message": "ستختفي من السجل نهائيا.",
+    "delete": "حذف",
+    "empty_title": "كيف يمكنني مساعدتك؟",
+    "empty_help": "اسأل بالعربية أو الدارجة أو الفرنسية.",
+    "input_label": "سؤالك",
+    "input_placeholder": "اكتب سؤالك",
+    "send": "إرسال",
+    "stop": "إيقاف",
+    "thinking": "أفكر…",
+    "truncated": "الجواب تقطع. اطلب الباقي.",
+    "stream_cut": "انقطع الاتصال قبل نهاية الجواب. أعد المحاولة.",
+    "useful": "جواب مفيد",
+    "not_useful": "جواب غير مفيد",
+    "feedback_failed": "لم يتم حفظ رأيك. أعد المحاولة.",
+    "notice": "الأجوبة من إنتاج الذكاء الاصطناعي: {provider}. راجع الأرقام المهمة.",
+    "quota_reset": "ترجع يوم {date}.",
+    "open_in_browser": "يفتح في المتصفح",
+    "provider": {
+      "ANTHROPIC": "Anthropic Claude",
+      "GEMINI": "Google Gemini",
+      "OPENAI_COMPATIBLE": "متوافق مع OpenAI"
+    },
+    "tool": {
+      "search_clients": "نحوس على الزبون…",
+      "client_balance": "نقرا حساب الزبون…",
+      "search_products": "نحوس على المنتوج…",
+      "product_stock": "نشوف الستوك…",
+      "sales_summary": "نحسب المبيعات…",
+      "clients_to_remind": "نحوس على الزبائن اللي لازم نفكرهم…",
+      "find_document": "نحوس على الوثيقة…"
+    },
+    "suggest": {
+      "seller_sales": "قداش بعت هاد السمانة؟",
+      "seller_remind": "شكون الزبائن اللي لازم نفكرهم؟",
+      "seller_howto": "كيفاش ندير بيعة مباشرة من الكاميون؟",
+      "livreur_deliver": "كيفاش نسلم طلبية؟",
+      "livreur_collect": "كيفاش نقبض الدراهم عند التسليم؟",
+      "livreur_document": "واش حالة الطلبية هادي؟",
+      "supervisor_sales": "قداش باع الفريق تاعي هاد السمانة؟",
+      "supervisor_remind": "شكون الزبائن اللي لازم نفكرهم؟",
+      "supervisor_howto": "كيفاش نسكر صندوق تاع بياع؟",
+      "storekeeper_stock": "شحال كاين في الستوك من هاد المنتوج؟",
+      "storekeeper_load": "كيفاش نصادق على شحن الكاميون؟",
+      "storekeeper_count": "كيفاش ندير جرد؟"
+    }
   },
   "transfer": {
     "title": "الشحن",

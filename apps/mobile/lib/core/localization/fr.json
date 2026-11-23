@@ -113,7 +113,9 @@
     "WAREHOUSE_NOT_FOUND": "Camion ou dépôt introuvable.",
     "WAREHOUSE_INVALID": "Ce camion ne peut pas recevoir de chauffeur (désactivé ou archivé).",
     "ORDER_NOT_FOUND": "Bon de commande introuvable.",
-    "GEO_REQUEST_NOT_PENDING": "Cette demande a déjà été traitée."
+    "GEO_REQUEST_NOT_PENDING": "Cette demande a déjà été traitée.",
+    "AI_INVALID_KEY": "La clé API est refusée par le fournisseur.",
+    "AI_MODEL_NOT_FOUND": "Ce modèle n'existe pas chez le fournisseur."
   },
   "help": {
     "title": "Centre d'aide",
@@ -595,8 +597,57 @@
   },
   "assistant": {
     "title": "Assistant",
-    "soon_title": "Bientôt disponible",
-    "soon_message": "L'assistant répondra à vos questions sur l'équipe, les ventes et la caisse dans la prochaine version."
+    "new_conversation": "Nouvelle conversation",
+    "history": "Historique",
+    "history_empty": "Aucune conversation pour le moment.",
+    "load_more": "Afficher plus",
+    "delete_conversation": "Supprimer la conversation {title}",
+    "delete_confirm_title": "Supprimer cette conversation ?",
+    "delete_confirm_message": "Elle disparaîtra de l'historique.",
+    "delete": "Supprimer",
+    "empty_title": "Comment puis-je vous aider ?",
+    "empty_help": "Posez une question en arabe, en darja ou en français.",
+    "input_label": "Votre question",
+    "input_placeholder": "Écrivez votre question",
+    "send": "Envoyer",
+    "stop": "Arrêter",
+    "thinking": "Je réfléchis…",
+    "truncated": "Réponse tronquée. Demandez la suite.",
+    "stream_cut": "La connexion a été coupée avant la fin de la réponse. Réessayez.",
+    "useful": "Réponse utile",
+    "not_useful": "Réponse pas utile",
+    "feedback_failed": "Votre avis n'a pas été enregistré. Réessayez.",
+    "notice": "Les réponses sont générées par une IA : {provider}. Vérifiez les chiffres importants.",
+    "quota_reset": "Elles reviennent le {date}.",
+    "open_in_browser": "S'ouvre dans le navigateur",
+    "provider": {
+      "ANTHROPIC": "Anthropic Claude",
+      "GEMINI": "Google Gemini",
+      "OPENAI_COMPATIBLE": "Compatible OpenAI"
+    },
+    "tool": {
+      "search_clients": "Je consulte les clients…",
+      "client_balance": "Je consulte le compte du client…",
+      "search_products": "Je consulte les produits…",
+      "product_stock": "Je consulte le stock…",
+      "sales_summary": "Je consulte les ventes…",
+      "clients_to_remind": "Je consulte les clients à relancer…",
+      "find_document": "Je consulte le document…"
+    },
+    "suggest": {
+      "seller_sales": "Combien j'ai vendu cette semaine ?",
+      "seller_remind": "Quels clients dois-je relancer ?",
+      "seller_howto": "Comment faire une vente directe depuis le camion ?",
+      "livreur_deliver": "Comment livrer une commande ?",
+      "livreur_collect": "Comment encaisser à la livraison ?",
+      "livreur_document": "Où en est cette commande ?",
+      "supervisor_sales": "Combien mon équipe a vendu cette semaine ?",
+      "supervisor_remind": "Quels clients faut-il relancer ?",
+      "supervisor_howto": "Comment clôturer la caisse d'un vendeur ?",
+      "storekeeper_stock": "Quel est le stock de ce produit ?",
+      "storekeeper_load": "Comment valider un chargement ?",
+      "storekeeper_count": "Comment faire un inventaire ?"
+    }
   },
   "transfer": {
     "title": "Chargements",

@@ -1,5 +1,7 @@
 import 'package:get_it/get_it.dart';
 
+import '../../features/assistant/data/assistant_repository.dart';
+import '../../features/assistant/logic/assistant_status_cubit.dart';
 import '../../features/auth/data/repo/auth_repository.dart';
 import '../../features/catalog/data/repo/catalog_repository.dart';
 import '../../features/controls/data/controls_repository.dart';
@@ -81,4 +83,10 @@ Future<void> setupGetIt() async {
 
   // ── App-wide state ──────────────────────────────────────────────────────
   getIt.registerLazySingleton<SessionCubit>(() => SessionCubit(getIt()));
+  getIt.registerLazySingleton<AssistantRepository>(
+    () => AssistantRepository(getIt()),
+  );
+  getIt.registerLazySingleton<AssistantStatusCubit>(
+    () => AssistantStatusCubit(getIt(), getIt()),
+  );
 }

@@ -74,6 +74,8 @@ class ErrorMessages {
     'AI_DAILY_LIMIT',
     'AI_NOT_CONFIGURED',
     'AI_UNAVAILABLE',
+    'AI_INVALID_KEY',
+    'AI_MODEL_NOT_FOUND',
   };
 
   /// The i18n key for [error], or null when the API's message must be shown.
