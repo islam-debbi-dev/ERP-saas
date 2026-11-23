@@ -42,6 +42,7 @@ import { ScopeService } from '../sales-force/scope.service';
 import { StockService } from '../stock/stock.service';
 import { VehiclesService } from '../stock/vehicles.service';
 import { WarehousesService } from '../stock/warehouses.service';
+import { assertTeamMember, tourneeSellerIds } from './tournee-scope';
 
 const orderInclude = {
   client: { select: { id: true, code: true, name: true, phone: true } },
@@ -337,6 +338,7 @@ export class OrdersService {
               userId: livreurId,
             });
           }
+          await assertTeamMember(this.scope, user, livreurId, 'livreurId', tx);
         }
       }
       await tx.order.update({
@@ -623,10 +625,18 @@ export class OrdersService {
     };
   }
 
-  /** Live users an order can be put on: livreurs, and sellers who deliver themselves. */
-  async deliverers(): Promise<DelivererDto[]> {
+  /**
+   * Live users an order can be put on: livreurs, and sellers who deliver themselves.
+   * A supervisor gets only his team's (the same rule as assignLivreur).
+   */
+  async deliverers(user: CurrentUserInfo): Promise<DelivererDto[]> {
+    const team = await tourneeSellerIds(this.scope, user);
     const users = await this.prisma.db.user.findMany({
-      where: { deletedAt: null, role: { in: [...DELIVERING_ROLES] } },
+      where: {
+        deletedAt: null,
+        role: { in: [...DELIVERING_ROLES] },
+        ...(team ? { id: { in: team } } : {}),
+      },
       select: { id: true, fullName: true, role: true },
       orderBy: [{ role: 'asc' }, { fullName: 'asc' }],
     });

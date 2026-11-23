@@ -423,6 +423,64 @@ describe('stock', () => {
     await as(keeper).post(`/inventories/${inv.id}/validate`).expect(403);
   });
 
+  it('a count is blind without STOCK_ADJUST; the server still computes the écart', async () => {
+    const email = uniqueEmail('magasinier');
+    await asTenant(a.tenantId, async () =>
+      t.prisma.db.user.create({
+        data: {
+          tenantId: a.tenantId,
+          email,
+          passwordHash: await argon2.hash('Password123!'),
+          fullName: 'Mag aveugle',
+          role: 'STOREKEEPER',
+        },
+      }),
+    );
+    const login = await t
+      .http()
+      .post('/auth/login')
+      .send({ email, password: 'Password123!' })
+      .expect(200);
+    const keeper = { ...a, auth: login.body as AuthResponse & { refreshToken: string } };
+    const p = await createProduct(t, a, catA);
+    await as(a)
+      .post('/stock/opening', {
+        lines: [{ productId: p.id, unitId: p.baseUnitId, qty: '5', unitCost: '10' }],
+      })
+      .expect(201);
+    const blind = (lines: InventoryDto['lines']) =>
+      lines.map((l) => [l.countedQtyBase, l.expectedQtyBase, l.diffQtyBase]);
+
+    // Every answer the storekeeper gets is blind: create, PUT lines and GET.
+    const inv = (await as(keeper).post('/inventories', {}).expect(201)).body as InventoryDto;
+    const put = (
+      await as(keeper)
+        .put(`/inventories/${inv.id}/lines`, {
+          lines: [{ productId: p.id, unitId: p.baseUnitId, qty: '3' }],
+        })
+        .expect(200)
+    ).body as InventoryDto;
+    expect(blind(put.lines)).toEqual([['3.000', null, null]]);
+    const got = (await as(keeper).get(`/inventories/${inv.id}`).expect(200)).body as InventoryDto;
+    expect(blind(got.lines)).toEqual([['3.000', null, null]]);
+
+    // The owner sees the figures of the same count.
+    const seen = (await as(a).get(`/inventories/${inv.id}`).expect(200)).body as InventoryDto;
+    expect(blind(seen.lines)).toEqual([['3.000', '5.000', '-2.000']]);
+
+    // Validation computes the écart on the server from the live stock.
+    const done = (await as(a).post(`/inventories/${inv.id}/validate`).expect(200))
+      .body as InventoryDto;
+    expect(blind(done.lines)).toEqual([['3.000', '5.000', '-2.000']]);
+    const moves = await asTenant(a.tenantId, () =>
+      t.prisma.db.stockMovement.findMany({ where: { refId: inv.id } }),
+    );
+    expect(moves.map((m) => [m.productId, m.qtyBase.toString()])).toEqual([[p.id, '-2']]);
+    // Once validated, still blind for him.
+    const after = (await as(keeper).get(`/inventories/${inv.id}`).expect(200)).body as InventoryDto;
+    expect(blind(after.lines)).toEqual([['3.000', null, null]]);
+  });
+
   it('stock movements cannot be updated or deleted, even with raw SQL', async () => {
     await expect(
       asTenant(a.tenantId, () => t.prisma.db.stockMovement.deleteMany({})),

@@ -236,8 +236,8 @@ export class OrdersController {
   // Declared before ':id'.
   @Get('deliverers')
   @Roles(...PLANNERS)
-  deliverers(): Promise<DelivererDto[]> {
-    return this.orders.deliverers();
+  deliverers(@CurrentUser() user: CurrentUserInfo): Promise<DelivererDto[]> {
+    return this.orders.deliverers(user);
   }
 
   @Get(':id')

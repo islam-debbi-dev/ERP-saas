@@ -43,12 +43,24 @@ export async function resolveTourneeSeller(
   }
   const sellerId = requested ?? user.id;
   await scope.assertSeller(tx, sellerId);
-  if (user.role === Role.SUPERVISOR && !(await scope.teamIds(user.id, tx)).includes(sellerId)) {
-    throw new AppException(ErrorCode.FORBIDDEN, 'This seller is not in your team', {
-      field: 'sellerId',
-    });
-  }
+  await assertTeamMember(scope, user, sellerId, 'sellerId', tx);
   return sellerId;
+}
+
+/**
+ * A supervisor names only people of his team (a seller to plan, a livreur to deliver).
+ * Owner and manager name anyone. The one statement of the team rule for writes.
+ */
+export async function assertTeamMember(
+  scope: ScopeService,
+  user: CurrentUserInfo,
+  userId: string,
+  field: string,
+  db?: Tx,
+): Promise<void> {
+  if (user.role !== Role.SUPERVISOR) return;
+  if ((await scope.teamIds(user.id, db)).includes(userId)) return;
+  throw new AppException(ErrorCode.FORBIDDEN, 'This user is not in your team', { field });
 }
 
 /** A row outside the user's reach answers "not found", like the phase 14 scope. */

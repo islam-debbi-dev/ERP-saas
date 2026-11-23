@@ -6,6 +6,7 @@ import {
   type ApiError,
   type AuthResponse,
   type ClientDto,
+  type DelivererDto,
   type DeliverOrderResultDto,
   ErrorCode,
   type OrderDto,
@@ -23,6 +24,7 @@ import {
   type TourneeReportDto,
   type VisitDto,
   type VisitPage,
+  type WarehouseDto,
   weekdayOf,
 } from '@erp/shared';
 import {
@@ -98,7 +100,7 @@ describe('tournées, orders and seller sessions (phase 16)', () => {
         .send(body),
   });
 
-  const member = async (who: RegisteredTenant, role: Role): Promise<Member> => {
+  const member = async (who: RegisteredTenant, role: Role, managerId?: string): Promise<Member> => {
     const email = uniqueEmail(role.toLowerCase());
     const user = await asTenant(who.tenantId, async () =>
       t.prisma.db.user.create({
@@ -108,6 +110,7 @@ describe('tournées, orders and seller sessions (phase 16)', () => {
           passwordHash: await argon2.hash('Password123!'),
           fullName: `${role} ${++seq}`,
           role,
+          ...(managerId ? { managerId } : {}),
         },
       }),
     );
@@ -115,6 +118,8 @@ describe('tournées, orders and seller sessions (phase 16)', () => {
     const login = await t
       .http()
       .post('/auth/login')
+      // Each login from its own address: the login limiter is not what is tested here.
+      .set('X-Forwarded-For', `10.16.${Math.floor(seq / 250)}.${(seq % 250) + 1}`)
       .send({ email, password: 'Password123!' })
       .expect(200);
     return { id: user.id, auth: login.body as AuthResponse };
@@ -544,6 +549,101 @@ describe('tournées, orders and seller sessions (phase 16)', () => {
         .post(`/orders/${o2.id}/cancel`, { reason: 'Trop tard' })
         .expect(409);
       expect(errorOf(cancel).code).toBe(ErrorCode.ORDER_ALREADY_DELIVERED);
+    });
+  });
+
+  describe('a supervisor assigns only his team (phase 39 follow-up)', () => {
+    let supA: Member;
+    let supB: Member;
+    let sellerOfA: Member;
+    let livreurOfA: Member;
+    let livreurOfB: Member;
+    let foreignLivreur: Member;
+
+    const livreurIdOf = async (orderId: string) =>
+      asTenant(d.tenantId, () =>
+        t.prisma.db.order.findUniqueOrThrow({
+          where: { id: orderId },
+          select: { livreurId: true, deliveryVehicleId: true, version: true },
+        }),
+      );
+
+    beforeAll(async () => {
+      supA = await member(d, 'SUPERVISOR');
+      supB = await member(d, 'SUPERVISOR');
+      sellerOfA = await member(d, 'SELLER', supA.id);
+      livreurOfA = await member(d, 'LIVREUR', supA.id);
+      livreurOfB = await member(d, 'LIVREUR', supB.id);
+      foreignLivreur = await member(other, 'LIVREUR');
+    });
+
+    it('GET /orders/deliverers: a supervisor gets his team, the owner everyone', async () => {
+      const ids = async (who: Who) =>
+        ((await as(who).get('/orders/deliverers').expect(200)).body as DelivererDto[]).map(
+          (u) => u.id,
+        );
+      expect((await ids(supA)).sort()).toEqual([sellerOfA.id, livreurOfA.id].sort());
+      expect(await ids(supB)).toEqual([livreurOfB.id]);
+      const all = await ids(d);
+      for (const m of [sellerOfA, livreurOfA, livreurOfB, livreur, sellerA]) {
+        expect(all).toContain(m.id);
+      }
+      expect(all).not.toContain(foreignLivreur.id);
+    });
+
+    it("PATCH /orders/:id/livreur: B's livreur is refused and nothing changes", async () => {
+      const [c, p] = [await client(), await product()];
+      const order = await confirmedOrder(sellerOfA, c.id, p, '1');
+      const before = await livreurIdOf(order.id);
+
+      const res = await as(supA)
+        .patch(`/orders/${order.id}/livreur`, { livreurId: livreurOfB.id })
+        .expect(403);
+      expect(errorOf(res).code).toBe(ErrorCode.FORBIDDEN);
+      expect(errorOf(res).details).toMatchObject({ field: 'livreurId' });
+      expect(await livreurIdOf(order.id)).toEqual(before);
+
+      // His own livreur is fine, and so is clearing it.
+      await as(supA).patch(`/orders/${order.id}/livreur`, { livreurId: livreurOfA.id }).expect(200);
+      expect((await livreurIdOf(order.id)).livreurId).toBe(livreurOfA.id);
+      await as(supA).patch(`/orders/${order.id}/livreur`, { livreurId: null }).expect(200);
+
+      // B cannot even see A's order (out of reach answers not found).
+      await as(supB).patch(`/orders/${order.id}/livreur`, { livreurId: livreurOfB.id }).expect(404);
+
+      // The owner names anyone.
+      await as(d).patch(`/orders/${order.id}/livreur`, { livreurId: livreurOfB.id }).expect(200);
+      expect((await livreurIdOf(order.id)).livreurId).toBe(livreurOfB.id);
+    });
+
+    it('a delivery truck in his reach stays allowed', async () => {
+      const [c, p] = [await client(), await product()];
+      const order = await confirmedOrder(sellerOfA, c.id, p, '1');
+      const truck = (
+        await as(d)
+          .post('/warehouses', { name: `Camion ${++seq}`, type: 'VEHICLE' }, null)
+          .expect(201)
+      ).body as WarehouseDto;
+      await as(supA)
+        .patch(`/orders/${order.id}/livreur`, { deliveryVehicleId: truck.id })
+        .expect(200);
+      expect((await livreurIdOf(order.id)).deliveryVehicleId).toBe(truck.id);
+    });
+
+    it("another tenant's livreur cannot be named, and its users see none of ours", async () => {
+      const [c, p] = [await client(), await product()];
+      const order = await confirmedOrder(sellerOfA, c.id, p, '1');
+      const before = await livreurIdOf(order.id);
+      for (const who of [d, supA]) {
+        const res = await as(who)
+          .patch(`/orders/${order.id}/livreur`, { livreurId: foreignLivreur.id })
+          .expect(422);
+        expect(errorOf(res).code).toBe(ErrorCode.SELLER_NOT_ALLOWED);
+      }
+      expect(await livreurIdOf(order.id)).toEqual(before);
+      const theirs = (await as(other).get('/orders/deliverers').expect(200)).body as DelivererDto[];
+      expect(theirs.map((u) => u.id)).not.toContain(livreurOfA.id);
+      await as(other).patch(`/orders/${order.id}/livreur`, { livreurId: null }).expect(404);
     });
   });
 

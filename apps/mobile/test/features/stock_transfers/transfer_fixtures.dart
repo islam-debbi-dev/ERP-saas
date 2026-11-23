@@ -241,8 +241,8 @@ Map<String, FakeRoute> baseRoutes() => {
         : warehousesJson(),
   ),
   'GET /stock-transfers': (o) => FakeReply(200, {
-    'items': o.queryParameters['from'] == null
-        ? [summaryJson(id: 't9', status: 'DRAFT'), summaryJson()]
+    'items': o.queryParameters['status'] == 'DRAFT'
+        ? [summaryJson(id: 't9', status: 'DRAFT')]
         : [
             summaryJson(),
             summaryJson(id: 't2', type: 'UNLOAD', lineCount: 3),

@@ -44,6 +44,8 @@ interface Entry {
 export function InventoryCount({ id }: { id: string }) {
   const t = useTranslations('inventory');
   const canValidate = usePermission(Permission.STOCK_ADJUST);
+  // A blind count: without STOCK_ADJUST the API sends no expected quantity nor écart.
+  const showExpected = canValidate;
   const tc = useTranslations('common');
   const errorMessage = useErrorMessage();
   const unitLabel = useUnitLabel();
@@ -61,6 +63,7 @@ export function InventoryCount({ id }: { id: string }) {
 
   const inv = inventory.data;
   const open = inv?.status === 'OPEN';
+  const cols = 2 + (showExpected ? 2 : 0) + (open ? 1 : 0);
 
   useEffect(() => {
     if (entry) qtyRef.current?.focus();
@@ -300,27 +303,31 @@ export function InventoryCount({ id }: { id: string }) {
             <tr>
               <th className="p-3 text-start font-medium">{t('colProduct')}</th>
               <th className="p-3 text-end font-medium">{t('colCounted')}</th>
-              <th className="p-3 text-end font-medium">{t('colExpected')}</th>
-              <th className="p-3 text-end font-medium">{t('colDiff')}</th>
+              {showExpected ? (
+                <>
+                  <th className="p-3 text-end font-medium">{t('colExpected')}</th>
+                  <th className="p-3 text-end font-medium">{t('colDiff')}</th>
+                </>
+              ) : null}
               {open ? <th className="w-12 p-3" /> : null}
             </tr>
           </thead>
           <tbody>
             {!inv ? (
               <tr>
-                <td colSpan={5} className="p-3">
+                <td colSpan={cols} className="p-3">
                   <Skeleton className="h-6 w-full" />
                 </td>
               </tr>
             ) : inv.lines.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-8 text-center text-muted-foreground">
+                <td colSpan={cols} className="p-8 text-center text-muted-foreground">
                   {t('emptyLines')}
                 </td>
               </tr>
             ) : (
               inv.lines.map((l) => {
-                const diff = qty(l.diffQtyBase);
+                const diff = l.diffQtyBase === null ? null : qty(l.diffQtyBase);
                 return (
                   <tr key={l.productId} className="border-t">
                     <td className="p-3" data-cell="main">
@@ -332,22 +339,34 @@ export function InventoryCount({ id }: { id: string }) {
                     <td className="num p-3 text-end" data-label={t('colCounted')}>
                       <bdi dir="ltr">{formatQty(l.countedQtyBase)}</bdi>
                     </td>
-                    <td
-                      className="num p-3 text-end text-muted-foreground"
-                      data-label={t('colExpected')}
-                    >
-                      <bdi dir="ltr">{formatQty(l.expectedQtyBase)}</bdi>
-                    </td>
-                    <td
-                      className={cn(
-                        'num p-3 text-end font-medium',
-                        diff.gt(0) && 'text-primary',
-                        diff.lt(0) && 'text-destructive',
-                      )}
-                      data-label={t('colDiff')}
-                    >
-                      <bdi dir="ltr">{formatQty(l.diffQtyBase, { signed: true })}</bdi>
-                    </td>
+                    {showExpected &&
+                    l.expectedQtyBase !== null &&
+                    l.diffQtyBase !== null &&
+                    diff !== null ? (
+                      <>
+                        <td
+                          className="num p-3 text-end text-muted-foreground"
+                          data-label={t('colExpected')}
+                        >
+                          <bdi dir="ltr">{formatQty(l.expectedQtyBase)}</bdi>
+                        </td>
+                        <td
+                          className={cn(
+                            'num p-3 text-end font-medium',
+                            diff.gt(0) && 'text-primary',
+                            diff.lt(0) && 'text-destructive',
+                          )}
+                          data-label={t('colDiff')}
+                        >
+                          <bdi dir="ltr">{formatQty(l.diffQtyBase, { signed: true })}</bdi>
+                        </td>
+                      </>
+                    ) : showExpected ? (
+                      <>
+                        <td className="p-3" />
+                        <td className="p-3" />
+                      </>
+                    ) : null}
                     {open ? (
                       <td className="p-3" data-cell="actions">
                         <Button
