@@ -35,7 +35,12 @@ class DioGenerate {
     dio.interceptors.add(AuthInterceptor(dio));
     if (log) {
       dio.interceptors.add(
-        PrettyDioLogger(requestBody: true, responseBody: false, error: true),
+        PrettyDioLogger(
+          requestHeader: true,
+          requestBody: true,
+          responseBody: true,
+          error: true,
+        ),
       );
     }
     return dio;
