@@ -674,5 +674,27 @@
     "driver_today": "Today's driver: {name}",
     "stock_title": "Truck stock",
     "load": "Load"
+  },
+  "inventory": {
+    "title": "Inventory",
+    "new": "New count",
+    "new_hint": "Choose the depot you count.",
+    "start": "Start counting",
+    "empty": "No count yet",
+    "status_open": "Open",
+    "status_validated": "Validated",
+    "status_cancelled": "Cancelled",
+    "hint_blind": "Count what you see: the depot's stock is not shown while counting.",
+    "hint_adjust": "Expected is the depot's stock now; the gap becomes an adjustment at validation.",
+    "no_lines": "No product counted yet",
+    "no_lines_hint": "Add a product or scan its barcode.",
+    "counted": "Counted: {qty}",
+    "expected_diff": "Expected: {expected} · Gap: {diff}",
+    "not_saved": "Not saved",
+    "add_count": "Add to count",
+    "set_count": "Set count",
+    "saved": "Count saved",
+    "confirm_title": "Validate the count?",
+    "confirm_message": "{n} products. The gaps become stock adjustments; the count can no longer change."
   }
 }

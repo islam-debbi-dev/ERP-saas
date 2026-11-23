@@ -674,5 +674,27 @@
     "driver_today": "Chauffeur du jour : {name}",
     "stock_title": "Stock du camion",
     "load": "Charger"
+  },
+  "inventory": {
+    "title": "Inventaire",
+    "new": "Nouveau comptage",
+    "new_hint": "Choisissez le dépôt que vous comptez.",
+    "start": "Commencer le comptage",
+    "empty": "Aucun inventaire pour l'instant",
+    "status_open": "En cours",
+    "status_validated": "Validé",
+    "status_cancelled": "Annulé",
+    "hint_blind": "Comptez ce que vous voyez : le stock du dépôt n'est pas affiché pendant le comptage.",
+    "hint_adjust": "L'attendu est le stock du dépôt maintenant ; l'écart devient un ajustement à la validation.",
+    "no_lines": "Aucun produit compté",
+    "no_lines_hint": "Ajoutez un produit ou scannez son code-barres.",
+    "counted": "Compté : {qty}",
+    "expected_diff": "Attendu : {expected} · Écart : {diff}",
+    "not_saved": "Non enregistré",
+    "add_count": "Ajouter au comptage",
+    "set_count": "Valider le compte",
+    "saved": "Comptage enregistré",
+    "confirm_title": "Valider l'inventaire ?",
+    "confirm_message": "{n} produits. Les écarts deviennent des ajustements de stock ; le comptage ne se modifie plus ensuite."
   }
 }

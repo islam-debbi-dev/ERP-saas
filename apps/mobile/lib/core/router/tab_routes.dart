@@ -12,6 +12,8 @@ import '../../features/controls/ui/controls_screen.dart';
 import '../../features/delivery/ui/deliveries_screen.dart';
 import '../../features/delivery/ui/my_deliveries_screen.dart';
 import '../../features/delivery/ui/order_delivery_screen.dart';
+import '../../features/inventory/ui/inventories_screen.dart';
+import '../../features/inventory/ui/inventory_count_screen.dart';
 import '../../features/main_screen/ui/placeholder_tab.dart';
 import '../../features/objectives/ui/objectives_screen.dart';
 import '../../features/objectives/ui/team_objectives_screen.dart';
@@ -88,6 +90,7 @@ Widget tabPage(RoleTab tab) {
   if (p == '/supervisor/orders') return TeamOrdersScreen(tabPath: p);
   if (p == '/supervisor/controls') return const ControlsScreen();
   if (p == '/storekeeper/trucks') return TrucksScreen(basePath: p);
+  if (p == '/storekeeper/inventory') return InventoriesScreen(basePath: p);
   if (p == '/storekeeper/loads') {
     return Builder(
       builder: (context) => TransfersScreen(
@@ -157,6 +160,17 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
   }
   if (tab.path == '/storekeeper/loads') return transferRoutes();
   if (tab.path == '/storekeeper/trucks') return truckRoutes();
+  if (tab.path == '/storekeeper/inventory') {
+    return [
+      GoRoute(
+        path: ':inventoryId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (_, state) => InventoryCountScreen(
+          inventoryId: state.pathParameters['inventoryId']!,
+        ),
+      ),
+    ];
+  }
   if (tab.path == '/supervisor/more') {
     return [
       GoRoute(

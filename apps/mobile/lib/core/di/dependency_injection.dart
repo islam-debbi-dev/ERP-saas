@@ -4,6 +4,7 @@ import '../../features/auth/data/repo/auth_repository.dart';
 import '../../features/catalog/data/repo/catalog_repository.dart';
 import '../../features/controls/data/controls_repository.dart';
 import '../../features/objectives/data/objectives.dart';
+import '../../features/inventory/data/inventories_repository.dart';
 import '../../features/stock_transfers/data/stock_transfers_repository.dart';
 import '../../features/team/data/team_repository.dart';
 import '../../features/team_orders/data/team_orders_repository.dart';
@@ -64,6 +65,9 @@ Future<void> setupGetIt() async {
   getIt.registerLazySingleton<TeamRepository>(() => TeamRepository(getIt()));
   getIt.registerLazySingleton<StockTransfersRepository>(
     () => StockTransfersRepository(getIt()),
+  );
+  getIt.registerLazySingleton<InventoriesRepository>(
+    () => InventoriesRepository(getIt()),
   );
   getIt.registerLazySingleton<ControlsRepository>(
     () => ControlsRepository(getIt()),

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:orvynt_starter/core/di/dependency_injection.dart';
 import 'package:orvynt_starter/core/network/api_client.dart';
 import 'package:orvynt_starter/features/catalog/data/repo/catalog_repository.dart';
+import 'package:orvynt_starter/features/inventory/data/inventories_repository.dart';
 import 'package:orvynt_starter/features/stock_transfers/data/stock_transfers_repository.dart';
 
 import '../../helpers/fake_adapter.dart';
@@ -227,6 +228,7 @@ FakeAdapter fakeStockApi(Map<String, FakeRoute> routes) {
     StockTransfersRepository(api),
   );
   getIt.registerSingleton<CatalogRepository>(CatalogRepository(api));
+  getIt.registerSingleton<InventoriesRepository>(InventoriesRepository(api));
   return adapter;
 }
 
