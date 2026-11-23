@@ -407,7 +407,6 @@
     "load": "Loading",
     "unload": "Unloading",
     "line_count": "{n} lines",
-    "new_load_soon": "New loading (soon)",
     "session_none": "Day not opened",
     "session_open": "Day open",
     "session_closed": "Day closed",
@@ -417,7 +416,8 @@
     "handed": "Handed over",
     "ecart": "Difference",
     "cash_note": "Cash only (cheques and transfers are not counted).",
-    "from_deliveries": "From deliveries"
+    "from_deliveries": "From deliveries",
+    "all_loads": "This truck's loads"
   },
   "objectives": {
     "title": "Objectives",

@@ -156,24 +156,35 @@ void main() {
       expectNoOverflow(tester);
     });
 
-    testWidgets(
-      'STOCK_TRANSFER shows the chargement entry (disabled until M3b)',
-      (tester) async {
-        await pumpScreen(
-          tester,
-          const TruckScreen(),
-          locale: 'fr',
-          user: seller(
-            permissions: const [
-              Permission.salesCreate,
-              Permission.stockTransfer,
-            ],
-          ),
-        );
+    testWidgets('STOCK_TRANSFER granted: the chargement entries show', (
+      tester,
+    ) async {
+      await pumpScreen(
+        tester,
+        const TruckScreen(),
+        locale: 'fr',
+        user: seller(
+          permissions: const [Permission.salesCreate, Permission.stockTransfer],
+        ),
+      );
+      await tester.drag(find.byType(ListView).first, const Offset(0, -800));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('my-truck-new-load')), findsOneWidget);
+      expect(find.byKey(const Key('my-truck-loads')), findsOneWidget);
+      expect(find.text('Nouveau chargement'), findsOneWidget);
+      expectNoOverflow(tester);
+    });
+
+    for (final user in [seller(), livreur()]) {
+      testWidgets('${user.role} without the grant: no Nouveau chargement', (
+        tester,
+      ) async {
+        await pumpScreen(tester, const TruckScreen(), locale: 'fr', user: user);
         await tester.drag(find.byType(ListView).first, const Offset(0, -800));
         await tester.pumpAndSettle();
-        expect(find.text('Nouveau chargement (bientôt)'), findsOneWidget);
-      },
-    );
+        expect(find.byKey(const Key('my-truck-new-load')), findsNothing);
+        expect(find.text('Nouveau chargement'), findsNothing);
+      });
+    }
   });
 }

@@ -407,7 +407,6 @@
     "load": "Chargement",
     "unload": "Déchargement",
     "line_count": "{n} lignes",
-    "new_load_soon": "Nouveau chargement (bientôt)",
     "session_none": "Journée non ouverte",
     "session_open": "Journée ouverte",
     "session_closed": "Journée clôturée",
@@ -417,7 +416,8 @@
     "handed": "Montant remis",
     "ecart": "Écart",
     "cash_note": "Espèces seulement (chèques et virements non comptés).",
-    "from_deliveries": "Des livraisons"
+    "from_deliveries": "Des livraisons",
+    "all_loads": "Chargements de ce camion"
   },
   "objectives": {
     "title": "Objectifs",

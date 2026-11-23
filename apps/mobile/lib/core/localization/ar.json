@@ -407,7 +407,6 @@
     "load": "شحن",
     "unload": "تفريغ",
     "line_count": "{n} سطر",
-    "new_load_soon": "شحن جديد (قريبا)",
     "session_none": "لم يفتح اليوم",
     "session_open": "اليوم مفتوح",
     "session_closed": "اليوم مغلق",
@@ -417,7 +416,8 @@
     "handed": "المبلغ المسلم",
     "ecart": "الفارق",
     "cash_note": "النقد فقط (الصكوك والتحويلات لا تحسب).",
-    "from_deliveries": "من التوصيلات"
+    "from_deliveries": "من التوصيلات",
+    "all_loads": "شحنات هذه الشاحنة"
   },
   "objectives": {
     "title": "أهدافي",

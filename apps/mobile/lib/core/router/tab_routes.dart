@@ -159,6 +159,9 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
     ];
   }
   if (tab.path == '/storekeeper/loads') return transferRoutes();
+  if (tab.path == '/seller/truck' || tab.path == '/livreur/truck') {
+    return [grantedLoadsRoute('${tab.path}/loads')];
+  }
   if (tab.path == '/storekeeper/trucks') return truckRoutes();
   if (tab.path == '/storekeeper/inventory') {
     return [
@@ -181,6 +184,7 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
         path: 'assistant',
         builder: (_, _) => const AssistantPlaceholderScreen(),
       ),
+      grantedLoadsRoute('/supervisor/more/loads'),
     ];
   }
   if (tab.path == '/livreur/more') {
@@ -245,6 +249,27 @@ List<RouteBase> transferRoutes() {
     ),
   ];
 }
+
+/// The chargement screens for a field user the owner granted
+/// STOCK_TRANSFER (seller, livreur from "Mon camion", supervisor from Plus):
+/// `[path]` lists them (`?truck=` keeps it to one truck), and every screen
+/// under it is the magasinier's. Without the grant (or the module) the
+/// route goes back to the parent.
+GoRoute grantedLoadsRoute(String path) => GoRoute(
+  path: 'loads',
+  redirect: (context, state) => _needsRight(
+    context,
+    state,
+    (u) => u.can(Permission.stockTransfer) && u.hasFeature(Feature.warehouses),
+  ),
+  builder: (_, state) => TransfersScreen(
+    basePath: path,
+    truckId: state.uri.queryParameters['truck'],
+    isTabRoot: false,
+    canCreate: true,
+  ),
+  routes: transferRoutes(),
+);
 
 /// A truck's stock (`/storekeeper/trucks/:truckId`), and from it a
 /// chargement (`load`) or the evening déchargement of its rest (`unload`):
@@ -423,9 +448,10 @@ List<MoreItem> livreurMenu(BuildContext context) {
   ];
 }
 
-/// The supervisor's "Plus" menu: his team's targets (INCENTIVES) and the
-/// assistant (AI_ASSISTANT, a placeholder until M4). Account, language and
-/// theme follow in [AccountScreen].
+/// The supervisor's "Plus" menu: his team's targets (INCENTIVES), the
+/// chargements when the owner granted him STOCK_TRANSFER, and the assistant
+/// (AI_ASSISTANT, a placeholder until M4). Account, language and theme
+/// follow in [AccountScreen].
 List<MoreItem> supervisorMenu(BuildContext context) {
   final user = context.watch<SessionCubit>().state.user;
   if (user == null) return const [];
@@ -435,6 +461,13 @@ List<MoreItem> supervisorMenu(BuildContext context) {
         labelKey: 'objectives.team_title',
         icon: Icons.flag_outlined,
         onTap: (c) => c.push('/supervisor/more/objectives'),
+      ),
+    if (user.can(Permission.stockTransfer) &&
+        user.hasFeature(Feature.warehouses))
+      MoreItem(
+        labelKey: 'transfer.title',
+        icon: Icons.move_to_inbox_outlined,
+        onTap: (c) => c.push('/supervisor/more/loads'),
       ),
     if (user.hasFeature(Feature.aiAssistant))
       MoreItem(
