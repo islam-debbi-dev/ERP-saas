@@ -65,16 +65,18 @@ class InventoryLine {
   final String reference;
   final String designation;
   final Decimal countedQtyBase;
-  final Decimal expectedQtyBase;
-  final Decimal diffQtyBase;
+
+  /// Null without STOCK_ADJUST: the API keeps the count blind.
+  final Decimal? expectedQtyBase;
+  final Decimal? diffQtyBase;
 
   factory InventoryLine.fromJson(Map<String, dynamic> json) => InventoryLine(
     productId: json['productId'] as String,
     reference: json['reference'] as String? ?? '',
     designation: json['designation'] as String,
     countedQtyBase: Decimal.parse(json['countedQtyBase'] as String),
-    expectedQtyBase: Decimal.parse(json['expectedQtyBase'] as String),
-    diffQtyBase: Decimal.parse(json['diffQtyBase'] as String),
+    expectedQtyBase: _qtyOrNull(json['expectedQtyBase']),
+    diffQtyBase: _qtyOrNull(json['diffQtyBase']),
   );
 }
 
@@ -172,3 +174,5 @@ class InventoriesRepository {
     decode: (json) => Inventory.fromJson(json.asMap),
   );
 }
+
+Decimal? _qtyOrNull(Object? v) => v == null ? null : Decimal.parse(v as String);

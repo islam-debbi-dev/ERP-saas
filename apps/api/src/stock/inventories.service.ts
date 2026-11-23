@@ -14,7 +14,7 @@ import {
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
-import { requirePermission } from '../auth/permissions';
+import { can, requirePermission } from '../auth/permissions';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { DocumentNumberingService } from '../documents/document-numbering.service';
@@ -67,7 +67,7 @@ export class InventoriesService {
       });
       return inv.id;
     });
-    return this.get(id);
+    return this.read(id, user, {});
   }
 
   async list(user: CurrentUserInfo): Promise<InventorySummaryDto[]> {
@@ -88,10 +88,23 @@ export class InventoriesService {
     }));
   }
 
-  /** While open, "expected" is the live stock; once validated it is the frozen value. */
-  async get(id: string, user?: CurrentUserInfo): Promise<InventoryDto> {
+  async get(id: string, user: CurrentUserInfo): Promise<InventoryDto> {
+    return this.read(id, user, await this.scopeWhere(user));
+  }
+
+  /**
+   * While open, "expected" is the live stock; once validated it is the frozen value.
+   * A blind count (phase 39 follow-up): without STOCK_ADJUST the expected quantity and
+   * the écart are null, so a counter cannot copy the system figure.
+   */
+  private async read(
+    id: string,
+    viewer: CurrentUserInfo,
+    where: Prisma.InventoryWhereInput,
+  ): Promise<InventoryDto> {
+    const reveal = can(viewer, Permission.STOCK_ADJUST);
     const inv = await this.prisma.db.inventory.findFirst({
-      where: { id, ...(user ? await this.scopeWhere(user) : {}) },
+      where: { id, ...where },
       include: {
         lines: {
           include: {
@@ -103,7 +116,7 @@ export class InventoriesService {
     });
     if (!inv) throw new AppException(ErrorCode.NOT_FOUND, 'Inventory not found');
     const live =
-      inv.status === InventoryStatus.OPEN
+      reveal && inv.status === InventoryStatus.OPEN
         ? await this.stock.warehouseQuantities(
             this.prisma.db,
             inv.warehouseId ?? (await this.warehouses.defaultId()),
@@ -121,14 +134,18 @@ export class InventoriesService {
       cancelledAt: inv.cancelledAt?.toISOString() ?? null,
       lines: inv.lines.map((l) => {
         const counted = qty(l.countedQtyBase.toString());
-        const expected = l.expectedQtyBase
-          ? qty(l.expectedQtyBase.toString())
-          : (live.get(l.productId) ?? qty(0));
-        return {
+        const base = {
           productId: l.productId,
           reference: l.product.reference,
           designation: l.product.designation,
           countedQtyBase: toQtyString(counted),
+        };
+        if (!reveal) return { ...base, expectedQtyBase: null, diffQtyBase: null };
+        const expected = l.expectedQtyBase
+          ? qty(l.expectedQtyBase.toString())
+          : (live.get(l.productId) ?? qty(0));
+        return {
+          ...base,
           expectedQtyBase: toQtyString(expected),
           diffQtyBase: toQtyString(
             l.diffQtyBase ? l.diffQtyBase.toString() : counted.minus(expected),
@@ -168,7 +185,7 @@ export class InventoriesService {
         });
       }
     });
-    return this.get(id);
+    return this.read(id, user, {});
   }
 
   async validate(id: string, user: CurrentUserInfo): Promise<InventoryDto> {
@@ -236,7 +253,7 @@ export class InventoriesService {
         },
       });
     });
-    return this.get(id);
+    return this.read(id, user, {});
   }
 
   async cancel(id: string, user: CurrentUserInfo): Promise<InventoryDto> {
@@ -253,14 +270,14 @@ export class InventoriesService {
         entityId: id,
       });
     });
-    return this.get(id);
+    return this.read(id, user, {});
   }
 
   /** Counts of the dépôts the user works in (phase 24); one without a dépôt is MAIN's. */
   private async scopeWhere(user: CurrentUserInfo, db?: Tx): Promise<Prisma.InventoryWhereInput> {
     const scope = await this.scope.of(user, db);
     const w = this.scope.warehouseWhere(scope, scope.warehouseIds, 'createdBy');
-    return w ? (w) : {};
+    return w ? w : {};
   }
 
   private async assertInScope(tx: Tx, user: CurrentUserInfo, id: string): Promise<void> {

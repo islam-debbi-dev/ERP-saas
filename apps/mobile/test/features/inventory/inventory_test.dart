@@ -108,6 +108,34 @@ void main() {
     await c.close();
   });
 
+  test(
+    'a blind answer (null expected / écart) decodes and shows none',
+    () async {
+      final blindLine = {
+        'productId': 'p1',
+        'reference': 'REF-p1',
+        'designation': 'Eau minérale 1,5 L',
+        'countedQtyBase': '90.000',
+        'expectedQtyBase': null,
+        'diffQtyBase': null,
+      };
+      final line = InventoryLine.fromJson(blindLine);
+      expect(line.expectedQtyBase, isNull);
+      expect(line.diffQtyBase, isNull);
+      fakeStockApi({
+        ...routes(),
+        'GET /inventories/i1': (_) =>
+            FakeReply(200, inventoryJson(lines: [blindLine])),
+      });
+      final c = cubit();
+      await c.load();
+      expect(c.state.lines.single.counted, Decimal.fromInt(90));
+      expect(c.state.lines.single.expected, isNull);
+      expect(c.state.lines.single.diff, isNull);
+      await c.close();
+    },
+  );
+
   test('validate: only with STOCK_ADJUST, saves first, one key', () async {
     var validates = 0;
     final adapter = fakeStockApi({

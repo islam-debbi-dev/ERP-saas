@@ -208,9 +208,12 @@ export interface InventoryLineDto {
   reference: string;
   designation: string;
   countedQtyBase: string;
-  /** Current stock while open, frozen at validation. */
-  expectedQtyBase: string;
-  diffQtyBase: string;
+  /**
+   * Current stock while open, frozen at validation. Null for a user without
+   * STOCK_ADJUST (a blind count): he sees only what he counted.
+   */
+  expectedQtyBase: string | null;
+  diffQtyBase: string | null;
 }
 
 export interface InventoryDto {
