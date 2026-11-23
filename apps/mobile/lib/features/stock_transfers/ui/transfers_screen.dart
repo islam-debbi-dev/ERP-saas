@@ -24,7 +24,7 @@ class TransfersScreen extends StatefulWidget {
     required this.basePath,
     this.truckId,
     this.isTabRoot = true,
-    this.onNew,
+    this.canCreate = false,
     this.clock,
   });
 
@@ -36,8 +36,8 @@ class TransfersScreen extends StatefulWidget {
   /// The tab's root page sits above the bottom bar; a pushed list does not.
   final bool isTabRoot;
 
-  /// "Nouveau chargement" (null = the user may not create one).
-  final VoidCallback? onNew;
+  /// Shows "Nouveau chargement" (`[basePath]/new`): STOCK_TRANSFER only.
+  final bool canCreate;
 
   /// Tests pin "today".
   final DateTime Function()? clock;
@@ -109,20 +109,29 @@ class _TransfersScreenState extends State<TransfersScreen> {
                     (widget.isTabRoot
                         ? AppSpacing.navClearance
                         : AppSpacing.xl) +
-                    (widget.onNew == null ? 0 : 56),
+                    (widget.canCreate ? 56 : 0),
               ),
             ),
           ],
         ),
-        floatingActionButton: widget.onNew == null
+        floatingActionButton: !widget.canCreate
             ? null
-            : Padding(
-                padding: EdgeInsets.only(bottom: widget.isTabRoot ? 88 : 0),
-                child: FloatingActionButton.extended(
-                  heroTag: 'new-load',
-                  onPressed: widget.onNew,
-                  icon: const Icon(Icons.add),
-                  label: Text(context.tr('transfer.new_load')),
+            : Builder(
+                builder: (context) => Padding(
+                  padding: EdgeInsets.only(bottom: widget.isTabRoot ? 88 : 0),
+                  child: FloatingActionButton.extended(
+                    heroTag: 'new-load',
+                    onPressed: () async {
+                      final cubit = context.read<LoadCubit<TransfersDay>>();
+                      final query = widget.truckId == null
+                          ? ''
+                          : '?truck=${widget.truckId}';
+                      await context.push('${widget.basePath}/new$query');
+                      await cubit.load();
+                    },
+                    icon: const Icon(Icons.add),
+                    label: Text(context.tr('transfer.new_load')),
+                  ),
                 ),
               ),
       ),

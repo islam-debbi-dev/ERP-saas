@@ -19,14 +19,73 @@ import '../data/models/product.dart';
 import '../data/repo/catalog_repository.dart';
 import 'barcode_scan_screen.dart';
 
-/// Picks products into the basket: search, barcode scan, unit (cartons /
-/// pièces), and what is left on the truck. Works on the [SaleBasketCubit]
-/// above it; the floating bar goes back to the basket.
-class ProductPickerScreen extends StatefulWidget {
-  const ProductPickerScreen({super.key, this.truckId});
+/// Where picked products go: the sale basket (M1), a chargement, an
+/// inventory count. Quantities only: a target never needs a price.
+abstract class PickTarget {
+  /// Base quantity of [productId] already taken (shown stock = stock − it).
+  Decimal takenBase(String productId);
 
-  /// The truck whose stock is shown; null = no stock column.
-  final String? truckId;
+  void add(Product product, ProductUnit unit, Decimal qty);
+
+  /// The sheet's button ("Ajouter au panier", "Ajouter").
+  String get addLabelKey;
+
+  /// The bar under the list; [done] goes back to the form.
+  Widget bottomBar(BuildContext context, VoidCallback done);
+}
+
+/// M1's target: the [SaleBasketCubit] above the picker.
+class SaleBasketPickTarget implements PickTarget {
+  SaleBasketPickTarget(this.basket);
+
+  final SaleBasketCubit basket;
+
+  @override
+  Decimal takenBase(String productId) => basket.state.lines
+      .where((l) => l.product.id == productId)
+      .fold(Decimal.zero, (sum, l) => sum + l.qtyBase);
+
+  @override
+  void add(Product product, ProductUnit unit, Decimal qty) =>
+      basket.add(product, unit, qty);
+
+  @override
+  String get addLabelKey => 'sale.add_to_basket';
+
+  @override
+  Widget bottomBar(BuildContext context, VoidCallback done) =>
+      BlocBuilder<SaleBasketCubit, SaleBasketState>(
+        bloc: basket,
+        builder: (context, s) => BasketBar(
+          count: s.lineCount,
+          total: s.pricing ? null : s.estimatedTtc,
+          label: context.tr('sale.view_basket'),
+          onTap: done,
+        ),
+      );
+}
+
+/// Picks products: search, barcode scan, unit (cartons / pièces), and what
+/// is left in [warehouseId]. Works on [target], or on the
+/// [SaleBasketCubit] above it (the sale basket).
+class ProductPickerScreen extends StatefulWidget {
+  const ProductPickerScreen({
+    super.key,
+    this.warehouseId,
+    this.target,
+    this.stockLabelKey = 'catalog.on_truck',
+    this.showStock = true,
+  });
+
+  /// The dépôt or truck whose products and stock are shown.
+  final String? warehouseId;
+  final PickTarget? target;
+
+  /// "Camion : {qty}" or "Dépôt : {qty}".
+  final String stockLabelKey;
+
+  /// False for a blind count: the stock is not shown.
+  final bool showStock;
 
   @override
   State<ProductPickerScreen> createState() => _ProductPickerScreenState();
@@ -35,15 +94,17 @@ class ProductPickerScreen extends StatefulWidget {
 class _ProductPickerScreenState extends State<ProductPickerScreen> {
   final _repo = getIt<CatalogRepository>();
   late final PagedCubit<Product> _products = PagedCubit<Product>(
-    (cursor) => _repo.products(warehouseId: widget.truckId, cursor: cursor),
+    (cursor) => _repo.products(warehouseId: widget.warehouseId, cursor: cursor),
   )..refresh();
   Map<String, Decimal>? _stock;
+  late final PickTarget _target =
+      widget.target ?? SaleBasketPickTarget(context.read<SaleBasketCubit>());
 
   @override
   void initState() {
     super.initState();
-    final truck = widget.truckId;
-    if (truck != null) {
+    final truck = widget.warehouseId;
+    if (truck != null && widget.showStock) {
       _repo.stockOf(truck).then((r) {
         if (mounted && r is Success<Map<String, Decimal>>) {
           setState(() => _stock = r.data);
@@ -61,7 +122,7 @@ class _ProductPickerScreenState extends State<ProductPickerScreen> {
   void _search(String text) => _products.reset(
     (cursor) => _repo.products(
       search: text,
-      warehouseId: widget.truckId,
+      warehouseId: widget.warehouseId,
       cursor: cursor,
     ),
   );
@@ -94,17 +155,10 @@ class _ProductPickerScreenState extends State<ProductPickerScreen> {
   Decimal? _left(Product p) {
     final stock = _stock?[p.id];
     if (stock == null) return _stock == null ? null : Decimal.zero;
-    final inBasket = context
-        .read<SaleBasketCubit>()
-        .state
-        .lines
-        .where((l) => l.product.id == p.id)
-        .fold(Decimal.zero, (sum, l) => sum + l.qtyBase);
-    return stock - inBasket;
+    return stock - _target.takenBase(p.id);
   }
 
   Future<void> _openAdd(Product product, {ProductUnit? unit}) async {
-    final basket = context.read<SaleBasketCubit>();
     final picked = await showModalBottomSheet<(ProductUnit, Decimal)>(
       context: context,
       isScrollControlled: true,
@@ -113,10 +167,12 @@ class _ProductPickerScreenState extends State<ProductPickerScreen> {
         product: product,
         initialUnit: unit,
         leftBase: _left(product),
+        stockLabelKey: widget.stockLabelKey,
+        actionLabelKey: _target.addLabelKey,
       ),
     );
     if (picked == null || !mounted) return;
-    basket.add(product, picked.$1, picked.$2);
+    _target.add(product, picked.$1, picked.$2);
     setState(() {});
   }
 
@@ -188,6 +244,7 @@ class _ProductPickerScreenState extends State<ProductPickerScreen> {
                       return ProductRow(
                         product: p,
                         leftBase: _left(p),
+                        stockLabelKey: widget.stockLabelKey,
                         onTap: () => _openAdd(p),
                       );
                     },
@@ -199,14 +256,7 @@ class _ProductPickerScreenState extends State<ProductPickerScreen> {
         ],
       ),
       bottomNavigationBar: SafeArea(
-        child: BlocBuilder<SaleBasketCubit, SaleBasketState>(
-          builder: (context, s) => BasketBar(
-            count: s.lineCount,
-            total: s.pricing ? null : s.estimatedTtc,
-            label: context.tr('sale.view_basket'),
-            onTap: () => Navigator.of(context).pop(),
-          ),
-        ),
+        child: _target.bottomBar(context, () => Navigator.of(context).pop()),
       ),
     );
   }
@@ -220,10 +270,12 @@ class ProductRow extends StatelessWidget {
     required this.product,
     required this.onTap,
     this.leftBase,
+    this.stockLabelKey = 'catalog.on_truck',
   });
 
   final Product product;
   final VoidCallback onTap;
+  final String stockLabelKey;
 
   /// Base quantity left on the truck; null = not known.
   final Decimal? leftBase;
@@ -260,7 +312,11 @@ class ProductRow extends StatelessWidget {
                 ),
                 if (left != null && unit != null) ...[
                   const SizedBox(height: AppSpacing.xxs),
-                  StockLabel(leftBase: left, product: product),
+                  StockLabel(
+                    leftBase: left,
+                    product: product,
+                    labelKey: stockLabelKey,
+                  ),
                 ],
               ],
             ),
@@ -278,20 +334,25 @@ class ProductRow extends StatelessWidget {
 
 /// "Camion : 12 cartons + 5 pièces" (largest unit first), in red at zero.
 class StockLabel extends StatelessWidget {
-  const StockLabel({super.key, required this.leftBase, required this.product});
+  const StockLabel({
+    super.key,
+    required this.leftBase,
+    required this.product,
+    this.labelKey = 'catalog.on_truck',
+  });
 
   final Decimal leftBase;
   final Product product;
+
+  /// "Camion : {qty}", "Dépôt : {qty}", "Disponible : {qty}".
+  final String labelKey;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final empty = leftBase <= Decimal.zero;
     return Text(
-      context.tr(
-        'catalog.on_truck',
-        args: {'qty': stockText(product, leftBase)},
-      ),
+      context.tr(labelKey, args: {'qty': stockText(product, leftBase)}),
       style: text.bodySmall?.copyWith(
         color: empty ? AppColors.error : context.textMuted,
         fontWeight: FontWeight.w600,
@@ -330,11 +391,21 @@ class AddProductSheet extends StatefulWidget {
     required this.product,
     this.initialUnit,
     this.leftBase,
+    this.initialQty,
+    this.stockLabelKey = 'catalog.on_truck',
+    this.actionLabelKey = 'sale.add_to_basket',
+    this.actionIcon = Icons.add_shopping_cart,
   });
 
   final Product product;
   final ProductUnit? initialUnit;
   final Decimal? leftBase;
+
+  /// Editing a line: its quantity (default 1).
+  final Decimal? initialQty;
+  final String stockLabelKey;
+  final String actionLabelKey;
+  final IconData actionIcon;
 
   @override
   State<AddProductSheet> createState() => _AddProductSheetState();
@@ -343,8 +414,10 @@ class AddProductSheet extends StatefulWidget {
 class _AddProductSheetState extends State<AddProductSheet> {
   late ProductUnit? _unit =
       widget.initialUnit ?? widget.product.defaultSaleUnit;
-  Decimal _qty = Decimal.one;
-  late final _qtyText = TextEditingController(text: '1');
+  late Decimal _qty = widget.initialQty ?? Decimal.one;
+  late final _qtyText = TextEditingController(
+    text: Qty.format(_qty, isolate: false),
+  );
 
   @override
   void dispose() {
@@ -388,7 +461,11 @@ class _AddProductSheetState extends State<AddProductSheet> {
               ),
               if (left != null) ...[
                 AppSpacing.gapXs,
-                StockLabel(leftBase: left, product: p),
+                StockLabel(
+                  leftBase: left,
+                  product: p,
+                  labelKey: widget.stockLabelKey,
+                ),
               ],
               AppSpacing.gapLg,
               if (p.units.length > 1)
@@ -440,8 +517,8 @@ class _AddProductSheetState extends State<AddProductSheet> {
               ),
               AppSpacing.gapXl,
               AppButton(
-                label: context.tr('sale.add_to_basket'),
-                icon: Icons.add_shopping_cart,
+                label: context.tr(widget.actionLabelKey),
+                icon: widget.actionIcon,
                 onPressed: unit == null || _qty <= Decimal.zero
                     ? null
                     : () => Navigator.of(context).pop((unit, _qty)),

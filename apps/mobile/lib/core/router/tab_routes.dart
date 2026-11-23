@@ -27,6 +27,7 @@ import '../../features/sales/ui/my_sales_screen.dart';
 import '../../features/sales/ui/sale_screen.dart';
 import '../../features/sales/ui/sell_screen.dart';
 import '../../features/stock_transfers/ui/transfer_detail_screen.dart';
+import '../../features/stock_transfers/ui/transfer_form_screen.dart';
 import '../../features/stock_transfers/ui/transfers_screen.dart';
 import '../../features/team/ui/member_day_screen.dart';
 import '../../features/team/ui/team_screen.dart';
@@ -84,7 +85,18 @@ Widget tabPage(RoleTab tab) {
   }
   if (p == '/supervisor/orders') return TeamOrdersScreen(tabPath: p);
   if (p == '/supervisor/controls') return const ControlsScreen();
-  if (p == '/storekeeper/loads') return TransfersScreen(basePath: p);
+  if (p == '/storekeeper/loads') {
+    return Builder(
+      builder: (context) => TransfersScreen(
+        basePath: p,
+        canCreate:
+            context.watch<SessionCubit>().state.user?.can(
+              Permission.stockTransfer,
+            ) ??
+            false,
+      ),
+    );
+  }
   if (p == '/seller/more') {
     return Builder(
       builder: (context) => AccountScreen(menu: sellerMenu(context)),
@@ -173,17 +185,41 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
   return const [];
 }
 
-/// A chargement / déchargement under a list (`[list]/:transferId`). Every
-/// screen needs STOCK_TRANSFER: without it a deep link goes back to the list.
-List<RouteBase> transferRoutes() => [
-  GoRoute(
-    path: ':transferId',
-    redirect: (context, state) =>
-        _needsRight(context, state, (u) => u.can(Permission.stockTransfer)),
-    builder: (_, state) =>
-        TransferDetailScreen(transferId: state.pathParameters['transferId']!),
-  ),
-];
+/// A chargement / déchargement under a list: `[list]/new` (`?truck=` picks
+/// the truck), `[list]/:transferId` and its `edit`. Every screen needs
+/// STOCK_TRANSFER: without it a deep link goes back to the list. The forms
+/// cover the bottom bar (root navigator).
+List<RouteBase> transferRoutes() {
+  String? needsTransfer(BuildContext context, GoRouterState state) =>
+      _needsRight(context, state, (u) => u.can(Permission.stockTransfer));
+  return [
+    GoRoute(
+      path: 'new',
+      parentNavigatorKey: rootNavigatorKey,
+      redirect: needsTransfer,
+      builder: (_, state) =>
+          TransferFormScreen(truckId: state.uri.queryParameters['truck']),
+    ),
+    GoRoute(
+      path: ':transferId',
+      redirect: needsTransfer,
+      builder: (_, state) => TransferDetailScreen(
+        transferId: state.pathParameters['transferId']!,
+        editPath: '${state.uri.path}/edit',
+      ),
+      routes: [
+        GoRoute(
+          path: 'edit',
+          parentNavigatorKey: rootNavigatorKey,
+          redirect: needsTransfer,
+          builder: (_, state) => TransferFormScreen(
+            transferId: state.pathParameters['transferId']!,
+          ),
+        ),
+      ],
+    ),
+  ];
+}
 
 /// Client list → new client, client detail (and its actions), statement.
 List<RouteBase> clientRoutes(String base) => [
