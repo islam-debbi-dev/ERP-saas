@@ -128,4 +128,9 @@ class PagedCubit<T> extends Cubit<PagedState<T>> {
       items: [for (final item in state.items) test(item) ? replacement : item],
     ),
   );
+
+  /// Local removal of rows (e.g. a conversation the user just deleted).
+  void removeWhere(bool Function(T item) test) => emit(
+    state.copyWith(items: [...state.items.where((item) => !test(item))]),
+  );
 }

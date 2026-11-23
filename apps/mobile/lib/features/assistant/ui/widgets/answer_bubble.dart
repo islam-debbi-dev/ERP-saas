@@ -66,3 +66,50 @@ class AnswerBubble extends StatelessWidget {
     );
   }
 }
+
+/// 👍 / 👎 under a stored answer (48 dp each); the chosen one is filled.
+class FeedbackButtons extends StatelessWidget {
+  const FeedbackButtons({
+    super.key,
+    required this.useful,
+    required this.onRate,
+  });
+
+  final bool? useful;
+  final ValueChanged<bool> onRate;
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    Widget button(bool value, IconData off, IconData on, String label) =>
+        IconButton(
+          key: Key('assistant-${value ? 'useful' : 'not-useful'}'),
+          tooltip: context.tr(label),
+          isSelected: useful == value,
+          constraints: const BoxConstraints(
+            minWidth: AppSpacing.minTouch,
+            minHeight: AppSpacing.minTouch,
+          ),
+          color: context.textMuted,
+          selectedIcon: Icon(on, color: primary),
+          onPressed: () => onRate(value),
+          icon: Icon(off),
+        );
+    return Row(
+      children: [
+        button(
+          true,
+          Icons.thumb_up_outlined,
+          Icons.thumb_up,
+          'assistant.useful',
+        ),
+        button(
+          false,
+          Icons.thumb_down_outlined,
+          Icons.thumb_down,
+          'assistant.not_useful',
+        ),
+      ],
+    );
+  }
+}

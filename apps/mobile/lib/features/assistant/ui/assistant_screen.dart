@@ -12,6 +12,7 @@ import '../../../core/session/session_cubit.dart';
 import '../data/assistant_repository.dart';
 import '../logic/assistant_chat_cubit.dart';
 import '../logic/assistant_status_cubit.dart';
+import 'assistant_history_screen.dart';
 import 'widgets/answer_bubble.dart';
 import 'widgets/chat_input_bar.dart';
 
@@ -59,48 +60,74 @@ class _AssistantViewState extends State<_AssistantView> {
     await context.read<AssistantChatCubit>().retry();
   }
 
+  Future<void> _openHistory() async {
+    final cubit = context.read<AssistantChatCubit>();
+    final result = await Navigator.of(context).push<HistoryResult>(
+      MaterialPageRoute(builder: (_) => const AssistantHistoryScreen()),
+    );
+    if (result == null || !mounted) return;
+    result.deleted.forEach(cubit.forget);
+    final open = result.open;
+    if (open != null) {
+      _input.clear();
+      await cubit.open(open);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AssistantStatusCubit>().state.provider;
     final chat = context.watch<AssistantChatCubit>();
     final state = chat.state;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(context.tr('assistant.title')),
-        actions: [
-          IconButton(
-            tooltip: context.tr('assistant.new_conversation'),
-            onPressed: state.messages.isEmpty && state.failure == null
-                ? null
-                : () {
-                    _input.clear();
-                    chat.reset();
-                  },
-            icon: const Icon(Icons.add_comment_outlined),
-          ),
-        ],
+    return BlocListener<AssistantChatCubit, AssistantChatState>(
+      listenWhen: (a, b) => b.feedbackFailures > a.feedbackFailures,
+      listener: (context, _) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr('assistant.feedback_failed'))),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: state.opening
-                ? const Center(child: CircularProgressIndicator())
-                : state.messages.isEmpty
-                ? _Empty(
-                    failure: state.failure,
-                    onAsk: _ask,
-                    onRetry: state.lastQuestion == null ? null : _retry,
-                  )
-                : _Messages(state: state, onRetry: _retry),
-          ),
-          ChatInputBar(
-            controller: _input,
-            streaming: state.streaming,
-            provider: provider,
-            onSend: () => _ask(_input.text),
-            onStop: chat.stop,
-          ),
-        ],
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(context.tr('assistant.title')),
+          actions: [
+            IconButton(
+              tooltip: context.tr('assistant.new_conversation'),
+              onPressed: state.messages.isEmpty && state.failure == null
+                  ? null
+                  : () {
+                      _input.clear();
+                      chat.reset();
+                    },
+              icon: const Icon(Icons.add_comment_outlined),
+            ),
+            IconButton(
+              key: const Key('assistant-history'),
+              tooltip: context.tr('assistant.history'),
+              onPressed: _openHistory,
+              icon: const Icon(Icons.history),
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: state.opening
+                  ? const Center(child: CircularProgressIndicator())
+                  : state.messages.isEmpty
+                  ? _Empty(
+                      failure: state.failure,
+                      onAsk: _ask,
+                      onRetry: state.lastQuestion == null ? null : _retry,
+                    )
+                  : _Messages(state: state, onRetry: _retry),
+            ),
+            ChatInputBar(
+              controller: _input,
+              streaming: state.streaming,
+              provider: provider,
+              onSend: () => _ask(_input.text),
+              onStop: chat.stop,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -121,7 +148,18 @@ class _Messages extends StatelessWidget {
         if (m.fromUser)
           QuestionBubble(message: m)
         else if (m.content.isNotEmpty)
-          AnswerBubble(message: m),
+          AnswerBubble(
+            message: m,
+            footer: m.id == null
+                ? null
+                : FeedbackButtons(
+                    useful: m.useful,
+                    onRate: (useful) => context.read<AssistantChatCubit>().rate(
+                      m.id!,
+                      useful: useful,
+                    ),
+                  ),
+          ),
       if (state.waiting || (state.streaming && state.tool != null))
         _StatusLine(tool: state.tool),
       if (state.failure != null)
