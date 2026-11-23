@@ -17,6 +17,7 @@ import '../../../core/paging/load_cubit.dart';
 import '../../../core/paging/paged_cubit.dart';
 import '../../../core/session/session_cubit.dart';
 import '../data/controls_repository.dart';
+import 'control_maps.dart';
 
 enum ControlsSection { positions, flags, report }
 
@@ -24,10 +25,13 @@ enum ControlsSection { positions, flags, report }
 /// flags (read only: the verdict stays with managers) and today's tournée
 /// report. Each section shows only with its module.
 class ControlsScreen extends StatefulWidget {
-  const ControlsScreen({super.key, this.clock});
+  const ControlsScreen({super.key, this.clock, this.onOpenMap});
 
   /// Tests pin "today".
   final DateTime Function()? clock;
+
+  /// The team's client map (a sub-page); shown with GEO_CHECK only.
+  final VoidCallback? onOpenMap;
 
   @override
   State<ControlsScreen> createState() => _ControlsScreenState();
@@ -35,6 +39,10 @@ class ControlsScreen extends StatefulWidget {
 
 class _ControlsScreenState extends State<ControlsScreen> {
   ControlsSection? _section;
+
+  bool _hasGeo(BuildContext context) =>
+      context.read<SessionCubit>().state.user?.hasFeature(Feature.geoCheck) ??
+      false;
 
   List<ControlsSection> _sections(BuildContext context) {
     final user = context.read<SessionCubit>().state.user;
@@ -55,7 +63,17 @@ class _ControlsScreenState extends State<ControlsScreen> {
         ? _section!
         : (sections.isEmpty ? null : sections.first);
     return Scaffold(
-      appBar: AppBar(title: Text(context.tr('controls.title'))),
+      appBar: AppBar(
+        title: Text(context.tr('controls.title')),
+        actions: [
+          if (_hasGeo(context) && widget.onOpenMap != null)
+            IconButton(
+              icon: const Icon(Icons.map_outlined),
+              tooltip: context.tr('map.team_map'),
+              onPressed: widget.onOpenMap,
+            ),
+        ],
+      ),
       body: section == null
           ? ListView(
               padding: const EdgeInsets.only(top: AppSpacing.xxl),
@@ -310,6 +328,8 @@ class _LocationRequestCardState extends State<LocationRequestCard> {
               ),
               style: text.bodySmall?.copyWith(color: context.textMuted),
             ),
+          AppSpacing.gapSm,
+          LocationRequestMap(request: r),
           if (r.note != null && r.note!.isNotEmpty) ...[
             AppSpacing.gapXs,
             Text(r.note!, style: text.bodyMedium),
@@ -507,6 +527,10 @@ class GeoFlagCard extends StatelessWidget {
               ),
               style: text.bodySmall,
             ),
+          if (flag.hasPoint || flag.hasClientPoint) ...[
+            AppSpacing.gapSm,
+            GeoFlagMap(flag: flag),
+          ],
           if (flag.flags.contains('LATE_SYNC'))
             Text(
               context.tr('controls.late_sync'),

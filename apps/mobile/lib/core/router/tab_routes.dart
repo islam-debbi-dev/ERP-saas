@@ -10,6 +10,7 @@ import '../../features/clients/ui/client_statement_screen.dart';
 import '../../features/clients/ui/clients_screen.dart';
 import '../../features/clients/ui/new_client_screen.dart';
 import '../../features/controls/ui/controls_screen.dart';
+import '../../features/controls/ui/team_clients_map_screen.dart';
 import '../../features/delivery/ui/deliveries_screen.dart';
 import '../../features/delivery/ui/my_deliveries_screen.dart';
 import '../../features/delivery/ui/order_delivery_screen.dart';
@@ -92,7 +93,12 @@ Widget tabPage(RoleTab tab) {
     );
   }
   if (p == '/supervisor/orders') return TeamOrdersScreen(tabPath: p);
-  if (p == '/supervisor/controls') return const ControlsScreen();
+  if (p == '/supervisor/controls') {
+    return Builder(
+      builder: (context) =>
+          ControlsScreen(onOpenMap: () => context.push('$p/map')),
+    );
+  }
   if (p == '/storekeeper/trucks') return TrucksScreen(basePath: p);
   if (p == '/storekeeper/inventory') return InventoriesScreen(basePath: p);
   if (p == '/storekeeper/loads') {
@@ -166,6 +172,18 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
           sellerId: state.pathParameters['sellerId']!,
           date: state.uri.queryParameters['date'] ?? AlgiersDay.of(),
         ),
+      ),
+    ];
+  }
+  if (tab.path == '/supervisor/controls') {
+    return [
+      // The team's client map: a sub-page (the bottom bar hides), GEO_CHECK
+      // only; a deep link without it goes back to Contrôles.
+      GoRoute(
+        path: 'map',
+        redirect: (context, state) =>
+            _needsRight(context, state, (u) => u.hasFeature(Feature.geoCheck)),
+        builder: (_, _) => const TeamClientsMapScreen(),
       ),
     ];
   }
