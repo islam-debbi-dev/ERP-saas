@@ -118,6 +118,11 @@ Widget tabPage(RoleTab tab) {
       builder: (context) => AccountScreen(menu: supervisorMenu(context)),
     );
   }
+  if (p == '/storekeeper/more') {
+    return Builder(
+      builder: (context) => AccountScreen(menu: storekeeperMenu(context)),
+    );
+  }
   if (p.endsWith('/more')) return const AccountScreen();
   return PlaceholderTab(tab: tab);
 }
@@ -185,6 +190,14 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
         builder: (_, _) => const AssistantPlaceholderScreen(),
       ),
       grantedLoadsRoute('/supervisor/more/loads'),
+    ];
+  }
+  if (tab.path == '/storekeeper/more') {
+    return [
+      GoRoute(
+        path: 'assistant',
+        builder: (_, _) => const AssistantPlaceholderScreen(),
+      ),
     ];
   }
   if (tab.path == '/livreur/more') {
@@ -474,6 +487,22 @@ List<MoreItem> supervisorMenu(BuildContext context) {
         labelKey: 'assistant.title',
         icon: Icons.auto_awesome_outlined,
         onTap: (c) => c.push('/supervisor/more/assistant'),
+      ),
+  ];
+}
+
+/// The magasinier's "Plus" menu: the assistant (AI_ASSISTANT, a
+/// placeholder until M4). Account, language and theme follow in
+/// [AccountScreen].
+List<MoreItem> storekeeperMenu(BuildContext context) {
+  final user = context.watch<SessionCubit>().state.user;
+  if (user == null) return const [];
+  return [
+    if (user.hasFeature(Feature.aiAssistant))
+      MoreItem(
+        labelKey: 'assistant.title',
+        icon: Icons.auto_awesome_outlined,
+        onTap: (c) => c.push('/storekeeper/more/assistant'),
       ),
   ];
 }

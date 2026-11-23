@@ -73,6 +73,34 @@ List<RouteBase> _subRoutes(String tab, GlobalKey<NavigatorState> root) =>
           builder: (_, _) => const _Page('team-objectives'),
         ),
       ],
+      // M3b: forms on the root navigator, like tab_routes.dart.
+      '/storekeeper/loads' => [
+        GoRoute(
+          path: 'new',
+          parentNavigatorKey: root,
+          builder: (_, _) => const _Page('new-load', action: true),
+        ),
+        GoRoute(
+          path: ':transferId',
+          builder: (_, _) => const _Page('transfer-detail', action: true),
+        ),
+      ],
+      '/storekeeper/trucks' => [
+        GoRoute(
+          path: ':truckId',
+          builder: (_, _) => const _Page('truck-stock', action: true),
+        ),
+      ],
+      '/storekeeper/inventory' => [
+        GoRoute(
+          path: ':inventoryId',
+          parentNavigatorKey: root,
+          builder: (_, _) => const _Page('count', action: true),
+        ),
+      ],
+      '/storekeeper/more' => [
+        GoRoute(path: 'assistant', builder: (_, _) => const _Page('assistant')),
+      ],
       _ => const [],
     };
 
@@ -222,6 +250,11 @@ void main() {
     expect(RoleScreens.isTabRoot('SELLER', '/seller/clients/c1'), isFalse);
     expect(RoleScreens.isTabRoot('SELLER', '/livreur/deliveries'), isFalse);
     expect(RoleScreens.isTabRoot('LIVREUR', '/livreur/deliveries'), isTrue);
+    expect(RoleScreens.isTabRoot('STOREKEEPER', '/storekeeper/loads'), isTrue);
+    expect(
+      RoleScreens.isTabRoot('STOREKEEPER', '/storekeeper/loads/new'),
+      isFalse,
+    );
   });
 
   for (final locale in ['ar', 'fr']) {
@@ -230,6 +263,7 @@ void main() {
         'seller': seller(),
         'livreur': livreur(),
         'supervisor': supervisor(),
+        'storekeeper': storekeeper(),
       };
       for (final MapEntry(key: name, value: user) in roles.entries) {
         testWidgets('$name: bar on every tab root', (tester) async {
@@ -285,6 +319,36 @@ void main() {
           '/supervisor/more/objectives',
           'team-objectives',
         ),
+        (
+          'storekeeper',
+          '/storekeeper/loads',
+          '/storekeeper/loads/new',
+          'new-load',
+        ),
+        (
+          'storekeeper',
+          '/storekeeper/loads',
+          '/storekeeper/loads/t1',
+          'transfer-detail',
+        ),
+        (
+          'storekeeper',
+          '/storekeeper/trucks',
+          '/storekeeper/trucks/v1',
+          'truck-stock',
+        ),
+        (
+          'storekeeper',
+          '/storekeeper/inventory',
+          '/storekeeper/inventory/i1',
+          'count',
+        ),
+        (
+          'storekeeper',
+          '/storekeeper/more',
+          '/storekeeper/more/assistant',
+          'assistant',
+        ),
       ];
       for (final (role, root, sub, page) in subPages) {
         testWidgets('$role: bar hidden on $sub, back brings it', (
@@ -294,6 +358,7 @@ void main() {
             'seller': seller(),
             'livreur': livreur(),
             'supervisor': supervisor(),
+            'storekeeper': storekeeper(),
           }[role]!;
           final router = await _pump(tester, user, root, locale: locale);
           expect(_barShown(tester), isTrue);
