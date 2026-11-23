@@ -656,7 +656,10 @@
     "done_cancelled": "Transfer cancelled",
     "negative_title": "Negative stock after the transfer",
     "negative_line": "{name}: {qty}",
-    "finish": "Done"
+    "finish": "Done",
+    "load_hint": "From the depot to the truck",
+    "unload_rest": "Unload the rest",
+    "unload_hint": "What is left on the truck goes back to the depot"
   },
   "trucks": {
     "no_driver": "No driver"

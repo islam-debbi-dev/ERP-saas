@@ -33,6 +33,7 @@ class TransferFormScreen extends StatelessWidget {
     this.type = TransferType.load,
     this.truckId,
     this.transferId,
+    this.unloadRest = false,
   });
 
   final String type;
@@ -43,12 +44,16 @@ class TransferFormScreen extends StatelessWidget {
   /// A draft to edit.
   final String? transferId;
 
+  /// Déchargement du soir: the lines start as everything on the truck.
+  final bool unloadRest;
+
   @override
   Widget build(BuildContext context) => BlocProvider(
     create: (_) => TransferEditorCubit(
       getIt<StockTransfersRepository>(),
       form: TransferForm(type: type, truckId: truckId),
       transferId: transferId,
+      unloadRest: unloadRest,
     )..load(),
     child: const _FormView(),
   );

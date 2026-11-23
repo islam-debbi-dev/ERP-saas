@@ -656,7 +656,10 @@
     "done_cancelled": "أُلغي التحويل",
     "negative_title": "مخزون سالب بعد التحويل",
     "negative_line": "{name}: {qty}",
-    "finish": "تم"
+    "finish": "تم",
+    "load_hint": "من المستودع إلى الشاحنة",
+    "unload_rest": "تفريغ الباقي",
+    "unload_hint": "ما بقي في الشاحنة يعود إلى المستودع"
   },
   "trucks": {
     "no_driver": "بدون سائق"

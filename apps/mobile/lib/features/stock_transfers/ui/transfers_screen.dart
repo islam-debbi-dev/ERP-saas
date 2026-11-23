@@ -123,9 +123,8 @@ class _TransfersScreenState extends State<TransfersScreen> {
                     heroTag: 'new-load',
                     onPressed: () async {
                       final cubit = context.read<LoadCubit<TransfersDay>>();
-                      final query = widget.truckId == null
-                          ? ''
-                          : '?truck=${widget.truckId}';
+                      final query = await _chooseNew(context);
+                      if (query == null || !context.mounted) return;
                       await context.push('${widget.basePath}/new$query');
                       await cubit.load();
                     },
@@ -136,6 +135,77 @@ class _TransfersScreenState extends State<TransfersScreen> {
               ),
       ),
     );
+  }
+
+  /// Chargement, or the evening déchargement of a truck's rest (its truck
+  /// asked when the list is not kept to one). The query of the `new` route;
+  /// null = nothing chosen.
+  Future<String?> _chooseNew(BuildContext context) async {
+    final unload = await showModalBottomSheet<bool>(
+      context: context,
+      showDragHandle: true,
+      builder: (c) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              key: const Key('choose-load'),
+              minTileHeight: AppSpacing.minTouch,
+              leading: const Icon(Icons.move_to_inbox_outlined),
+              title: Text(c.tr('transfer.new_load')),
+              subtitle: Text(c.tr('transfer.load_hint')),
+              onTap: () => Navigator.of(c).pop(false),
+            ),
+            ListTile(
+              key: const Key('choose-unload'),
+              minTileHeight: AppSpacing.minTouch,
+              leading: const Icon(Icons.outbox_outlined),
+              title: Text(c.tr('transfer.unload_rest')),
+              subtitle: Text(c.tr('transfer.unload_hint')),
+              onTap: () => Navigator.of(c).pop(true),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (unload == null || !context.mounted) return null;
+    var truck = widget.truckId ?? _truck;
+    if (unload && truck == null) {
+      truck = await showModalBottomSheet<String>(
+        context: context,
+        showDragHandle: true,
+        isScrollControlled: true,
+        builder: (c) => SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              for (final t in _trucks)
+                ListTile(
+                  minTileHeight: AppSpacing.minTouch,
+                  leading: const Icon(Icons.local_shipping_outlined),
+                  title: Text(
+                    t.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textDirection: TextDirection.ltr,
+                    textAlign: TextAlign.start,
+                  ),
+                  subtitle: Text(
+                    t.driver?.fullName ?? c.tr('trucks.no_driver'),
+                  ),
+                  onTap: () => Navigator.of(c).pop(t.id),
+                ),
+            ],
+          ),
+        ),
+      );
+      if (truck == null) return null;
+    }
+    final params = {
+      if (truck != null) 'truck': truck,
+      if (unload) ...{'type': 'UNLOAD', 'rest': '1'},
+    };
+    return params.isEmpty ? '' : '?${Uri(queryParameters: params).query}';
   }
 
   Widget _chip(String label, String? id, {bool ltr = false}) => Padding(

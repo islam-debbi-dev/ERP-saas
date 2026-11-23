@@ -29,7 +29,7 @@ void main() {
   late FakeAdapter adapter;
 
   Future<TransferEditorCubit> editor(
-    Map<String, Route> extra, {
+    Map<String, FakeRoute> extra, {
     String? transferId,
   }) async {
     adapter = fakeStockApi({...baseRoutes(), ...extra});

@@ -209,11 +209,11 @@ Map<String, dynamic> productJson({
   ],
 };
 
-typedef Route = FakeReply Function(RequestOptions o);
+typedef FakeRoute = FakeReply Function(RequestOptions o);
 
 /// A fake API answering `"<METHOD> <path>"` from [routes] (path without
 /// query), 404 otherwise. Registers the repositories on it.
-FakeAdapter fakeStockApi(Map<String, Route> routes) {
+FakeAdapter fakeStockApi(Map<String, FakeRoute> routes) {
   final adapter = FakeAdapter((o) {
     final route = routes['${o.method} ${o.path}'];
     if (route != null) return route(o);
@@ -231,7 +231,7 @@ FakeAdapter fakeStockApi(Map<String, Route> routes) {
 }
 
 /// The default routes of the Chargements screens.
-Map<String, Route> baseRoutes() => {
+Map<String, FakeRoute> baseRoutes() => {
   'GET /warehouses': (o) => FakeReply(
     200,
     o.queryParameters['type'] == 'VEHICLE'

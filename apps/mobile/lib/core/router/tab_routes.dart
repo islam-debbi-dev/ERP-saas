@@ -26,6 +26,7 @@ import '../../features/sales/logic/basket.dart';
 import '../../features/sales/ui/my_sales_screen.dart';
 import '../../features/sales/ui/sale_screen.dart';
 import '../../features/sales/ui/sell_screen.dart';
+import '../../features/stock_transfers/data/transfer_models.dart';
 import '../../features/stock_transfers/ui/transfer_detail_screen.dart';
 import '../../features/stock_transfers/ui/transfer_form_screen.dart';
 import '../../features/stock_transfers/ui/transfers_screen.dart';
@@ -186,7 +187,7 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
 }
 
 /// A chargement / déchargement under a list: `[list]/new` (`?truck=` picks
-/// the truck), `[list]/:transferId` and its `edit`. Every screen needs
+/// the truck; `?type=UNLOAD&rest=1` is the evening déchargement of its rest), `[list]/:transferId` and its `edit`. Every screen needs
 /// STOCK_TRANSFER: without it a deep link goes back to the list. The forms
 /// cover the bottom bar (root navigator).
 List<RouteBase> transferRoutes() {
@@ -197,8 +198,15 @@ List<RouteBase> transferRoutes() {
       path: 'new',
       parentNavigatorKey: rootNavigatorKey,
       redirect: needsTransfer,
-      builder: (_, state) =>
-          TransferFormScreen(truckId: state.uri.queryParameters['truck']),
+      builder: (_, state) {
+        final q = state.uri.queryParameters;
+        final unload = q['type'] == TransferType.unload;
+        return TransferFormScreen(
+          type: unload ? TransferType.unload : TransferType.load,
+          truckId: q['truck'],
+          unloadRest: unload && q['rest'] == '1',
+        );
+      },
     ),
     GoRoute(
       path: ':transferId',

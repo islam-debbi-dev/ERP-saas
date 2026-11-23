@@ -130,6 +130,7 @@ class TransferEditorCubit extends Cubit<TransferEditorState> {
     required TransferForm form,
     this.transferId,
     this.loadSourceStock = true,
+    this.unloadRest = false,
   }) : super(TransferEditorState(form: form, transferId: transferId));
 
   final StockTransfersRepository _repo;
@@ -139,6 +140,11 @@ class TransferEditorCubit extends Cubit<TransferEditorState> {
 
   /// Reads the source's stock for "Disponible" (tests may skip it).
   final bool loadSourceStock;
+
+  /// Déchargement du soir: the lines start as everything left on the truck
+  /// (`GET /stock?warehouseId=<truck>`), and follow the truck if it changes
+  /// before the first save.
+  final bool unloadRest;
 
   final IdempotencyKey createKey = IdempotencyKey();
   final IdempotencyKey validateKey = IdempotencyKey();
@@ -199,7 +205,36 @@ class TransferEditorCubit extends Cubit<TransferEditorState> {
         trucks: truckList,
       ),
     );
-    await _refreshSourceStock();
+    if (unloadRest && id == null) {
+      await _prefillRest();
+    } else {
+      await _refreshSourceStock();
+    }
+  }
+
+  /// Lines = the truck's rest, and its stock as "Disponible".
+  Future<void> _prefillRest() async {
+    final truck = state.form.truckId;
+    if (truck == null) return;
+    emit(state.copyWith(loading: true));
+    final r = await _repo.levels(truck, positiveOnly: true);
+    if (isClosed || state.form.truckId != truck) return;
+    switch (r) {
+      case Failure(:final error):
+        emit(state.copyWith(loading: false, loadError: error));
+      case Success(:final data):
+        emit(
+          state.copyWith(
+            loading: false,
+            form: TransferForm.unloadRest(
+              truckId: truck,
+              depotId: state.form.depotId,
+              truckStock: data,
+            ).copyWith(note: state.form.note),
+            sourceStock: {for (final s in data) s.productId: s.qtyBase},
+          ),
+        );
+    }
   }
 
   /// The truck's own dépôt (else the only one, else the default) as the
@@ -247,7 +282,12 @@ class TransferEditorCubit extends Cubit<TransferEditorState> {
 
   Future<void> setTruck(String id) async {
     _edit(state.form.copyWith(truckId: id));
-    if (!state.form.isLoad) await _refreshSourceStock();
+    if (state.form.isLoad) return;
+    if (unloadRest && state.transferId == null) {
+      await _prefillRest();
+    } else {
+      await _refreshSourceStock();
+    }
   }
 
   Future<void> setDepot(String id) async {
