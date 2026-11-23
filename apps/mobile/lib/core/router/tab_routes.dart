@@ -66,6 +66,8 @@ Widget tabPage(RoleTab tab) {
           ),
         ),
         onOpenClients: () => context.go('/seller/clients'),
+        onOpenClientId: (context, id) =>
+            context.push('/seller/today/client/$id'),
       ),
     );
   }
