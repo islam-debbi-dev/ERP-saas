@@ -4,6 +4,7 @@ import '../../../../core/design/design.dart';
 import '../../../../core/helpers/text_direction.dart';
 import '../../../../core/localization/tr.dart';
 import '../../logic/assistant_chat_cubit.dart';
+import 'assistant_markdown_view.dart';
 
 /// The user's question: a bubble on the end side, in its own direction.
 class QuestionBubble extends StatelessWidget {
@@ -49,11 +50,7 @@ class AnswerBubble extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          message.content,
-          textDirection: textDirectionOf(message.content),
-          style: AppTextStyles.bodyLarge.copyWith(color: context.textMain),
-        ),
+        AssistantMarkdownView(text: message.content),
         if (message.truncated) ...[
           const SizedBox(height: AppSpacing.xs),
           Text(
