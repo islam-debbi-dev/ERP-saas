@@ -18,6 +18,8 @@ import 'package:orvynt_starter/features/assistant/data/assistant_models.dart';
 import 'package:orvynt_starter/features/assistant/logic/assistant_status_cubit.dart';
 import 'package:orvynt_starter/features/auth/data/repo/auth_repository.dart';
 
+import 'fake_tiles.dart';
+
 /// A seller of the demo tenant with the DISTRIBUTION modules.
 AuthUser seller({
   List<String>? permissions,
@@ -147,6 +149,7 @@ Future<void> pumpScreen(
   // The bundle caches each string file's Future in the zone of the test that
   // first loaded it; a later test would await a Future that never completes.
   rootBundle.clear();
+  useFakeTiles();
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);

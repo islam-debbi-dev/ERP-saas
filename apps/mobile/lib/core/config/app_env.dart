@@ -48,6 +48,19 @@ class AppEnv {
   static const String _privacyEmailFromDefine = String.fromEnvironment(
     'PRIVACY_EMAIL',
   );
+  static const String _mapTileUrlFromDefine = String.fromEnvironment(
+    'MAP_TILE_URL',
+  );
+  static const String _mapTileAttributionFromDefine = String.fromEnvironment(
+    'MAP_TILE_ATTRIBUTION',
+  );
+
+  /// OpenStreetMap's own tile servers: fine for a pilot, not for heavy use
+  /// (tile usage policy). A paid or self-hosted provider (MapTiler...) is set
+  /// through MAP_TILE_URL only.
+  static const String osmTileUrl =
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  static const String osmAttribution = '© OpenStreetMap contributors';
 
   // ── Backend ────────────────────────────────────────────────────────────────
 
@@ -59,6 +72,19 @@ class AppEnv {
   /// and sent there. Empty when not configured: the link is then hidden.
   static String get dashboardUrl =>
       _trimSlash(_str(_dashboardFromDefine, 'DASHBOARD_URL', ''));
+
+  // ── Maps ───────────────────────────────────────────────────────────────────
+
+  /// Raster tile URL template (`{z}/{x}/{y}`, optional `{s}`).
+  static String get mapTileUrl =>
+      _str(_mapTileUrlFromDefine, 'MAP_TILE_URL', osmTileUrl);
+
+  /// The credit the tile provider requires, shown on every map.
+  static String get mapTileAttribution => _str(
+    _mapTileAttributionFromDefine,
+    'MAP_TILE_ATTRIBUTION',
+    osmAttribution,
+  );
 
   static String _trimSlash(String url) =>
       url.endsWith('/') ? url.substring(0, url.length - 1) : url;
