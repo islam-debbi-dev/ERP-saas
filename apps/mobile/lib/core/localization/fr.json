@@ -659,7 +659,14 @@
     "finish": "Terminé",
     "load_hint": "Du dépôt vers le camion",
     "unload_rest": "Décharger le reste",
-    "unload_hint": "Ce qui reste dans le camion revient au dépôt"
+    "unload_hint": "Ce qui reste dans le camion revient au dépôt",
+    "cancel": "Annuler",
+    "cancel_title": "Annuler ce transfert ?",
+    "cancel_effect": "Les marchandises reviennent d'où elles sont parties. Rien n'est supprimé : le transfert reste, annulé, avec le motif.",
+    "abandon": "Abandonner",
+    "abandon_title": "Abandonner ce brouillon ?",
+    "abandon_effect": "Aucun stock n'a bougé. Le brouillon reste, annulé, avec le motif.",
+    "pdf": "Bon (PDF)"
   },
   "trucks": {
     "no_driver": "Sans chauffeur"

@@ -659,7 +659,14 @@
     "finish": "Done",
     "load_hint": "From the depot to the truck",
     "unload_rest": "Unload the rest",
-    "unload_hint": "What is left on the truck goes back to the depot"
+    "unload_hint": "What is left on the truck goes back to the depot",
+    "cancel": "Cancel",
+    "cancel_title": "Cancel this transfer?",
+    "cancel_effect": "The goods go back where they came from. Nothing is deleted: the transfer stays, cancelled, with the reason.",
+    "abandon": "Abandon",
+    "abandon_title": "Abandon this draft?",
+    "abandon_effect": "No stock moved. The draft stays, cancelled, with the reason.",
+    "pdf": "Slip (PDF)"
   },
   "trucks": {
     "no_driver": "No driver"
