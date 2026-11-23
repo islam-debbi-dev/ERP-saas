@@ -14,6 +14,7 @@ import '../logic/assistant_chat_cubit.dart';
 import '../logic/assistant_status_cubit.dart';
 import 'assistant_history_screen.dart';
 import 'widgets/answer_bubble.dart';
+import 'widgets/answer_links.dart';
 import 'widgets/chat_input_bar.dart';
 
 /// The assistant (phase 30 API), a sub-page of each role's "Plus": the
@@ -150,15 +151,20 @@ class _Messages extends StatelessWidget {
         else if (m.content.isNotEmpty)
           AnswerBubble(
             message: m,
-            footer: m.id == null
-                ? null
-                : FeedbackButtons(
+            footer: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (m.links.isNotEmpty) AnswerLinks(links: m.links),
+                if (m.id != null)
+                  FeedbackButtons(
                     useful: m.useful,
                     onRate: (useful) => context.read<AssistantChatCubit>().rate(
                       m.id!,
                       useful: useful,
                     ),
                   ),
+              ],
+            ),
           ),
       if (state.waiting || (state.streaming && state.tool != null))
         _StatusLine(tool: state.tool),
