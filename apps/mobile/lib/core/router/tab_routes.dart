@@ -82,6 +82,7 @@ Widget tabPage(RoleTab tab) {
     return DeliveriesScreen(
       tabPath: p,
       onOpenOrder: (context, order) => context.push('$p/${order.id}'),
+      onOpenClient: (context, id) => context.push('$p/client/$id'),
     );
   }
   if (p == '/supervisor/team') {
@@ -147,6 +148,8 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
   }
   if (tab.path == '/livreur/deliveries') {
     return [
+      // The map's "Ouvrir la fiche": the client stays in this tab.
+      clientDetailRoute(tab.path, prefix: 'client/'),
       GoRoute(
         path: ':orderId',
         parentNavigatorKey: rootNavigatorKey,

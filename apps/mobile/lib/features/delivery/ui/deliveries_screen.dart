@@ -8,6 +8,7 @@ import '../../../core/di/dependency_injection.dart';
 import '../../../core/design/design.dart';
 import '../../../core/helpers/algiers_day.dart';
 import '../../../core/localization/tr.dart';
+import '../../../core/map/map_list_toggle.dart';
 import '../../../core/models/erp_codes.dart';
 import '../../../core/paging/load_cubit.dart';
 import '../../../core/router/tab_badges.dart';
@@ -15,12 +16,19 @@ import '../../../core/session/session_cubit.dart';
 import '../../orders/data/models/order.dart';
 import '../data/deliveries_repository.dart';
 import '../logic/delivery_groups.dart';
+import 'deliveries_map.dart';
 
 /// "Livraisons": the confirmed orders put on the livreur or on the truck he
 /// drives, grouped by client: today's stops first in route order, then the
-/// other clients. The count goes on the tab's badge.
+/// other clients. The count goes on the tab's badge. With GEO_CHECK a
+/// Liste / Carte toggle shows the same clients on a map.
 class DeliveriesScreen extends StatelessWidget {
-  const DeliveriesScreen({super.key, required this.tabPath, this.onOpenOrder});
+  const DeliveriesScreen({
+    super.key,
+    required this.tabPath,
+    this.onOpenOrder,
+    this.onOpenClient,
+  });
 
   /// The tab's path, the key of its badge.
   final String tabPath;
@@ -28,6 +36,10 @@ class DeliveriesScreen extends StatelessWidget {
   /// Opens an order to deliver it; the list reloads when it comes back.
   final Future<Object?> Function(BuildContext context, OrderSummary order)?
   onOpenOrder;
+
+  /// The map sheet's "Ouvrir la fiche".
+  final Future<Object?> Function(BuildContext context, String clientId)?
+  onOpenClient;
 
   @override
   Widget build(BuildContext context) {
@@ -43,70 +55,142 @@ class DeliveriesScreen extends StatelessWidget {
             listener: (_, s) => TabBadges.of(tabPath).value = s.data!.count,
             child: Scaffold(
               appBar: AppBar(title: Text(context.tr('delivery.title'))),
-              body: _Body(onOpenOrder: onOpenOrder),
+              body: _Body(
+                onOpenOrder: onOpenOrder,
+                onOpenClient: onOpenClient,
+                withMap: user?.hasFeature(Feature.geoCheck) ?? false,
+              ),
             ),
           ),
     );
   }
 }
 
-class _Body extends StatelessWidget {
-  const _Body({this.onOpenOrder});
+class _Body extends StatefulWidget {
+  const _Body({this.onOpenOrder, this.onOpenClient, this.withMap = false});
 
   final Future<Object?> Function(BuildContext context, OrderSummary order)?
   onOpenOrder;
+  final Future<Object?> Function(BuildContext context, String clientId)?
+  onOpenClient;
+  final bool withMap;
+
+  @override
+  State<_Body> createState() => _BodyState();
+}
+
+class _BodyState extends State<_Body> {
+  ListOrMap _view = ListOrMap.list;
+  bool _mapBuilt = false;
+
+  Future<void> _openOrder(OrderSummary order) async {
+    final cubit = context.read<LoadCubit<DeliveriesBoard>>();
+    await widget.onOpenOrder!(context, order);
+    await cubit.load();
+  }
+
+  Future<void> _openClient(String id) async {
+    final cubit = context.read<LoadCubit<DeliveriesBoard>>();
+    await widget.onOpenClient!(context, id);
+    await cubit.load();
+  }
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<LoadCubit<DeliveriesBoard>>();
-    return BlocBuilder<LoadCubit<DeliveriesBoard>, LoadState<DeliveriesBoard>>(
-      builder: (context, state) => LoadStateView<DeliveriesBoard>(
-        state: state,
-        onRetry: cubit.load,
-        skeleton: const ListSkeleton(),
-        builder: (context, board) => RefreshIndicator(
-          onRefresh: cubit.load,
-          child: board.isEmpty
-              ? ListView(
-                  padding: const EdgeInsets.only(top: AppSpacing.xxl),
-                  children: [
-                    AppEmptyState(
-                      icon: Icons.inventory_2_outlined,
-                      title: context.tr('delivery.empty_title'),
-                      message: context.tr('delivery.empty_message'),
-                    ),
-                  ],
-                )
-              : ListView(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                    AppSpacing.lg,
-                    AppSpacing.md,
-                    AppSpacing.lg,
-                    AppSpacing.navClearance,
-                  ),
-                  children: [
-                    for (final g in board.groups) ...[
-                      DeliveryGroupHeader(group: g),
-                      for (final o in g.orders) ...[
-                        DeliveryTile(
-                          order: o,
-                          onTap: onOpenOrder == null
-                              ? null
-                              : () async {
-                                  await onOpenOrder!(context, o);
-                                  await cubit.load();
-                                },
-                        ),
-                        AppSpacing.gapSm,
-                      ],
-                      AppSpacing.gapSm,
-                    ],
-                  ],
+    final content =
+        BlocBuilder<LoadCubit<DeliveriesBoard>, LoadState<DeliveriesBoard>>(
+          builder: (context, state) => LoadStateView<DeliveriesBoard>(
+            state: state,
+            onRetry: cubit.load,
+            skeleton: const ListSkeleton(),
+            builder: (context, board) => IndexedStack(
+              index: _view == ListOrMap.list ? 0 : 1,
+              sizing: StackFit.expand,
+              children: [
+                _DeliveriesList(
+                  board: board,
+                  onRefresh: cubit.load,
+                  onOpenOrder: widget.onOpenOrder == null ? null : _openOrder,
                 ),
+                if (_mapBuilt)
+                  DeliveriesMap(
+                    board: board,
+                    onRefresh: cubit.load,
+                    onOpenOrder: widget.onOpenOrder == null ? null : _openOrder,
+                    onOpenClient: widget.onOpenClient == null
+                        ? null
+                        : _openClient,
+                  )
+                else
+                  const SizedBox.shrink(),
+              ],
+            ),
+          ),
+        );
+    if (!widget.withMap) return content;
+    return Column(
+      children: [
+        MapListToggle(
+          value: _view,
+          onChanged: (v) => setState(() {
+            _view = v;
+            if (v == ListOrMap.map) _mapBuilt = true;
+          }),
         ),
-      ),
+        Expanded(child: content),
+      ],
     );
   }
+}
+
+class _DeliveriesList extends StatelessWidget {
+  const _DeliveriesList({
+    required this.board,
+    required this.onRefresh,
+    this.onOpenOrder,
+  });
+
+  final DeliveriesBoard board;
+  final Future<void> Function() onRefresh;
+  final Future<void> Function(OrderSummary order)? onOpenOrder;
+
+  @override
+  Widget build(BuildContext context) => RefreshIndicator(
+    onRefresh: onRefresh,
+    child: board.isEmpty
+        ? ListView(
+            padding: const EdgeInsets.only(top: AppSpacing.xxl),
+            children: [
+              AppEmptyState(
+                icon: Icons.inventory_2_outlined,
+                title: context.tr('delivery.empty_title'),
+                message: context.tr('delivery.empty_message'),
+              ),
+            ],
+          )
+        : ListView(
+            padding: const EdgeInsetsDirectional.fromSTEB(
+              AppSpacing.lg,
+              AppSpacing.md,
+              AppSpacing.lg,
+              AppSpacing.navClearance,
+            ),
+            children: [
+              for (final g in board.groups) ...[
+                DeliveryGroupHeader(group: g),
+                for (final o in g.orders) ...[
+                  DeliveryTile(
+                    order: o,
+                    onTap: onOpenOrder == null ? null : () => onOpenOrder!(o),
+                  ),
+                  AppSpacing.gapSm,
+                ],
+                AppSpacing.gapSm,
+              ],
+            ],
+          ),
+  );
 }
 
 /// The client of a group, with his stop number in today's tournée.

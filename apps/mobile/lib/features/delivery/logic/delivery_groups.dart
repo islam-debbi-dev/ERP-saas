@@ -22,9 +22,12 @@ class DeliveryGroup {
 
 /// What the Livraisons tab shows: the groups in delivery order.
 class DeliveriesBoard {
-  const DeliveriesBoard({required this.groups});
+  const DeliveriesBoard({required this.groups, this.stops = const []});
 
   final List<DeliveryGroup> groups;
+
+  /// Today's stops the order came from (with their saved points), for the map.
+  final List<TodayStop> stops;
 
   /// Orders left to deliver (the tab's badge).
   int get count => groups.fold(0, (n, g) => n + g.orders.length);
@@ -66,7 +69,7 @@ DeliveriesBoard groupDeliveries(
     );
     return byName != 0 ? byName : a.clientId.compareTo(b.clientId);
   });
-  return DeliveriesBoard(groups: groups);
+  return DeliveriesBoard(groups: groups, stops: stops);
 }
 
 int _byDate(OrderSummary a, OrderSummary b) {
