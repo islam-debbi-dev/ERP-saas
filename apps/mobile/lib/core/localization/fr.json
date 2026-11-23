@@ -669,6 +669,10 @@
     "pdf": "Bon (PDF)"
   },
   "trucks": {
-    "no_driver": "Sans chauffeur"
+    "no_driver": "Sans chauffeur",
+    "title": "Camions",
+    "driver_today": "Chauffeur du jour : {name}",
+    "stock_title": "Stock du camion",
+    "load": "Charger"
   }
 }

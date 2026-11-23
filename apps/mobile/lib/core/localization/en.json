@@ -669,6 +669,10 @@
     "pdf": "Slip (PDF)"
   },
   "trucks": {
-    "no_driver": "No driver"
+    "no_driver": "No driver",
+    "title": "Trucks",
+    "driver_today": "Today's driver: {name}",
+    "stock_title": "Truck stock",
+    "load": "Load"
   }
 }

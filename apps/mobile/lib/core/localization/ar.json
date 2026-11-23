@@ -669,6 +669,10 @@
     "pdf": "سند الشحن (PDF)"
   },
   "trucks": {
-    "no_driver": "بدون سائق"
+    "no_driver": "بدون سائق",
+    "title": "الشاحنات",
+    "driver_today": "السائق اليوم: {name}",
+    "stock_title": "مخزون الشاحنة",
+    "load": "شحن"
   }
 }

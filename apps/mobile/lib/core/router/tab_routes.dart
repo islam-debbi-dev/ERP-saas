@@ -30,6 +30,7 @@ import '../../features/stock_transfers/data/transfer_models.dart';
 import '../../features/stock_transfers/ui/transfer_detail_screen.dart';
 import '../../features/stock_transfers/ui/transfer_form_screen.dart';
 import '../../features/stock_transfers/ui/transfers_screen.dart';
+import '../../features/stock_transfers/ui/trucks_screen.dart';
 import '../../features/team/ui/member_day_screen.dart';
 import '../../features/team/ui/team_screen.dart';
 import '../../features/team_orders/ui/team_orders_screen.dart';
@@ -86,6 +87,7 @@ Widget tabPage(RoleTab tab) {
   }
   if (p == '/supervisor/orders') return TeamOrdersScreen(tabPath: p);
   if (p == '/supervisor/controls') return const ControlsScreen();
+  if (p == '/storekeeper/trucks') return TrucksScreen(basePath: p);
   if (p == '/storekeeper/loads') {
     return Builder(
       builder: (context) => TransfersScreen(
@@ -154,6 +156,7 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
     ];
   }
   if (tab.path == '/storekeeper/loads') return transferRoutes();
+  if (tab.path == '/storekeeper/trucks') return truckRoutes();
   if (tab.path == '/supervisor/more') {
     return [
       GoRoute(
@@ -222,6 +225,42 @@ List<RouteBase> transferRoutes() {
           redirect: needsTransfer,
           builder: (_, state) => TransferFormScreen(
             transferId: state.pathParameters['transferId']!,
+          ),
+        ),
+      ],
+    ),
+  ];
+}
+
+/// A truck's stock (`/storekeeper/trucks/:truckId`), and from it a
+/// chargement (`load`) or the evening déchargement of its rest (`unload`):
+/// the forms need STOCK_TRANSFER.
+List<RouteBase> truckRoutes() {
+  String? needsTransfer(BuildContext context, GoRouterState state) =>
+      _needsRight(context, state, (u) => u.can(Permission.stockTransfer));
+  return [
+    GoRoute(
+      path: ':truckId',
+      builder: (_, state) => TruckStockScreen(
+        truckId: state.pathParameters['truckId']!,
+        basePath: state.uri.path,
+      ),
+      routes: [
+        GoRoute(
+          path: 'load',
+          parentNavigatorKey: rootNavigatorKey,
+          redirect: needsTransfer,
+          builder: (_, state) =>
+              TransferFormScreen(truckId: state.pathParameters['truckId']),
+        ),
+        GoRoute(
+          path: 'unload',
+          parentNavigatorKey: rootNavigatorKey,
+          redirect: needsTransfer,
+          builder: (_, state) => TransferFormScreen(
+            type: TransferType.unload,
+            truckId: state.pathParameters['truckId'],
+            unloadRest: true,
           ),
         ),
       ],
