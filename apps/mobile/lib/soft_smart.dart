@@ -11,6 +11,7 @@ import 'core/theme/app_theme_dark.dart';
 import 'core/theme/app_theme_light.dart';
 import 'core/theme/cubit/theme_cubit.dart';
 import 'core/session/session_cubit.dart';
+import 'features/assistant/logic/assistant_status_cubit.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/config/app_env.dart';
 import 'core/design/responsive.dart';
@@ -53,6 +54,9 @@ class _SoftSmartState extends State<SoftSmart> {
         BlocProvider(create: (_) => ThemeCubit(widget.initialThemeMode)),
         BlocProvider(create: (_) => LocaleCubit(widget.initialLocale)),
         BlocProvider<SessionCubit>.value(value: getIt<SessionCubit>()),
+        BlocProvider<AssistantStatusCubit>.value(
+          value: getIt<AssistantStatusCubit>(),
+        ),
       ],
       child: ScreenUtilInit(
         designSize: _designSize,

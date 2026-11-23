@@ -47,6 +47,7 @@ List<RouteBase> _subRoutes(String tab, GlobalKey<NavigatorState> root) =>
       ],
       '/seller/more' => [
         GoRoute(path: 'sales', builder: (_, _) => const _Page('my-sales')),
+        GoRoute(path: 'assistant', builder: (_, _) => const _Page('assistant')),
       ],
       '/livreur/deliveries' => [
         GoRoute(
@@ -429,5 +430,34 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(NoConnectionBanner), findsOneWidget);
     expectNoOverflow(tester);
+  });
+
+  testWidgets('an assistant link to a client goes to the Clients tab; the '
+      'Plus tab still holds the chat (M4)', (tester) async {
+    final router = await _pump(tester, seller(), '/seller/more');
+    await _push(tester, router, '/seller/more/assistant');
+    expect(find.text('page:assistant'), findsOneWidget);
+
+    // AnswerLinks goes to a route of another tab (a push across shell
+    // branches loses the location on pop).
+    router.go('/seller/clients/c1');
+    await tester.pumpAndSettle();
+    expect(find.text('page:client-detail'), findsOneWidget);
+    expect(_barShown(tester), isFalse);
+
+    await _back(tester);
+    expect(find.text('page:root:/seller/clients'), findsOneWidget);
+    expect(_barShown(tester), isTrue);
+
+    // Plus brings the chat back where it was.
+    await tester.tap(find.byIcon(Icons.more_horiz).last);
+    await tester.pumpAndSettle();
+    expect(find.text('page:assistant'), findsOneWidget);
+    expect(_barShown(tester), isFalse);
+
+    // Back closes the chat, onto Plus.
+    await _back(tester);
+    expect(find.text('page:root:/seller/more'), findsOneWidget);
+    expect(_barShown(tester), isTrue);
   });
 }

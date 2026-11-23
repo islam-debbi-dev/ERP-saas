@@ -14,6 +14,8 @@ import 'package:orvynt_starter/core/session/session_cubit.dart';
 import 'package:orvynt_starter/core/session/session_state.dart';
 import 'package:orvynt_starter/core/theme/app_theme_light.dart';
 import 'package:orvynt_starter/core/theme/cubit/theme_cubit.dart';
+import 'package:orvynt_starter/features/assistant/data/assistant_models.dart';
+import 'package:orvynt_starter/features/assistant/logic/assistant_status_cubit.dart';
 import 'package:orvynt_starter/features/auth/data/repo/auth_repository.dart';
 
 /// A seller of the demo tenant with the DISTRIBUTION modules.
@@ -140,6 +142,7 @@ Future<void> pumpScreen(
   String locale = 'ar',
   AuthUser? user,
   Size size = phone360,
+  AssistantStatus assistant = AssistantStatus.unavailable,
 }) async {
   // The bundle caches each string file's Future in the zone of the test that
   // first loaded it; a later test would await a Future that never completes.
@@ -155,6 +158,7 @@ Future<void> pumpScreen(
         ),
         BlocProvider(create: (_) => ThemeCubit(ThemeMode.light)),
         BlocProvider(create: (_) => LocaleCubit(Locale(locale))),
+        BlocProvider(create: (_) => AssistantStatusCubit.seeded(assistant)),
       ],
       child: ScreenUtilInit(
         designSize: const Size(375, 812),

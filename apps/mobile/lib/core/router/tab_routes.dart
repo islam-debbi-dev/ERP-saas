@@ -3,7 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/account/ui/account_screen.dart';
-import '../../features/assistant/ui/assistant_placeholder_screen.dart';
+import '../../features/assistant/logic/assistant_status_cubit.dart';
+import '../../features/assistant/ui/assistant_screen.dart';
 import '../../features/clients/ui/client_detail_screen.dart';
 import '../../features/clients/ui/client_statement_screen.dart';
 import '../../features/clients/ui/clients_screen.dart';
@@ -185,20 +186,12 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
         path: 'objectives',
         builder: (_, _) => const TeamObjectivesScreen(),
       ),
-      GoRoute(
-        path: 'assistant',
-        builder: (_, _) => const AssistantPlaceholderScreen(),
-      ),
+      assistantRoute(),
       grantedLoadsRoute('/supervisor/more/loads'),
     ];
   }
   if (tab.path == '/storekeeper/more') {
-    return [
-      GoRoute(
-        path: 'assistant',
-        builder: (_, _) => const AssistantPlaceholderScreen(),
-      ),
-    ];
+    return [assistantRoute()];
   }
   if (tab.path == '/livreur/more') {
     return [
@@ -207,6 +200,7 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
         builder: (_, _) => const MyDeliveriesScreen(),
       ),
       GoRoute(path: 'payments', builder: (_, _) => const MyPaymentsScreen()),
+      assistantRoute(),
     ];
   }
   if (tab.path == '/seller/more') {
@@ -215,6 +209,7 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
       GoRoute(path: 'payments', builder: (_, _) => const MyPaymentsScreen()),
       GoRoute(path: 'sales', builder: (_, _) => const MySalesScreen()),
       GoRoute(path: 'objectives', builder: (_, _) => const ObjectivesScreen()),
+      assistantRoute(),
     ];
   }
   return const [];
@@ -438,6 +433,7 @@ List<MoreItem> sellerMenu(BuildContext context) {
         icon: Icons.payments_outlined,
         onTap: (c) => c.push('/seller/more/payments'),
       ),
+    ...assistantItem(context, '/seller/more'),
   ];
 }
 
@@ -458,12 +454,13 @@ List<MoreItem> livreurMenu(BuildContext context) {
         icon: Icons.payments_outlined,
         onTap: (c) => c.push('/livreur/more/payments'),
       ),
+    ...assistantItem(context, '/livreur/more'),
   ];
 }
 
 /// The supervisor's "Plus" menu: his team's targets (INCENTIVES), the
 /// chargements when the owner granted him STOCK_TRANSFER, and the assistant
-/// (AI_ASSISTANT, a placeholder until M4). Account, language and theme
+/// (when `GET /assistant/status` says available). Account, language and theme
 /// follow in [AccountScreen].
 List<MoreItem> supervisorMenu(BuildContext context) {
   final user = context.watch<SessionCubit>().state.user;
@@ -482,27 +479,38 @@ List<MoreItem> supervisorMenu(BuildContext context) {
         icon: Icons.move_to_inbox_outlined,
         onTap: (c) => c.push('/supervisor/more/loads'),
       ),
-    if (user.hasFeature(Feature.aiAssistant))
-      MoreItem(
-        labelKey: 'assistant.title',
-        icon: Icons.auto_awesome_outlined,
-        onTap: (c) => c.push('/supervisor/more/assistant'),
-      ),
+    ...assistantItem(context, '/supervisor/more'),
   ];
 }
 
-/// The magasinier's "Plus" menu: the assistant (AI_ASSISTANT, a
-/// placeholder until M4). Account, language and theme follow in
+/// The magasinier's "Plus" menu: the assistant (when
+/// `GET /assistant/status` says available). Account, language and theme follow in
 /// [AccountScreen].
 List<MoreItem> storekeeperMenu(BuildContext context) {
   final user = context.watch<SessionCubit>().state.user;
   if (user == null) return const [];
-  return [
-    if (user.hasFeature(Feature.aiAssistant))
-      MoreItem(
-        labelKey: 'assistant.title',
-        icon: Icons.auto_awesome_outlined,
-        onTap: (c) => c.push('/storekeeper/more/assistant'),
-      ),
-  ];
+  return [...assistantItem(context, '/storekeeper/more')];
 }
+
+/// The assistant entry of a role's "Plus" ([more] is its path): only when
+/// `GET /assistant/status` says available (flag, permission, provider).
+List<MoreItem> assistantItem(BuildContext context, String more) => [
+  if (context.watch<AssistantStatusCubit>().state.available)
+    MoreItem(
+      labelKey: 'assistant.title',
+      icon: Icons.auto_awesome_outlined,
+      onTap: (c) => c.push('$more/assistant'),
+    ),
+];
+
+/// `[more]/assistant`. Without the assistant (status not available) a deep
+/// link goes back to "Plus".
+GoRoute assistantRoute() => GoRoute(
+  path: 'assistant',
+  redirect: (context, state) {
+    if (context.read<AssistantStatusCubit>().state.available) return null;
+    final path = state.uri.path;
+    return path.substring(0, path.lastIndexOf('/assistant'));
+  },
+  builder: (_, _) => const AssistantScreen(),
+);
