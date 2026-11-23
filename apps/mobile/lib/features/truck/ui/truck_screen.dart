@@ -1,6 +1,7 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/components/widgets/amount_text.dart';
 import '../../../core/components/widgets/list_skeleton.dart';
@@ -53,6 +54,13 @@ class TruckScreen extends StatelessWidget {
   }
 }
 
+/// Where a granted seller / livreur opens the chargement screens.
+String? loadsPathFor(String? role) => switch (role) {
+  Role.seller => '/seller/truck/loads',
+  Role.livreur => '/livreur/truck/loads',
+  _ => null,
+};
+
 class _TruckBody extends StatelessWidget {
   const _TruckBody({required this.day});
 
@@ -62,7 +70,10 @@ class _TruckBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final user = context.watch<SessionCubit>().state.user;
-    final canTransfer = user?.can(Permission.stockTransfer) ?? false;
+    final canTransfer =
+        (user?.can(Permission.stockTransfer) ?? false) &&
+        (user?.hasFeature(Feature.warehouses) ?? false);
+    final loadsPath = loadsPathFor(user?.role);
     final vehicle = day.vehicle;
     return ListView(
       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -164,16 +175,35 @@ class _TruckBody extends StatelessWidget {
             _TransferTile(transfer: tr),
             AppSpacing.gapSm,
           ],
-        if (canTransfer) ...[
+        // Only with STOCK_TRANSFER granted by the owner (and the module):
+        // the chargement screens of the magasinier, kept to his truck.
+        if (canTransfer && loadsPath != null) ...[
           AppSpacing.gapMd,
           OutlinedButton.icon(
+            key: const Key('my-truck-new-load'),
             style: OutlinedButton.styleFrom(
               minimumSize: const Size.fromHeight(AppSpacing.minTouch),
             ),
-            // The chargement form comes with the magasinier screens (M3b).
-            onPressed: null,
+            onPressed: () async {
+              final query = vehicle == null ? '' : '?truck=${vehicle.id}';
+              await context.push('$loadsPath/new$query');
+              if (context.mounted) {
+                await context.read<LoadCubit<MeDay>>().load();
+              }
+            },
             icon: const Icon(Icons.move_to_inbox_outlined),
-            label: Text(context.tr('truck.new_load_soon')),
+            label: Text(context.tr('transfer.new_load')),
+          ),
+          TextButton.icon(
+            key: const Key('my-truck-loads'),
+            style: TextButton.styleFrom(
+              minimumSize: const Size.fromHeight(AppSpacing.minTouch),
+            ),
+            onPressed: () => context.push(
+              vehicle == null ? loadsPath : '$loadsPath?truck=${vehicle.id}',
+            ),
+            icon: const Icon(Icons.list_alt_rounded),
+            label: Text(context.tr('truck.all_loads')),
           ),
         ],
       ],

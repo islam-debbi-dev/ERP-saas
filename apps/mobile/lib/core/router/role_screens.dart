@@ -117,6 +117,7 @@ class RoleScreens {
         path: '/storekeeper/loads',
         labelKey: 'tabs.loads',
         icon: Icons.move_to_inbox_outlined,
+        permission: Permission.stockTransfer,
         feature: Feature.warehouses,
       ),
       RoleTab(

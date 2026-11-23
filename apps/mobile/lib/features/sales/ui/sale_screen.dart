@@ -135,7 +135,7 @@ class _SaleViewState extends State<_SaleView> {
       MaterialPageRoute(
         builder: (_) => BlocProvider.value(
           value: cubit,
-          child: ProductPickerScreen(truckId: _truckId),
+          child: ProductPickerScreen(warehouseId: _truckId),
         ),
       ),
     );

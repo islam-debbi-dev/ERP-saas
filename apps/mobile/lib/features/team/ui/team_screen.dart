@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/components/widgets/day_bar.dart';
 import '../../../core/components/widgets/list_skeleton.dart';
 import '../../../core/components/widgets/load_state_view.dart';
 import '../../../core/di/dependency_injection.dart';
@@ -51,7 +52,7 @@ class _TeamScreenState extends State<TeamScreen> {
         appBar: AppBar(title: Text(context.tr('team.title'))),
         body: Column(
           children: [
-            _DayBar(
+            DayBar(
               label: _back == 0
                   ? context.tr('team.today')
                   : AlgiersDay.display(date),
@@ -63,53 +64,6 @@ class _TeamScreenState extends State<TeamScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _DayBar extends StatelessWidget {
-  const _DayBar({required this.label, required this.onPrevious, this.onNext});
-
-  final String label;
-  final VoidCallback onPrevious;
-  final VoidCallback? onNext;
-
-  @override
-  Widget build(BuildContext context) {
-    // Arrows follow the reading direction: "previous" points to the start.
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            tooltip: context.tr('team.previous_day'),
-            onPressed: onPrevious,
-            icon: Icon(
-              rtl ? Icons.chevron_right_rounded : Icons.chevron_left_rounded,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-          ),
-          IconButton(
-            tooltip: context.tr('team.next_day'),
-            onPressed: onNext,
-            icon: Icon(
-              rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
-            ),
-          ),
-        ],
       ),
     );
   }

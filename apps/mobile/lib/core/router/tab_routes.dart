@@ -12,6 +12,8 @@ import '../../features/controls/ui/controls_screen.dart';
 import '../../features/delivery/ui/deliveries_screen.dart';
 import '../../features/delivery/ui/my_deliveries_screen.dart';
 import '../../features/delivery/ui/order_delivery_screen.dart';
+import '../../features/inventory/ui/inventories_screen.dart';
+import '../../features/inventory/ui/inventory_count_screen.dart';
 import '../../features/main_screen/ui/placeholder_tab.dart';
 import '../../features/objectives/ui/objectives_screen.dart';
 import '../../features/objectives/ui/team_objectives_screen.dart';
@@ -26,6 +28,11 @@ import '../../features/sales/logic/basket.dart';
 import '../../features/sales/ui/my_sales_screen.dart';
 import '../../features/sales/ui/sale_screen.dart';
 import '../../features/sales/ui/sell_screen.dart';
+import '../../features/stock_transfers/data/transfer_models.dart';
+import '../../features/stock_transfers/ui/transfer_detail_screen.dart';
+import '../../features/stock_transfers/ui/transfer_form_screen.dart';
+import '../../features/stock_transfers/ui/transfers_screen.dart';
+import '../../features/stock_transfers/ui/trucks_screen.dart';
 import '../../features/team/ui/member_day_screen.dart';
 import '../../features/team/ui/team_screen.dart';
 import '../../features/team_orders/ui/team_orders_screen.dart';
@@ -82,6 +89,20 @@ Widget tabPage(RoleTab tab) {
   }
   if (p == '/supervisor/orders') return TeamOrdersScreen(tabPath: p);
   if (p == '/supervisor/controls') return const ControlsScreen();
+  if (p == '/storekeeper/trucks') return TrucksScreen(basePath: p);
+  if (p == '/storekeeper/inventory') return InventoriesScreen(basePath: p);
+  if (p == '/storekeeper/loads') {
+    return Builder(
+      builder: (context) => TransfersScreen(
+        basePath: p,
+        canCreate:
+            context.watch<SessionCubit>().state.user?.can(
+              Permission.stockTransfer,
+            ) ??
+            false,
+      ),
+    );
+  }
   if (p == '/seller/more') {
     return Builder(
       builder: (context) => AccountScreen(menu: sellerMenu(context)),
@@ -95,6 +116,11 @@ Widget tabPage(RoleTab tab) {
   if (p == '/supervisor/more') {
     return Builder(
       builder: (context) => AccountScreen(menu: supervisorMenu(context)),
+    );
+  }
+  if (p == '/storekeeper/more') {
+    return Builder(
+      builder: (context) => AccountScreen(menu: storekeeperMenu(context)),
     );
   }
   if (p.endsWith('/more')) return const AccountScreen();
@@ -137,12 +163,37 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
       ),
     ];
   }
+  if (tab.path == '/storekeeper/loads') return transferRoutes();
+  if (tab.path == '/seller/truck' || tab.path == '/livreur/truck') {
+    return [grantedLoadsRoute('${tab.path}/loads')];
+  }
+  if (tab.path == '/storekeeper/trucks') return truckRoutes();
+  if (tab.path == '/storekeeper/inventory') {
+    return [
+      GoRoute(
+        path: ':inventoryId',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (_, state) => InventoryCountScreen(
+          inventoryId: state.pathParameters['inventoryId']!,
+        ),
+      ),
+    ];
+  }
   if (tab.path == '/supervisor/more') {
     return [
       GoRoute(
         path: 'objectives',
         builder: (_, _) => const TeamObjectivesScreen(),
       ),
+      GoRoute(
+        path: 'assistant',
+        builder: (_, _) => const AssistantPlaceholderScreen(),
+      ),
+      grantedLoadsRoute('/supervisor/more/loads'),
+    ];
+  }
+  if (tab.path == '/storekeeper/more') {
+    return [
       GoRoute(
         path: 'assistant',
         builder: (_, _) => const AssistantPlaceholderScreen(),
@@ -167,6 +218,106 @@ List<RouteBase> tabSubRoutes(RoleTab tab) {
     ];
   }
   return const [];
+}
+
+/// A chargement / déchargement under a list: `[list]/new` (`?truck=` picks
+/// the truck; `?type=UNLOAD&rest=1` is the evening déchargement of its rest), `[list]/:transferId` and its `edit`. Every screen needs
+/// STOCK_TRANSFER: without it a deep link goes back to the list. The forms
+/// cover the bottom bar (root navigator).
+List<RouteBase> transferRoutes() {
+  String? needsTransfer(BuildContext context, GoRouterState state) =>
+      _needsRight(context, state, (u) => u.can(Permission.stockTransfer));
+  return [
+    GoRoute(
+      path: 'new',
+      parentNavigatorKey: rootNavigatorKey,
+      redirect: needsTransfer,
+      builder: (_, state) {
+        final q = state.uri.queryParameters;
+        final unload = q['type'] == TransferType.unload;
+        return TransferFormScreen(
+          type: unload ? TransferType.unload : TransferType.load,
+          truckId: q['truck'],
+          unloadRest: unload && q['rest'] == '1',
+        );
+      },
+    ),
+    GoRoute(
+      path: ':transferId',
+      redirect: needsTransfer,
+      builder: (_, state) => TransferDetailScreen(
+        transferId: state.pathParameters['transferId']!,
+        editPath: '${state.uri.path}/edit',
+      ),
+      routes: [
+        GoRoute(
+          path: 'edit',
+          parentNavigatorKey: rootNavigatorKey,
+          redirect: needsTransfer,
+          builder: (_, state) => TransferFormScreen(
+            transferId: state.pathParameters['transferId']!,
+          ),
+        ),
+      ],
+    ),
+  ];
+}
+
+/// The chargement screens for a field user the owner granted
+/// STOCK_TRANSFER (seller, livreur from "Mon camion", supervisor from Plus):
+/// `[path]` lists them (`?truck=` keeps it to one truck), and every screen
+/// under it is the magasinier's. Without the grant (or the module) the
+/// route goes back to the parent.
+GoRoute grantedLoadsRoute(String path) => GoRoute(
+  path: 'loads',
+  redirect: (context, state) => _needsRight(
+    context,
+    state,
+    (u) => u.can(Permission.stockTransfer) && u.hasFeature(Feature.warehouses),
+  ),
+  builder: (_, state) => TransfersScreen(
+    basePath: path,
+    truckId: state.uri.queryParameters['truck'],
+    isTabRoot: false,
+    canCreate: true,
+  ),
+  routes: transferRoutes(),
+);
+
+/// A truck's stock (`/storekeeper/trucks/:truckId`), and from it a
+/// chargement (`load`) or the evening déchargement of its rest (`unload`):
+/// the forms need STOCK_TRANSFER.
+List<RouteBase> truckRoutes() {
+  String? needsTransfer(BuildContext context, GoRouterState state) =>
+      _needsRight(context, state, (u) => u.can(Permission.stockTransfer));
+  return [
+    GoRoute(
+      path: ':truckId',
+      builder: (_, state) => TruckStockScreen(
+        truckId: state.pathParameters['truckId']!,
+        basePath: state.uri.path,
+      ),
+      routes: [
+        GoRoute(
+          path: 'load',
+          parentNavigatorKey: rootNavigatorKey,
+          redirect: needsTransfer,
+          builder: (_, state) =>
+              TransferFormScreen(truckId: state.pathParameters['truckId']),
+        ),
+        GoRoute(
+          path: 'unload',
+          parentNavigatorKey: rootNavigatorKey,
+          redirect: needsTransfer,
+          builder: (_, state) => TransferFormScreen(
+            type: TransferType.unload,
+            truckId: state.pathParameters['truckId'],
+            unloadRest: true,
+          ),
+        ),
+      ],
+    ),
+  ];
 }
 
 /// Client list → new client, client detail (and its actions), statement.
@@ -310,9 +461,10 @@ List<MoreItem> livreurMenu(BuildContext context) {
   ];
 }
 
-/// The supervisor's "Plus" menu: his team's targets (INCENTIVES) and the
-/// assistant (AI_ASSISTANT, a placeholder until M4). Account, language and
-/// theme follow in [AccountScreen].
+/// The supervisor's "Plus" menu: his team's targets (INCENTIVES), the
+/// chargements when the owner granted him STOCK_TRANSFER, and the assistant
+/// (AI_ASSISTANT, a placeholder until M4). Account, language and theme
+/// follow in [AccountScreen].
 List<MoreItem> supervisorMenu(BuildContext context) {
   final user = context.watch<SessionCubit>().state.user;
   if (user == null) return const [];
@@ -323,11 +475,34 @@ List<MoreItem> supervisorMenu(BuildContext context) {
         icon: Icons.flag_outlined,
         onTap: (c) => c.push('/supervisor/more/objectives'),
       ),
+    if (user.can(Permission.stockTransfer) &&
+        user.hasFeature(Feature.warehouses))
+      MoreItem(
+        labelKey: 'transfer.title',
+        icon: Icons.move_to_inbox_outlined,
+        onTap: (c) => c.push('/supervisor/more/loads'),
+      ),
     if (user.hasFeature(Feature.aiAssistant))
       MoreItem(
         labelKey: 'assistant.title',
         icon: Icons.auto_awesome_outlined,
         onTap: (c) => c.push('/supervisor/more/assistant'),
+      ),
+  ];
+}
+
+/// The magasinier's "Plus" menu: the assistant (AI_ASSISTANT, a
+/// placeholder until M4). Account, language and theme follow in
+/// [AccountScreen].
+List<MoreItem> storekeeperMenu(BuildContext context) {
+  final user = context.watch<SessionCubit>().state.user;
+  if (user == null) return const [];
+  return [
+    if (user.hasFeature(Feature.aiAssistant))
+      MoreItem(
+        labelKey: 'assistant.title',
+        icon: Icons.auto_awesome_outlined,
+        onTap: (c) => c.push('/storekeeper/more/assistant'),
       ),
   ];
 }
