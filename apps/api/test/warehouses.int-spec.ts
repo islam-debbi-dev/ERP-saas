@@ -14,6 +14,7 @@ import {
   type StockOperationResult,
   type StockPage,
   type StockTransferDto,
+  type StockTransferPage,
   type StockTransferResultDto,
   type SupplierDto,
   type WarehouseDto,
@@ -477,6 +478,52 @@ describe('warehouses and vehicle stock (phase 15)', () => {
       ).toBe(ErrorCode.TRANSFER_NOT_VALIDATED);
       expect(await violations(d.tenantId)).toEqual([]);
     });
+
+    it('filters the list by status, alone or with type and toWarehouseId', async () => {
+      const main = await mainOf(d);
+      const truck = await createWarehouse(d, { name: `Camion ${++seq}`, type: 'VEHICLE' });
+      const truck2 = await createWarehouse(d, { name: `Camion ${++seq}`, type: 'VEHICLE' });
+      const p = await product(d, catD, 240);
+      const load = (to: string) =>
+        transfer(d, {
+          type: 'LOAD',
+          fromWarehouseId: main.id,
+          toWarehouseId: to,
+          lines: [{ productId: p.id, unitId: p.carton, qty: '1' }],
+        });
+      const draft = await load(truck.id);
+      const validated = await load(truck.id);
+      await validate(d, validated.id).expect(200);
+      const cancelled = await load(truck.id);
+      await validate(d, cancelled.id).expect(200);
+      await as(d).post(`/stock-transfers/${cancelled.id}/cancel`, { reason: 'Erreur' }).expect(200);
+      // Back from the truck: an UNLOAD draft whose destination is the dépôt.
+      const unload = await transfer(d, {
+        type: 'UNLOAD',
+        fromWarehouseId: truck.id,
+        toWarehouseId: main.id,
+        lines: [],
+      });
+      const otherDraft = await load(truck2.id);
+
+      const ids = async (query: string) =>
+        (
+          (await as(d).get(`/stock-transfers?limit=100&${query}`).expect(200))
+            .body as StockTransferPage
+        ).items.map((x) => x.id);
+
+      const drafts = await ids('status=DRAFT');
+      expect(drafts).toEqual(expect.arrayContaining([draft.id, unload.id, otherDraft.id]));
+      expect(drafts).not.toContain(validated.id);
+      expect(drafts).not.toContain(cancelled.id);
+      expect(await ids(`status=VALIDATED&warehouseId=${truck.id}`)).toEqual([validated.id]);
+      expect(await ids(`status=CANCELLED&warehouseId=${truck.id}`)).toEqual([cancelled.id]);
+      expect(await ids(`status=DRAFT&warehouseId=${truck.id}`)).toEqual([unload.id, draft.id]);
+      expect(await ids(`status=DRAFT&type=LOAD&toWarehouseId=${truck.id}`)).toEqual([draft.id]);
+      expect(await ids(`status=DRAFT&type=UNLOAD&toWarehouseId=${truck.id}`)).toEqual([]);
+      expect(await ids(`status=VALIDATED&type=LOAD&toWarehouseId=${truck2.id}`)).toEqual([]);
+      await as(d).get('/stock-transfers?status=OPEN').expect(400);
+    });
   });
 
   describe('documents choose their dépôt', () => {
@@ -748,6 +795,11 @@ describe('warehouses and vehicle stock (phase 15)', () => {
       const other = await registerTenant(t, 'Autre Distrib', { activity: Activity.DISTRIBUTEUR });
       const catO = await catalogOf(t, other);
       await as(other).get(`/stock-transfers/${tr.id}`).expect(404);
+      const theirDrafts = (
+        (await as(other).get('/stock-transfers?status=DRAFT&limit=100').expect(200))
+          .body as StockTransferPage
+      ).items.map((x) => x.id);
+      expect(theirDrafts).not.toContain(tr.id);
       await validate(other, tr.id).expect(404);
       await as(other).get(`/documents/TR/${tr.id}/pdf`).expect(404);
       expect((await warehouses(other)).map((w) => w.id)).not.toContain(truck.id);

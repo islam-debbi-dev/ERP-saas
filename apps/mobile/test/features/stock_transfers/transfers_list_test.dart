@@ -45,6 +45,37 @@ void main() {
     expect(dated.query['warehouseId'], 'v1');
   });
 
+  test('drafts come from status=DRAFT, every page, with no date', () async {
+    var calls = 0;
+    final adapter = fakeStockApi({
+      ...baseRoutes(),
+      'GET /stock-transfers': (o) {
+        if (o.queryParameters['status'] != 'DRAFT') {
+          return FakeReply(200, {'items': [], 'nextCursor': null});
+        }
+        calls++;
+        return FakeReply(200, {
+          'items': [
+            summaryJson(id: 'd$calls', status: 'DRAFT'),
+            // An older API ignores the filter: the phone still keeps drafts.
+            summaryJson(id: 'v$calls'),
+            summaryJson(id: 'x$calls', type: 'TRANSFER', status: 'DRAFT'),
+          ],
+          'nextCursor': calls < 4 ? 'c$calls' : null,
+        });
+      },
+    });
+    final r = await getIt<StockTransfersRepository>().openDrafts(
+      warehouseId: 'v1',
+    );
+    final drafts = (r as dynamic).data as List<TransferSummary>;
+    expect(drafts.map((t) => t.id), ['d1', 'd2', 'd3', 'd4']);
+    final sent = adapter.sent.where((s) => s.query['status'] == 'DRAFT');
+    expect(sent.length, 4);
+    expect(sent.every((s) => s.query['from'] == null), isTrue);
+    expect(sent.last.query['cursor'], 'c3');
+  });
+
   test('the Chargements tab needs STOCK_TRANSFER', () {
     expect(
       RoleScreens.visibleTabsFor(storekeeper()).map((t) => t.path),

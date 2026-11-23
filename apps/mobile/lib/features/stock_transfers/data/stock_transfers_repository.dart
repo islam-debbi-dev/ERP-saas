@@ -15,19 +15,22 @@ class StockTransfersRepository {
 
   final ApiClient _api;
 
-  /// How many pages of 100 are read to find the open drafts.
-  static const draftPages = 3;
+  /// At most this many pages of 100 open drafts are read (a safety cap: a
+  /// dépôt has a handful).
+  static const draftPages = 10;
 
   Future<ApiResult<Paginated<TransferSummary>>> page({
     String? warehouseId,
     String? from,
     String? to,
+    String? status,
     String? cursor,
     int limit = 100,
   }) => _api.get(
     '/stock-transfers',
     query: {
       'warehouseId': warehouseId,
+      'status': status,
       'from': from,
       'to': to,
       'cursor': cursor,
@@ -62,16 +65,20 @@ class StockTransfersRepository {
     return ApiResult.success(out);
   }
 
-  /// The open drafts, whatever their day. The list API filters dates on
-  /// `validatedAt` (a draft has none) and has no status filter, so the latest
-  /// [draftPages] pages are read and kept to DRAFT.
+  /// The open drafts, whatever their day (dates filter on `validatedAt`, which
+  /// a draft has not): `status=DRAFT`, every page up to [draftPages]. The
+  /// DRAFT check stays for an API older than the status filter.
   Future<ApiResult<List<TransferSummary>>> openDrafts({
     String? warehouseId,
   }) async {
     final out = <TransferSummary>[];
     String? cursor;
     for (var i = 0; i < draftPages; i++) {
-      final r = await page(warehouseId: warehouseId, cursor: cursor);
+      final r = await page(
+        warehouseId: warehouseId,
+        status: TransferStatus.draft,
+        cursor: cursor,
+      );
       switch (r) {
         case Failure(:final error):
           return ApiResult.failure(error);

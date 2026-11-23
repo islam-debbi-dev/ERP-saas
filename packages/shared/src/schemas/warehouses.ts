@@ -182,6 +182,8 @@ export const stockTransferListQuerySchema = z.object({
   /** Phase 37 (the statistics' drill-down): only this kind, only towards this truck. */
   type: z.enum(['LOAD', 'UNLOAD', 'TRANSFER']).optional(),
   toWarehouseId: id.optional(),
+  /** Phase 39 follow-up: only drafts (the phone's open chargements), validated or cancelled. */
+  status: z.enum(['DRAFT', 'VALIDATED', 'CANCELLED']).optional(),
   /** Validated between these Algiers days. */
   from: z
     .string()

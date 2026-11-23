@@ -235,6 +235,7 @@ export class StockTransfersService {
             : {},
           query.type ? { type: query.type } : {},
           query.toWarehouseId ? { toWarehouseId: query.toWarehouseId } : {},
+          query.status ? { status: query.status } : {},
           query.from || query.to
             ? {
                 validatedAt: {
