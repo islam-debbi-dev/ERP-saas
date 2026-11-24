@@ -26,6 +26,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:seed:activity": "tsx prisma/seed-activity.ts",
+    "db:seed:field": "tsx prisma/seed-field.ts",
     "db:studio": "prisma studio"
   },
   "dependencies": {
