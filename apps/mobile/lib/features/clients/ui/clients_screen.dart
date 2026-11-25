@@ -16,6 +16,7 @@ import '../../../core/session/session_cubit.dart';
 import '../data/models/client.dart';
 import '../data/repo/clients_repository.dart';
 import '../logic/clients_list_cubit.dart';
+import '../../main_screen/ui/widgets/custom_bottom_navigation.dart';
 
 /// The client list of a field role: search, debtors, near me (GEO_CHECK),
 /// new client (CLIENTS_CREATE). [basePath] is the tab's root
@@ -77,7 +78,7 @@ class _ClientsViewState extends State<_ClientsView> {
       appBar: AppBar(title: Text(context.tr('clients.title'))),
       floatingActionButton: canCreate
           ? Padding(
-              padding: const EdgeInsets.only(bottom: 88),
+              padding: const EdgeInsets.only(bottom: CustomBottomNavigation.clearance),
               child: FloatingActionButton.extended(
                 heroTag: 'new-client',
                 onPressed: () async {

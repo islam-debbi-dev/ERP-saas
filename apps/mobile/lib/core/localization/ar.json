@@ -597,6 +597,7 @@
   },
   "assistant": {
     "title": "المساعد",
+    "open_fab": "اسأل المساعد",
     "new_conversation": "محادثة جديدة",
     "history": "السجل",
     "history_empty": "لا توجد محادثات بعد.",

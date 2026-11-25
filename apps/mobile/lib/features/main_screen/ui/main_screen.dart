@@ -8,6 +8,7 @@ import '../../../core/localization/tr.dart';
 import '../../../core/router/role_screens.dart';
 import '../../../core/router/tab_badges.dart';
 import '../../../core/session/session_cubit.dart';
+import '../../assistant/logic/assistant_status_cubit.dart';
 import 'widgets/custom_bottom_navigation.dart';
 import 'widgets/no_connection_banner.dart';
 
@@ -112,7 +113,56 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                     ),
             ),
+            _AssistantFab(role: widget.role),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Shortcut to the assistant on the tab roots: an icon and a word, above the
+/// bottom bar on the start side (the end side is for a screen's own action).
+/// It hides like the bar on sub-pages, while the keyboard is open, and when
+/// the assistant is not available. "Plus" keeps its own entry.
+class _AssistantFab extends StatelessWidget {
+  const _AssistantFab({required this.role});
+
+  final String role;
+
+  /// The margin a Scaffold gives its own floating button.
+  static const double _margin = 16;
+
+  @override
+  Widget build(BuildContext context) {
+    final available = context.select<AssistantStatusCubit, bool>(
+      (c) => c.state.available,
+    );
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+    final label = context.tr('assistant.open_fab');
+    // The role's "Plus" tab holds the assistant screen (`<more>/assistant`).
+    final more = RoleScreens.allTabsFor(role)
+        .map((t) => t.path)
+        .firstWhere((p) => p.endsWith('/more'), orElse: () => '');
+    return PositionedDirectional(
+      start: _margin,
+      // Level with a screen's own end-side button: its Scaffold adds a 16 dp
+      // margin on top of the bar clearance the screen pads by.
+      bottom:
+          MediaQuery.paddingOf(context).bottom +
+          CustomBottomNavigation.clearance +
+          _margin,
+      child: _OnTabRoot(
+        role: role,
+        hidden: !available || keyboardOpen,
+        child: FloatingActionButton.extended(
+          heroTag: 'assistant-fab',
+          tooltip: label,
+          onPressed: more.isEmpty
+              ? null
+              : () => context.push('$more/assistant'),
+          icon: const Icon(Icons.auto_awesome_outlined),
+          label: Text(label),
         ),
       ),
     );
@@ -122,10 +172,18 @@ class _MainScreenState extends State<MainScreen> {
 /// Shows [child] (the bottom bar) only while the router's top location is a
 /// tab root of [role]; elsewhere it slides out and stops taking taps.
 class _OnTabRoot extends StatelessWidget {
-  const _OnTabRoot({required this.role, required this.child});
+  const _OnTabRoot({
+    required this.role,
+    required this.child,
+    this.hidden = false,
+  });
 
   final String role;
   final Widget child;
+
+  /// Hides [child] even on a tab root (the assistant button: keyboard open,
+  /// assistant not available).
+  final bool hidden;
 
   static const _duration = Duration(milliseconds: 150);
 
@@ -137,6 +195,7 @@ class _OnTabRoot extends StatelessWidget {
       builder: (context, child) {
         // The top state: the last `go` or `push`, query left out.
         final shown =
+            !hidden &&
             delegate.currentConfiguration.isNotEmpty &&
             RoleScreens.isTabRoot(role, delegate.state.uri.path);
         return IgnorePointer(

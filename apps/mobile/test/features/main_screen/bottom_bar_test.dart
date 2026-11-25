@@ -5,7 +5,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:orvynt_starter/core/di/dependency_injection.dart';
 import 'package:orvynt_starter/core/helpers/connectivity_services.dart';
 import 'package:orvynt_starter/core/localization/app_localizations.dart';
@@ -16,6 +15,8 @@ import 'package:orvynt_starter/core/router/tab_badges.dart';
 import 'package:orvynt_starter/core/session/session_cubit.dart';
 import 'package:orvynt_starter/core/theme/app_theme_light.dart';
 import 'package:orvynt_starter/core/theme/cubit/theme_cubit.dart';
+import 'package:orvynt_starter/features/assistant/data/assistant_models.dart';
+import 'package:orvynt_starter/features/assistant/logic/assistant_status_cubit.dart';
 import 'package:orvynt_starter/features/main_screen/ui/main_screen.dart';
 import 'package:orvynt_starter/features/main_screen/ui/widgets/custom_bottom_navigation.dart';
 import 'package:orvynt_starter/features/main_screen/ui/widgets/no_connection_banner.dart';
@@ -172,6 +173,7 @@ Future<GoRouter> _pump(
   AuthUser user,
   String initial, {
   String locale = 'ar',
+  bool assistant = true,
 }) async {
   rootBundle.clear();
   tester.view.physicalSize = phone360;
@@ -186,6 +188,11 @@ Future<GoRouter> _pump(
         BlocProvider<SessionCubit>(create: (_) => FakeSession(user)),
         BlocProvider(create: (_) => ThemeCubit(ThemeMode.light)),
         BlocProvider(create: (_) => LocaleCubit(Locale(locale))),
+        BlocProvider(
+          create: (_) => AssistantStatusCubit.seeded(
+            AssistantStatus(available: assistant, provider: 'GEMINI'),
+          ),
+        ),
       ],
       child: ScreenUtilInit(
         designSize: const Size(375, 812),
@@ -414,7 +421,7 @@ void main() {
   ) async {
     final router = await _pump(tester, seller(), '/seller/clients');
     // Bar positions of the seller's tabs: 0 today, 1 clients.
-    Finder tab(int i) => find.byType(GButton).at(i);
+    Finder tab(int i) => find.byKey(Key('nav-tab-$i'));
     String at() => router.state.uri.path;
 
     // Re-tapping the current tab on its root keeps the root and the bar.
@@ -481,4 +488,162 @@ void main() {
     expect(find.text('page:root:/seller/more'), findsOneWidget);
     expect(_barShown(tester), isTrue);
   });
+
+  group('assistant button', () {
+    final fab = find.byWidgetPredicate(
+      (w) => w is FloatingActionButton && w.heroTag == 'assistant-fab',
+    );
+
+    /// On screen and takes taps (not slid out / ignored / dropped).
+    bool fabShown(WidgetTester tester) {
+      if (fab.evaluate().isEmpty) return false;
+      final ignore = tester.widget<IgnorePointer>(
+        find.ancestor(of: fab, matching: find.byType(IgnorePointer)).first,
+      );
+      final opacity = tester.widget<AnimatedOpacity>(
+        find.ancestor(of: fab, matching: find.byType(AnimatedOpacity)).first,
+      );
+      return !ignore.ignoring && opacity.opacity == 1;
+    }
+
+    for (final locale in ['ar', 'fr']) {
+      testWidgets('on a tab root, above the bar, at the start side in '
+          '$locale', (tester) async {
+        await _pump(tester, seller(), '/seller/today', locale: locale);
+        expect(fabShown(tester), isTrue);
+        expect(
+          find.descendant(of: fab, matching: find.byIcon(Icons.auto_awesome_outlined)),
+          findsOneWidget,
+        );
+        final rect = tester.getRect(fab);
+        // A word with the icon, a touch target of 48 dp at least.
+        expect(rect.height, greaterThanOrEqualTo(48));
+        expect(
+          find.descendant(
+            of: fab,
+            matching: find.text(locale == 'ar' ? 'اسأل المساعد' : 'Assistant'),
+          ),
+          findsOneWidget,
+        );
+        // Never over the bar.
+        expect(
+          rect.bottom,
+          lessThanOrEqualTo(tester.getRect(find.byType(CustomBottomNavigation)).top),
+        );
+        // Start side: left in LTR (fr), right in RTL (ar).
+        final middle = phone360.width / 2;
+        expect(
+          locale == 'ar' ? rect.center.dx > middle : rect.center.dx < middle,
+          isTrue,
+        );
+        expectNoOverflow(tester);
+      });
+    }
+
+    testWidgets('the word fits inside the button (a pill, not a disc)', (
+      tester,
+    ) async {
+      await _pump(tester, seller(), '/seller/today', locale: 'fr');
+      final box = tester.getRect(fab);
+      final word = tester.getRect(
+        find.descendant(of: fab, matching: find.text('Assistant')),
+      );
+      expect(box.width, greaterThan(box.height * 2));
+      expect(word.left, greaterThanOrEqualTo(box.left));
+      expect(word.right, lessThanOrEqualTo(box.right));
+    });
+
+    testWidgets('hides on a sub-page and comes back', (tester) async {
+      final router = await _pump(tester, seller(), '/seller/more');
+      expect(fabShown(tester), isTrue);
+      await _push(tester, router, '/seller/more/sales');
+      expect(fabShown(tester), isFalse);
+      await _back(tester);
+      expect(fabShown(tester), isTrue);
+    });
+
+    testWidgets('hides while the keyboard is open', (tester) async {
+      await _pump(tester, seller(), '/seller/today');
+      expect(fabShown(tester), isTrue);
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      await tester.pumpAndSettle();
+      expect(fabShown(tester), isFalse);
+      tester.view.viewInsets = FakeViewPadding.zero;
+      await tester.pumpAndSettle();
+      expect(fabShown(tester), isTrue);
+    });
+
+    testWidgets('is not there when the assistant is not available', (
+      tester,
+    ) async {
+      await _pump(tester, seller(), '/seller/today', assistant: false);
+      expect(fabShown(tester), isFalse);
+    });
+
+    testWidgets('a tap opens the assistant and back returns to the same tab', (
+      tester,
+    ) async {
+      await _pump(tester, seller(), '/seller/clients');
+      await tester.tap(fab);
+      await tester.pumpAndSettle();
+      expect(find.text('page:assistant'), findsOneWidget);
+      expect(_barShown(tester), isFalse);
+      expect(fabShown(tester), isFalse);
+      await _back(tester);
+      expect(find.text('page:root:/seller/clients'), findsOneWidget);
+      expect(_barShown(tester), isTrue);
+      expect(fabShown(tester), isTrue);
+    });
+
+    testWidgets('every role gets it on its tab roots', (tester) async {
+      for (final (user, path) in [
+        (livreur(), '/livreur/deliveries'),
+        (supervisor(), '/supervisor/team'),
+        (storekeeper(), '/storekeeper/loads'),
+      ]) {
+        await _pump(tester, user, path);
+        expect(fabShown(tester), isTrue, reason: path);
+      }
+    });
+  });
+
+  testWidgets('CustomBottomNavigation.height is the real height of the bar', (
+    tester,
+  ) async {
+    await _pump(tester, seller(), '/seller/today');
+    final rect = tester.getRect(find.byType(CustomBottomNavigation));
+    // The view's bottom padding (24) is the safe area under the bar.
+    expect(rect.height - 24, CustomBottomNavigation.height);
+    expect(rect.bottom, phone360.height);
+  });
+
+  for (final locale in ['ar', 'fr']) {
+    testWidgets('every tab shows its word and is at least 48 dp, no overflow '
+        'in $locale', (tester) async {
+      for (final (user, role) in [
+        (seller(), 'SELLER'),
+        (livreur(), 'LIVREUR'),
+        (supervisor(), 'SUPERVISOR'),
+        (storekeeper(), 'STOREKEEPER'),
+      ]) {
+        final tabs = RoleScreens.visibleTabsFor(user);
+        await _pump(tester, user, tabs.first.path, locale: locale);
+        for (var i = 0; i < tabs.length; i++) {
+          final tab = find.byKey(Key('nav-tab-$i'));
+          final r = tester.getRect(tab);
+          expect(r.height, greaterThanOrEqualTo(48), reason: '$role tab $i');
+          expect(r.width, greaterThanOrEqualTo(48), reason: '$role tab $i');
+          // The word is on the tab, inactive ones included.
+          final word = find.descendant(of: tab, matching: find.byType(Text));
+          expect(word, findsOneWidget, reason: '$role tab $i has a word');
+          expect(
+            tester.widget<Text>(word).data,
+            isNot(anyOf(isNull, isEmpty, contains('.'))),
+            reason: '$role tab $i word is a real label, not a key',
+          );
+        }
+        expectNoOverflow(tester);
+      }
+    });
+  }
 }

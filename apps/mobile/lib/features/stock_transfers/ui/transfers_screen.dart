@@ -14,6 +14,7 @@ import '../../../core/paging/load_cubit.dart';
 import '../../team/data/team_models.dart';
 import '../data/stock_transfers_repository.dart';
 import 'transfer_widgets.dart';
+import '../../main_screen/ui/widgets/custom_bottom_navigation.dart';
 
 /// "Chargements": the open drafts, then the chargements / déchargements
 /// validated on a day (today by default, never a future day), for every
@@ -118,7 +119,7 @@ class _TransfersScreenState extends State<TransfersScreen> {
             ? null
             : Builder(
                 builder: (context) => Padding(
-                  padding: EdgeInsets.only(bottom: widget.isTabRoot ? 88 : 0),
+                  padding: EdgeInsets.only(bottom: widget.isTabRoot ? CustomBottomNavigation.clearance : 0),
                   child: FloatingActionButton.extended(
                     heroTag: 'new-load',
                     onPressed: () async {

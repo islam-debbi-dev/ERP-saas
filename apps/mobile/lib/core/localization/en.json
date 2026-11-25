@@ -597,6 +597,7 @@
   },
   "assistant": {
     "title": "Assistant",
+    "open_fab": "Assistant",
     "new_conversation": "New conversation",
     "history": "History",
     "history_empty": "No conversations yet.",
