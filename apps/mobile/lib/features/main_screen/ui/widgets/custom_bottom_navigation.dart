@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart' show SizeExtension;
-import 'package:google_nav_bar/google_nav_bar.dart';
 
 import '../../../../core/design/app_spacing.dart';
 import '../../../../core/design/responsive.dart';
@@ -16,10 +15,32 @@ class NavItem {
   final int badge;
 }
 
-/// Floating bottom bar: a pill with a soft shadow, the active tab in the
-/// action colour with an accent icon. The items are the role's visible tabs
+/// Floating bottom bar: a pill with a soft shadow, a word under every icon
+/// (an icon alone is not obvious to everyone), the active tab in the action
+/// colour with an accent icon. The items are the role's visible tabs
 /// (`RoleScreens`); indexes are positions in [items].
 class CustomBottomNavigation extends StatelessWidget {
+  /// Height of one tab (a touch target well over 48 dp).
+  static const double tabHeight = 56;
+
+  /// Height of the bar above the safe area: the pill (tab + its 8 dp padding
+  /// on both sides) plus the gap under it. Floating buttons sit [clearance]
+  /// above the bottom safe area to clear it.
+  static const double height = tabHeight + 2 * AppSpacing.sm + AppSpacing.sm;
+
+  /// [height] plus the usual 16 dp margin of a floating button.
+  static const double clearance = height + 16;
+
+  /// What the assistant button covers above the bar: its 56 dp, the 16 dp
+  /// margin under it and a 16 dp gap over it.
+  static const double _buttonZone = 56 + 16 + 16;
+
+  /// The end padding of the scrolling content of every tab root: one value,
+  /// so the last row always clears the bar (with the home-indicator inset)
+  /// and the floating buttons.
+  static double listEnd(BuildContext context) =>
+      MediaQuery.paddingOf(context).bottom + height + _buttonZone;
+
   final List<NavItem> items;
   final int currentIndex;
   final ValueChanged<int> onItemTapped;
@@ -42,42 +63,16 @@ class CustomBottomNavigation extends StatelessWidget {
     final Color activeContent = isDarkMode
         ? AppColors.onPrimary
         : AppColors.onSecondary;
-    final Color inactiveIcon = isDarkMode
+    // Readable on the bar (at least 4.5:1): these are words, not decoration.
+    final Color inactive = isDarkMode
         ? AppColors.darkTextSecondary
-        : AppColors.textTertiary;
-
-    // Keeps the bar a comfortable width on tablets instead of stretching.
-    final double maxBarWidth = Responsive.isTablet(context) ? 520 : 600;
-
+        : AppColors.textSecondary;
     final Color activeIcon = isDarkMode
         ? AppColors.onPrimary
         : AppColors.accent;
 
-    GButton tab(NavItem item, bool active) => GButton(
-      icon: item.icon,
-      // With a count, the icon is drawn here with its badge (GNav then uses
-      // this widget instead of its own animated icon).
-      leading: item.badge <= 0
-          ? null
-          : Badge(
-              label: Text(
-                item.badge > 99 ? '99+' : '${item.badge}',
-                textDirection: TextDirection.ltr,
-              ),
-              child: Icon(
-                item.icon,
-                size: 22,
-                color: active ? activeIcon : inactiveIcon,
-              ),
-            ),
-      text: item.label,
-      iconColor: inactiveIcon,
-      iconActiveColor: activeIcon,
-      textColor: activeContent,
-      semanticLabel: item.badge <= 0
-          ? item.label
-          : '${item.label} (${item.badge})',
-    );
+    // Keeps the bar a comfortable width on tablets instead of stretching.
+    final double maxBarWidth = Responsive.isTablet(context) ? 520 : 600;
 
     // Bottom inset only: the bar sits at the screen bottom, and a top inset
     // would add an invisible status-bar-high gap above it.
@@ -101,27 +96,26 @@ class CustomBottomNavigation extends StatelessWidget {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.sm),
-                child: _FitRow(
-                  child: GNav(
-                    rippleColor: AppColors.grouped,
-                    hoverColor: AppColors.surface,
-                    gap: 6,
-                    activeColor: activeContent,
-                    iconSize: 22,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    duration: const Duration(milliseconds: 300),
-                    tabBackgroundColor: activePill,
-                    color: inactiveIcon,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    tabs: [
+                // A big system text size must not grow the bar over the
+                // content: the words scale up to 1.2x.
+                child: MediaQuery.withClampedTextScaling(
+                  maxScaleFactor: 1.2,
+                  child: Row(
+                    children: [
                       for (var i = 0; i < items.length; i++)
-                        tab(items[i], i == currentIndex),
+                        Expanded(
+                          child: _Tab(
+                            key: Key('nav-tab-$i'),
+                            item: items[i],
+                            active: i == currentIndex,
+                            pill: activePill,
+                            activeContent: activeContent,
+                            activeIcon: activeIcon,
+                            inactive: inactive,
+                            onTap: () => onItemTapped(i),
+                          ),
+                        ),
                     ],
-                    selectedIndex: currentIndex,
-                    onTabChange: onItemTapped,
                   ),
                 ),
               ),
@@ -133,22 +127,90 @@ class CustomBottomNavigation extends StatelessWidget {
   }
 }
 
-/// Lays [child] (the tab row) out at least as wide as the bar, so its
-/// `spaceBetween` spreads the tabs as before; when the tabs need more (five
-/// tabs with a long active label at 360 px, a large text size) it scales the
-/// row down a little instead of overflowing.
-class _FitRow extends StatelessWidget {
-  const _FitRow({required this.child});
-  final Widget child;
+/// One tab: the icon (with its count) and its word under it. The whole cell
+/// takes the tap.
+class _Tab extends StatelessWidget {
+  const _Tab({
+    super.key,
+    required this.item,
+    required this.active,
+    required this.pill,
+    required this.activeContent,
+    required this.activeIcon,
+    required this.inactive,
+    required this.onTap,
+  });
+
+  final NavItem item;
+  final bool active;
+  final Color pill;
+  final Color activeContent;
+  final Color activeIcon;
+  final Color inactive;
+  final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) => FittedBox(
-      fit: BoxFit.scaleDown,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(minWidth: constraints.maxWidth),
-        child: child,
+  Widget build(BuildContext context) {
+    final iconColor = active ? activeIcon : inactive;
+    final icon = Icon(item.icon, size: 22, color: iconColor);
+    return Semantics(
+      button: true,
+      selected: active,
+      excludeSemantics: true,
+      label: item.badge <= 0 ? item.label : '${item.label} (${item.badge})',
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2),
+        child: Material(
+          color: active ? pill : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            onTap: onTap,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: CustomBottomNavigation.tabHeight,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    item.badge <= 0
+                        ? icon
+                        : Badge(
+                            label: Text(
+                              item.badge > 99 ? '99+' : '${item.badge}',
+                              textDirection: TextDirection.ltr,
+                            ),
+                            child: icon,
+                          ),
+                    const SizedBox(height: 2),
+                    // Long words (fr, five tabs at 360 px) shrink a little
+                    // instead of being cut.
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        item.label,
+                        maxLines: 1,
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 1.2,
+                          fontWeight: active
+                              ? FontWeight.w700
+                              : FontWeight.w600,
+                          color: active ? activeContent : inactive,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

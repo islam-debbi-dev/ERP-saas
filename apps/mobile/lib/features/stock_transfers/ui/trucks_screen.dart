@@ -17,6 +17,7 @@ import '../../team/data/team_models.dart';
 import '../data/stock_transfers_repository.dart';
 import '../data/transfer_models.dart';
 import '../logic/transfer_form.dart';
+import '../../main_screen/ui/widgets/custom_bottom_navigation.dart';
 
 /// "Camions": every truck in reach, `code · name`, with its driver of today
 /// (`Warehouse.assignedUser`, phase 36) or *Sans chauffeur*. Opens a
@@ -57,11 +58,11 @@ class TrucksScreen extends StatelessWidget {
                             ],
                           )
                         : ListView.separated(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
+                            padding: EdgeInsetsDirectional.fromSTEB(
                               AppSpacing.lg,
                               AppSpacing.md,
                               AppSpacing.lg,
-                              AppSpacing.navClearance,
+                              CustomBottomNavigation.listEnd(context),
                             ),
                             itemCount: trucks.length,
                             separatorBuilder: (_, _) => AppSpacing.gapSm,

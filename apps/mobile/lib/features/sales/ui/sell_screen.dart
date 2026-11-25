@@ -17,6 +17,7 @@ import '../../../core/models/erp_codes.dart';
 import '../../../core/session/session_cubit.dart';
 import '../logic/basket.dart';
 import 'sale_screen.dart';
+import '../../main_screen/ui/widgets/custom_bottom_navigation.dart';
 
 /// "Vendre": vente directe or commande (prévente, TOURNEES), then who it is
 /// for (or vente comptoir); the basket opens at `[basePath]/new` or
@@ -138,11 +139,11 @@ class _SellScreenState extends State<SellScreen> {
                           return false;
                         },
                         child: ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(
+                          padding: EdgeInsets.fromLTRB(
                             AppSpacing.lg,
                             AppSpacing.sm,
                             AppSpacing.lg,
-                            AppSpacing.navClearance,
+                            CustomBottomNavigation.listEnd(context),
                           ),
                           itemCount: state.items.length,
                           separatorBuilder: (_, _) => AppSpacing.gapSm,

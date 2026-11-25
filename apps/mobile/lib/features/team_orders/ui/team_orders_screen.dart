@@ -14,6 +14,7 @@ import '../../delivery/ui/deliveries_screen.dart';
 import '../../orders/data/models/order.dart';
 import '../data/team_orders_repository.dart';
 import 'assign_sheet.dart';
+import '../../main_screen/ui/widgets/custom_bottom_navigation.dart';
 
 /// "Commandes": the team's confirmed orders. *À assigner* (no livreur, no
 /// truck) by default; *Assignées* to move one to another driver. Rows are
@@ -152,11 +153,11 @@ class _OrdersList extends StatelessWidget {
       );
     }
     return ListView(
-      padding: const EdgeInsetsDirectional.fromSTEB(
+      padding: EdgeInsetsDirectional.fromSTEB(
         AppSpacing.lg,
         AppSpacing.sm,
         AppSpacing.lg,
-        AppSpacing.navClearance,
+        CustomBottomNavigation.listEnd(context),
       ),
       children: [
         for (final g in board.groups) ...[

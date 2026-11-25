@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +10,7 @@ import '../../../core/localization/tr.dart';
 import '../../../core/router/role_screens.dart';
 import '../../../core/router/tab_badges.dart';
 import '../../../core/session/session_cubit.dart';
+import '../../assistant/logic/assistant_status_cubit.dart';
 import 'widgets/custom_bottom_navigation.dart';
 import 'widgets/no_connection_banner.dart';
 
@@ -32,6 +35,33 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   late final ConnectivityService _connectivity = getIt<ConnectivityService>();
+
+  /// The assistant button shows its word at rest and only its icon while the
+  /// user scrolls (so it covers less of the list); the word comes back a
+  /// moment after the scrolling stops.
+  bool _fabExpanded = true;
+  Timer? _fabTimer;
+  static const _fabRestDelay = Duration(milliseconds: 700);
+
+  bool _onScroll(ScrollNotification n) {
+    if (n.metrics.axis != Axis.vertical) return false;
+    if (n is ScrollStartNotification || n is ScrollUpdateNotification) {
+      _fabTimer?.cancel();
+      if (_fabExpanded) setState(() => _fabExpanded = false);
+    } else if (n is ScrollEndNotification) {
+      _fabTimer?.cancel();
+      _fabTimer = Timer(_fabRestDelay, () {
+        if (mounted) setState(() => _fabExpanded = true);
+      });
+    }
+    return false;
+  }
+
+  @override
+  void dispose() {
+    _fabTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -73,7 +103,10 @@ class _MainScreenState extends State<MainScreen> {
         resizeToAvoidBottomInset: false,
         body: Stack(
           children: [
-            widget.navigationShell,
+            NotificationListener<ScrollNotification>(
+              onNotification: _onScroll,
+              child: widget.navigationShell,
+            ),
             ValueListenableBuilder<bool>(
               valueListenable: _connectivity.isOffline,
               builder: (_, isOffline, _) => isOffline
@@ -112,7 +145,69 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                     ),
             ),
+            _AssistantFab(role: widget.role, expanded: _fabExpanded),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Shortcut to the assistant on the tab roots: an icon and a word, above the
+/// bottom bar on the start side (the end side is for a screen's own action).
+/// It hides like the bar on sub-pages, while the keyboard is open, and when
+/// the assistant is not available. "Plus" keeps its own entry.
+class _AssistantFab extends StatelessWidget {
+  const _AssistantFab({required this.role, required this.expanded});
+
+  final String role;
+
+  /// With its word; false while the list scrolls (icon only).
+  final bool expanded;
+
+  /// The margin a Scaffold gives its own floating button.
+  static const double _margin = 16;
+
+  @override
+  Widget build(BuildContext context) {
+    final available = context.select<AssistantStatusCubit, bool>(
+      (c) => c.state.available,
+    );
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+    final label = context.tr('assistant.open_fab');
+    // The role's "Plus" tab holds the assistant screen (`<more>/assistant`).
+    final more = RoleScreens.allTabsFor(role)
+        .map((t) => t.path)
+        .firstWhere((p) => p.endsWith('/more'), orElse: () => '');
+    final open = more.isEmpty ? null : () => context.push('$more/assistant');
+    return PositionedDirectional(
+      start: _margin,
+      // Level with a screen's own end-side button: its Scaffold adds a 16 dp
+      // margin on top of the bar clearance the screen pads by.
+      bottom:
+          MediaQuery.paddingOf(context).bottom +
+          CustomBottomNavigation.clearance +
+          _margin,
+      child: _OnTabRoot(
+        role: role,
+        hidden: !available || keyboardOpen,
+        child: AnimatedSize(
+          duration: const Duration(milliseconds: 150),
+          alignment: AlignmentDirectional.centerStart,
+          child: expanded
+              ? FloatingActionButton.extended(
+                  heroTag: 'assistant-fab',
+                  tooltip: label,
+                  onPressed: open,
+                  icon: const Icon(Icons.auto_awesome_outlined),
+                  label: Text(label),
+                )
+              : FloatingActionButton(
+                  heroTag: 'assistant-fab',
+                  tooltip: label,
+                  onPressed: open,
+                  child: const Icon(Icons.auto_awesome_outlined),
+                ),
         ),
       ),
     );
@@ -122,10 +217,18 @@ class _MainScreenState extends State<MainScreen> {
 /// Shows [child] (the bottom bar) only while the router's top location is a
 /// tab root of [role]; elsewhere it slides out and stops taking taps.
 class _OnTabRoot extends StatelessWidget {
-  const _OnTabRoot({required this.role, required this.child});
+  const _OnTabRoot({
+    required this.role,
+    required this.child,
+    this.hidden = false,
+  });
 
   final String role;
   final Widget child;
+
+  /// Hides [child] even on a tab root (the assistant button: keyboard open,
+  /// assistant not available).
+  final bool hidden;
 
   static const _duration = Duration(milliseconds: 150);
 
@@ -137,6 +240,7 @@ class _OnTabRoot extends StatelessWidget {
       builder: (context, child) {
         // The top state: the last `go` or `push`, query left out.
         final shown =
+            !hidden &&
             delegate.currentConfiguration.isNotEmpty &&
             RoleScreens.isTabRoot(role, delegate.state.uri.path);
         return IgnorePointer(

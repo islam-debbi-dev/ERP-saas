@@ -36,22 +36,9 @@ import {
 import { useAuth, useFeature, usePermission } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 import { AssistantMarkdown } from './assistant-markdown';
+import { useVisibleHeight } from './use-visible-height';
 
 const MAX_LENGTH = 2000;
-
-/** The height left by the on-screen keyboard, which `100dvh` does not follow on iOS. */
-function useVisibleHeight(active: boolean): number | null {
-  const [height, setHeight] = useState<number | null>(null);
-  useEffect(() => {
-    const viewport = window.visualViewport;
-    if (!active || !viewport) return;
-    const update = () => setHeight(viewport.height);
-    update();
-    viewport.addEventListener('resize', update);
-    return () => viewport.removeEventListener('resize', update);
-  }, [active]);
-  return height;
-}
 
 function useSuggestions(): string[] {
   const t = useTranslations('assistant');

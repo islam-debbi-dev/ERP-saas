@@ -16,6 +16,7 @@ import '../../stock_transfers/data/stock_transfers_repository.dart';
 import '../../stock_transfers/data/transfer_models.dart';
 import '../data/inventories_repository.dart';
 import '../logic/inventory_count_cubit.dart';
+import '../../main_screen/ui/widgets/custom_bottom_navigation.dart';
 
 /// The counts of the dépôts in reach, with their dépôt names.
 class InventoriesPage {
@@ -68,7 +69,9 @@ class InventoriesScreen extends StatelessWidget {
                 floatingActionButton: page == null
                     ? null
                     : Padding(
-                        padding: const EdgeInsets.only(bottom: 88),
+                        padding: const EdgeInsets.only(
+                          bottom: CustomBottomNavigation.clearance,
+                        ),
                         child: FloatingActionButton.extended(
                           heroTag: 'new-count',
                           onPressed: () async {
@@ -100,15 +103,16 @@ class InventoriesScreen extends StatelessWidget {
                               AppEmptyState(
                                 icon: Icons.fact_check_outlined,
                                 title: context.tr('inventory.empty'),
+                                message: context.tr('inventory.empty_hint'),
                               ),
                             ],
                           )
                         : ListView.separated(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
+                            padding: EdgeInsetsDirectional.fromSTEB(
                               AppSpacing.lg,
                               AppSpacing.md,
                               AppSpacing.lg,
-                              AppSpacing.navClearance + 56,
+                              CustomBottomNavigation.listEnd(context),
                             ),
                             itemCount: page.counts.length,
                             separatorBuilder: (_, _) => AppSpacing.gapSm,

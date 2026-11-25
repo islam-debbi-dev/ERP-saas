@@ -14,6 +14,7 @@ import '../../../core/session/session_cubit.dart';
 import '../data/models/today.dart';
 import '../data/repo/today_repository.dart';
 import 'today_map.dart';
+import '../../main_screen/ui/widgets/custom_bottom_navigation.dart';
 
 /// "Aujourd'hui": the seller's truck and today's stops in route order, with
 /// each client's balance and whether he was visited. Tapping a stop opens the
@@ -169,11 +170,11 @@ class _TodayList extends StatelessWidget {
   Widget build(BuildContext context) => RefreshIndicator(
     onRefresh: onRefresh,
     child: ListView(
-      padding: const EdgeInsetsDirectional.fromSTEB(
+      padding: EdgeInsetsDirectional.fromSTEB(
         AppSpacing.lg,
         AppSpacing.md,
         AppSpacing.lg,
-        AppSpacing.navClearance,
+        CustomBottomNavigation.listEnd(context),
       ),
       children: [
         TodayHeader(today: today),

@@ -16,6 +16,7 @@ import '../../../core/paging/load_cubit.dart';
 import '../../../core/session/session_cubit.dart';
 import '../data/models/me_day.dart';
 import '../data/truck_repository.dart';
+import '../../main_screen/ui/widgets/custom_bottom_navigation.dart';
 
 /// "Mon camion" (vendeur, livreur): the truck, the day's session, the cash
 /// to hand over, what is on the truck and today's chargements /
@@ -76,11 +77,11 @@ class _TruckBody extends StatelessWidget {
     final loadsPath = loadsPathFor(user?.role);
     final vehicle = day.vehicle;
     return ListView(
-      padding: const EdgeInsetsDirectional.fromSTEB(
+      padding: EdgeInsetsDirectional.fromSTEB(
         AppSpacing.lg,
         AppSpacing.md,
         AppSpacing.lg,
-        AppSpacing.navClearance,
+        CustomBottomNavigation.listEnd(context),
       ),
       children: [
         AppCard(

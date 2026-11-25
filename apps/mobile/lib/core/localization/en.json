@@ -597,6 +597,7 @@
   },
   "assistant": {
     "title": "Assistant",
+    "open_fab": "Assistant",
     "new_conversation": "New conversation",
     "history": "History",
     "history_empty": "No conversations yet.",
@@ -732,6 +733,7 @@
     "new_hint": "Choose the depot you count.",
     "start": "Start counting",
     "empty": "No count yet",
+    "empty_hint": "Tap “New count” to start.",
     "status_open": "Open",
     "status_validated": "Validated",
     "status_cancelled": "Cancelled",

@@ -158,7 +158,9 @@ ThemeData buildAppTheme(Brightness brightness) {
       backgroundColor: AppColors.accent,
       foregroundColor: AppColors.ink,
       elevation: 2,
-      shape: const CircleBorder(),
+      // A pill: a plain (square) FAB stays a circle, an extended one (icon
+      // and word) is not squeezed into a disc with its word hanging out.
+      shape: const StadiumBorder(),
     ),
     // Deliberately minimal: many fields in the app draw their own container
     // and set `border: InputBorder.none`. Theme-level fill / enabled / focused
