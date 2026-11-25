@@ -733,6 +733,7 @@
     "new_hint": "Choose the depot you count.",
     "start": "Start counting",
     "empty": "No count yet",
+    "empty_hint": "Tap “New count” to start.",
     "status_open": "Open",
     "status_validated": "Validated",
     "status_cancelled": "Cancelled",

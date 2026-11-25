@@ -733,6 +733,7 @@
     "new_hint": "اختر المستودع الذي ستعدّه.",
     "start": "بدء العدّ",
     "empty": "لا يوجد جرد بعد",
+    "empty_hint": "اضغط على «جرد جديد» للبدء.",
     "status_open": "جارٍ",
     "status_validated": "مصادق عليه",
     "status_cancelled": "ملغى",

@@ -101,6 +101,7 @@ class InventoriesScreen extends StatelessWidget {
                               AppEmptyState(
                                 icon: Icons.fact_check_outlined,
                                 title: context.tr('inventory.empty'),
+                                message: context.tr('inventory.empty_hint'),
                               ),
                             ],
                           )

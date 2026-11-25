@@ -733,6 +733,7 @@
     "new_hint": "Choisissez le dépôt que vous comptez.",
     "start": "Commencer le comptage",
     "empty": "Aucun inventaire pour l'instant",
+    "empty_hint": "Appuyez sur « Nouveau comptage » pour commencer.",
     "status_open": "En cours",
     "status_validated": "Validé",
     "status_cancelled": "Annulé",

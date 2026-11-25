@@ -4,6 +4,7 @@ import 'package:orvynt_starter/core/di/dependency_injection.dart';
 import 'package:orvynt_starter/features/assistant/data/assistant_models.dart';
 import 'package:orvynt_starter/features/assistant/data/assistant_repository.dart';
 import 'package:orvynt_starter/features/assistant/ui/assistant_screen.dart';
+import 'package:orvynt_starter/features/assistant/ui/widgets/chat_input_bar.dart';
 
 import '../../helpers/pump_app.dart';
 import 'assistant_fakes.dart';
@@ -155,4 +156,45 @@ void main() {
     expect(repo.chats, hasLength(2));
     expect(repo.last.message, 'question');
   });
+
+  // The keyboard opens (viewInsets.bottom 300) and closes (0): the chat must
+  // get its full height back, the input bar back at the screen bottom (the
+  // safe area stays inside the bar).
+  for (final nested in [false, true]) {
+    testWidgets('keyboard open then closed: full height back'
+        '${nested ? ' (inside the shell\'s Scaffold)' : ''}', (tester) async {
+      tester.view.padding = const FakeViewPadding(bottom: 24);
+      addTearDown(tester.view.resetPadding);
+      addTearDown(tester.view.resetViewInsets);
+      await pumpScreen(
+        tester,
+        nested
+            // As in MainScreen: an outer Scaffold that does not resize.
+            ? const Scaffold(
+                extendBody: true,
+                resizeToAvoidBottomInset: false,
+                body: Stack(children: [AssistantScreen()]),
+              )
+            : const AssistantScreen(),
+        locale: 'ar',
+        user: seller(),
+        assistant: available,
+      );
+      final bar = find.byType(ChatInputBar);
+      final screenBottom = phone360.height;
+      final closedTop = tester.getTopLeft(bar).dy;
+      expect(tester.getBottomLeft(bar).dy, screenBottom);
+
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      await tester.pumpAndSettle();
+      expect(tester.getBottomLeft(bar).dy, screenBottom - 300);
+      expect(tester.getTopLeft(bar).dy, lessThan(closedTop));
+
+      tester.view.viewInsets = FakeViewPadding.zero;
+      await tester.pumpAndSettle();
+      expect(tester.getBottomLeft(bar).dy, screenBottom);
+      expect(tester.getTopLeft(bar).dy, closedTop);
+      expectNoOverflow(tester);
+    });
+  }
 }
