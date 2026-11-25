@@ -31,6 +31,16 @@ class CustomBottomNavigation extends StatelessWidget {
   /// [height] plus the usual 16 dp margin of a floating button.
   static const double clearance = height + 16;
 
+  /// What the assistant button covers above the bar: its 56 dp, the 16 dp
+  /// margin under it and a 16 dp gap over it.
+  static const double _buttonZone = 56 + 16 + 16;
+
+  /// The end padding of the scrolling content of every tab root: one value,
+  /// so the last row always clears the bar (with the home-indicator inset)
+  /// and the floating buttons.
+  static double listEnd(BuildContext context) =>
+      MediaQuery.paddingOf(context).bottom + height + _buttonZone;
+
   final List<NavItem> items;
   final int currentIndex;
   final ValueChanged<int> onItemTapped;
@@ -162,10 +172,7 @@ class _Tab extends StatelessWidget {
                 minHeight: CustomBottomNavigation.tabHeight,
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 4,
-                  vertical: 6,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -190,7 +197,9 @@ class _Tab extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           height: 1.2,
-                          fontWeight: active ? FontWeight.w700 : FontWeight.w600,
+                          fontWeight: active
+                              ? FontWeight.w700
+                              : FontWeight.w600,
                           color: active ? activeContent : inactive,
                         ),
                       ),

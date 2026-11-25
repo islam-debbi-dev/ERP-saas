@@ -18,6 +18,7 @@ import '../../../core/paging/paged_cubit.dart';
 import '../../../core/session/session_cubit.dart';
 import '../data/controls_repository.dart';
 import 'control_maps.dart';
+import '../../main_screen/ui/widgets/custom_bottom_navigation.dart';
 
 enum ControlsSection { positions, flags, report }
 
@@ -158,11 +159,11 @@ class _PositionsSection extends StatelessWidget {
                           ],
                         )
                       : ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(
+                          padding: EdgeInsets.fromLTRB(
                             AppSpacing.lg,
                             AppSpacing.sm,
                             AppSpacing.lg,
-                            AppSpacing.navClearance,
+                            CustomBottomNavigation.listEnd(context),
                           ),
                           itemCount: requests.length,
                           separatorBuilder: (_, _) => AppSpacing.gapSm,
@@ -427,11 +428,11 @@ class _FlagsSectionState extends State<_FlagsSection> {
               return false;
             },
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(
+              padding: EdgeInsets.fromLTRB(
                 AppSpacing.lg,
                 AppSpacing.sm,
                 AppSpacing.lg,
-                AppSpacing.navClearance,
+                CustomBottomNavigation.listEnd(context),
               ),
               children: [
                 Text(
@@ -585,11 +586,11 @@ class _ReportSection extends StatelessWidget {
                           ],
                         )
                       : ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(
+                          padding: EdgeInsets.fromLTRB(
                             AppSpacing.lg,
                             AppSpacing.sm,
                             AppSpacing.lg,
-                            AppSpacing.navClearance,
+                            CustomBottomNavigation.listEnd(context),
                           ),
                           itemCount: rows.length,
                           separatorBuilder: (_, _) => AppSpacing.gapSm,

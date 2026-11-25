@@ -69,7 +69,9 @@ class InventoriesScreen extends StatelessWidget {
                 floatingActionButton: page == null
                     ? null
                     : Padding(
-                        padding: const EdgeInsets.only(bottom: CustomBottomNavigation.clearance),
+                        padding: const EdgeInsets.only(
+                          bottom: CustomBottomNavigation.clearance,
+                        ),
                         child: FloatingActionButton.extended(
                           heroTag: 'new-count',
                           onPressed: () async {
@@ -106,11 +108,11 @@ class InventoriesScreen extends StatelessWidget {
                             ],
                           )
                         : ListView.separated(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
+                            padding: EdgeInsetsDirectional.fromSTEB(
                               AppSpacing.lg,
                               AppSpacing.md,
                               AppSpacing.lg,
-                              AppSpacing.navClearance + 56,
+                              CustomBottomNavigation.listEnd(context),
                             ),
                             itemCount: page.counts.length,
                             separatorBuilder: (_, _) => AppSpacing.gapSm,

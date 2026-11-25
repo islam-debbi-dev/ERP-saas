@@ -9,6 +9,7 @@ import '../../../core/localization/tr.dart';
 import '../../../core/router/routes.dart';
 import '../../../core/session/session_cubit.dart';
 import 'widgets/user_card.dart';
+import '../../main_screen/ui/widgets/custom_bottom_navigation.dart';
 
 /// An entry of the role's "Plus" menu (objectifs, mes ventes...).
 class MoreItem {
@@ -54,7 +55,10 @@ class _AccountScreenState extends State<AccountScreen> {
       body: RefreshIndicator(
         onRefresh: context.read<SessionCubit>().refreshUser,
         child: ListView(
-          padding: const EdgeInsets.only(top: AppSpacing.md, bottom: 130),
+          padding: EdgeInsets.only(
+            top: AppSpacing.md,
+            bottom: CustomBottomNavigation.listEnd(context),
+          ),
           children: [
             if (user != null) UserCard(user: user),
             if (widget.menu.isNotEmpty) ...[

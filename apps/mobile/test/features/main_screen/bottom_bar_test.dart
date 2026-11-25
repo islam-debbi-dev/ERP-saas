@@ -124,7 +124,13 @@ class _Page extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: Text(name)),
-    body: ListView(children: [Text('page:$name')]),
+    // Long enough to scroll (the assistant button reacts to it).
+    body: ListView(
+      children: [
+        Text('page:$name'),
+        for (var i = 0; i < 30; i++) const SizedBox(height: 60),
+      ],
+    ),
     bottomNavigationBar: action
         ? SafeArea(
             child: Padding(
@@ -512,7 +518,10 @@ void main() {
         await _pump(tester, seller(), '/seller/today', locale: locale);
         expect(fabShown(tester), isTrue);
         expect(
-          find.descendant(of: fab, matching: find.byIcon(Icons.auto_awesome_outlined)),
+          find.descendant(
+            of: fab,
+            matching: find.byIcon(Icons.auto_awesome_outlined),
+          ),
           findsOneWidget,
         );
         final rect = tester.getRect(fab);
@@ -528,7 +537,9 @@ void main() {
         // Never over the bar.
         expect(
           rect.bottom,
-          lessThanOrEqualTo(tester.getRect(find.byType(CustomBottomNavigation)).top),
+          lessThanOrEqualTo(
+            tester.getRect(find.byType(CustomBottomNavigation)).top,
+          ),
         );
         // Start side: left in LTR (fr), right in RTL (ar).
         final middle = phone360.width / 2;
@@ -551,6 +562,37 @@ void main() {
       expect(box.width, greaterThan(box.height * 2));
       expect(word.left, greaterThanOrEqualTo(box.left));
       expect(word.right, lessThanOrEqualTo(box.right));
+    });
+
+    testWidgets('shows only its icon while scrolling, the word after', (
+      tester,
+    ) async {
+      await _pump(tester, seller(), '/seller/today', locale: 'fr');
+      final word = find.descendant(of: fab, matching: find.text('Assistant'));
+      expect(word, findsOneWidget);
+      final wide = tester.getRect(fab).width;
+
+      final gesture = await tester.startGesture(const Offset(180, 300));
+      await gesture.moveBy(const Offset(0, -120));
+      await tester.pump(const Duration(milliseconds: 200));
+      // Icon only: no word, a round 56 dp button, still labelled and tappable.
+      expect(word, findsNothing);
+      expect(tester.getRect(fab).width, lessThan(wide));
+      expect(tester.getRect(fab).width, greaterThanOrEqualTo(48));
+      expect(
+        find.descendant(
+          of: fab,
+          matching: find.byIcon(Icons.auto_awesome_outlined),
+        ),
+        findsOneWidget,
+      );
+      expect(find.byTooltip('Assistant'), findsOneWidget);
+      expect(fabShown(tester), isTrue);
+
+      await gesture.up();
+      await tester.pump(const Duration(seconds: 2));
+      expect(word, findsOneWidget);
+      expect(tester.getRect(fab).width, wide);
     });
 
     testWidgets('hides on a sub-page and comes back', (tester) async {
@@ -646,4 +688,25 @@ void main() {
       }
     });
   }
+
+  testWidgets('listEnd: the same end space on every tab root, over the bar '
+      'and the buttons', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.padding = const FakeViewPadding(bottom: 24);
+    addTearDown(tester.view.reset);
+    late double end;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) {
+            end = CustomBottomNavigation.listEnd(context);
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
+    // Safe area + the bar + the assistant button zone.
+    expect(end, 24 + CustomBottomNavigation.height + 88);
+    expect(end, greaterThan(24 + CustomBottomNavigation.clearance + 56));
+  });
 }

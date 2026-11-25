@@ -106,11 +106,9 @@ class _TransfersScreenState extends State<TransfersScreen> {
             Expanded(
               child: _List(
                 basePath: widget.basePath,
-                bottomPadding:
-                    (widget.isTabRoot
-                        ? AppSpacing.navClearance
-                        : AppSpacing.xl) +
-                    (widget.canCreate ? 56 : 0),
+                bottomPadding: (widget.isTabRoot
+                    ? CustomBottomNavigation.listEnd(context)
+                    : AppSpacing.xl + (widget.canCreate ? 56 : 0)),
               ),
             ),
           ],
@@ -119,7 +117,11 @@ class _TransfersScreenState extends State<TransfersScreen> {
             ? null
             : Builder(
                 builder: (context) => Padding(
-                  padding: EdgeInsets.only(bottom: widget.isTabRoot ? CustomBottomNavigation.clearance : 0),
+                  padding: EdgeInsets.only(
+                    bottom: widget.isTabRoot
+                        ? CustomBottomNavigation.clearance
+                        : 0,
+                  ),
                   child: FloatingActionButton.extended(
                     heroTag: 'new-load',
                     onPressed: () async {

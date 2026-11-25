@@ -17,6 +17,7 @@ import '../../orders/data/models/order.dart';
 import '../data/deliveries_repository.dart';
 import '../logic/delivery_groups.dart';
 import 'deliveries_map.dart';
+import '../../main_screen/ui/widgets/custom_bottom_navigation.dart';
 
 /// "Livraisons": the confirmed orders put on the livreur or on the truck he
 /// drives, grouped by client: today's stops first in route order, then the
@@ -170,11 +171,11 @@ class _DeliveriesList extends StatelessWidget {
             ],
           )
         : ListView(
-            padding: const EdgeInsetsDirectional.fromSTEB(
+            padding: EdgeInsetsDirectional.fromSTEB(
               AppSpacing.lg,
               AppSpacing.md,
               AppSpacing.lg,
-              AppSpacing.navClearance,
+              CustomBottomNavigation.listEnd(context),
             ),
             children: [
               for (final g in board.groups) ...[

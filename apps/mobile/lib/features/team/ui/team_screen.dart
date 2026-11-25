@@ -12,6 +12,7 @@ import '../../../core/paging/load_cubit.dart';
 import '../data/team_models.dart';
 import '../data/team_repository.dart';
 import 'team_widgets.dart';
+import '../../main_screen/ui/widgets/custom_bottom_navigation.dart';
 
 /// "Équipe": the supervisor's team on one day (today by default, or an
 /// earlier day to correct a clôture). Who is in it is the API's answer.
@@ -102,11 +103,11 @@ class _TeamList extends StatelessWidget {
                   ],
                 )
               : ListView.separated(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
+                  padding: EdgeInsetsDirectional.fromSTEB(
                     AppSpacing.lg,
                     AppSpacing.xs,
                     AppSpacing.lg,
-                    AppSpacing.navClearance,
+                    CustomBottomNavigation.listEnd(context),
                   ),
                   itemCount: team.length,
                   separatorBuilder: (_, _) => AppSpacing.gapSm,

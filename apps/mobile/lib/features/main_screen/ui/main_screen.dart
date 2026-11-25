@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -33,6 +35,33 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   late final ConnectivityService _connectivity = getIt<ConnectivityService>();
+
+  /// The assistant button shows its word at rest and only its icon while the
+  /// user scrolls (so it covers less of the list); the word comes back a
+  /// moment after the scrolling stops.
+  bool _fabExpanded = true;
+  Timer? _fabTimer;
+  static const _fabRestDelay = Duration(milliseconds: 700);
+
+  bool _onScroll(ScrollNotification n) {
+    if (n.metrics.axis != Axis.vertical) return false;
+    if (n is ScrollStartNotification || n is ScrollUpdateNotification) {
+      _fabTimer?.cancel();
+      if (_fabExpanded) setState(() => _fabExpanded = false);
+    } else if (n is ScrollEndNotification) {
+      _fabTimer?.cancel();
+      _fabTimer = Timer(_fabRestDelay, () {
+        if (mounted) setState(() => _fabExpanded = true);
+      });
+    }
+    return false;
+  }
+
+  @override
+  void dispose() {
+    _fabTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -74,7 +103,10 @@ class _MainScreenState extends State<MainScreen> {
         resizeToAvoidBottomInset: false,
         body: Stack(
           children: [
-            widget.navigationShell,
+            NotificationListener<ScrollNotification>(
+              onNotification: _onScroll,
+              child: widget.navigationShell,
+            ),
             ValueListenableBuilder<bool>(
               valueListenable: _connectivity.isOffline,
               builder: (_, isOffline, _) => isOffline
@@ -113,7 +145,7 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                     ),
             ),
-            _AssistantFab(role: widget.role),
+            _AssistantFab(role: widget.role, expanded: _fabExpanded),
           ],
         ),
       ),
@@ -126,9 +158,12 @@ class _MainScreenState extends State<MainScreen> {
 /// It hides like the bar on sub-pages, while the keyboard is open, and when
 /// the assistant is not available. "Plus" keeps its own entry.
 class _AssistantFab extends StatelessWidget {
-  const _AssistantFab({required this.role});
+  const _AssistantFab({required this.role, required this.expanded});
 
   final String role;
+
+  /// With its word; false while the list scrolls (icon only).
+  final bool expanded;
 
   /// The margin a Scaffold gives its own floating button.
   static const double _margin = 16;
@@ -144,6 +179,7 @@ class _AssistantFab extends StatelessWidget {
     final more = RoleScreens.allTabsFor(role)
         .map((t) => t.path)
         .firstWhere((p) => p.endsWith('/more'), orElse: () => '');
+    final open = more.isEmpty ? null : () => context.push('$more/assistant');
     return PositionedDirectional(
       start: _margin,
       // Level with a screen's own end-side button: its Scaffold adds a 16 dp
@@ -155,14 +191,23 @@ class _AssistantFab extends StatelessWidget {
       child: _OnTabRoot(
         role: role,
         hidden: !available || keyboardOpen,
-        child: FloatingActionButton.extended(
-          heroTag: 'assistant-fab',
-          tooltip: label,
-          onPressed: more.isEmpty
-              ? null
-              : () => context.push('$more/assistant'),
-          icon: const Icon(Icons.auto_awesome_outlined),
-          label: Text(label),
+        child: AnimatedSize(
+          duration: const Duration(milliseconds: 150),
+          alignment: AlignmentDirectional.centerStart,
+          child: expanded
+              ? FloatingActionButton.extended(
+                  heroTag: 'assistant-fab',
+                  tooltip: label,
+                  onPressed: open,
+                  icon: const Icon(Icons.auto_awesome_outlined),
+                  label: Text(label),
+                )
+              : FloatingActionButton(
+                  heroTag: 'assistant-fab',
+                  tooltip: label,
+                  onPressed: open,
+                  child: const Icon(Icons.auto_awesome_outlined),
+                ),
         ),
       ),
     );

@@ -78,7 +78,9 @@ class _ClientsViewState extends State<_ClientsView> {
       appBar: AppBar(title: Text(context.tr('clients.title'))),
       floatingActionButton: canCreate
           ? Padding(
-              padding: const EdgeInsets.only(bottom: CustomBottomNavigation.clearance),
+              padding: const EdgeInsets.only(
+                bottom: CustomBottomNavigation.clearance,
+              ),
               child: FloatingActionButton.extended(
                 heroTag: 'new-client',
                 onPressed: () async {
@@ -170,11 +172,11 @@ class _ClientsViewState extends State<_ClientsView> {
                       return false;
                     },
                     child: ListView.separated(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
+                      padding: EdgeInsetsDirectional.fromSTEB(
                         AppSpacing.lg,
                         AppSpacing.sm,
                         AppSpacing.lg,
-                        AppSpacing.navClearance + 56,
+                        CustomBottomNavigation.listEnd(context),
                       ),
                       itemCount: state.items.length + (state.hasMore ? 1 : 0),
                       separatorBuilder: (_, _) => AppSpacing.gapSm,
