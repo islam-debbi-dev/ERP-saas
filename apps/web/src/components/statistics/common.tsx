@@ -26,6 +26,8 @@ import {
   statsQuery,
   useStats,
 } from '@/lib/distribution-stats';
+import { type CommunesModule, communeDisplay, dairaDisplay } from '@/lib/locations';
+import { useCommunes } from '@/lib/use-communes';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { cn } from '@/lib/utils';
 import { type ChartRow, Num, RankBarChart, StatPanel, StatTable } from './stat-panel';
@@ -68,8 +70,22 @@ export function useStatLabels() {
     definition: (m: StatMeasure) => (DEFINED.has(m) ? t(`def_${m as DefinedMeasure}`) : undefined),
     vehicle: (v: StatVehicleRef | null) =>
       v ? (v.code ? `${v.code} · ${v.name}` : v.name) : t('noVehicle'),
-    dimensionKey: (dimension: StatDimension, key: string | null, label: string | null) => {
+    dimensionKey: (
+      dimension: StatDimension,
+      key: string | null,
+      label: string | null,
+      /** Needed to name daïras and communes in the screen's language. */
+      communes?: CommunesModule,
+    ) => {
       if (key === null) return t('notSet');
+      // The API labels these two in French.
+      if (dimension === 'clientDaira') {
+        const daira = communes?.dairaByKey(key);
+        if (daira) return dairaDisplay(daira, locale);
+      }
+      if (dimension === 'clientCommune') {
+        return communeDisplay(communes, Number(key), label ?? key, locale)!;
+      }
       if (label) return label;
       if (dimension === 'vehicleWilaya' || dimension === 'clientWilaya') {
         return wilayaLabel(Number(key), locale) ?? key;
@@ -236,11 +252,12 @@ export function DimensionBlock({
   const router = useRouter();
   const query = statsQuery(state, { dimension });
   const res = useStats<StatsByDimensionDto>('by-dimension', query);
+  const communes = useCommunes(dimension === 'clientDaira' || dimension === 'clientCommune');
   if (res.isError) return <ErrorBlock error={res.error} />;
   const dto = res.data;
   if (!dto) return <Skeleton className="h-64" />;
   const name = (key: string | null, label: string | null) =>
-    labels.dimensionKey(dimension, key, label);
+    labels.dimensionKey(dimension, key, label, communes.data);
   const rows = dimensionRows(dto, [chartMeasure], name);
   const cellText = (cells: StatCell[], m: StatMeasure) => {
     const c = cellOf(cells, m);

@@ -2254,9 +2254,7 @@
     "saved": "Secteur enregistré",
     "deleted": "Secteur supprimé",
     "name": "Nom",
-    "wilaya": "Wilaya",
     "communes": "Communes",
-    "communesHint": "Séparez les communes par des virgules.",
     "help": "Une zone que vos vendeurs couvrent.",
     "clientCount": "{count, plural, =0 {Aucun client} one {# client} other {# clients}}",
     "back": "Clients"
@@ -4154,9 +4152,6 @@
     "filter_brandIds": "Marques",
     "filter_segmentIds": "Types de client",
     "filter_sectorIds": "Secteurs",
-    "clientWilayaHint": "Numéro ou nom de la wilaya",
-    "add": "Ajouter",
-    "remove": "Retirer {value}",
     "groupBy": "Grouper par",
     "definition": "Définition",
     "showTable": "Tableau",
@@ -4339,7 +4334,8 @@
     "def_successRate": "Succès / visités ; vide sans visite.",
     "def_dispersion": "CA TTC de chaque véhicule pour chaque jour de la période, pour repérer les véhicules irréguliers.",
     "def_lostClients": "Clients qui ont acheté pendant la période de comparaison et pas pendant celle-ci.",
-    "def_targets": "Chiffre du mois du véhicule / son objectif. Ces objectifs ne servent pas au calcul des primes."
+    "def_targets": "Chiffre du mois du véhicule / son objectif. Ces objectifs ne servent pas au calcul des primes.",
+    "chipPlace": "{filter} : {name}"
   },
   "segments": {
     "title": "Types de client",
@@ -4355,5 +4351,34 @@
     "saved": "Type enregistré",
     "created": "Type ajouté",
     "archived": "Type archivé"
+  },
+  "locations": {
+    "group": "Lieu (wilaya, daïra, commune)",
+    "wilaya": "Wilaya",
+    "dairaOptional": "Daïra (facultatif)",
+    "commune": "Commune",
+    "communes": "Communes",
+    "chooseWilaya": "Choisir la wilaya",
+    "allDairas": "Toutes les daïras",
+    "chooseCommune": "Choisir la commune",
+    "noCommune": "Aucune commune (wilaya seule)",
+    "wilayaFirst": "Choisissez d’abord la wilaya",
+    "addWilayas": "Ajouter des wilayas",
+    "addDairas": "Ajouter des daïras",
+    "addCommunes": "Ajouter des communes",
+    "chosenCommunes": "Communes choisies",
+    "search": "Rechercher en français ou en arabe",
+    "noResult": "Aucun résultat",
+    "underReview": "En cours de vérification",
+    "loading": "Chargement…",
+    "loadError": "La liste des communes n’a pas pu être chargée.",
+    "retry": "Réessayer",
+    "oldText": "Ancien texte : <bdi>{text}</bdi>. Choisissez dans la liste.",
+    "oldTextRemoved": "L’ancien texte <bdi>{text}</bdi> sera effacé à l’enregistrement.",
+    "clear": "Effacer le lieu",
+    "undo": "Annuler le changement",
+    "remove": "Retirer {name}",
+    "done": "{count, plural, =0 {Fermer} one {Terminé (# choisi)} other {Terminé (# choisis)}}",
+    "inWilaya": "{filter} : chercher dans la wilaya"
   }
 }

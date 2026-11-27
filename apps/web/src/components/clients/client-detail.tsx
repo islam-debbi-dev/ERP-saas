@@ -12,7 +12,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { type ClientDto, type ClientStatementDto, Feature, formatDA, money } from '@erp/shared';
@@ -57,6 +57,8 @@ import {
   useStatement,
 } from '@/lib/clients';
 import { todayInAlgiers } from '@/lib/purchases';
+import { communeDisplay, wilayaDisplay } from '@/lib/locations';
+import { useCommunes } from '@/lib/use-communes';
 import { useFeature } from '@/lib/auth';
 import { cn, isolateLtr } from '@/lib/utils';
 import { useTenantSettings } from '@/lib/settings';
@@ -272,13 +274,18 @@ function Info({ client }: { client: ClientDto }) {
   const t = useTranslations('clients');
   const levels = usePriceLevels();
   const level = levels.data?.find((l) => l.id === client.priceLevelId);
+  const locale = useLocale();
+  const communes = useCommunes(client.communeCode !== null);
   const rows: { label: string; value: string | null; ltr?: boolean }[] = [
     { label: t('type'), value: t(`type${client.type}`) },
     { label: t('phone'), value: client.phone, ltr: true },
     { label: t('phone2'), value: client.phone2, ltr: true },
     { label: t('address'), value: client.address },
-    { label: t('commune'), value: client.commune },
-    { label: t('wilaya'), value: client.wilaya },
+    {
+      label: t('commune'),
+      value: communeDisplay(communes.data, client.communeCode, client.commune, locale),
+    },
+    { label: t('wilaya'), value: wilayaDisplay(client.wilayaCode, client.wilaya, locale) },
     { label: t('priceLevel'), value: level?.name ?? t('defaultPriceLevel') },
     // Sales force (phase 14): empty rows are not shown, so nothing appears without it.
     { label: t('sector'), value: client.sector?.name ?? null },

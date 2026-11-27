@@ -11,7 +11,7 @@ import {
   Upload,
   XCircle,
 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useId, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -47,6 +47,7 @@ import {
   previewImport,
   priceSlot,
 } from '@/lib/imports';
+import { issueParams } from '@/lib/import-issues';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { useFeature, usePermission } from '@/lib/auth';
 import { cn } from '@/lib/utils';
@@ -73,9 +74,10 @@ function useIssueText() {
   const t = useTranslations('imports.issues');
   const ti = useTranslations('imports');
   const fieldLabel = useFieldLabel();
+  const locale = useLocale();
   return (issue: ImportIssue, fields: ImportFieldDef[]): string => {
     const field = fields.find((f) => f.key === issue.field);
-    const params = { row: '', max: '', value: '', name: '', qty: '', rule: '', ...issue.params };
+    const params = issueParams(issue, locale);
     const text = t.has(issue.code as 'required') ? t(issue.code as 'required', params) : issue.code;
     return issue.field
       ? ti('issueWithField', { field: fieldLabel(field, issue.field), message: text })

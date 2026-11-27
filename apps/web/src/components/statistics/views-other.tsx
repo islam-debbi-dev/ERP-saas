@@ -83,7 +83,15 @@ export function ZonesView({ state }: { state: StatsState }) {
   return (
     <div className="space-y-4">
       <DimensionChips
-        options={['vehicleType', 'activity', 'depot', 'vehicleWilaya', 'clientWilaya']}
+        options={[
+          'vehicleType',
+          'activity',
+          'depot',
+          'vehicleWilaya',
+          'clientWilaya',
+          'clientDaira',
+          'clientCommune',
+        ]}
         value={dimension}
         onChange={setDimension}
       />

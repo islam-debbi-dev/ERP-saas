@@ -1,8 +1,8 @@
 'use client';
 
-import { CalendarRange, SlidersHorizontal, X } from 'lucide-react';
+import { CalendarRange, SlidersHorizontal } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { type FormEvent, type ReactNode, useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import {
   type CategoryDto,
   Feature,
@@ -45,6 +45,8 @@ import { useBrands, useSectors } from '@/lib/sales-force';
 import { useWarehouses } from '@/lib/stock';
 import { cn } from '@/lib/utils';
 import { useVehicleTypes } from '@/lib/vehicles';
+import { FilterGroup } from './filter-group';
+import { LOCATION_FILTER_KEYS, PlaceFilterChips, PlaceFilterGroups } from './location-filters';
 import { GlobalView, OrdersView, TargetsView, VehiclesView } from './views-vehicles';
 import {
   ClientsView,
@@ -77,6 +79,10 @@ function Statistics() {
   return (
     <>
       <FilterBar state={state} setUrl={setUrl} />
+      <PlaceFilterChips
+        filters={state.filters}
+        onChange={(key, values) => setUrl({ [key]: values.join(',') })}
+      />
       <ViewSwitch
         value={state.view}
         onChange={(view) => setUrl({ view: view === 'global' ? '' : view })}
@@ -180,6 +186,8 @@ function FilterBar({
   const t = useTranslations('stats');
   const [customOpen, setCustomOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  // A new sheet each time it opens: its draft starts from the filters now applied.
+  const [sheetRun, setSheetRun] = useState(0);
   const count = filterCount(state.filters);
   const pick = (p: StatPeriod) => {
     if (p === 'custom') setCustomOpen(true);
@@ -222,7 +230,14 @@ function FilterBar({
             </option>
           ))}
         </select>
-        <Button variant="outline" className="ms-auto min-h-11" onClick={() => setSheetOpen(true)}>
+        <Button
+          variant="outline"
+          className="ms-auto min-h-11"
+          onClick={() => {
+            setSheetRun((n) => n + 1);
+            setSheetOpen(true);
+          }}
+        >
           <SlidersHorizontal aria-hidden />
           {t('filters', { count })}
         </Button>
@@ -240,7 +255,13 @@ function FilterBar({
         initial={state.range}
         onApply={(r) => setUrl({ period: 'custom', from: r.from, to: r.to })}
       />
-      <FilterSheet open={sheetOpen} onOpenChange={setSheetOpen} state={state} setUrl={setUrl} />
+      <FilterSheet
+        key={sheetRun}
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        state={state}
+        setUrl={setUrl}
+      />
     </div>
   );
 }
@@ -343,10 +364,9 @@ function FilterSheet({
   const categories = useCategories();
   const segments = useClientSegments(open);
   const [draft, setDraft] = useState<StatsState['filters']>(state.filters);
-  const [clientWilaya, setClientWilaya] = useState('');
   const all = warehouses.data ?? [];
   const groups: {
-    key: Exclude<StatFilterKey, 'clientWilayas' | 'productIds' | 'clientIds'>;
+    key: Exclude<StatFilterKey, (typeof LOCATION_FILTER_KEYS)[number] | 'productIds' | 'clientIds'>;
     options: Option[];
   }[] = [
     {
@@ -396,7 +416,7 @@ function FilterSheet({
     const patch: Partial<StatsUrl> = {};
     for (const key of [
       ...groups.map((g) => g.key),
-      'clientWilayas',
+      ...LOCATION_FILTER_KEYS,
       'productIds',
       'clientIds',
     ] as StatFilterKey[]) {
@@ -406,13 +426,7 @@ function FilterSheet({
     onOpenChange(false);
   };
   return (
-    <Sheet
-      open={open}
-      onOpenChange={(o) => {
-        if (o) setDraft(state.filters);
-        onOpenChange(o);
-      }}
-    >
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="end" className="w-full overflow-y-auto sm:max-w-md">
         <SheetHeader>
           <SheetTitle>{t('filtersTitle')}</SheetTitle>
@@ -450,51 +464,10 @@ function FilterSheet({
                 </ul>
               </FilterGroup>
             ))}
-          <FilterGroup title={t('filter_clientWilayas')} count={draft.clientWilayas?.length ?? 0}>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <Label htmlFor="f-client-wilaya" className="sr-only">
-                  {t('filter_clientWilayas')}
-                </Label>
-                <Input
-                  id="f-client-wilaya"
-                  className="h-11 text-base"
-                  value={clientWilaya}
-                  placeholder={t('clientWilayaHint')}
-                  onChange={(e) => setClientWilaya(e.target.value)}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="min-h-11"
-                  disabled={clientWilaya.trim() === ''}
-                  onClick={() => {
-                    toggle('clientWilayas', clientWilaya.trim());
-                    setClientWilaya('');
-                  }}
-                >
-                  {t('add')}
-                </Button>
-              </div>
-              <ul className="flex flex-wrap gap-1">
-                {(draft.clientWilayas ?? []).map((w) => (
-                  <li key={w}>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      className="min-h-11"
-                      aria-label={t('remove', { value: w })}
-                      onClick={() => toggle('clientWilayas', w)}
-                    >
-                      {w}
-                      <X aria-hidden />
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </FilterGroup>
+          <PlaceFilterGroups
+            draft={draft}
+            onChange={(key, values) => setDraft((d) => ({ ...d, [key]: values }))}
+          />
           {(draft.productIds?.length ?? 0) + (draft.clientIds?.length ?? 0) > 0 ? (
             <Button
               type="button"
@@ -516,29 +489,5 @@ function FilterSheet({
         </SheetFooter>
       </SheetContent>
     </Sheet>
-  );
-}
-
-function FilterGroup({
-  title,
-  count,
-  children,
-}: {
-  title: string;
-  count: number;
-  children: ReactNode;
-}) {
-  return (
-    <details className="rounded-md border px-2 [&_summary::-webkit-details-marker]:hidden">
-      <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-2 text-sm font-medium">
-        <span>{title}</span>
-        {count > 0 ? (
-          <span className="rounded-full bg-primary px-2 text-xs text-primary-foreground">
-            <bdi dir="ltr">{count}</bdi>
-          </span>
-        ) : null}
-      </summary>
-      <div className="pb-2">{children}</div>
-    </details>
   );
 }

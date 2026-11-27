@@ -2254,9 +2254,7 @@
     "saved": "Sector saved",
     "deleted": "Sector deleted",
     "name": "Name",
-    "wilaya": "Wilaya",
     "communes": "Communes",
-    "communesHint": "Separate communes with commas.",
     "help": "An area your sellers cover.",
     "clientCount": "{count, plural, =0 {No clients} one {# client} other {# clients}}",
     "back": "Clients"
@@ -4154,9 +4152,6 @@
     "filter_brandIds": "Brands",
     "filter_segmentIds": "Customer types",
     "filter_sectorIds": "Sectors",
-    "clientWilayaHint": "Wilaya number or name",
-    "add": "Add",
-    "remove": "Remove {value}",
     "groupBy": "Group by",
     "definition": "Definition",
     "showTable": "Table",
@@ -4339,7 +4334,8 @@
     "def_successRate": "Success / visited; empty without visits.",
     "def_dispersion": "Sales of each truck for each day of the period, to spot irregular trucks.",
     "def_lostClients": "Customers who bought in the comparison period and not in this one.",
-    "def_targets": "The truck’s figure of the month / its target. These targets are not used for bonuses."
+    "def_targets": "The truck’s figure of the month / its target. These targets are not used for bonuses.",
+    "chipPlace": "{filter}: {name}"
   },
   "segments": {
     "title": "Customer types",
@@ -4355,5 +4351,34 @@
     "saved": "Type saved",
     "created": "Type added",
     "archived": "Type archived"
+  },
+  "locations": {
+    "group": "Place (wilaya, daira, commune)",
+    "wilaya": "Wilaya",
+    "dairaOptional": "Daira (optional)",
+    "commune": "Commune",
+    "communes": "Communes",
+    "chooseWilaya": "Choose the wilaya",
+    "allDairas": "All dairas",
+    "chooseCommune": "Choose the commune",
+    "noCommune": "No commune (wilaya only)",
+    "wilayaFirst": "Choose the wilaya first",
+    "addWilayas": "Add wilayas",
+    "addDairas": "Add dairas",
+    "addCommunes": "Add communes",
+    "chosenCommunes": "Chosen communes",
+    "search": "Search in French or Arabic",
+    "noResult": "No result",
+    "underReview": "Under review",
+    "loading": "Loading…",
+    "loadError": "The commune list could not be loaded.",
+    "retry": "Try again",
+    "oldText": "Old text: <bdi>{text}</bdi>. Choose from the list.",
+    "oldTextRemoved": "The old text <bdi>{text}</bdi> will be removed when you save.",
+    "clear": "Clear the place",
+    "undo": "Undo the change",
+    "remove": "Remove {name}",
+    "done": "{count, plural, =0 {Close} one {Done (# chosen)} other {Done (# chosen)}}",
+    "inWilaya": "{filter}: look in wilaya"
   }
 }
