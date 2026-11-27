@@ -18,3 +18,16 @@ flutter run
 ```
 
 `apps/mobile` is not a pnpm package: pnpm and turbo ignore it.
+
+## Communes data
+
+The client form picks wilaya, daïra and commune from copies of
+`packages/shared`. Tests fail when a copy differs.
+
+- Communes and dairas: after a change to `communes.data.json`, run from
+  `apps/mobile`:
+  `cp ../../packages/shared/src/communes.data.json assets/data/`
+- Wilaya names: edit `lib/core/locations/wilayas.dart` to match `wilayas.ts`.
+- Review gate: `communes5969Reviewed` in
+  `lib/core/locations/algeria_locations.dart` must equal
+  `COMMUNES_59_69_REVIEWED` in `communes.ts`.
