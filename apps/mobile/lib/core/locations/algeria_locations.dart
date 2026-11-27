@@ -8,7 +8,7 @@
 ///
 /// Data source: https://github.com/syscli/algeria, commit
 /// 7789ea926e7c0751f33775ecf558fa026e2ee81b, MIT licence, Copyright (c) 2026
-/// syscli. The full notice is in `packages/shared/src/communes.ts`.
+/// syscli. The full notice ships in the app: `communes_licence.dart`.
 /// Dairas follow decree 91-306 of 1991 and may have changed since.
 library;
 
