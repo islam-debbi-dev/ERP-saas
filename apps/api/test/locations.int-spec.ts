@@ -2,8 +2,16 @@ import { randomUUID } from 'node:crypto';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { Activity, type ApiError, type ClientDto, ErrorCode, type SectorDto } from '@erp/shared';
+import {
+  Activity,
+  type ApiError,
+  type ClientDto,
+  ErrorCode,
+  type ImportPreviewDto,
+  type SectorDto,
+} from '@erp/shared';
 import { communesOf } from '@erp/shared/communes';
+import ExcelJS from 'exceljs';
 import {
   bearer,
   createTestApp,
@@ -396,6 +404,100 @@ describe('locations (phase 40a)', () => {
       // An existing report is never overwritten, and nothing runs without a report.
       await expect(run('first.csv', [outside.tenantId])).rejects.toThrow(/EEXIST/);
       expect(await stored(ids.foreign)).toMatchObject({ wilayaCode: null });
+    });
+  });
+
+  describe('client import: wilaya and commune columns', () => {
+    const send = async (file: Buffer): Promise<ImportPreviewDto> =>
+      (
+        await t
+          .http()
+          .post('/imports/CLIENTS/preview')
+          .set(...bearer(a.auth.accessToken))
+          .attach('file', file, 'clients.xlsx')
+          .expect(200)
+      ).body as ImportPreviewDto;
+    const confirm = (jobId: string) => as(a).post(`/imports/${jobId}/confirm`, {}).expect(200);
+    const byCode = (code: string) =>
+      tenantContext.runAsSystem(() =>
+        t.prisma.db.client.findFirstOrThrow({ where: { tenantId: a.tenantId, code } }),
+      );
+
+    it('warns in the preview and writes what the preview promised', async () => {
+      const keep = await newClient({ code: 'IMP-KEEP', communeCode: ORAN });
+      await newClient({ code: 'IMP-MOVE', communeCode: BAB_EZZOUAR });
+      await newClient({ code: 'IMP-LOST', communeCode: BAB_EZZOUAR });
+      const workbook = new ExcelJS.Workbook();
+      workbook.addWorksheet('Import').addRows([
+        ['Code', 'Nom', 'الولاية', 'Commune'],
+        ['IMP-NEW', 'Nouveau', 'Alger', 'el harrach'],
+        ['IMP-FORMER', 'Ancienne', 'Ouargla', 'Touggourt'],
+        ['IMP-UNKNOWN', 'Inconnue', 'Alger', 'Cité inconnue'],
+        ['IMP-GATED', 'Revue', "M'Sila", GATED.fr],
+        ['IMP-WILAYA', 'Wilaya', '31', null],
+        ['IMP-KEEP', 'Renommé', null, null],
+        ['IMP-MOVE', null, null, 'El Harrach'],
+        ['IMP-LOST', null, null, 'Nulle part'],
+      ]);
+      const preview = await send(Buffer.from(await workbook.xlsx.writeBuffer()));
+      const warnings = Object.fromEntries(
+        preview.rows.map((r) => [r.values['code']!, r.warnings.map((w) => w.code)] as const),
+      );
+      expect(warnings).toEqual({
+        'IMP-NEW': [],
+        'IMP-FORMER': ['location_former_wilaya'],
+        'IMP-UNKNOWN': ['location_not_found'],
+        'IMP-GATED': ['commune_under_review'],
+        'IMP-WILAYA': [],
+        'IMP-KEEP': [],
+        'IMP-MOVE': [],
+        'IMP-LOST': ['location_not_found'],
+      });
+      const former = preview.rows.find((r) => r.values['code'] === 'IMP-FORMER')!;
+      expect(former.warnings[0]!.params?.['wilaya']).toMatch(/^55 /);
+
+      await confirm(preview.jobId);
+      expect(await byCode('IMP-NEW')).toMatchObject({
+        commune: 'El Harrach',
+        wilayaCode: 16,
+        communeCode: EL_HARRACH,
+      });
+      expect(await byCode('IMP-FORMER')).toMatchObject({ wilayaCode: 55, communeCode: TOUGGOURT });
+      expect(await byCode('IMP-UNKNOWN')).toMatchObject({
+        commune: 'Cité inconnue',
+        wilayaCode: null,
+        communeCode: null,
+      });
+      expect(await byCode('IMP-GATED')).toMatchObject({ commune: GATED.fr, communeCode: null });
+      expect(await byCode('IMP-WILAYA')).toMatchObject({ wilayaCode: 31, communeCode: null });
+      // Blank cells keep the text, so the codes stay.
+      expect(await byCode('IMP-KEEP')).toMatchObject({
+        name: 'Renommé',
+        wilaya: keep.wilaya,
+        communeCode: ORAN,
+      });
+      expect(await byCode('IMP-MOVE')).toMatchObject({ communeCode: EL_HARRACH });
+      expect(await byCode('IMP-LOST')).toMatchObject({
+        commune: 'Nulle part',
+        wilayaCode: null,
+        communeCode: null,
+      });
+    });
+
+    it('puts the two columns in the template, with examples the matcher knows', async () => {
+      const res = await as(a)
+        .get('/imports/templates/CLIENTS')
+        .buffer(true)
+        .parse((response, done) => {
+          const parts: Buffer[] = [];
+          response.on('data', (part: Buffer) => parts.push(part));
+          response.on('end', () => done(null, Buffer.concat(parts)));
+        })
+        .expect(200);
+      const preview = await send(res.body as Buffer);
+      expect(preview.mapping['wilaya']).not.toBeNull();
+      expect(preview.mapping['commune']).not.toBeNull();
+      expect(preview.rows.flatMap((r) => r.warnings)).toEqual([]);
     });
   });
 

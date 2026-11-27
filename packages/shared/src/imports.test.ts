@@ -80,9 +80,23 @@ describe('detectMapping', () => {
       name: 1,
       phone: 2,
       address: 3,
+      wilaya: null,
+      commune: null,
       segment: null,
       creditLimit: 4,
       openingBalance: 5,
+    });
+  });
+
+  it('maps the wilaya and commune headers in French and Arabic (phase 40a)', () => {
+    const fields = importFields(ImportType.CLIENTS);
+    expect(detectMapping(['Code', 'Nom', 'Wilaya', 'Commune'], fields)).toMatchObject({
+      wilaya: 2,
+      commune: 3,
+    });
+    expect(detectMapping(['الرمز', 'الاسم', 'الولاية', 'البلدية'], fields)).toMatchObject({
+      wilaya: 2,
+      commune: 3,
     });
   });
 

@@ -292,6 +292,8 @@ const CLIENT_FIELDS: ImportFieldDef[] = [
     'النوع',
     'نوع الزبون',
   ]),
+  f('wilaya', 'text', false, ['wilaya', 'willaya', 'الولاية', 'ولاية']),
+  f('commune', 'text', false, ['commune', 'baladia', 'البلدية', 'بلدية']),
   f('creditLimit', 'money', false, [
     'plafond',
     'plafond credit',
