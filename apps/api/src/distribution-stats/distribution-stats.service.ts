@@ -54,6 +54,7 @@ import {
   type VehicleTargetMetric,
   WarehouseType,
 } from '@erp/shared';
+import { communeByCode, dairaByKey } from '@erp/shared/communes';
 import { type CurrentUserInfo } from '../auth/auth.types';
 import { can } from '../auth/permissions';
 import { ClockService } from '../clock/clock.service';
@@ -331,6 +332,8 @@ export class DistributionStatsService {
       (
         [
           'clientWilayas',
+          'clientDairas',
+          'clientCommunes',
           'segmentIds',
           'sectorIds',
           'clientIds',
@@ -550,18 +553,19 @@ export class DistributionStatsService {
           }),
         );
         break;
-      case 'clientWilaya': {
-        // The key is the wilaya in lower case; print it as one client wrote it.
-        const rows = await db.$queryRaw<{ key: string; label: string }[]>`
-          SELECT lower(btrim(c.wilaya)) AS key, MIN(btrim(c.wilaya)) AS label
-          FROM clients c
-          WHERE c."tenantId" = ${tenantContext.requireTenantId()}::uuid
-            AND lower(btrim(c.wilaya)) = ANY(${ids}::text[])
-          GROUP BY 1`;
-        rows.forEach((r) => out.set(r.key, r.label));
+      case 'clientDaira':
+        ids.forEach((key) => {
+          const daira = dairaByKey(key);
+          if (daira) out.set(key, daira.fr);
+        });
         break;
-      }
-      // activity and vehicleWilaya: the web translates the enum / names the wilaya number.
+      case 'clientCommune':
+        ids.forEach((key) => {
+          const commune = communeByCode(Number(key));
+          if (commune) out.set(key, commune.fr);
+        });
+        break;
+      // activity and the two wilayas: the web translates the enum / names the wilaya number.
       default:
         break;
     }

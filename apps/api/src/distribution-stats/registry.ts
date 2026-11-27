@@ -579,6 +579,8 @@ export const DIMENSIONS: Record<EngineDimension, DimensionDef> = {
   depot: { needs: 'vehicle', key: col('depotId') },
   vehicleWilaya: { needs: 'vehicle', key: col('vehicleWilaya') },
   clientWilaya: { needs: 'client', key: col('clientWilaya') },
+  clientDaira: { needs: 'client', key: col('clientDaira') },
+  clientCommune: { needs: 'client', key: col('clientCommune') },
   segment: { needs: 'client', key: col('segmentId') },
   sector: { needs: 'client', key: col('sectorId') },
   client: { needs: 'client', key: col('clientId') },

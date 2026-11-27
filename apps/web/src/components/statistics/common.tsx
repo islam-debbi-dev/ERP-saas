@@ -71,7 +71,9 @@ export function useStatLabels() {
     dimensionKey: (dimension: StatDimension, key: string | null, label: string | null) => {
       if (key === null) return t('notSet');
       if (label) return label;
-      if (dimension === 'vehicleWilaya') return wilayaLabel(Number(key), locale) ?? key;
+      if (dimension === 'vehicleWilaya' || dimension === 'clientWilaya') {
+        return wilayaLabel(Number(key), locale) ?? key;
+      }
       if (dimension === 'activity') return t(`activity_${key as VehicleActivity}`);
       return key;
     },
