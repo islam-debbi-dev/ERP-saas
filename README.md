@@ -96,6 +96,7 @@ Sidebar help links come from the web env (`NEXT_PUBLIC_SUPPORT_WHATSAPP`, `NEXT_
   DATABASE_URL_MIGRATE="$NEON_OWNER" DATABASE_URL="$NEON_APP" pnpm --filter @erp/api db:backfill-vehicles
   DATABASE_URL_MIGRATE="$NEON_OWNER" DATABASE_URL="$NEON_APP" pnpm --filter @erp/api reconcile
   ```
+- **Phase 40a: run the migration on Neon before the API deploys; after it, back up the database, then run the commune backfill twice** (`docs/runbook.md`, "Commune backfill"); the second run changes 0 clients. It writes a CSV of the clients to check: keep the first one. Locally: back up the database, then `pnpm --filter @erp/shared build && pnpm --filter @erp/api build && pnpm --filter @erp/api db:backfill-communes [--out <file.csv>]`.
 
 ## Dépenses et loyers (phase 25)
 
