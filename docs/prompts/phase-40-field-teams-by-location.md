@@ -82,15 +82,19 @@ Big distributors (the owner received a real monthly "SVP" Excel file from distri
 | Reste à faire / jour | max(0, objectif − réalisation) / jours restants (null when 0 days left). |
 | Atterrissage (forecast) | Réalisation + (réalisation / jours ouvrables écoulés) × jours restants; `estimated: true`; shown as "prévision". |
 | Visites programmées / réalisées / productives | Phase 37 planned (now from `planOfDay`) / done / success. |
-| Taux de succès | Productives / réalisées. |
-| Couverture | Distinct planned clients visited / distinct planned clients. |
+| Taux de succès (SVP) | Nb BL / visites réalisées (the SVP sheet "Performances": factures ÷ visites). Show productives / réalisées next to it as "visites productives %". |
+| Couverture (SVP) | Visites réalisées / visites programmées (distinct client × day). |
+| Jours perdus | Working days of the month already passed with no visit and no BL for the member. |
 | Nb BL (factures) | Phase 37 Nb BL. |
-| Drop size | Caisses / Nb BL, and CA / Nb BL (both). |
+| Drop size | Caisses / Nb BL, and CA / Nb BL ("facture en valeur"), in total **and per product per canal** (SVP "DROP SIZE par produit par canal": caisses of the product / Nb BL of the canal). |
+| Moyenne par format | Caisses of a product / jours travaillés (SVP "Moyenne ventes par format"). |
 | Univers clients | Live clients of the scope's zone (by commune), or of the member's routes for a member. |
 | Clients actifs / taux d'activation | Distinct clients with ≥ 1 BL in the period / univers. |
 | Poids par canal | Share of caisses (and CA) per `ClientSegment` of the route. |
+| Poids par produit | Share of each product / family in the total caisses of the scope (SVP "Poids par produit en caisse"). |
 | Comparaisons | Same days of last month (MTD vs MTD), monthly average of last year's Q4, and the 12-month trend. |
 
+- **SVP coverage check**: write in the PR a table "SVP sheet → figure → screen" for every figure of the sheets Consolidé wilaya, Ventes, Performances, Actualisations, Atte, Suivi Gros & D-G and the per-route sheets (D-M, H, S-S, DG, Gros); a figure not built must be in Parked with the reason.
 - New dimensions in the registry: `member` (seller / pré-vendeur), `supervisor`, `areaManager`, `zone`, `route`, `canal` (route segment). The phase 37 additivity contract test must pass for every new measure × dimension (Σ groups incl. "Sans …" = total).
 
 ### 40f — Statistics redesigned + web homes per role
