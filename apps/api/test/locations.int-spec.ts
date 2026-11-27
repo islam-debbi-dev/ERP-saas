@@ -10,7 +10,7 @@ import {
   type ImportPreviewDto,
   type SectorDto,
 } from '@erp/shared';
-import { communesOf } from '@erp/shared/communes';
+import { communesOf, findCommune } from '@erp/shared/communes';
 import ExcelJS from 'exceljs';
 import {
   bearer,
@@ -481,6 +481,37 @@ describe('locations (phase 40a)', () => {
         commune: 'Nulle part',
         wilayaCode: null,
         communeCode: null,
+      });
+    });
+
+    it('keeps a commune name several communes carry as text, without codes', async () => {
+      // Three communes are called El Marsa (wilayas 2, 16 and 21).
+      expect(findCommune('El Marsa').filter((c) => c.match === 'exact')).toHaveLength(3);
+      const workbook = new ExcelJS.Workbook();
+      workbook.addWorksheet('Import').addRows([
+        ['Code', 'Nom', 'Wilaya', 'Commune'],
+        ['IMP-TWINS', 'Homonymes', null, 'El Marsa'],
+      ]);
+      const preview = await send(Buffer.from(await workbook.xlsx.writeBuffer()));
+      expect(preview.rows[0]!.errors).toEqual([]);
+      expect(preview.rows[0]!.warnings).toEqual([
+        {
+          field: 'commune',
+          code: 'location_ambiguous',
+          params: { wilaya: '', commune: 'El Marsa' },
+        },
+      ]);
+
+      await confirm(preview.jobId);
+      const stored = await byCode('IMP-TWINS');
+      expect(stored).toMatchObject({
+        wilaya: null,
+        commune: 'El Marsa',
+        wilayaCode: null,
+        communeCode: null,
+      });
+      expect((await lastAudit(stored.id)).after).toMatchObject({
+        locationResolution: 'AMBIGUOUS',
       });
     });
 

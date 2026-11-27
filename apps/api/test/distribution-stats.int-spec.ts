@@ -39,7 +39,7 @@ import {
   type WarehouseDto,
   weekdayOf,
 } from '@erp/shared';
-import { findCommune } from '@erp/shared/communes';
+import { dairaByKey, findCommune } from '@erp/shared/communes';
 import ExcelJS from 'exceljs';
 import {
   DIMENSIONS,
@@ -1308,6 +1308,47 @@ describe('statistiques distribution (phase 37)', () => {
   });
 
   describe('export', () => {
+    it.each([
+      {
+        dimension: 'clientDaira',
+        title: 'Daïra du client',
+        names: [dairaByKey(MSILA_TOWN.dairaKey)!.fr, dairaByKey(BATNA_TOWN.dairaKey)!.fr],
+      },
+      {
+        dimension: 'clientCommune',
+        title: 'Commune du client',
+        names: [MSILA_TOWN.fr, BATNA_TOWN.fr],
+      },
+    ])('titles the $dimension sheet and names its rows', async ({ dimension, title, names }) => {
+      const res = await as(d)
+        .get(`/stats/distribution/export.xlsx?view=by-dimension&dimension=${dimension}&${range}`)
+        .buffer()
+        .parse((r, done) => {
+          const chunks: Buffer[] = [];
+          r.on('data', (c: Buffer) => chunks.push(c));
+          r.on('end', () => done(null, Buffer.concat(chunks)));
+        })
+        .expect(200);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(res.body as ArrayBuffer);
+      const sheet = workbook.worksheets[0]!;
+      expect(sheet.name).toBe(title);
+      expect(sheet.getCell('A1').value).toBe(
+        `Statistiques par ${title.toLowerCase()} du ${today} au ${today}`,
+      );
+      const header = (sheet.getRow(3).values as unknown[]).slice(1);
+      expect(header[0]).toBe(title);
+      const caColumn = header.indexOf('CA TTC') + 1;
+      expect(caColumn).toBeGreaterThan(1);
+      const rows = sheet.getSheetValues().slice(4) as unknown[][];
+      expect(Object.fromEntries(rows.map((r) => [r[1] as string, r[caColumn]]))).toEqual({
+        [names[0]!]: 8568,
+        [names[1]!]: 11424,
+        'Non renseigné': 2856,
+        Total: 22848,
+      });
+    });
+
     it('writes the rows of a view as one sheet, numbers as numbers', async () => {
       const res = await as(d)
         .get(`/stats/distribution/export.xlsx?view=by-vehicle&${range}`)
