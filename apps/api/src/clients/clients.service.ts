@@ -25,6 +25,7 @@ import type { CurrentUserInfo } from '../auth/auth.types';
 import { AppException } from '../common/app-exception';
 import { chunks } from '../common/chunks';
 import { tenantContext } from '../common/tenant-context';
+import { clientPlace } from '../locations/location-codes';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { type DataScope, ScopeService } from '../sales-force/scope.service';
@@ -61,6 +62,8 @@ function toDto(c: ClientWithBalance): ClientDto {
     address: c.address,
     wilaya: c.wilaya,
     commune: c.commune,
+    wilayaCode: c.wilayaCode,
+    communeCode: c.communeCode,
     rc: c.rc,
     nif: c.nif,
     nis: c.nis,
@@ -218,15 +221,17 @@ export class ClientsService {
         if (input.segmentId) await this.segments.assertLive(tx, input.segmentId);
         const { sectorId, assignedSellerId, ...fields } = input;
         const assignment = await this.assignment(tx, user, { sectorId, assignedSellerId }, null);
+        const { place, resolution } = clientPlace(input, null);
         const c = await tx.client.create({
-          data: { ...fields, ...assignment, tenantId: tenantContext.requireTenantId() },
+          data: { ...fields, ...place, ...assignment, tenantId: tenantContext.requireTenantId() },
           include: clientInclude,
         });
         await this.audit.log(tx, {
           action: 'CLIENT_CREATED',
           entity: 'Client',
           entityId: c.id,
-          after: c,
+          after:
+            resolution && resolution !== 'EMPTY' ? { ...c, locationResolution: resolution } : c,
         });
         return toDto(c);
       }),
@@ -267,9 +272,11 @@ export class ClientsService {
     }
     const { version, sectorId, assignedSellerId, ...data } = input;
     const assignment = await this.assignment(tx, user, { sectorId, assignedSellerId }, before);
+    // `before` is the version being replaced, or the write below changes nothing.
+    const { place, resolution } = clientPlace(input, before);
     const { count } = await tx.client.updateMany({
       where: { id, version, deletedAt: null },
-      data: { ...data, ...assignment, version: { increment: 1 } },
+      data: { ...data, ...place, ...assignment, version: { increment: 1 } },
     });
     if (count === 0) {
       throw new AppException(ErrorCode.CLIENT_MODIFIED, 'Client changed since it was read', {
@@ -282,7 +289,7 @@ export class ClientsService {
       entity: 'Client',
       entityId: id,
       before,
-      after,
+      after: resolution ? { ...after, locationResolution: resolution } : after,
     });
     return toDto(after);
   }
@@ -363,13 +370,27 @@ export class ClientsService {
     for (const priceLevelId of new Set(inputs.map((i) => i.priceLevelId))) {
       await this.checkPriceLevel(tx, priceLevelId);
     }
-    const rows = inputs.map((input) => ({ ...input, id: randomUUID(), tenantId }));
+    const resolutions = new Map<string, string>();
+    const rows = inputs.map((input) => {
+      const id = randomUUID();
+      const { place, resolution } = clientPlace(input, null);
+      if (resolution && resolution !== 'EMPTY') resolutions.set(id, resolution);
+      return { ...input, ...place, id, tenantId };
+    });
     await this.withCodeErrors(async () => {
       for (const chunk of chunks(rows)) await tx.client.createMany({ data: chunk });
     });
     await this.audit.logMany(
       tx,
-      rows.map((r) => ({ action: 'CLIENT_CREATED', entity: 'Client', entityId: r.id, after: r })),
+      rows.map((r) => {
+        const locationResolution = resolutions.get(r.id);
+        return {
+          action: 'CLIENT_CREATED',
+          entity: 'Client',
+          entityId: r.id,
+          after: locationResolution ? { ...r, locationResolution } : r,
+        };
+      }),
     );
     return rows.map((r) => r.id);
   }

@@ -1057,6 +1057,10 @@ model Client {
   address          String?    @db.VarChar(255)
   wilaya           String?    @db.VarChar(60)
   commune          String?    @db.VarChar(80)
+  /// Official location (phase 40a), 1..69 (CHECK) and the ONS commune code; the daïra is
+  /// derived from the commune. `wilaya` / `commune` keep the text (French names when coded).
+  wilayaCode       Int?       @db.SmallInt
+  communeCode      Int?
   rc               String?    @db.VarChar(40)
   nif              String?    @db.VarChar(40)
   nis              String?    @db.VarChar(40)
@@ -1108,6 +1112,7 @@ model Client {
   packagingBals  ClientPackagingBalance[]
 
   @@unique([tenantId, code])
+  @@index([tenantId, communeCode])
   @@index([tenantId, name])
   @@index([tenantId, phone])
   @@index([tenantId, sectorId])
@@ -1700,14 +1705,17 @@ model Brand {
 
 /// Secteur: a zone (wilaya + communes) clients belong to. SALES_FORCE.
 model Sector {
-  id        String    @id @default(uuid()) @db.Uuid
-  tenantId  String    @db.Uuid
-  name      String    @db.VarChar(80)
-  wilaya    String?   @db.VarChar(60)
-  communes  String[]  @default([])
-  deletedAt DateTime? @db.Timestamptz(3)
-  createdAt DateTime  @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime  @updatedAt @db.Timestamptz(3)
+  id           String    @id @default(uuid()) @db.Uuid
+  tenantId     String    @db.Uuid
+  name         String    @db.VarChar(80)
+  wilaya       String?   @db.VarChar(60)
+  communes     String[]  @default([])
+  /// Official location (phase 40a): one wilaya (CHECK 1..69) and its communes.
+  wilayaCode   Int?      @db.SmallInt
+  communeCodes Int[]     @default([])
+  deletedAt    DateTime? @db.Timestamptz(3)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @db.Timestamptz(3)
 
   tenant  Tenant   @relation(fields: [tenantId], references: [id])
   clients Client[]

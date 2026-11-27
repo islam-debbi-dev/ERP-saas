@@ -99,6 +99,9 @@ export function validateClients(
       phone: phone || client.phone,
       address: address || client.address,
       creditLimit: creditLimit === '' ? client.creditLimit : creditLimit,
+      // Left out, so that the codes follow the text (docs/domain.md).
+      wilayaCode: undefined,
+      communeCode: undefined,
       sectorId: undefined,
       assignedSellerId: undefined,
       segmentId: segmentId ?? undefined,
