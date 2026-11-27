@@ -7,9 +7,10 @@ import '../../../core/network/api_result.dart';
 import '../../../core/network/error_messages.dart';
 import '../../auth/ui/widgets/form_error_banner.dart';
 import '../data/repo/clients_repository.dart';
+import 'widgets/location_fields.dart';
 
-/// A new client from the road (CLIENTS_CREATE): code, name, phone, address,
-/// commune. Pops with the created client.
+/// A new client from the road (CLIENTS_CREATE): code, name, phone, wilaya /
+/// daïra / commune, address. Pops with the created client.
 class NewClientScreen extends StatefulWidget {
   const NewClientScreen({super.key});
 
@@ -23,14 +24,14 @@ class _NewClientScreenState extends State<NewClientScreen> {
   final _name = TextEditingController();
   final _phone = TextEditingController();
   final _address = TextEditingController();
-  final _commune = TextEditingController();
+  ClientPlace _place = const ClientPlace();
   bool _professional = false;
   bool _saving = false;
   String? _error;
 
   @override
   void dispose() {
-    for (final c in [_code, _name, _phone, _address, _commune]) {
+    for (final c in [_code, _name, _phone, _address]) {
       c.dispose();
     }
     super.dispose();
@@ -48,7 +49,8 @@ class _NewClientScreenState extends State<NewClientScreen> {
         name: _name.text,
         phone: _phone.text,
         address: _address.text,
-        commune: _commune.text,
+        wilaya: _place.wilaya,
+        commune: _place.commune,
         professional: _professional,
       ),
     );
@@ -83,70 +85,69 @@ class _NewClientScreenState extends State<NewClientScreen> {
       ),
       body: Form(
         key: _form,
-        child: ListView(
+        // Not a lazy list: a field scrolled out of one would not be validated.
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.lg),
-          children: [
-            if (_error != null) ...[
-              FormErrorBanner(message: _error!),
+          child: Column(
+            children: [
+              if (_error != null) ...[
+                FormErrorBanner(message: _error!),
+                AppSpacing.gapLg,
+              ],
+              TextFormField(
+                controller: _code,
+                textDirection: TextDirection.ltr,
+                textInputAction: TextInputAction.next,
+                maxLength: 30,
+                decoration: InputDecoration(
+                  labelText: context.tr('clients.code'),
+                ),
+                validator: _required,
+              ),
+              AppSpacing.gapSm,
+              TextFormField(
+                controller: _name,
+                textInputAction: TextInputAction.next,
+                maxLength: 160,
+                decoration: InputDecoration(
+                  labelText: context.tr('clients.name'),
+                ),
+                validator: _required,
+              ),
+              AppSpacing.gapSm,
+              TextFormField(
+                controller: _phone,
+                keyboardType: TextInputType.phone,
+                textDirection: TextDirection.ltr,
+                textInputAction: TextInputAction.next,
+                maxLength: 40,
+                decoration: InputDecoration(
+                  labelText: context.tr('clients.phone'),
+                  prefixIcon: const Icon(Icons.phone_outlined),
+                ),
+              ),
+              AppSpacing.gapSm,
+              LocationFields(
+                value: _place,
+                onChanged: (v) => setState(() => _place = v),
+              ),
               AppSpacing.gapLg,
+              TextFormField(
+                controller: _address,
+                textInputAction: TextInputAction.done,
+                maxLength: 255,
+                decoration: InputDecoration(
+                  labelText: context.tr('clients.address'),
+                ),
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                value: _professional,
+                title: Text(context.tr('clients.professional')),
+                onChanged: (v) => setState(() => _professional = v),
+              ),
             ],
-            TextFormField(
-              controller: _code,
-              textDirection: TextDirection.ltr,
-              textInputAction: TextInputAction.next,
-              maxLength: 30,
-              decoration: InputDecoration(
-                labelText: context.tr('clients.code'),
-              ),
-              validator: _required,
-            ),
-            AppSpacing.gapSm,
-            TextFormField(
-              controller: _name,
-              textInputAction: TextInputAction.next,
-              maxLength: 160,
-              decoration: InputDecoration(
-                labelText: context.tr('clients.name'),
-              ),
-              validator: _required,
-            ),
-            AppSpacing.gapSm,
-            TextFormField(
-              controller: _phone,
-              keyboardType: TextInputType.phone,
-              textDirection: TextDirection.ltr,
-              textInputAction: TextInputAction.next,
-              maxLength: 40,
-              decoration: InputDecoration(
-                labelText: context.tr('clients.phone'),
-                prefixIcon: const Icon(Icons.phone_outlined),
-              ),
-            ),
-            AppSpacing.gapSm,
-            TextFormField(
-              controller: _address,
-              textInputAction: TextInputAction.next,
-              maxLength: 255,
-              decoration: InputDecoration(
-                labelText: context.tr('clients.address'),
-              ),
-            ),
-            AppSpacing.gapSm,
-            TextFormField(
-              controller: _commune,
-              textInputAction: TextInputAction.done,
-              maxLength: 80,
-              decoration: InputDecoration(
-                labelText: context.tr('clients.commune'),
-              ),
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              value: _professional,
-              title: Text(context.tr('clients.professional')),
-              onChanged: (v) => setState(() => _professional = v),
-            ),
-          ],
+          ),
         ),
       ),
     );

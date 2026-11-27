@@ -99,6 +99,9 @@
     "INVENTORY_CLOSED": "Cet inventaire est clôturé et ne peut plus être modifié.",
     "PROMO_OVERRIDE_FORBIDDEN": "Seul un utilisateur autorisé peut changer les UG ou la remise d’une promotion.",
     "CLIENT_CODE_TAKEN": "Ce code client est déjà utilisé.",
+    "COMMUNE_UNKNOWN": "Cette commune n'est pas dans la liste officielle.",
+    "COMMUNE_WILAYA_MISMATCH": "Cette commune n'appartient pas à la wilaya choisie.",
+    "COMMUNE_UNDER_REVIEW": "Cette commune est encore en cours de vérification. Choisissez seulement la wilaya.",
     "PHONE_ALREADY_USED": "Ce numéro de téléphone est déjà utilisé.",
     "AI_QUOTA_EXCEEDED": "Les questions du mois sont épuisées pour votre société.",
     "AI_RATE_LIMITED": "Le fournisseur reçoit trop de demandes. Réessayez dans un instant.",
@@ -207,6 +210,19 @@
     "status_LOW_ACCURACY": "Position peu précise.",
     "status_NO_CLIENT_GPS": "Ce client n'a pas de position enregistrée.",
     "status_FAR": "Vous êtes loin du client : l'opération sera vérifiée."
+  },
+  "location": {
+    "wilaya": "Wilaya",
+    "daira": "Daïra",
+    "commune": "Commune",
+    "choose_wilaya": "Choisir la wilaya",
+    "choose_daira": "Choisir la daïra",
+    "choose_commune": "Choisir la commune",
+    "wilaya_first": "Choisissez d'abord la wilaya",
+    "all_communes": "Voir toutes les communes de la wilaya",
+    "under_review": "En cours de vérification",
+    "under_review_note": "Les communes de cette wilaya sont en cours de vérification. Choisissez seulement la wilaya.",
+    "no_result": "Aucun résultat"
   },
   "clients": {
     "title": "Clients",
