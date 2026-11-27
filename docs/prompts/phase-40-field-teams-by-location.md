@@ -4,6 +4,9 @@ Read AGENTS.md, docs/ui.md, docs/domain.md (Tournées, Sales force, Objectifs & 
 
 Branch: one branch per sub-phase, `phase-40a-locations`, `phase-40b-zones-roles`, … (see "Order of work"). Each sub-phase is one PR that builds, passes `pnpm lint && pnpm typecheck && pnpm test`, and can be merged alone. Phases 23, 27, 28, 29, 32 and 38 are not built: do not build any part of them. Production is Vercel + Neon: no VPS, no timers, no cron, no background jobs. **A sub-phase with a migration: run `pnpm --filter @erp/api db:deploy` on Neon BEFORE merging its PR** (write it at the top of the PR and of the summary).
 
+### Reference
+The real SVP file is summarised in [`docs/reference/svp-kpis.md`](../reference/svp-kpis.md) (sheets, figures, a few fixture numbers). Read it before 40e and 40f; the SVP coverage table of the PR is built from it. Do not ask for the Excel file and never commit it (it has real names).
+
 ### Why
 Big distributors (the owner received a real monthly "SVP" Excel file from distribution company leaders: a beverage distributor, canals Détail mixte 01–05 / Horeca / Self-service / Demi-gros / Gros, one van per route) manage their field force **by place**: a superviseur is responsible for one or two cities (communes), a **chef de zone** (head of area) for many communes or wilayas. Every morning they look at, per member and per product: objective vs réalisation, % , average per day, what is left to do per day, the end-of-month forecast (atterrissage), visits planned / done / productive, active clients, number of BL. Today our clients have a free-text `wilaya` / `commune`, routes have only weekdays, there is no head-of-area role, no prévendeur role, and the statistics cards are too small to read on a phone. This phase fixes all that.
 
