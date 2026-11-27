@@ -12,6 +12,10 @@
     "./money": {
       "types": "./dist/money.d.ts",
       "default": "./dist/money.js"
+    },
+    "./communes": {
+      "types": "./dist/communes.d.ts",
+      "default": "./dist/communes.js"
     }
   },
   "files": [
