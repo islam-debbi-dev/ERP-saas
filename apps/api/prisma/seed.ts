@@ -97,7 +97,21 @@ async function main(): Promise<void> {
           name: 'Alger Est',
           wilaya: 'Alger',
           communes: ['Bab Ezzouar', 'Dar El Beïda', 'El Harrach'],
+          wilayaCode: 16,
+          communeCodes: [1621, 1620, 1613],
         },
+      });
+      // Phase 40a: a demo base seeded earlier gets the codes, only while its text is the
+      // seeded one and nobody chose codes.
+      await tx.sector.updateMany({
+        where: {
+          id: '00000000-0000-4000-8000-0000000014c1',
+          wilayaCode: null,
+          communeCodes: { isEmpty: true },
+          wilaya: 'Alger',
+          communes: { equals: ['Bab Ezzouar', 'Dar El Beïda', 'El Harrach'] },
+        },
+        data: { wilayaCode: 16, communeCodes: [1621, 1620, 1613] },
       });
 
       // Distribution demo data (phase 20): a casier and a 5 % remise on the Elio brand for
@@ -188,18 +202,21 @@ async function main(): Promise<void> {
           code: 'TRN-001',
           name: 'Superette El Amel',
           commune: 'Bab Ezzouar',
+          communeCode: 1621,
         },
         {
           id: '00000000-0000-4000-8000-0000000016c2',
           code: 'TRN-002',
           name: 'Alimentation Benali',
           commune: 'Dar El Beïda',
+          communeCode: 1620,
         },
         {
           id: '00000000-0000-4000-8000-0000000016c3',
           code: 'TRN-003',
           name: 'Épicerie du Marché',
           commune: 'El Harrach',
+          communeCode: 1613,
         },
       ];
       for (const c of demoClients) {
@@ -210,9 +227,22 @@ async function main(): Promise<void> {
             ...c,
             tenantId: tenant.id,
             wilaya: 'Alger',
+            wilayaCode: 16,
             sectorId: '00000000-0000-4000-8000-0000000014c1',
             assignedSellerId: DEMO_SELLER_ID,
           },
+        });
+      }
+      for (const c of demoClients) {
+        await tx.client.updateMany({
+          where: {
+            id: c.id,
+            wilayaCode: null,
+            communeCode: null,
+            wilaya: 'Alger',
+            commune: c.commune,
+          },
+          data: { wilayaCode: 16, communeCode: c.communeCode },
         });
       }
       // Phase 33: Benali has a plafond and a phone, so the dashboard's "À faire" can show

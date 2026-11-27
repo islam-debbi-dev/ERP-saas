@@ -11,3 +11,5 @@ docs
 apps/api/src/generated
 apps/api/src/assistant/help/help-bundle.ts
 apps/mobile
+# One record per line, written by packages/shared/scripts/generate-communes.mjs
+packages/shared/src/communes.data.json
