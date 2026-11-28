@@ -22,6 +22,8 @@ import {
   Role,
   type SalesFigure,
   toMoneyString,
+  isFieldSeller,
+  isTeamLead,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { can } from '../auth/permissions';
@@ -48,7 +50,7 @@ const DORMANT_BEFORE_DAYS = 90;
 const MANAGERS: readonly Role[] = [Role.OWNER, Role.MANAGER];
 
 function seesSalesFigures(user: CurrentUserInfo): boolean {
-  return MANAGERS.includes(user.role) || user.role === Role.SELLER || user.role === Role.SUPERVISOR;
+  return MANAGERS.includes(user.role) || isFieldSeller(user.role) || isTeamLead(user.role);
 }
 
 interface DayTotals {

@@ -60,6 +60,7 @@ function toForm(s: TenantSettingsResponse): FormInput {
     reminderDays: s.reminderDays,
     sellerScope: s.sellerScope,
     livreurScope: s.livreurScope,
+    zoneIncludesAssigned: s.zoneIncludesAssigned,
     geoCheckMode: s.geoCheckMode,
     geoRadiusM: s.geoRadiusM,
     geoMaxAccuracyM: s.geoMaxAccuracyM,
@@ -236,6 +237,7 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
   const { errors, isDirty } = form.formState;
   const timbreEnabled = useWatch({ control: form.control, name: 'timbreEnabled' });
   const assujettiTva = useWatch({ control: form.control, name: 'assujettiTva' });
+  const sellerScope = useWatch({ control: form.control, name: 'sellerScope' }) ?? 'ALL_CLIENTS';
   const tranches = useFieldArray({ control: form.control, name: 'timbreTranches' });
 
   const mutation = useMutation({
@@ -411,14 +413,39 @@ function SettingsFormFields({ settings }: { settings: TenantSettingsResponse }) 
             <FieldShell
               id="sellerScope"
               label={t('settings.sellerScope')}
-              hint={t('settings.sellerScopeHint')}
+              hint={t(`settings.sellerScopeHelp_${sellerScope}`)}
               wide
             >
-              <NativeSelect id="sellerScope" {...form.register('sellerScope')}>
+              <NativeSelect
+                id="sellerScope"
+                aria-describedby="sellerScope-hint"
+                {...form.register('sellerScope')}
+              >
                 <option value="ALL_CLIENTS">{t('settings.sellerScopeAll')}</option>
                 <option value="ASSIGNED_ONLY">{t('settings.sellerScopeAssigned')}</option>
+                <option value="BY_ZONE">{t('settings.sellerScopeZone')}</option>
               </NativeSelect>
             </FieldShell>
+          ) : null}
+          {salesForce && sellerScope === 'BY_ZONE' ? (
+            <SwitchRow
+              id="zoneIncludesAssigned"
+              label={t('settings.zoneIncludesAssigned')}
+              hint={t('settings.zoneIncludesAssignedHint')}
+            >
+              <Controller
+                control={form.control}
+                name="zoneIncludesAssigned"
+                render={({ field }) => (
+                  <Switch
+                    id="zoneIncludesAssigned"
+                    aria-describedby="zoneIncludesAssigned-hint"
+                    checked={field.value ?? false}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
+            </SwitchRow>
           ) : null}
           {salesForce ? (
             <FieldShell

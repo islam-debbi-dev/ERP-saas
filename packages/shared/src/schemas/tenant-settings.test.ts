@@ -17,6 +17,7 @@ const valid = {
   maxDiscountPct: '0',
   reminderDays: 30,
   sellerScope: 'ALL_CLIENTS',
+  zoneIncludesAssigned: false,
   livreurScope: 'ALL_CLIENTS',
   geoCheckMode: 'FLAG',
   geoRadiusM: 150,

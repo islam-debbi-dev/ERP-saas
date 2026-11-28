@@ -5,11 +5,11 @@ import {
   IncentiveMetric,
   IncentivePeriod,
   Permission,
-  Role,
   type SalesTargetDto,
   type SalesTargetQuery,
   scopeKey,
   sum,
+  isTeamLead,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
@@ -43,7 +43,7 @@ export class TargetsService {
   ) {}
 
   async list(query: SalesTargetQuery, user: CurrentUserInfo): Promise<SalesTargetDto[]> {
-    const team = user.role === Role.SUPERVISOR ? await this.scope.teamIds(user.id) : null;
+    const team = isTeamLead(user.role) ? await this.scope.teamIds(user.id) : null;
     const rows = await this.prisma.db.salesTarget.findMany({
       where: {
         periodStart: fromDay(`${query.period}-01`),
@@ -67,7 +67,9 @@ export class TargetsService {
     const key = scopeKey(input.scope);
     const periodStart = fromDay(period.firstDay);
     const subjects = [
-      ...new Set(input.rows.map((r) => r.userId ?? r.teamManagerId).filter((v): v is string => !!v)),
+      ...new Set(
+        input.rows.map((r) => r.userId ?? r.teamManagerId).filter((v): v is string => !!v),
+      ),
     ];
     await this.prisma.db.$transaction(async (tx) => {
       await assertPeriodOpen(tx, period.firstDay, period.lastDay);
@@ -83,8 +85,12 @@ export class TargetsService {
         existing.find((e) =>
           r.userId ? e.userId === r.userId : e.teamManagerId === r.teamManagerId,
         );
-      const changes: { subject: string; team: boolean; before: string | null; after: string | null }[] =
-        [];
+      const changes: {
+        subject: string;
+        team: boolean;
+        before: string | null;
+        after: string | null;
+      }[] = [];
       for (const r of input.rows) {
         const row = find(r);
         const subject = (r.userId ?? r.teamManagerId)!;

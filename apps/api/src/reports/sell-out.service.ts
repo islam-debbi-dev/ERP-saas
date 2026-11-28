@@ -11,6 +11,7 @@ import {
   type SellOutRowDto,
   toMoneyString,
   toQtyString,
+  TEAM_LEAD_ROLES,
 } from '@erp/shared';
 import ExcelJS from 'exceljs';
 import type { CurrentUserInfo } from '../auth/auth.types';
@@ -72,7 +73,7 @@ export class SellOutService {
   ) {}
 
   async run(query: SellOutQuery, user: CurrentUserInfo, limit?: number): Promise<SellOutDto> {
-    if (![Role.OWNER, Role.MANAGER, Role.SUPERVISOR].includes(user.role as never)) {
+    if (![Role.OWNER, Role.MANAGER, ...TEAM_LEAD_ROLES].includes(user.role)) {
       throw new AppException(ErrorCode.FORBIDDEN, 'This report is not available to your role', {
         report: 'sell-out',
       });

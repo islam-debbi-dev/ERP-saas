@@ -83,4 +83,58 @@ describe('routeForbidden', () => {
     expect(closed('/tournees', Role.LIVREUR, [])).toBe(false);
     expect(closed('/primes', Role.LIVREUR, [Feature.TOURNEES])).toBe(false);
   });
+
+  it('closes every sale, versement, delivery, truck, caisse and stock page to a pre-vendeur', () => {
+    for (const path of [
+      '/ventes',
+      '/ventes/nouvelle',
+      '/ventes/abc',
+      '/versements',
+      '/livraisons',
+      '/livraisons/abc',
+      '/stock',
+      '/stock/vehicules',
+      '/stock/transferts',
+      '/achats',
+      '/tresorerie',
+      '/tournees',
+      '/tournees/cloture',
+      '/zones',
+      '/primes',
+    ]) {
+      expect(closed(path, Role.PREVENDEUR), path).toBe(true);
+    }
+    for (const path of [
+      '/tableau-de-bord',
+      '/clients',
+      '/clients/abc',
+      '/clients/nouveau',
+      '/tournees/aujourdhui',
+      '/commandes',
+      '/commandes/abc',
+      '/produits',
+    ]) {
+      expect(closed(path, Role.PREVENDEUR), path).toBe(false);
+    }
+  });
+
+  it('opens to a chef de zone what a supervisor opens, the zones included', () => {
+    for (const path of [
+      '/zones',
+      '/tournees',
+      '/tournees/abc',
+      '/commandes',
+      '/livraisons',
+      '/stock/vehicules',
+      '/ventes',
+      '/versements',
+    ]) {
+      expect(closed(path, Role.AREA_MANAGER), path).toBe(false);
+      expect(closed(path, Role.SUPERVISOR), path).toBe(false);
+    }
+    expect(closed('/primes', Role.AREA_MANAGER)).toBe(true);
+    for (const role of [Role.SELLER, Role.LIVREUR, Role.STOREKEEPER]) {
+      expect(closed('/zones', role), role).toBe(true);
+    }
+  });
 });

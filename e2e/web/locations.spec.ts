@@ -250,16 +250,16 @@ for (const locale of ['ar', 'fr'] as const) {
     });
   });
 
-  test(`client form: communes under review cannot be chosen, ${locale}`, async () => {
+  test(`client form: communes of wilayas 59 to 69 can be chosen, ${locale}`, async () => {
     const t = labels(locale)['locations']!;
     await setLocale(locale);
     await open('/clients/nouveau');
     await pickWilaya(t['wilaya']!, 60);
     await expect(field(t['commune']!)).toBeEnabled();
     await field(t['commune']!).click();
-    await expect(dialog().getByText(t['underReview']!).first()).toBeVisible();
-    await expect(dialog().getByRole('button', { name: t['underReview']! }).first()).toBeDisabled();
-    await check('commune-under-review', locale);
+    await expect(dialog().getByRole('button').first()).toBeVisible();
+    await expect(dialog().getByText(t['underReview']!)).toHaveCount(0);
+    await check('commune-reviewed', locale);
     await page.keyboard.press('Escape');
   });
 

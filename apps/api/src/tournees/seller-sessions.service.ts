@@ -252,9 +252,15 @@ export class SellerSessionsService implements OnModuleInit {
     assertVisible(await tourneeSellerIds(this.scope, user), [input.sellerId], ErrorCode.NOT_FOUND);
     const seller = await this.prisma.db.user.findFirst({
       where: { id: input.sellerId },
-      select: { id: true },
+      select: { id: true, role: true },
     });
     if (!seller) throw new AppException(ErrorCode.NOT_FOUND, 'Seller not found');
+    // A pré-vendeur has no truck and holds no cash: there is no day to close (phase 40b).
+    if (seller.role === Role.PREVENDEUR) {
+      throw new AppException(ErrorCode.SELLER_NOT_ALLOWED, 'A pre-seller has no cash day', {
+        userId: input.sellerId,
+      });
+    }
     const existing = await this.find(input.sellerId, day);
     if (existing) return this.get(existing, user);
     try {

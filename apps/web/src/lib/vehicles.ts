@@ -7,7 +7,6 @@ import {
   type ConvertRoutesResultDto,
   type CreateVehicleTypeInput,
   Feature,
-  Role,
   type RouteDto,
   type UpdateVehicleTypeInput,
   type VehicleAssignmentPage,
@@ -15,6 +14,7 @@ import {
   type WarehouseDto,
   WarehouseType,
   type WorkerVehiclePage,
+  OFFICE_ROLES,
 } from '@erp/shared';
 import { api } from './api-client';
 import { useAuth, useFeature } from './auth';
@@ -83,7 +83,7 @@ export function useVehicles(): { data: WarehouseDto[] | undefined; isPending: bo
 export function useDriverOptions(): { id: string; fullName: string }[] {
   const role = useAuth().state.user?.role;
   const tournees = useFeature(Feature.TOURNEES);
-  const planner = role === Role.OWNER || role === Role.MANAGER || role === Role.SUPERVISOR;
+  const planner = !!role && OFFICE_ROLES.includes(role);
   const sellers = useSellers();
   const deliverers = useDeliverers(tournees && planner);
   const byId = new Map<string, { id: string; fullName: string }>();

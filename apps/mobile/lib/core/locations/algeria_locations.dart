@@ -16,11 +16,11 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
-/// The owner has not yet approved `docs/review/communes-59-69.md`. While
+/// The owner approved `docs/review/communes-59-69.md` on 2026-11-28. While
 /// false, the communes of wilayas 59 to 69 cannot be picked; the wilaya alone
 /// can. Same value as `COMMUNES_59_69_REVIEWED` in
 /// `packages/shared/src/communes.ts` (a test compares them).
-const bool communes5969Reviewed = false;
+const bool communes5969Reviewed = true;
 
 bool isWilayaUnderReview(
   int wilayaCode, {

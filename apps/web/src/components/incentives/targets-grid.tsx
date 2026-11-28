@@ -12,11 +12,11 @@ import {
   type MetricScope,
   money,
   Permission,
-  Role,
   type SalesTargetDto,
   SCOPABLE_METRICS,
   scopeKey,
   TARGET_METRICS,
+  isTeamLead,
 } from '@erp/shared';
 import { FeatureGate } from '@/components/shared/feature-gate';
 import { PageHeader } from '@/components/shared/page-header';
@@ -84,7 +84,7 @@ function Grid() {
   const people = sellers.data ?? [];
   const rows: { key: RowKey; name: string; detail: string }[] = [
     ...people
-      .filter((u) => u.role === Role.SUPERVISOR)
+      .filter((u) => isTeamLead(u.role))
       .map((u) => ({ key: `t:${u.id}` as RowKey, name: u.fullName, detail: t('teamOf') })),
     ...people.map((u) => ({
       key: `u:${u.id}` as RowKey,

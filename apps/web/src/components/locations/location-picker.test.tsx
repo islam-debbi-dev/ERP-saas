@@ -124,16 +124,14 @@ describe('LocationPicker', () => {
     expect(changed).toHaveBeenLastCalledWith({ wilayaCode: 28, communeCode: null });
   });
 
-  it('cannot select a commune under review', async () => {
+  it('can select a commune of wilayas 59 to 69 since the review', async () => {
     show(<Client start={{ wilayaCode: 60, communeCode: null }} />);
     await ready(t.commune);
     const dialog = open(t.commune);
-    const rows = within(dialog).getAllByText(t.underReview);
-    expect(rows).toHaveLength(communes.communesOf(60).length);
-    const first = rows[0]!.closest('button')!;
-    expect(first.disabled).toBe(true);
-    fireEvent.click(first);
-    expect(changed).not.toHaveBeenCalled();
+    expect(within(dialog).queryByText(t.underReview)).toBeNull();
+    const commune = communes.communesOf(60)[0]!;
+    fireEvent.click(option(dialog, commune.fr));
+    expect(changed).toHaveBeenLastCalledWith({ wilayaCode: 60, communeCode: commune.code });
   });
 
   it('shows the old text, warns once cleared, and can undo', () => {

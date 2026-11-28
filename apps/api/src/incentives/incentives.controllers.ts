@@ -28,7 +28,6 @@ import {
   type ParsedRuleInput,
   type PreviewRunInput,
   previewRunSchema,
-  Role,
   ruleInputSchema,
   type RunListQuery,
   runListQuerySchema,
@@ -37,6 +36,7 @@ import {
   salesTargetQuerySchema,
   type UpdatePlanInput,
   updatePlanSchema,
+  TEAM_LEAD_ROLES,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { CurrentUser, RequireFeature, Roles } from '../auth/decorators';
@@ -57,7 +57,7 @@ export class SalesTargetsController {
 
   /** A supervisor reads his team's targets; managers set them. */
   @Get()
-  @Roles(...MANAGERS, Role.SUPERVISOR)
+  @Roles(...MANAGERS, ...TEAM_LEAD_ROLES)
   list(
     @Query(new ZodValidationPipe(salesTargetQuerySchema)) query: SalesTargetQuery,
     @CurrentUser() user: CurrentUserInfo,

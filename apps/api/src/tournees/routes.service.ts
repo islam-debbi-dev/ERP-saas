@@ -18,6 +18,7 @@ import {
   type UpdateRouteInput,
   type VisitOutcome,
   weekdayOf,
+  isFieldSeller,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import { type CurrentUserInfo } from '../auth/auth.types';
@@ -400,6 +401,24 @@ export class RoutesService {
   }
 
   /**
+   * Under BY_ZONE a seller or pré-vendeur is only shown the stops he may see (phase 40b);
+   * null = no zone rule applies to him.
+   */
+  private async zoneClients(
+    user: CurrentUserInfo,
+    clientIds: string[],
+  ): Promise<Set<string> | null> {
+    if (!isFieldSeller(user.role)) return null;
+    const scope = await this.scope.of(user);
+    if (!scope.clientCommuneCodes) return null;
+    const rows = await this.prisma.db.client.findMany({
+      where: { id: { in: clientIds }, ...this.scope.clientWhere(scope) },
+      select: { id: true },
+    });
+    return new Set(rows.map((c) => c.id));
+  }
+
+  /**
    * The caller's tournée of today (Algiers): the active routes of this weekday planned for
    * the truck he drives now, plus his old seller routes; stops in route then stop order,
    * each client once. A new driver sees the truck's tournée at once, with no route edit.
@@ -440,6 +459,10 @@ export class RoutesService {
         },
       },
     });
+    const zone = await this.zoneClients(
+      user,
+      routes.flatMap((r) => r.stops.map((s) => s.clientId)),
+    );
     const seen = new Set<string>();
     const stops: Omit<
       TodayStopDto,
@@ -447,7 +470,9 @@ export class RoutesService {
     >[] = [];
     for (const r of routes) {
       for (const s of r.stops) {
-        if (s.client.deletedAt || seen.has(s.clientId)) continue;
+        if (s.client.deletedAt || seen.has(s.clientId) || (zone && !zone.has(s.clientId))) {
+          continue;
+        }
         seen.add(s.clientId);
         const { deletedAt: _archived, lat, lng, ...client } = s.client;
         stops.push({

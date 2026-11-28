@@ -1,8 +1,9 @@
 'use client';
 
 import { Network } from 'lucide-react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import type { TeamNodeDto } from '@erp/shared';
+import { isFieldSeller, type TeamNodeDto } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +22,17 @@ function Node({ node }: { node: TeamNodeDto }) {
     <li>
       <div className={node.active ? 'py-1.5' : 'py-1.5 opacity-60'}>
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="truncate font-medium">{node.fullName}</span>
+          {node.active && isFieldSeller(node.role) ? (
+            // The member's page: where he works, and moving him (phase 40b).
+            <Link
+              href={`/equipe/${node.id}`}
+              className="inline-flex min-h-11 min-w-0 items-center font-medium text-primary underline-offset-4 hover:underline"
+            >
+              <span className="truncate">{node.fullName}</span>
+            </Link>
+          ) : (
+            <span className="truncate font-medium">{node.fullName}</span>
+          )}
           <Badge variant="outline" className="font-normal">
             {tr(node.role)}
           </Badge>

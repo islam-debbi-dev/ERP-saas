@@ -97,7 +97,7 @@ function Orders() {
 
       <StatusFilter value={status} onChange={setStatus} />
 
-      {deliveryTrucks.length > 0 && role !== 'LIVREUR' ? (
+      {deliveryTrucks.length > 0 && role !== 'LIVREUR' && role !== 'PREVENDEUR' ? (
         <NativeSelect
           aria-label={tv('deliveryVehicle')}
           className="sm:max-w-xs"

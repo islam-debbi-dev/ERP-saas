@@ -7,6 +7,8 @@ const ROLE_TITLES: Record<string, string> = {
   SELLER: 'Vendeur',
   STOREKEEPER: 'Magasinier',
   SUPERVISOR: 'Superviseur',
+  AREA_MANAGER: 'Chef de zone',
+  PREVENDEUR: 'Pré-vendeur',
   LIVREUR: 'Livreur',
 };
 

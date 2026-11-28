@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { z } from 'zod';
-import { clientListQuerySchema, type ClientDto, Feature, Role } from '@erp/shared';
+import { clientListQuerySchema, type ClientDto, Feature, Role, isFieldSeller } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { type FilterChip, FilterChips } from '@/components/shared/filter-chips';
 import { PageHeader } from '@/components/shared/page-header';
@@ -28,6 +28,7 @@ import { type CommunesModule, communeDisplay, wilayaDisplay } from '@/lib/locati
 import { useCommunes } from '@/lib/use-communes';
 import { useUrlFilters } from '@/lib/url-filters';
 import { BalanceAmount } from './balance-amount';
+import { WithoutCommuneCard } from './without-commune-card';
 import { Amount } from '@/components/shared/amount';
 
 const on = z.literal('1');
@@ -80,9 +81,9 @@ export function ClientsList() {
   const { state } = useAuth();
   const role = state.user?.role;
   const canAssign = salesForce && (role === Role.OWNER || role === Role.MANAGER);
-  const canFilterSeller = salesForce && role !== Role.SELLER;
+  const canFilterSeller = salesForce && !!role && !isFieldSeller(role);
   const sectors = useSectors();
-  const sellers = useSellers();
+  const sellers = useSellers({ orderTakers: true });
   const chips: FilterChip[] = [];
   const chip = (key: keyof typeof url, label: string) =>
     chips.push({ key, label, onRemove: () => set({ [key]: '' }) });
@@ -249,6 +250,7 @@ export function ClientsList() {
           </>
         }
       />
+      <WithoutCommuneCard />
       <FilterChips
         chips={chips}
         onClear={() =>

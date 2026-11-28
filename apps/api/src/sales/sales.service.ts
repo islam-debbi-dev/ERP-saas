@@ -17,6 +17,8 @@ import {
   type UpdateSaleInput,
   addDays,
   type SaleListSummary,
+  isTeamLead,
+  isFieldSeller,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
@@ -568,18 +570,24 @@ export class SalesService {
   }
 
   /**
-   * The seller to store (phase 14). `current` is undefined on a create; the result is
-   * undefined when the stored seller does not change. A SELLER always sells in his own
-   * name; office roles pick any seller, a supervisor one of his team.
+   * The seller to store (phase 14), on a sale or on a commande. `current` is undefined on a
+   * create; the result is undefined when the stored seller does not change. A SELLER (and,
+   * for a commande, a pré-vendeur) always acts in his own name; office roles pick any
+   * seller, a team lead one of his team(s). A pré-vendeur is never the seller of a sale
+   * typed here: only the BL of a commande he took keeps his name (phase 40b).
    */
   async resolveSeller(
     tx: Tx,
     user: CurrentUserInfo,
     requested: string | null | undefined,
     current: string | null | undefined,
+    document: 'SALE' | 'ORDER' = 'SALE',
   ): Promise<string | null | undefined> {
     const creating = current === undefined;
-    if (user.role === Role.SELLER) {
+    if (document === 'SALE' && user.role === Role.PREVENDEUR) {
+      throw new AppException(ErrorCode.FORBIDDEN, 'A pre-seller does not sell');
+    }
+    if (isFieldSeller(user.role)) {
       const keeps = requested === undefined || requested === (creating ? user.id : current);
       if (!keeps) {
         throw new AppException(ErrorCode.FORBIDDEN, 'A seller cannot sell in the name of another', {
@@ -591,11 +599,9 @@ export class SalesService {
     if (requested === undefined) return creating ? null : undefined;
     if (requested === current) return undefined;
     if (requested !== null) {
-      await this.scope.assertSeller(tx, requested);
-      if (
-        user.role === Role.SUPERVISOR &&
-        !(await this.scope.teamIds(user.id, tx)).includes(requested)
-      ) {
+      if (document === 'ORDER') await this.scope.assertOrderTaker(tx, requested);
+      else await this.scope.assertSeller(tx, requested);
+      if (isTeamLead(user.role) && !(await this.scope.teamIds(user.id, tx)).includes(requested)) {
         throw new AppException(ErrorCode.FORBIDDEN, 'This seller is not in your team', {
           field: 'sellerId',
         });

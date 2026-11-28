@@ -25,7 +25,7 @@ export interface GeoCheckFilters {
 }
 
 /** Roles whose operations the API checks (it decides; this only avoids asking for nothing). */
-const FIELD_ROLES = new Set<string>([Role.SELLER, Role.LIVREUR]);
+const FIELD_ROLES = new Set<string>([Role.SELLER, Role.PREVENDEUR, Role.LIVREUR]);
 
 /** True when this user's sales, versements and visits carry the phone's position. */
 export function useGeoCaptureOn(): boolean {

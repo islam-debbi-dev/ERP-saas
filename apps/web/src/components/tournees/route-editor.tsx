@@ -99,7 +99,7 @@ function Loaded({ route }: { route: RouteDto }) {
   const errorMessage = useErrorMessage();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const sellers = useSellers();
+  const sellers = useSellers({ orderTakers: true });
   const [name, setName] = useState(route.name);
   const [sellerId, setSellerId] = useState(route.seller?.id ?? '');
   // A vehicle route (phase 36) is moved to another truck, never back to a person here.

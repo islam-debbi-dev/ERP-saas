@@ -13,6 +13,7 @@ import {
   type PermissionGroup,
   PERMISSIONS,
   Role,
+  ROLE_FORBIDDEN_PERMISSIONS,
   ROLE_PERMISSIONS,
   SENSITIVE_PERMISSIONS,
   type UserDto,
@@ -59,11 +60,33 @@ const INVITE_ROLES = [
   Role.OWNER,
   Role.SUPERVISOR,
   Role.LIVREUR,
+  Role.AREA_MANAGER,
+  Role.PREVENDEUR,
 ] as const;
 
 /** Roles of the sales force (phase 14): offered only when the company has the module. */
-const SALES_FORCE_ROLES = new Set<Role>([Role.SUPERVISOR, Role.LIVREUR]);
-const MANAGER_ROLES = new Set<Role>([Role.OWNER, Role.MANAGER, Role.SUPERVISOR]);
+const SALES_FORCE_ROLES = new Set<Role>([
+  Role.SUPERVISOR,
+  Role.LIVREUR,
+  Role.AREA_MANAGER,
+  Role.PREVENDEUR,
+]);
+const MANAGER_ROLES: readonly Role[] = [
+  Role.OWNER,
+  Role.MANAGER,
+  Role.SUPERVISOR,
+  Role.AREA_MANAGER,
+];
+/** A chef de zone reports to the office or to nobody (the API's rule, phase 40b). */
+const managerRolesFor = (role: Role): readonly Role[] =>
+  role === Role.AREA_MANAGER ? [Role.OWNER, Role.MANAGER] : MANAGER_ROLES;
+/** What a role does, said under the role picker for the less obvious ones. */
+const ROLE_HELP = {
+  [Role.AREA_MANAGER]: 'roleHelp_AREA_MANAGER',
+  [Role.PREVENDEUR]: 'roleHelp_PREVENDEUR',
+} as const;
+const roleHelp = (role: Role) =>
+  role in ROLE_HELP ? ROLE_HELP[role as keyof typeof ROLE_HELP] : null;
 
 function useRoleChoices(current?: Role): Role[] {
   const salesForce = useFeature(Feature.SALES_FORCE);
@@ -77,15 +100,17 @@ function useRoleChoices(current?: Role): Role[] {
   );
 }
 
-/** Who the user reports to (phase 14): an active owner, manager or supervisor, not himself. */
+/** Who the user reports to (phase 14): an active user his role may report to, not himself. */
 function ManagerField({
   id,
   userId,
+  role,
   value,
   onChange,
 }: {
   id: string;
   userId: string | null;
+  role: Role;
   value: string;
   onChange: (v: string) => void;
 }) {
@@ -94,10 +119,14 @@ function ManagerField({
   const salesForce = useFeature(Feature.SALES_FORCE);
   if (!salesForce) return null;
   const options = (users.data ?? []).filter(
-    (u) => u.active && u.id !== userId && MANAGER_ROLES.has(u.role),
+    (u) => u.active && u.id !== userId && managerRolesFor(role).includes(u.role),
   );
   return (
-    <Field id={id} label={t('manager')} hint={t('managerHint')}>
+    <Field
+      id={id}
+      label={t('manager')}
+      hint={role === Role.AREA_MANAGER ? t('managerHintAreaManager') : t('managerHint')}
+    >
       <NativeSelect id={id} value={value} onChange={(e) => onChange(e.target.value)}>
         <option value="">{t('noManager')}</option>
         {options.map((u) => (
@@ -108,6 +137,16 @@ function ManagerField({
       </NativeSelect>
     </Field>
   );
+}
+
+/** On a role change, drops a manager the new role may not report to. */
+function useManagerGuard(setManagerId: (update: (current: string) => string) => void) {
+  const users = useUsers();
+  return (role: Role) =>
+    setManagerId((current) => {
+      const boss = users.data?.find((u) => u.id === current);
+      return boss && !managerRolesFor(role).includes(boss.role) ? '' : current;
+    });
 }
 
 function Field({
@@ -219,6 +258,7 @@ export function InviteDialog({ open, onOpenChange }: DialogProps) {
   const [role, setRole] = useState<(typeof INVITE_ROLES)[number]>(Role.SELLER);
   const roles = useRoleChoices();
   const [managerId, setManagerId] = useState('');
+  const keepManager = useManagerGuard(setManagerId);
   const [mode, setMode] = useState<InviteMode>('LINK');
   const [password, setPassword] = useState('');
   const [result, setResult] = useState<InviteResultDto | null>(null);
@@ -301,11 +341,19 @@ export function InviteDialog({ open, onOpenChange }: DialogProps) {
                 />
               </Field>
             </div>
-            <Field id="invite-role" label={t('role')}>
+            <Field
+              id="invite-role"
+              label={t('role')}
+              hint={roleHelp(role) ? t(roleHelp(role)!) : undefined}
+            >
               <NativeSelect
                 id="invite-role"
                 value={role}
-                onChange={(e) => setRole(e.target.value as (typeof INVITE_ROLES)[number])}
+                onChange={(e) => {
+                  const next = e.target.value as (typeof INVITE_ROLES)[number];
+                  setRole(next);
+                  keepManager(next);
+                }}
               >
                 {roles.map((r) => (
                   <option key={r} value={r}>
@@ -317,6 +365,7 @@ export function InviteDialog({ open, onOpenChange }: DialogProps) {
             <ManagerField
               id="invite-manager"
               userId={null}
+              role={role}
               value={managerId}
               onChange={setManagerId}
             />
@@ -350,6 +399,7 @@ export function EditUserDialog({ user, open, onOpenChange }: DialogProps & { use
   const roles = useRoleChoices(user.role);
   const salesForce = useFeature(Feature.SALES_FORCE);
   const [managerId, setManagerId] = useState(user.managerId ?? '');
+  const keepManager = useManagerGuard(setManagerId);
   const [error, setError] = useState<string | null>(null);
 
   return (
@@ -415,11 +465,19 @@ export function EditUserDialog({ user, open, onOpenChange }: DialogProps & { use
               />
             </Field>
           </div>
-          <Field id="edit-role" label={t('role')}>
+          <Field
+            id="edit-role"
+            label={t('role')}
+            hint={roleHelp(role) ? t(roleHelp(role)!) : undefined}
+          >
             <NativeSelect
               id="edit-role"
               value={role}
-              onChange={(e) => setRole(e.target.value as Role)}
+              onChange={(e) => {
+                const next = e.target.value as Role;
+                setRole(next);
+                keepManager(next);
+              }}
             >
               {roles.map((r) => (
                 <option key={r} value={r}>
@@ -431,6 +489,7 @@ export function EditUserDialog({ user, open, onOpenChange }: DialogProps & { use
           <ManagerField
             id="edit-manager"
             userId={user.id}
+            role={role}
             value={managerId}
             onChange={setManagerId}
           />
@@ -459,6 +518,7 @@ export function PermissionsDialog({ user, open, onOpenChange }: DialogProps & { 
   const save = useSetPermissions();
   const multiUnit = useFeature(Feature.MULTI_UNIT);
   const defaults = new Set<Permission>(ROLE_PERMISSIONS[user.role]);
+  const never = new Set<Permission>(ROLE_FORBIDDEN_PERMISSIONS[user.role] ?? []);
   const [on, setOn] = useState<Set<Permission>>(new Set(user.permissions));
   const groups = (Object.entries(PERMISSION_GROUPS) as [PermissionGroup, readonly Permission[]][])
     .map(
@@ -517,11 +577,13 @@ export function PermissionsDialog({ user, open, onOpenChange }: DialogProps & { 
                       <p className="text-xs text-muted-foreground">
                         {tp(`${p}.help`)}
                         {defaults.has(p) ? ` · ${t('fromRole')}` : ''}
+                        {never.has(p) ? ` · ${t('notForRole')}` : ''}
                       </p>
                     </div>
                     <Switch
                       id={`perm-${p}`}
-                      checked={on.has(p)}
+                      checked={on.has(p) && !never.has(p)}
+                      disabled={never.has(p)}
                       onCheckedChange={(checked) =>
                         setOn((prev) => {
                           const next = new Set(prev);

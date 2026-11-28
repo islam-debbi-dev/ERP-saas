@@ -15,7 +15,14 @@ import { useRouter } from 'next/navigation';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { type ClientDto, type ClientStatementDto, Feature, formatDA, money } from '@erp/shared';
+import {
+  type ClientDto,
+  type ClientStatementDto,
+  Feature,
+  formatDA,
+  money,
+  Permission,
+} from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
 import { PrintButton } from '@/components/shared/print-button';
@@ -59,7 +66,7 @@ import {
 import { todayInAlgiers } from '@/lib/purchases';
 import { communeDisplay, wilayaDisplay } from '@/lib/locations';
 import { useCommunes } from '@/lib/use-communes';
-import { useFeature } from '@/lib/auth';
+import { useFeature, usePermission } from '@/lib/auth';
 import { cn, isolateLtr } from '@/lib/utils';
 import { useTenantSettings } from '@/lib/settings';
 import { useErrorMessage } from '@/lib/use-error-message';
@@ -79,6 +86,8 @@ export function ClientDetail({ clientId }: { clientId: string }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const canManage = useCanManageCredit();
+  // Never a pré-vendeur's (phase 40b).
+  const collects = usePermission(Permission.PAYMENTS_CREATE);
   const client = useClient(clientId);
   // Fetched in parallel with the client; UnpaidDocuments reads the same cache.
   const unpaid = useUnpaidDocuments(clientId);
@@ -124,7 +133,7 @@ export function ClientDetail({ clientId }: { clientId: string }) {
             canManage && { label: t('adjust'), icon: Scale, onSelect: () => setDialog('adjust') },
         ]}
         actions={
-          live || !c ? (
+          collects && (live || !c) ? (
             <Button disabled={!live} onClick={() => setDialog('payment')}>
               <Banknote aria-hidden />
               {t('newPayment')}

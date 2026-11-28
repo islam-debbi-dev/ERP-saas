@@ -25,11 +25,11 @@ import {
   Feature,
   Permission,
   proposeVehicleCode,
-  Role,
   type WarehouseDto,
   WarehouseType,
   WILAYAS,
   wilayaLabel,
+  OFFICE_ROLES,
 } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FeatureGate } from '@/components/shared/feature-gate';
@@ -99,7 +99,7 @@ function Vehicles() {
   const errorMessage = useErrorMessage();
   const role = useAuth().state.user?.role;
   const writer = usePermission(Permission.SETTINGS_EDIT);
-  const planner = role === Role.OWNER || role === Role.MANAGER || role === Role.SUPERVISOR;
+  const planner = !!role && OFFICE_ROLES.includes(role);
   const multiUnit = useFeature(Feature.MULTI_UNIT);
   const focused = useSearchParams().get('vehicle');
   const warehouses = useWarehouses();

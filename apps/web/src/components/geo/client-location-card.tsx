@@ -11,7 +11,7 @@ import {
   type GeoInput,
   haversineM,
   type LocationRequestDto,
-  Role,
+  OFFICE_ROLES,
 } from '@erp/shared';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,7 +36,7 @@ import { formatDistance } from './geo-format';
 import { GeoPrivacyNotice } from './use-geo-submit';
 
 /** They move a saved point directly; a seller asks (the API decides anyway). */
-const DIRECT_ROLES = new Set<string>([Role.OWNER, Role.MANAGER, Role.SUPERVISOR]);
+const DIRECT_ROLES = new Set<string>(OFFICE_ROLES);
 
 type Pending = { kind: 'save'; point: GeoInput } | { kind: 'reject'; request: LocationRequestDto };
 

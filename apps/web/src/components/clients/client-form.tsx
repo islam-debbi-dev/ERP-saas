@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Save } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import {
@@ -31,6 +31,7 @@ import { clientLocationFields, clientOldText, type PlaceSelection } from '@/lib/
 import { useIsOffice, useSectors, useSellers } from '@/lib/sales-force';
 import { useClientSegments } from '@/lib/distribution-stats';
 import { useErrorMessage } from '@/lib/use-error-message';
+import { cn } from '@/lib/utils';
 
 const TEXT_FIELDS = [
   'code',
@@ -112,7 +113,7 @@ export function ClientForm({
   const salesForce = useFeature(Feature.SALES_FORCE);
   const canAssign = useIsOffice() && salesForce;
   const sectors = useSectors();
-  const sellers = useSellers();
+  const sellers = useSellers({ orderTakers: true });
   // Phase 37: the client's type (segment) for the statistics.
   const segmentsOn = useFeature(Feature.DISTRIBUTION_STATS);
   const segments = useClientSegments(segmentsOn);
@@ -120,6 +121,19 @@ export function ClientForm({
   // Null until the user changes the location: nothing about it is then rewritten.
   const [place, setPlace] = useState<PlaceSelection | null>(null);
   const form = useForm<FormValues>({ defaultValues: toFormValues(client) });
+  // Phase 40b: "Clients sans commune" opens the form at the location field.
+  const location = useRef<HTMLDivElement>(null);
+  const [atLocation, setAtLocation] = useState(false);
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('champ') !== 'commune') return;
+    // After the router has put the new page at its top.
+    const timer = window.setTimeout(() => {
+      setAtLocation(true);
+      location.current?.scrollIntoView({ block: 'center' });
+      location.current?.querySelector('button')?.focus({ preventScroll: true });
+    }, 100);
+    return () => window.clearTimeout(timer);
+  }, []);
   const type = useWatch({ control: form.control, name: 'type' });
   const isEdit = client !== null;
 
@@ -219,18 +233,27 @@ export function ClientForm({
           {field('phone', { ltr: true })}
           {field('phone2', { ltr: true })}
           {field('address', { wide: true })}
-          <LocationPicker
-            value={
-              place ?? {
-                wilayaCode: client?.wilayaCode ?? null,
-                communeCode: client?.communeCode ?? null,
+          <div
+            ref={location}
+            data-testid="client-location-fields"
+            className={cn(
+              'min-w-0 sm:col-span-2',
+              atLocation && 'rounded-lg p-3 ring-2 ring-primary/50',
+            )}
+          >
+            <LocationPicker
+              value={
+                place ?? {
+                  wilayaCode: client?.wilayaCode ?? null,
+                  communeCode: client?.communeCode ?? null,
+                }
               }
-            }
-            touched={place !== null}
-            onChange={setPlace}
-            onUndo={() => setPlace(null)}
-            oldText={client ? clientOldText(client) : ''}
-          />
+              touched={place !== null}
+              onChange={setPlace}
+              onUndo={() => setPlace(null)}
+              oldText={client ? clientOldText(client) : ''}
+            />
+          </div>
         </Section>
 
         {type === ClientType.PROFESSIONNEL ? (

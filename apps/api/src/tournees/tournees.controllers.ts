@@ -63,6 +63,8 @@ import {
   type VisitListQuery,
   visitListQuerySchema,
   type VisitPage,
+  FIELD_SELLER_ROLES,
+  TEAM_LEAD_ROLES,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { CurrentUser, RequireFeature, Roles } from '../auth/decorators';
@@ -75,10 +77,10 @@ import { PLANNERS } from './tournee-scope';
 import { TourneeReportsService } from './tournee-reports.service';
 import { VisitsService } from './visits.service';
 
-/** Who sells: takes orders and records visits. */
-const SELLERS = [...PLANNERS, Role.SELLER];
-/** Who hands over the goods of an order. */
-const DELIVERERS = [...SELLERS, Role.LIVREUR];
+/** Who takes orders and records visits. */
+const SELLERS = [...PLANNERS, ...FIELD_SELLER_ROLES];
+/** Who hands over the goods of an order (it makes a BL): never a pré-vendeur. */
+const DELIVERERS = [...PLANNERS, Role.SELLER, Role.LIVREUR];
 
 @Controller('routes')
 @RequireFeature(Feature.TOURNEES)
@@ -179,10 +181,10 @@ export class MeTodayController {
   /**
    * The caller's own day on the road (phase 39, A2): truck, session, expected cash, truck
    * stock and today's chargements / déchargements, quantities only. Road roles and a
-   * supervisor for himself.
+   * team lead for himself.
    */
   @Get('day')
-  @Roles(Role.SELLER, Role.LIVREUR, Role.SUPERVISOR)
+  @Roles(...FIELD_SELLER_ROLES, Role.LIVREUR, ...TEAM_LEAD_ROLES)
   day(@CurrentUser() user: CurrentUserInfo): Promise<MeDayDto> {
     return this.sessions.myDay(user);
   }

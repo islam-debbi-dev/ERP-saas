@@ -9,7 +9,6 @@ import {
   Feature,
   monthToDate,
   REPORT_GROUPS,
-  Role,
   SALES_FORCE_GROUPS,
   type ReportColumn,
   type ReportDto,
@@ -20,6 +19,8 @@ import {
   type ReportRow,
   REPORTS_BY_ROLE,
   type StockMovementType,
+  OFFICE_ROLES,
+  isTeamLead,
 } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
@@ -85,7 +86,7 @@ export function ReportsPage() {
   const office = useIsOffice();
   const sellers = useSellers();
   const brands = useBrands();
-  const supervisors = (sellers.data ?? []).filter((u) => u.role === Role.SUPERVISOR);
+  const supervisors = (sellers.data ?? []).filter((u) => isTeamLead(u.role));
   const peopleFilters = office && (effective.name === 'sales' || effective.name === 'payments');
   const brandFilter = effective.name === 'sales';
   const groups = REPORT_GROUPS[effective.name].filter(
@@ -122,9 +123,8 @@ export function ReportsPage() {
               href: '/rapports/charges',
             },
           salesForce &&
-            (state.user?.role === 'OWNER' ||
-              state.user?.role === 'MANAGER' ||
-              state.user?.role === 'SUPERVISOR') && {
+            !!state.user &&
+            OFFICE_ROLES.includes(state.user.role) && {
               label: t('sellOutLink'),
               icon: Tags,
               href: '/rapports/sell-out',

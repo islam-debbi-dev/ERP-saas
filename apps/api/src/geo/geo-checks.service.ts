@@ -13,7 +13,7 @@ import {
   GeoReviewStatus,
   GeoStatus,
   type ReviewGeoCheckInput,
-  Role,
+  isTeamLead,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
@@ -181,7 +181,7 @@ export class GeoChecksService {
 
   /** Whose operations the user sees: a supervisor his team, managers everyone. */
   private async reach(user: CurrentUserInfo): Promise<string[] | null> {
-    return user.role === Role.SUPERVISOR ? this.scope.teamIds(user.id) : null;
+    return isTeamLead(user.role) ? this.scope.teamIds(user.id) : null;
   }
 
   private async users(ids: string[]): Promise<Map<string, { id: string; fullName: string }>> {

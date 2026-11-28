@@ -21,6 +21,7 @@ import {
   type ReviewGeoCheckInput,
   reviewGeoCheckSchema,
   Role,
+  TEAM_LEAD_ROLES,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { CurrentUser, RequireFeature, Roles } from '../auth/decorators';
@@ -29,7 +30,7 @@ import { GeoChecksService } from './geo-checks.service';
 
 const MANAGERS = [Role.OWNER, Role.MANAGER];
 /** A supervisor follows his team's flags; only managers give the verdict. */
-const VIEWERS = [...MANAGERS, Role.SUPERVISOR];
+const VIEWERS = [...MANAGERS, ...TEAM_LEAD_ROLES];
 
 @Controller('geo-checks')
 @RequireFeature(Feature.GEO_CHECK)

@@ -19,6 +19,11 @@ import {
   type StatementQuery,
   toMoneyString,
   type UpdateClientInput,
+  isFieldSeller,
+  isTeamLead,
+  TEAM_LEAD_ROLES,
+  type ClientsWithoutCommunePage,
+  type ClientsWithoutCommuneQuery,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
@@ -46,7 +51,7 @@ type ClientWithBalance = Prisma.ClientGetPayload<{ include: typeof clientInclude
 const PLAFOND_ROLES = new Set<string>([Role.OWNER, Role.MANAGER]);
 
 /** Who sets a client's sector and seller (phase 14). A supervisor only within his team. */
-const ASSIGNER_ROLES = new Set<string>([Role.OWNER, Role.MANAGER, Role.SUPERVISOR]);
+const ASSIGNER_ROLES = new Set<string>([Role.OWNER, Role.MANAGER, ...TEAM_LEAD_ROLES]);
 
 type Assignment = { sectorId?: string | null; assignedSellerId?: string | null };
 
@@ -186,6 +191,39 @@ export class ClientsService {
   }
 
   /**
+   * Clients without a commune code (phase 40b): invisible to sellers under BY_ZONE, so
+   * somebody must fix them. A supervisor or chef de zone gets those assigned to or created
+   * by his team(s); the owner and managers all of them.
+   */
+  async withoutCommune(
+    query: ClientsWithoutCommuneQuery,
+    user: CurrentUserInfo,
+  ): Promise<ClientsWithoutCommunePage> {
+    const team = isTeamLead(user.role) ? await this.scope.teamIds(user.id) : null;
+    const where: Prisma.ClientWhereInput = {
+      deletedAt: null,
+      communeCode: null,
+      ...(team ? { OR: [{ assignedSellerId: { in: team } }, { createdBy: { in: team } }] } : {}),
+    };
+    const [total, rows] = await Promise.all([
+      this.prisma.db.client.count({ where }),
+      this.prisma.db.client.findMany({
+        where,
+        include: clientInclude,
+        orderBy: [{ name: 'asc' }, { id: 'asc' }],
+        take: query.limit + 1,
+        ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
+      }),
+    ]);
+    const items = rows.slice(0, query.limit);
+    return {
+      total,
+      items: items.map(toDto),
+      nextCursor: rows.length > query.limit ? items.at(-1)!.id : null,
+    };
+  }
+
+  /**
    * One client account, split by the dépôt each entry belongs to (phase 24). The parts add
    * up to the balance; entries without a dépôt (before the backfill) count for the
    * dépôt principal, as the backfill will decide.
@@ -223,7 +261,13 @@ export class ClientsService {
         const assignment = await this.assignment(tx, user, { sectorId, assignedSellerId }, null);
         const { place, resolution } = clientPlace(input, null);
         const c = await tx.client.create({
-          data: { ...fields, ...place, ...assignment, tenantId: tenantContext.requireTenantId() },
+          data: {
+            ...fields,
+            ...place,
+            ...assignment,
+            tenantId: tenantContext.requireTenantId(),
+            createdBy: user.id,
+          },
           include: clientInclude,
         });
         await this.audit.log(tx, {
@@ -301,7 +345,9 @@ export class ClientsService {
   async bulkAssign(input: ClientBulkAssignInput): Promise<ClientBulkAssignResultDto> {
     return this.prisma.db.$transaction(async (tx) => {
       if (input.sectorId) await this.sectors.findLive(tx, input.sectorId);
-      if (input.assignedSellerId) await this.scope.assertSeller(tx, input.assignedSellerId);
+      if (input.assignedSellerId) {
+        await this.scope.assertOrderTaker(tx, input.assignedSellerId);
+      }
       // Lock in id order: two bulk assigns on overlapping clients cannot deadlock.
       const ids = [...input.clientIds].sort();
       const before = await tx.$queryRaw<
@@ -375,7 +421,8 @@ export class ClientsService {
       const id = randomUUID();
       const { place, resolution } = clientPlace(input, null);
       if (resolution && resolution !== 'EMPTY') resolutions.set(id, resolution);
-      return { ...input, ...place, id, tenantId };
+      const createdBy = tenantContext.get()?.userId ?? null;
+      return { ...input, ...place, id, tenantId, createdBy };
     });
     await this.withCodeErrors(async () => {
       for (const chunk of chunks(rows)) await tx.client.createMany({ data: chunk });
@@ -761,8 +808,7 @@ export class ClientsService {
       return {};
     }
     const out: Assignment = {};
-    const selfDefault =
-      before === null && (user.role === Role.SELLER || user.role === Role.SUPERVISOR);
+    const selfDefault = before === null && (isFieldSeller(user.role) || isTeamLead(user.role));
     if (!ASSIGNER_ROLES.has(user.role)) {
       const ownSeller =
         wanted.assignedSellerId === undefined || wanted.assignedSellerId === user.id;
@@ -779,11 +825,8 @@ export class ClientsService {
     if (changes('assignedSellerId')) {
       const sellerId = wanted.assignedSellerId ?? null;
       if (sellerId) {
-        await this.scope.assertSeller(tx, sellerId);
-        if (
-          user.role === Role.SUPERVISOR &&
-          !(await this.scope.teamIds(user.id, tx)).includes(sellerId)
-        ) {
+        await this.scope.assertOrderTaker(tx, sellerId);
+        if (isTeamLead(user.role) && !(await this.scope.teamIds(user.id, tx)).includes(sellerId)) {
           throw new AppException(ErrorCode.FORBIDDEN, 'This seller is not in your team', {
             field: 'assignedSellerId',
           });

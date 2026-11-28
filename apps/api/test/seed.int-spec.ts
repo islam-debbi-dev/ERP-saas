@@ -45,6 +45,26 @@ describe('seed', () => {
       t.prisma.db.routeStop.count({ where: { routeId: '00000000-0000-4000-8000-0000000016a1' } }),
     );
     expect(stops).toBe(3);
+
+    // Phase 40b: a chef de zone, a pré-vendeur and two zones, not doubled either.
+    const tenantId = users[0]!.tenantId;
+    const field = await tenantContext.runAsSystem(async () => ({
+      roles: await t.prisma.db.user.findMany({
+        where: { tenantId, role: { in: ['AREA_MANAGER', 'PREVENDEUR'] } },
+        select: { role: true },
+        orderBy: { role: 'asc' },
+      }),
+      zones: await t.prisma.db.fieldZone.findMany({
+        where: { tenantId },
+        select: { name: true, kind: true },
+        orderBy: { kind: 'asc' },
+      }),
+    }));
+    expect(field.roles.map((u) => u.role).sort()).toEqual(['AREA_MANAGER', 'PREVENDEUR']);
+    expect(field.zones).toEqual([
+      { name: 'Zone Alger', kind: 'AREA' },
+      { name: 'Alger Est', kind: 'CITY' },
+    ]);
     // The seed runs twice through tsx in a child process: give it room on a busy CI runner.
   }, 60_000);
 });

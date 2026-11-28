@@ -24,6 +24,8 @@ import {
   Role,
   type UpdatePromotionInput,
   updatePromotionSchema,
+  TEAM_LEAD_ROLES,
+  FIELD_SELLER_ROLES,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { CurrentUser, RequireFeature, Roles } from '../auth/decorators';
@@ -31,7 +33,7 @@ import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { PromotionsService } from './promotions.service';
 
 const MANAGERS = [Role.OWNER, Role.MANAGER];
-const SELLERS = [...MANAGERS, Role.SUPERVISOR, Role.SELLER];
+const SELLERS = [...MANAGERS, ...TEAM_LEAD_ROLES, ...FIELD_SELLER_ROLES];
 
 @Controller('promotions')
 @RequireFeature(Feature.PROMOTIONS)

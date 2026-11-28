@@ -1,10 +1,9 @@
 # Communes of the new wilayas 59 to 69: to review
 
-**For:** the owner. **What to do:** read the tables and "To settle", then tick the box at the end.
+**For:** the owner. **Status:** approved on 2026-11-28 (see "Approval"). "To settle" is still open.
 
-Until you approve this file, the app refuses these 108 communes: they are greyed out in the
-lists, and old client records that name one of them keep an empty commune. A client can still
-be given a wilaya from 59 to 69 without a commune.
+The app accepts these 108 communes since that approval (phase 40b). Before it, they were greyed
+out in the lists and old client records that named one of them kept an empty commune.
 
 ## Result
 
@@ -248,6 +247,6 @@ holds some of its communes. This concerns these daira names:
 
 ## Approval
 
-- [ ] I approve the 108 communes of wilayas 59 to 69 listed above. The app may accept them.
+- [x] I approve the 108 communes of wilayas 59 to 69 listed above. The app may accept them.
 
-Name and date:
+Name and date: Approved by the owner in chat on 2026-11-28

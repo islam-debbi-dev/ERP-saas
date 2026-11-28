@@ -9,6 +9,8 @@ import {
   type LocationRequestInput,
   type LocationRequestListQuery,
   Role,
+  isTeamLead,
+  TEAM_LEAD_ROLES,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
@@ -19,7 +21,7 @@ import { PrismaService, type Tx } from '../prisma/prisma.service';
 import { ScopeService } from '../sales-force/scope.service';
 
 /** They move a client's point directly; a SELLER goes through a request (phase 17). */
-const DIRECT_ROLES = new Set<string>([Role.OWNER, Role.MANAGER, Role.SUPERVISOR]);
+const DIRECT_ROLES = new Set<string>([Role.OWNER, Role.MANAGER, ...TEAM_LEAD_ROLES]);
 const DECIDER_ROLES = new Set<string>([Role.OWNER, Role.MANAGER]);
 
 type ClientPoint = {
@@ -243,13 +245,13 @@ export class ClientLocationService {
   /** A manager, or a supervisor above the requester (never on his own request). */
   private async canDecide(user: CurrentUserInfo, requestedBy: string, db?: Tx): Promise<boolean> {
     if (DECIDER_ROLES.has(user.role)) return true;
-    if (user.role !== Role.SUPERVISOR || requestedBy === user.id) return false;
+    if (!isTeamLead(user.role) || requestedBy === user.id) return false;
     return (await this.scope.teamIds(user.id, db)).includes(requestedBy);
   }
 
   private async visibleRequesters(user: CurrentUserInfo): Promise<string[] | null> {
     if (DECIDER_ROLES.has(user.role)) return null;
-    if (user.role === Role.SUPERVISOR) return this.scope.teamIds(user.id);
+    if (isTeamLead(user.role)) return this.scope.teamIds(user.id);
     return [user.id];
   }
 
@@ -262,7 +264,7 @@ export class ClientLocationService {
       select: { id: true, fullName: true },
     });
     const byId = new Map(users.map((u) => [u.id, u]));
-    const team = user.role === Role.SUPERVISOR ? new Set(await this.scope.teamIds(user.id)) : null;
+    const team = isTeamLead(user.role) ? new Set(await this.scope.teamIds(user.id)) : null;
     return rows.map((r) => ({
       id: r.id,
       client: r.client,

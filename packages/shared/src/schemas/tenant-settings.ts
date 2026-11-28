@@ -70,6 +70,8 @@ export const tenantSettingsSchema = z.object({
   reminderDays: z.number().int().min(1).max(365),
   /** Which clients a seller sees when SALES_FORCE is on (phase 14). */
   sellerScope: z.enum(SELLER_SCOPES as [SellerScope, ...SellerScope[]]),
+  /** Under BY_ZONE, a seller also sees the clients assigned to him (phase 40b). */
+  zoneIncludesAssigned: z.boolean(),
   /** Which clients a livreur sees when SALES_FORCE is on: all, or those he delivers to. */
   livreurScope: z.enum(LIVREUR_SCOPES as [LivreurScope, ...LivreurScope[]]),
   /** Géolocalisation (phase 17, GEO_CHECK): what happens to a far operation. */

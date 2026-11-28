@@ -46,6 +46,10 @@ import {
   statementQuerySchema,
   type UpdateClientInput,
   updateClientSchema,
+  TEAM_LEAD_ROLES,
+  clientsWithoutCommuneQuerySchema,
+  type ClientsWithoutCommunePage,
+  type ClientsWithoutCommuneQuery,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import {
@@ -125,6 +129,18 @@ export class ClientsController {
     @CurrentUser() user: CurrentUserInfo,
   ): Promise<ClientNearbyPointDto[]> {
     return this.clientMap.nearby(query, user);
+  }
+
+  /** Clients to give a commune to (phase 40b). Declared before ':id'. */
+  @Get('without-commune')
+  @Roles(...MANAGERS, ...TEAM_LEAD_ROLES)
+  @RequirePermission(Permission.CLIENTS_VIEW)
+  withoutCommune(
+    @Query(new ZodValidationPipe(clientsWithoutCommuneQuerySchema))
+    query: ClientsWithoutCommuneQuery,
+    @CurrentUser() user: CurrentUserInfo,
+  ): Promise<ClientsWithoutCommunePage> {
+    return this.clients.withoutCommune(query, user);
   }
 
   // Declared before ':id'.

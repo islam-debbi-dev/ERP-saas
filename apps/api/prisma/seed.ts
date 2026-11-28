@@ -12,6 +12,9 @@ import { PrismaClient } from '../src/generated/prisma/client';
 
 export const DEMO_TENANT_ID = '00000000-0000-4000-8000-00000000d3e0';
 export const DEMO_OWNER_EMAIL = 'demo@grossiste.dz';
+const DEMO_AREA_MANAGER_ID = '00000000-0000-4000-8000-0000000040a1';
+const DEMO_PRESELLER_ID = '00000000-0000-4000-8000-0000000040a2';
+const DEMO_AREA_ZONE_ID = '00000000-0000-4000-8000-0000000040b1';
 export const DEMO_SELLER_ID = '00000000-0000-4000-8000-0000000016e1';
 export const DEMO_SELLER_EMAIL = 'vendeur@grossiste.dz';
 const DEMO_OWNER_PASSWORD = process.env['SEED_OWNER_PASSWORD'] ?? 'Demo1234!';
@@ -158,6 +161,59 @@ async function main(): Promise<void> {
           role: 'SELLER',
         },
       });
+      // Field teams demo (phase 40b): a chef de zone, a pré-vendeur under him, the area of
+      // Alger and the city zone of Alger Est inside it. Fixed ids: a rerun changes nothing.
+      const fieldUsers = [
+        {
+          id: DEMO_AREA_MANAGER_ID,
+          email: 'chef.zone@grossiste-demo.dz',
+          fullName: 'Chef de zone Demo',
+          role: 'AREA_MANAGER' as const,
+        },
+        {
+          id: DEMO_PRESELLER_ID,
+          email: 'prevendeur@grossiste-demo.dz',
+          fullName: 'Pré-vendeur Demo',
+          role: 'PREVENDEUR' as const,
+          managerId: DEMO_AREA_MANAGER_ID,
+        },
+      ];
+      for (const u of fieldUsers) {
+        await tx.user.upsert({
+          where: { id: u.id },
+          update: {},
+          create: {
+            ...u,
+            tenantId: tenant.id,
+            passwordHash: await argon2.hash(DEMO_OWNER_PASSWORD, { type: argon2.argon2id }),
+          },
+        });
+      }
+      await tx.fieldZone.upsert({
+        where: { id: DEMO_AREA_ZONE_ID },
+        update: {},
+        create: {
+          id: DEMO_AREA_ZONE_ID,
+          tenantId: tenant.id,
+          name: 'Zone Alger',
+          kind: 'AREA',
+          wilayaCodes: [16],
+          responsibleUserId: DEMO_AREA_MANAGER_ID,
+        },
+      });
+      await tx.fieldZone.upsert({
+        where: { id: '00000000-0000-4000-8000-0000000040b2' },
+        update: {},
+        create: {
+          id: '00000000-0000-4000-8000-0000000040b2',
+          tenantId: tenant.id,
+          name: 'Alger Est',
+          kind: 'CITY',
+          parentZoneId: DEMO_AREA_ZONE_ID,
+          communeCodes: [1621, 1620, 1613],
+        },
+      });
+
       // Phase 24 (MULTI_UNIT): the demo seller works in every dépôt of the company (the
       // dépôt principal first, as signup creates it).
       await tx.$executeRaw`
@@ -166,8 +222,9 @@ async function main(): Promise<void> {
         ON CONFLICT DO NOTHING`;
       await tx.$executeRaw`
         INSERT INTO user_warehouse_access ("id", "tenantId", "userId", "warehouseId", "level", "grantedAt")
-        SELECT gen_random_uuid(), w."tenantId", ${DEMO_SELLER_ID}::uuid, w.id, 'OPERATE', CURRENT_TIMESTAMP
+        SELECT gen_random_uuid(), w."tenantId", u.id, w.id, 'OPERATE', CURRENT_TIMESTAMP
         FROM warehouses w
+        JOIN users u ON u.id IN (${DEMO_SELLER_ID}::uuid, ${DEMO_PRESELLER_ID}::uuid)
         WHERE w."tenantId" = ${tenant.id}::uuid AND w.type IN ('MAIN', 'SECONDARY')
           AND w."deletedAt" IS NULL
         ON CONFLICT ("userId", "warehouseId") DO NOTHING`;

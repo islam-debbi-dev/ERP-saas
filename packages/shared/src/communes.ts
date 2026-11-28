@@ -96,6 +96,21 @@ export function dairasOf(wilayaCode: number): readonly Daira[] {
   return DAIRAS_BY_WILAYA.get(wilayaCode) ?? [];
 }
 
+/**
+ * Every commune a zone covers (phase 40b): its own communes plus all the communes of its
+ * whole wilayas, ordered, without duplicates.
+ */
+export function zoneCommuneCodes(zone: {
+  wilayaCodes: readonly number[];
+  communeCodes: readonly number[];
+}): number[] {
+  const codes = new Set(zone.communeCodes);
+  for (const wilayaCode of zone.wilayaCodes) {
+    for (const commune of communesOf(wilayaCode)) codes.add(commune.code);
+  }
+  return [...codes].sort((a, b) => a - b);
+}
+
 export function communeByCode(code: number | null | undefined): Commune | null {
   return code == null ? null : (COMMUNE_BY_CODE.get(code) ?? null);
 }
@@ -109,10 +124,11 @@ export function dairaByKey(key: string | null | undefined): Daira | null {
 // ---------------------------------------------------------------------------
 
 /**
- * The owner has not yet approved `docs/review/communes-59-69.md`. While false, the communes
- * of wilayas 59 to 69 cannot be saved on anything. The wilaya code alone is allowed.
+ * The owner approved `docs/review/communes-59-69.md` on 2026-11-28, so the gate is open. While
+ * false, the communes of wilayas 59 to 69 cannot be saved on anything (the wilaya code alone
+ * is allowed). The gate stays in the code for a later list that needs the same review.
  */
-export const COMMUNES_59_69_REVIEWED: boolean = false;
+export const COMMUNES_59_69_REVIEWED: boolean = true;
 
 const GATED_WILAYA_MIN = 59;
 const GATED_WILAYA_MAX = 69;

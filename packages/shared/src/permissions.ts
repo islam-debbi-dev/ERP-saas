@@ -283,6 +283,29 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   // Sees his team's figures; sensitive actions are granted one by one by the owner.
   [Role.SUPERVISOR]: [...VIEW_ALL, ...FIELD],
   [Role.LIVREUR]: [...VIEW_ALL],
+  // The supervisor's rights over a whole area (targets editing comes in phase 40e).
+  [Role.AREA_MANAGER]: [...VIEW_ALL, ...FIELD],
+  // Takes commandes and records visits; keeps his client file up to date.
+  [Role.PREVENDEUR]: [...VIEW_ALL, Permission.CLIENTS_CREATE, Permission.CLIENTS_EDIT],
+};
+
+/**
+ * What a role can never hold, even if granted to the user. A pré-vendeur takes commandes
+ * only: no sale, versement or stock movement (phase 40b).
+ */
+export const ROLE_FORBIDDEN_PERMISSIONS: Partial<Record<Role, readonly Permission[]>> = {
+  [Role.PREVENDEUR]: [
+    Permission.SALES_CREATE,
+    Permission.SALE_CANCEL,
+    Permission.SALES_RETURN,
+    Permission.SALE_REASSIGN_SELLER,
+    Permission.PAYMENTS_CREATE,
+    Permission.PAYMENT_CANCEL,
+    Permission.PAYMENTS_BOUNCE,
+    Permission.STOCK_ADJUST,
+    Permission.STOCK_COUNT,
+    Permission.STOCK_TRANSFER,
+  ],
 };
 
 /**
@@ -298,6 +321,7 @@ export function effectivePermissions(
   const set = new Set<string>(ROLE_PERMISSIONS[role]);
   for (const g of grants) set.add(g);
   for (const r of revokes) set.delete(r);
+  for (const f of ROLE_FORBIDDEN_PERMISSIONS[role] ?? []) set.delete(f);
   return PERMISSIONS.filter((p) => set.has(p));
 }
 

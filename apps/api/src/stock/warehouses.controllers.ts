@@ -44,6 +44,7 @@ import {
   type WarehouseListQuery,
   warehouseListQuerySchema,
   Role,
+  TEAM_LEAD_ROLES,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { CurrentUser, RequireFeature, RequirePermission, Roles } from '../auth/decorators';
@@ -77,7 +78,7 @@ export class WarehousesController {
    * reach. A driver who has another truck is moved, and that truck freed, in one go.
    */
   @Post(':id/driver')
-  @Roles(Role.OWNER, Role.MANAGER, Role.SUPERVISOR)
+  @Roles(Role.OWNER, Role.MANAGER, ...TEAM_LEAD_ROLES)
   @RequireFeature(Feature.WAREHOUSES)
   @HttpCode(HttpStatus.OK)
   // A replay after a later change must not put the old driver back (test-36 B-4).

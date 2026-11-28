@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import {
   type DashboardLayout,
@@ -31,6 +32,9 @@ import {
   type UserDto,
   type UserPermissionsInput,
   userPermissionsSchema,
+  TEAM_LEAD_ROLES,
+  sellersQuerySchema,
+  type SellersQuery,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { CurrentUser, RequireFeature, RequirePermission, Roles } from '../auth/decorators';
@@ -66,16 +70,17 @@ export class UsersController {
 
   /** Active users who can be a sale's seller (phase 14, core): the seller pickers. */
   @Get('sellers')
-  @Roles(Role.OWNER, Role.MANAGER, Role.SUPERVISOR)
+  @Roles(Role.OWNER, Role.MANAGER, ...TEAM_LEAD_ROLES)
   sellers(
+    @Query(new ZodValidationPipe(sellersQuerySchema)) query: SellersQuery,
     @CurrentUser() user: CurrentUserInfo,
   ): Promise<{ id: string; fullName: string; role: Role }[]> {
-    return this.users.sellers(user);
+    return this.users.sellers(user, query.orderTakers);
   }
 
   /** The hierarchy as a tree (phase 14); a supervisor sees his own team. */
   @Get('team')
-  @Roles(Role.OWNER, Role.MANAGER, Role.SUPERVISOR)
+  @Roles(Role.OWNER, Role.MANAGER, ...TEAM_LEAD_ROLES)
   @RequireFeature(Feature.SALES_FORCE)
   team(@CurrentUser() user: CurrentUserInfo): Promise<TeamNodeDto[]> {
     return this.users.team(user);

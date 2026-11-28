@@ -200,9 +200,7 @@ void main() {
     }
   });
 
-  testWidgets('communes under review are disabled, the wilaya is not', (
-    tester,
-  ) async {
+  testWidgets('communes of wilayas 59 to 69 can be picked', (tester) async {
     await open(tester);
     await pick(tester, 'wilaya', 'aflou', 'wilaya-59');
     final commune = locations.communesOf(59).first;
@@ -210,22 +208,18 @@ void main() {
     await tapField(tester, 'commune');
     await search(tester, commune.fr);
     final row = find.byKey(Key('commune-${commune.code}'));
-    expect(tester.widget<ListTile>(row).enabled, isFalse);
-    expect(
-      find.descendant(of: row, matching: find.text('En cours de vérification')),
-      findsOneWidget,
-    );
+    expect(tester.widget<ListTile>(row).enabled, isTrue);
+    expect(find.text('En cours de vérification'), findsNothing);
     await tester.tap(row);
     await tester.pumpAndSettle();
-    expect(find.byType(BottomSheet), findsOneWidget);
-    await tester.tapAt(const Offset(10, 10));
-    await tester.pumpAndSettle();
+    expect(find.byType(BottomSheet), findsNothing);
 
     final body = await save(tester);
     expect(body['wilayaCode'], 59);
     expect(body['wilaya'], 'Aflou');
-    expect(body.containsKey('communeCode'), isFalse);
-  }, skip: communes5969Reviewed);
+    expect(body['communeCode'], commune.code);
+    expect(body['commune'], commune.fr);
+  });
 
   testWidgets('the body carries the codes and the French names', (
     tester,
@@ -302,7 +296,7 @@ void main() {
   testWidgets('360 dp in Arabic: form and lists fit', (tester) async {
     await open(tester, locale: 'ar');
     expectNoOverflow(tester);
-    // The longest names: wilaya 69, then a list under review.
+    // The longest names: wilaya 69, then its list of communes.
     await pick(tester, 'wilaya', '69', 'wilaya-69');
     expectNoOverflow(tester);
     await tapField(tester, 'commune');

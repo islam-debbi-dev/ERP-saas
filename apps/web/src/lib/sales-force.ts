@@ -58,12 +58,19 @@ export function useIsOffice(): boolean {
   return !!state.user && OFFICE_ROLES.includes(state.user.role);
 }
 
-/** Active users who can be a seller; only office roles may list them. */
-export function useSellers() {
+/**
+ * Active users who can be a seller; only office roles may list them. With `orderTakers`
+ * (routes, commandes, visits, a client's seller) the pré-vendeurs are listed too; without
+ * it, only who can sell or collect.
+ */
+export function useSellers({ orderTakers = false }: { orderTakers?: boolean } = {}) {
   const office = useIsOffice();
   return useQuery({
-    queryKey: salesForceKeys.sellers,
-    queryFn: ({ signal }) => api.request<SellerOption[]>('/users/sellers', { signal }),
+    queryKey: [...salesForceKeys.sellers, { orderTakers }],
+    queryFn: ({ signal }) =>
+      api.request<SellerOption[]>(`/users/sellers${orderTakers ? '?orderTakers=true' : ''}`, {
+        signal,
+      }),
     enabled: office,
     staleTime: 60_000,
   });

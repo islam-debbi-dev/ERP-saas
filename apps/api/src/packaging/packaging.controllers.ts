@@ -26,6 +26,7 @@ import {
   type ProductPackagingInput,
   productPackagingInputSchema,
   Role,
+  TEAM_LEAD_ROLES,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { CurrentUser, RequireFeature, Roles } from '../auth/decorators';
@@ -34,7 +35,10 @@ import { Idempotent } from '../idempotency/idempotent.decorator';
 import { PackagingService } from './packaging.service';
 
 const MANAGERS = [Role.OWNER, Role.MANAGER];
-const FIELD = [...MANAGERS, Role.SUPERVISOR, Role.SELLER, Role.LIVREUR];
+/** Who handles empties on the road. */
+const FIELD = [...MANAGERS, ...TEAM_LEAD_ROLES, Role.SELLER, Role.LIVREUR];
+/** Who reads the counts: a pré-vendeur too, though he never moves them. */
+const READERS = [...FIELD, Role.PREVENDEUR];
 
 @Controller('packaging-types')
 export class PackagingTypesController {
@@ -42,7 +46,7 @@ export class PackagingTypesController {
 
   /** Readable when the module is off (phase 13b: data stays readable). */
   @Get()
-  @Roles(...FIELD, Role.STOREKEEPER)
+  @Roles(...READERS, Role.STOREKEEPER)
   list(): Promise<PackagingTypeDto[]> {
     return this.packaging.listTypes();
   }
@@ -81,7 +85,7 @@ export class ClientPackagingController {
 
   /** The client's counts and his packaging relevé (readable when the module is off). */
   @Get('clients/:id/packaging')
-  @Roles(...FIELD)
+  @Roles(...READERS)
   ofClient(
     @Param('id', ParseUUIDPipe) id: string,
     @Query(new ZodValidationPipe(clientPackagingQuerySchema)) query: ClientPackagingQuery,
@@ -91,7 +95,7 @@ export class ClientPackagingController {
   }
 
   @Get('products/:id/packaging')
-  @Roles(...FIELD, Role.STOREKEEPER)
+  @Roles(...READERS, Role.STOREKEEPER)
   ofProduct(@Param('id', ParseUUIDPipe) id: string): Promise<ProductPackagingDto[]> {
     return this.packaging.ofProduct(id);
   }

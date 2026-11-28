@@ -11,6 +11,7 @@ import {
   LayoutGrid,
   Map as MapIcon,
   MapPinCheck,
+  MapPinHouse,
   MapPinned,
   Navigation,
   Package,
@@ -26,7 +27,7 @@ import {
   Wallet,
   Warehouse,
 } from 'lucide-react';
-import { Feature, Permission, Role } from '@erp/shared';
+import { Feature, OFFICE_ROLES, Permission, Role, ROLES } from '@erp/shared';
 
 export type NavKey =
   | 'treasury'
@@ -36,6 +37,7 @@ export type NavKey =
   | 'versements'
   | 'clients'
   | 'clientsMap'
+  | 'zones'
   | 'today'
   | 'tournees'
   | 'orders'
@@ -74,7 +76,10 @@ export interface NavItem {
   permission?: Permission;
 }
 
-const PLANNERS = [Role.OWNER, Role.MANAGER, Role.SUPERVISOR];
+/** Who plans the work: the office and the team leads (supervisor, chef de zone). */
+const PLANNERS = OFFICE_ROLES;
+/** A pré-vendeur takes commandes only: no sale, versement, truck or stock screen (40b). */
+const NOT_PREVENDEUR = ROLES.filter((r) => r !== Role.PREVENDEUR);
 
 export interface NavGroup {
   key: 'groupMain' | 'groupStock' | 'groupManagement';
@@ -95,8 +100,8 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         permission: Permission.REPORTS_FINANCE,
       },
       { key: 'dashboard', url: '/tableau-de-bord', icon: LayoutDashboard },
-      { key: 'sales', url: '/ventes', icon: ReceiptText },
-      { key: 'versements', url: '/versements', icon: Banknote },
+      { key: 'sales', url: '/ventes', icon: ReceiptText, roles: NOT_PREVENDEUR },
+      { key: 'versements', url: '/versements', icon: Banknote, roles: NOT_PREVENDEUR },
       { key: 'clients', url: '/clients', icon: Users },
       // Phase 35: clients only get a point through phase 17 (GEO_CHECK).
       {
@@ -106,14 +111,22 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         feature: Feature.GEO_CHECK,
         permission: Permission.CLIENTS_VIEW,
       },
+      // Phase 40b: the office writes the zones; a team lead reads his and moves his people.
+      {
+        key: 'zones',
+        url: '/zones',
+        icon: MapPinHouse,
+        feature: Feature.SALES_FORCE,
+        roles: PLANNERS,
+      },
       // Phase 16: before 'tournees' so /tournees/aujourdhui is "today" for a seller.
       {
         key: 'today',
         url: '/tournees/aujourdhui',
         icon: Navigation,
         feature: Feature.TOURNEES,
-        roles: [Role.SELLER],
-        access: [...PLANNERS, Role.SELLER],
+        roles: [Role.SELLER, Role.PREVENDEUR],
+        access: [...PLANNERS, Role.SELLER, Role.PREVENDEUR],
       },
       {
         key: 'tournees',
@@ -127,7 +140,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         url: '/commandes',
         icon: ClipboardList,
         feature: Feature.TOURNEES,
-        roles: [...PLANNERS, Role.SELLER, Role.STOREKEEPER],
+        roles: [...PLANNERS, Role.SELLER, Role.PREVENDEUR, Role.STOREKEEPER],
       },
       {
         key: 'deliveries',
@@ -142,7 +155,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         url: '/promotions',
         icon: BadgePercent,
         feature: Feature.PROMOTIONS,
-        roles: [...PLANNERS, Role.SELLER],
+        roles: [...PLANNERS, Role.SELLER, Role.PREVENDEUR],
       },
     ],
   },
@@ -150,7 +163,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
     key: 'groupStock',
     items: [
       { key: 'products', url: '/produits', icon: Package },
-      { key: 'purchases', url: '/achats', icon: Truck },
+      { key: 'purchases', url: '/achats', icon: Truck, roles: NOT_PREVENDEUR },
       {
         key: 'importFiles',
         url: '/achats/dossiers',
@@ -158,7 +171,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         feature: Feature.IMPORT_COSTS,
         roles: [Role.OWNER, Role.MANAGER],
       },
-      { key: 'stock', url: '/stock', icon: Warehouse },
+      { key: 'stock', url: '/stock', icon: Warehouse, roles: NOT_PREVENDEUR },
       // Phase 36: trucks, their identity and their driver of the day.
       {
         key: 'vehicles',

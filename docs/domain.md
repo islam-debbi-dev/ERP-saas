@@ -24,7 +24,7 @@
 The official list is `packages/shared/src/communes.ts`: 69 wilayas, their communes (the ONS code does not change when a commune moves to a new wilaya) and their daïras. The quartier stays free text (the secteur, the address).
 - A client has `wilayaCode` (1 to 69) and `communeCode`; a secteur has one `wilayaCode` and a list of `communeCodes`. **The daïra is derived from the commune, never stored.** The old text columns stay until a later contract release, and a text is never destroyed by the system.
 - **A commune sent** must exist (`COMMUNE_UNKNOWN`). Its wilaya is derived; another wilaya sent with it is refused (`COMMUNE_WILAYA_MISMATCH`). Every commune of a secteur is in the secteur's wilaya. Saving codes writes the **French names** into the old text columns.
-- **Review gate**: until the owner approves `docs/review/communes-59-69.md`, a commune of wilayas 59 to 69 cannot be set (`COMMUNE_UNDER_REVIEW`). One of these wilayas without a commune is allowed.
+- **Review gate**: open since the owner approved `docs/review/communes-59-69.md` on 2026-11-28, so the communes of wilayas 59 to 69 can be set like any other. The check stays in the code (`COMMUNE_UNDER_REVIEW`, `isCommuneUnderReview`) and refuses nothing today. A wilaya without a commune is allowed.
 - **A wilaya alone** is allowed (1 to 69): its French name is written, the commune text stays as sent.
 - **Codes sent as null**: cleared, the text is stored as sent.
 - **Codes left out** (an old app or an old web page): while the wilaya and commune text do not change (nothing and empty are the same), the codes stay. When it changes, or on a create with text, the new text goes through the one matcher (`resolveLocation`): one exact commune, also through a former wilaya, or a wilaya with no commune, sets the codes and the French names; anything else (not found, several, under review) clears both codes. The audit log keeps before, after and what the matcher said. A secteur gets codes this way only when **every** commune is found for sure inside one wilaya (a secteur with a wilaya and no commune gets the wilaya).
@@ -90,7 +90,7 @@ The official list is `packages/shared/src/communes.ts`: 69 wilayas, their commun
 - Turning a module off never deletes its data: its screens and writes are refused, its reports and exports stay readable, and everything comes back when it is on again.
 - Two axes: the **plan** (Starter / Pro / Business) sets the price and the limits (users, products, documents, mobile sellers); the **edition** sets the modules. Price = plan + edition supplement. The super-admin can add or remove one module for one company on top of its edition.
 - At signup the company says what it does (grossiste, importateur, distributeur de marque); the trial starts on the matching edition.
-- **Mobile seats** (phase 39): a phone login (the Debvora app, header `X-Client-Type: native`) of a vendeur, livreur or superviseur needs the mobile app module and takes one seat of the plan's "mobile sellers" limit (Starter 2, Pro 5, Business unlimited). A seat is a person, not a phone: the same user on a second phone keeps his one seat. Logging out, a session closed from "Sessions", or an expired session frees it. Web logins never count; the magasinier is not counted. The limit is checked when the phone logs in, never at refresh, so a smaller plan does not log phones out in the middle of the day. Owners and managers are refused by the app itself and sent to the web dashboard.
+- **Mobile seats** (phase 39): a phone login (the Debvora app, header `X-Client-Type: native`) of a vendeur, pré-vendeur, livreur, superviseur or chef de zone needs the mobile app module and takes one seat of the plan's "mobile sellers" limit (Starter 2, Pro 5, Business unlimited). A seat is a person, not a phone: the same user on a second phone keeps his one seat. Logging out, a session closed from "Sessions", or an expired session frees it. Web logins never count; the magasinier is not counted. The limit is checked when the phone logs in, never at refresh, so a smaller plan does not log phones out in the middle of the day. Owners and managers are refused by the app itself and sent to the web dashboard.
 
 ## Sales force & distribution (phases 14–20)
 - **Vendeur** (SELLER) sells in the shop or on the road; **superviseur** (SUPERVISOR) and **chef des ventes** manage a team through `User.managerId`; **livreur** (LIVREUR) delivers pre-sale orders.
@@ -111,6 +111,38 @@ The official list is `packages/shared/src/communes.ts`: 69 wilayas, their commun
 - **Coordinates without the GPS module.** `GEO_CHECK` gates the screens and the two map routes (`/clients/map`, `/clients/nearby`), not the stored coordinates: a company without the module still gets the points it saved earlier in its own client, dépôt and tournée data. They are its own data, inside its own scope.
 - **Vente directe**: the seller sells from his truck and prints the BL on the spot. **Pré-vente**: he takes a bon de commande; a livreur delivers it later and the BL is created at delivery.
 - **Camion = dépôt** (`Warehouse` type VEHICLE). Chargement / déchargement are stock transfers. CUMP stays per product for the whole company.
+
+### Zones, chef de zone and pré-vendeur (phase 40b)
+**Roles.** Two more roles:
+- **Chef de zone** (`AREA_MANAGER`, رئيس المنطقة): leads superviseurs. He has the superviseur's default rights over every team under him, may be a sale's seller or drive a truck, and takes a mobile seat. In this phase he only reads targets.
+- **Pré-vendeur** (`PREVENDEUR`, بائع مسبق): takes commandes and records visits, creates and edits client files. He can be put on a tournée, a commande, a visit and on a client as his assigned seller. He never sells, never takes a versement, never has a truck or a cash day, and never delivers: those answer `FORBIDDEN`, and the permissions for them cannot be granted to him. The BL made when his commande is delivered keeps him as its seller, so the sale counts for him and his team.
+
+**Hierarchy** (`User.managerId`): sellers, pré-vendeurs and livreurs report to a superviseur, a superviseur to a chef de zone. A chef de zone reports to the owner, a manager or nobody (`MANAGER_ROLE_NOT_ALLOWED`), also after a role change of either side. No cycle (`MANAGER_CYCLE`). Links saved before this phase stay as they are; the rules are checked when something is written.
+
+**Zones** (`field_zones`, written by the owner and managers only, every write audited):
+- A zone is an **area** (`AREA`) or a **city** (`CITY`); a city may sit inside one area. Its kind does not change.
+- It lists communes and whole wilayas; a whole wilaya counts as all its communes.
+- An area covers every commune of its cities (`ZONE_NOT_INSIDE_AREA`).
+- Two live zones of the same kind share no commune (`ZONE_COMMUNE_TAKEN`, with the other zone's name).
+- An area's responsible is a chef de zone; a city's is a superviseur or a chef de zone.
+- Deleting is soft, and refused (`ZONE_IN_USE`) while a city sits in the zone or somebody is assigned to it.
+- A chef de zone reads the zones he is responsible for and the cities in them; a superviseur the zones he is responsible for.
+
+**Where a seller works** (`seller_zone_assignments`): a vendeur or pré-vendeur is assigned either one zone (he follows its communes when they change) or a list of communes. A move closes the open row and opens a new one in one transaction; there is at most one open row per user and the history is never rewritten. The owner and managers assign anyone anywhere. A superviseur or chef de zone assigns only people of his team(s), only inside the zones he is responsible for (`ZONE_OUTSIDE_SCOPE`).
+
+**Who sees which clients** with SALES_FORCE on (all of it in `scope.service.ts`):
+| Role | Clients |
+| --- | --- |
+| Vendeur, pré-vendeur, `BY_ZONE` | Those whose commune is in his current assignment; none without an assignment. With `zoneIncludesAssigned` on, also the clients assigned to him that have a commune. His own sales and versements only; what he made before a move stays readable. |
+| Superviseur, `BY_ZONE` | The communes of his zones and of his team's current assignments (plus his team's assigned clients when the switch is on). Documents of his team. |
+| Superviseur, other settings | As in phase 14. |
+| Chef de zone, any setting | The communes of the zones he is responsible for; no zone, no client. Documents of every team under him. |
+
+- A client **without a commune** is never shown to a seller under `BY_ZONE`. Superviseurs and chefs de zone get "Clients sans commune (N)": those assigned to or created by their team(s), which they can open and fix (also under `ASSIGNED_ONLY`). The owner and managers get all of them.
+- `clients.createdBy` records the creator. Older clients got it from their creation line in the journal; without one it stays empty.
+- Under `BY_ZONE` the tournée of today leaves out the stops a seller may not see.
+- **A sale counts for the team that made it.** The client's commune never moves a figure to another team. In the distribution statistics, a chef de zone's wilaya, daïra and commune filters only find places inside his area; without such a filter his figures are all his teams'.
+- A superviseur or chef de zone sees as deliverers, and may give a commande to, only people of his team(s), and only a truck driven by one of them (or a truck without a driver that he reaches).
 
 ### Dépôts et camions (phase 15, module WAREHOUSES)
 - Every company has one **dépôt principal** (MAIN, created at signup). Without the module it is the only one and nothing changes. With it: other dépôts (SECONDARY) and trucks (VEHICLE, at most one per seller, one seller per truck).
@@ -322,7 +354,8 @@ Figures per truck, truck type, activity, dépôt, wilaya, client daïra and comm
 | Invoice header | raison sociale, adresse, téléphone, RC, NIF, NIS, AI, RIB (optional), logo (later) | all printed documents |
 | `priceLevelCount` | 1 to 5, default 3 (gros, demi-gros, détail) | products, clients |
 | `reminderDays` | 1 to 365, default 30 | clients à relancer |
-| `sellerScope` | `ALL_CLIENTS` / `ASSIGNED_ONLY`, default `ALL_CLIENTS` | clients, sales, versements seen by sellers (SALES_FORCE) |
+| `sellerScope` | `ALL_CLIENTS` / `ASSIGNED_ONLY` / `BY_ZONE`, default `ALL_CLIENTS` | clients, sales, versements seen by sellers (SALES_FORCE) |
+| `zoneIncludesAssigned` | yes / no, default no | under `BY_ZONE`, sellers also see their assigned clients (phase 40b) |
 | `geoCheckMode` | `OFF` / `FLAG` / `BLOCK`, default `FLAG` | sales, versements, visits of sellers (GEO_CHECK) |
 | `geoRadiusM` | 20 to 5000 m, default 150 | distance still counted "at the client" (GEO_CHECK) |
 | `geoMaxAccuracyM` | 10 to 5000 m, default 200 | positions less precise are `LOW_ACCURACY` (GEO_CHECK) |
@@ -354,6 +387,7 @@ Figures per truck, truck type, activity, dépôt, wilaya, client daïra and comm
 - **Dépôt**: warehouse (MVP has one implicit dépôt; multi-dépôts and trucks come in phase 15).
 - **Timbre fiscal**: stamp duty on cash-paid invoices, rule set by the loi de finances.
 - **Vendeur / superviseur / livreur**: SELLER / SUPERVISOR / LIVREUR roles.
+- **Chef de zone / pré-vendeur**: AREA_MANAGER / PREVENDEUR roles (phase 40b).
 - **Tournée**: sales route (`Route`). **Visite**: `Visit`. **Secteur**: `Sector`. **Marque**: `Brand`.
 - **Bon de commande (BC)**: pre-sale order, prefix `BC`, no stock or ledger effect until delivered.
 - **Chargement / déchargement**: LOAD / UNLOAD stock transfer to / from a truck, prefix `TR`.

@@ -43,7 +43,7 @@ export function BulkAssignDialog({
   const tc = useTranslations('common');
   const errorMessage = useErrorMessage();
   const sectors = useSectors();
-  const sellers = useSellers();
+  const sellers = useSellers({ orderTakers: true });
   const assign = useBulkAssign();
   const [sector, setSector] = useState(KEEP);
   const [seller, setSeller] = useState(KEEP);

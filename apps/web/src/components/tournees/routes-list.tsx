@@ -10,9 +10,9 @@ import { toast } from 'sonner';
 import {
   type CreateRouteInput,
   Feature,
-  Role,
   type RouteDto,
   type RouteVehicleDto,
+  OFFICE_ROLES,
 } from '@erp/shared';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FeatureGate } from '@/components/shared/feature-gate';
@@ -72,7 +72,7 @@ function Routes() {
   const tc = useTranslations('common');
   const errorMessage = useErrorMessage();
   const role = useAuth().state.user?.role;
-  const planner = role === Role.OWNER || role === Role.MANAGER || role === Role.SUPERVISOR;
+  const planner = !!role && OFFICE_ROLES.includes(role);
   const routes = useRoutes();
   const vehicles = useVehicles();
   const convert = useConvertRoute();
@@ -318,7 +318,7 @@ function NewRouteDialog({
   const router = useRouter();
   const queryClient = useQueryClient();
   const warehousesOn = useFeature(Feature.WAREHOUSES);
-  const sellers = useSellers();
+  const sellers = useSellers({ orderTakers: true });
   const vehicles = useVehicles();
   const key = useIdempotencyKey(open);
   const [name, setName] = useState('');
