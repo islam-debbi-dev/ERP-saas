@@ -717,6 +717,8 @@ function resolve(pattern: string, v: Ids): string {
       .replace('/stock/[productId]', `/stock/${v.productId}`)
       .replace('/ventes/[id]', `/ventes/${v.saleId}`)
       .replace('/tournees/[id]', `/tournees/${v.routeId}`)
+      // Phase 40b: any user of the tenant; the owner's own history is empty.
+      .replace('/equipe/[userId]', `/equipe/${fixture().session.userId}`)
       .replace('/commandes/[id]', `/commandes/${v.orderId}`)
       .replace('/livraisons/[id]', `/livraisons/${v.orderId}`)
       .replace('/primes/plans/[id]', `/primes/plans/${v.planId}`)
