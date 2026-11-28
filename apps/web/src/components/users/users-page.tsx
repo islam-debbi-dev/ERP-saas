@@ -1,10 +1,11 @@
 'use client';
 
-import { MoreHorizontal, Plus, Users } from 'lucide-react';
+import { MapPinHouse, MoreHorizontal, Plus, Users } from 'lucide-react';
+import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Feature, formatPhone, Permission, Role, type UserDto } from '@erp/shared';
+import { Feature, formatPhone, isFieldSeller, Permission, Role, type UserDto } from '@erp/shared';
 import { TeamTree } from '@/components/sales-force/team-tree';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PageHeader } from '@/components/shared/page-header';
@@ -126,7 +127,7 @@ export function UsersPage() {
             <TableBody>
               {users.data.map((u) => (
                 <TableRow key={u.id} className={u.active ? undefined : 'opacity-60'}>
-                  <TableCell data-cell="main" className="font-medium">
+                  <TableCell data-cell="main" className="font-medium break-words whitespace-normal">
                     {u.fullName}
                     {u.id === me?.id ? (
                       <span className="ms-2 text-xs text-muted-foreground">({t('you')})</span>
@@ -144,14 +145,29 @@ export function UsersPage() {
                       ) : null}
                     </div>
                   </TableCell>
-                  <TableCell data-label={t('colRole')}>
+                  <TableCell data-label={t('colRole')} className="whitespace-normal">
                     {tr(u.role)}
                     {u.grants.length + u.revokes.length > 0 ? (
                       <span className="ms-1 text-xs text-muted-foreground">{t('customized')}</span>
                     ) : null}
+                    {salesForce && u.active && isFieldSeller(u.role) ? (
+                      <Link
+                        href={`/equipe/${u.id}`}
+                        aria-label={t('zoneOf', { name: u.fullName })}
+                        className="flex min-h-11 items-center gap-1 text-sm text-primary underline-offset-4 hover:underline"
+                      >
+                        <MapPinHouse className="size-4" aria-hidden />
+                        {t('zoneLink')}
+                      </Link>
+                    ) : null}
                   </TableCell>
                   {salesForce ? (
-                    <TableCell data-label={t('colManager')}>{u.managerName ?? '—'}</TableCell>
+                    <TableCell
+                      data-label={t('colManager')}
+                      className="break-words whitespace-normal"
+                    >
+                      {u.managerName ?? '-'}
+                    </TableCell>
                   ) : null}
                   <TableCell data-label={t('colStatus')}>
                     <div className="flex flex-wrap gap-1">
