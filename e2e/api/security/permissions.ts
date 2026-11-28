@@ -19,9 +19,12 @@ import { Api, assertAuditDb, company, invite, OUT, PASSWORD, uniq, type Company 
 import { closeDb, query } from '../../lib/db.ts';
 import { readRoutes, type Route } from '../../audit-02/routes.ts';
 import { ROLE_PERMISSIONS } from '../../../packages/shared/src/permissions.ts';
+import { FIELD_SELLER_ROLES, TEAM_LEAD_ROLES } from '../../../packages/shared/src/enums.ts';
 
 assertAuditDb();
-const ROLES = ['MANAGER', 'SELLER', 'STOREKEEPER', 'SUPERVISOR', 'LIVREUR'] as const;
+const ROLES = ['MANAGER', 'SELLER', 'STOREKEEPER', 'SUPERVISOR', 'LIVREUR', 'AREA_MANAGER', 'PREVENDEUR'] as const;
+/** Role lists the controllers take from @erp/shared. */
+const SHARED_LISTS: Record<string, readonly string[]> = { FIELD_SELLER_ROLES, TEAM_LEAD_ROLES };
 type RoleName = (typeof ROLES)[number];
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g;
 
@@ -57,6 +60,7 @@ function rolesOf(expr: string, file: string): string[] {
     const direct = /^Role\.([A-Z_]+)$/.exec(part);
     const spread = /^\.\.\.([A-Z_]+)$/.exec(part);
     if (direct) out.push(direct[1]!);
+    else if (spread && SHARED_LISTS[spread[1]!]) out.push(...SHARED_LISTS[spread[1]!]!);
     else if (spread) {
       const def = constants(file).get(spread[1]!);
       if (def === undefined) throw new Error(`cannot resolve ${part} in ${file}`);
