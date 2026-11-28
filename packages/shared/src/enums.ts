@@ -9,17 +9,24 @@ export const Role = {
   SUPERVISOR: 'SUPERVISOR',
   /** Delivers pre-sale orders (screens in phase 16). */
   LIVREUR: 'LIVREUR',
+  /** Chef de zone: leads the supervisors of an AREA zone (phase 40b). */
+  AREA_MANAGER: 'AREA_MANAGER',
+  /** Pré-vendeur: takes commandes and records visits; never sells or collects (phase 40b). */
+  PREVENDEUR: 'PREVENDEUR',
 } as const;
 export type Role = (typeof Role)[keyof typeof Role];
 export const ROLES = Object.values(Role);
 
 /**
  * Which clients a seller sees (phase 14, SALES_FORCE). ALL_CLIENTS keeps the old
- * behaviour; ASSIGNED_ONLY limits a seller to his assigned clients and his own documents.
+ * behaviour; ASSIGNED_ONLY limits a seller to his assigned clients and his own documents;
+ * BY_ZONE (phase 40b) limits him to the clients of the communes he is currently assigned to,
+ * and to his own documents.
  */
 export const SellerScope = {
   ALL_CLIENTS: 'ALL_CLIENTS',
   ASSIGNED_ONLY: 'ASSIGNED_ONLY',
+  BY_ZONE: 'BY_ZONE',
 } as const;
 export type SellerScope = (typeof SellerScope)[keyof typeof SellerScope];
 export const SELLER_SCOPES = Object.values(SellerScope);
@@ -41,6 +48,7 @@ export const SELLING_ROLES: readonly Role[] = [
   Role.MANAGER,
   Role.SUPERVISOR,
   Role.SELLER,
+  Role.AREA_MANAGER,
 ];
 
 /**
@@ -50,7 +58,34 @@ export const SELLING_ROLES: readonly Role[] = [
 export const DRIVING_ROLES: readonly Role[] = [...SELLING_ROLES, Role.LIVREUR];
 
 /** Office roles pick the seller of a sale; a SELLER always sells in his own name. */
-export const OFFICE_ROLES: readonly Role[] = [Role.OWNER, Role.MANAGER, Role.SUPERVISOR];
+export const OFFICE_ROLES: readonly Role[] = [
+  Role.OWNER,
+  Role.MANAGER,
+  Role.SUPERVISOR,
+  Role.AREA_MANAGER,
+];
+
+/**
+ * Who can be put on a route, a commande, a visit, or on a client as his assigned seller:
+ * the selling roles and the pré-vendeur (phase 40b).
+ */
+export const ORDERING_ROLES: readonly Role[] = [...SELLING_ROLES, Role.PREVENDEUR];
+
+/** Roles that see their own team (everyone under them through `managerId`). */
+export const TEAM_LEAD_ROLES: readonly Role[] = [Role.SUPERVISOR, Role.AREA_MANAGER];
+export const isTeamLead = (role: Role): boolean => TEAM_LEAD_ROLES.includes(role);
+
+/** Roles that act only in their own name and take the seller scope of the company. */
+export const FIELD_SELLER_ROLES: readonly Role[] = [Role.SELLER, Role.PREVENDEUR];
+export const isFieldSeller = (role: Role): boolean => FIELD_SELLER_ROLES.includes(role);
+
+/** What a field zone is (phase 40b): a chef de zone's area, or a city inside it. */
+export const ZoneKind = {
+  AREA: 'AREA',
+  CITY: 'CITY',
+} as const;
+export type ZoneKind = (typeof ZoneKind)[keyof typeof ZoneKind];
+export const ZONE_KINDS = Object.values(ZoneKind);
 
 /** Document types with their own numbering sequence. See docs/domain.md glossary. */
 export const DocType = {

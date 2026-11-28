@@ -74,7 +74,9 @@
     "SELLER": "Vendeur",
     "STOREKEEPER": "Magasinier",
     "SUPERVISOR": "Superviseur",
-    "LIVREUR": "Livreur"
+    "LIVREUR": "Livreur",
+    "AREA_MANAGER": "Chef de zone",
+    "PREVENDEUR": "Pré-vendeur"
   },
   "auth": {
     "loginTitle": "Connexion",
@@ -523,6 +525,11 @@
     "COMMUNE_UNKNOWN": "Cette commune n’existe pas dans la liste officielle.",
     "COMMUNE_WILAYA_MISMATCH": "Cette commune n’est pas dans la wilaya choisie.",
     "COMMUNE_UNDER_REVIEW": "Cette commune ne peut pas encore être choisie : son rattachement à sa nouvelle wilaya est en cours de vérification. Choisissez la wilaya seule.",
+    "ZONE_COMMUNE_TAKEN": "Une commune est déjà dans la zone « {zoneName} ».",
+    "ZONE_NOT_INSIDE_AREA": "La zone « {areaName} » ne couvre pas toutes les communes de la ville « {zoneName} ».",
+    "ZONE_OUTSIDE_SCOPE": "Certaines de ces communes sont hors de vos zones.",
+    "ZONE_IN_USE": "Cette zone a encore des villes ou des vendeurs. Déplacez-les d'abord.",
+    "MANAGER_ROLE_NOT_ALLOWED": "Un chef de zone ne peut dépendre que du propriétaire, d'un gérant ou de personne.",
     "WAREHOUSE_NOT_FOUND": "Dépôt introuvable.",
     "WAREHOUSE_NAME_TAKEN": "Un dépôt porte déjà ce nom.",
     "WAREHOUSE_NOT_EMPTY": "Ce dépôt contient encore du stock. Transférez-le d’abord.",

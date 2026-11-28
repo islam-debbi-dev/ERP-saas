@@ -109,6 +109,9 @@ export const TENANT_SCOPED_MODELS = new Set<string>([
   'VehicleAssignment',
   'ClientSegment',
   'VehicleTarget',
+  'FieldZone',
+  // Not in APPEND_ONLY_MODELS: closing a row is its one update (a DB trigger allows only that).
+  'SellerZoneAssignment',
 ]);
 
 /** Append-only models: any update or delete is a bug (AGENTS.md rules 1 and 7). */

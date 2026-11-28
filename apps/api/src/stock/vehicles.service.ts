@@ -11,6 +11,7 @@ import {
   type VehicleRef,
   WarehouseType,
   type WorkerVehiclePage,
+  isTeamLead,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
@@ -468,7 +469,7 @@ export class VehiclesService {
       await this.assertVehicle(tx, vehicleId);
       const reach = await this.plannedVehicleIds(user, tx);
       this.assertInReach(reach, vehicleId);
-      if (input.userId && user.role === Role.SUPERVISOR) {
+      if (input.userId && isTeamLead(user.role)) {
         // A supervisor puts his own people on his trucks.
         if (!(await this.scope.teamIds(user.id, tx)).includes(input.userId)) {
           throw new AppException(ErrorCode.FORBIDDEN, 'This seller is not in your team', {
@@ -651,7 +652,7 @@ export class VehiclesService {
         reader.role === Role.MANAGER ||
         reader.permissions.includes(Permission.VIEW_ALL_WAREHOUSES);
       if (!all) {
-        if (reader.role !== Role.SUPERVISOR) throw forbidden();
+        if (!isTeamLead(reader.role)) throw forbidden();
         if (!(await this.scope.teamIds(reader.id)).includes(userId)) throw forbidden();
       }
     }

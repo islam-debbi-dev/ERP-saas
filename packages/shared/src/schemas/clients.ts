@@ -270,6 +270,18 @@ export interface ClientPage {
   nextCursor: string | null;
 }
 
+/** GET /clients/without-commune (phase 40b): what a team lead has to fix, newest page first. */
+export const clientsWithoutCommuneQuerySchema = z.object({
+  cursor: id.optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+});
+export type ClientsWithoutCommuneQuery = z.infer<typeof clientsWithoutCommuneQuerySchema>;
+
+export interface ClientsWithoutCommunePage extends ClientPage {
+  /** All of them, whatever the page. */
+  total: number;
+}
+
 export interface ClientLedgerEntryDto {
   id: string;
   type: ClientLedgerType;

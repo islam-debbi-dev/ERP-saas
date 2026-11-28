@@ -12,6 +12,8 @@ import {
   type RejectLocationRequestInput,
   rejectLocationRequestSchema,
   Role,
+  FIELD_SELLER_ROLES,
+  TEAM_LEAD_ROLES,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { CurrentUser, RequireFeature, Roles } from '../auth/decorators';
@@ -19,8 +21,14 @@ import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { ClientLocationService } from './client-location.service';
 
 /** Who stands at a client's door. Who may move a saved point is checked in the service. */
-const FIELD_AND_OFFICE = [Role.OWNER, Role.MANAGER, Role.SUPERVISOR, Role.SELLER, Role.LIVREUR];
-const DECIDERS = [Role.OWNER, Role.MANAGER, Role.SUPERVISOR];
+const FIELD_AND_OFFICE = [
+  Role.OWNER,
+  Role.MANAGER,
+  ...TEAM_LEAD_ROLES,
+  ...FIELD_SELLER_ROLES,
+  Role.LIVREUR,
+];
+const DECIDERS = [Role.OWNER, Role.MANAGER, ...TEAM_LEAD_ROLES];
 
 @Controller('clients/:id')
 @RequireFeature(Feature.GEO_CHECK)

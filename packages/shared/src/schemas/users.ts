@@ -56,6 +56,8 @@ export const inviteUserSchema = z
       Role.OWNER,
       Role.SUPERVISOR,
       Role.LIVREUR,
+      Role.AREA_MANAGER,
+      Role.PREVENDEUR,
     ]),
     /** The supervisor or manager this user reports to (phase 14). */
     managerId: id.nullable().default(null),
@@ -78,6 +80,16 @@ export const updateUserSchema = z
   })
   .refine(hasLogin, { message: 'email_or_phone_required', path: ['email'] });
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+
+/** GET /users/sellers. */
+export const sellersQuerySchema = z.object({
+  /** Those who take orders: the pré-vendeurs too (phase 40b). */
+  orderTakers: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => v === 'true'),
+});
+export type SellersQuery = z.infer<typeof sellersQuerySchema>;
 
 const permissionList = z
   .array(z.enum(PERMISSIONS as [Permission, ...Permission[]]))

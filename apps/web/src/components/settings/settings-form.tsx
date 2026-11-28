@@ -60,6 +60,7 @@ function toForm(s: TenantSettingsResponse): FormInput {
     reminderDays: s.reminderDays,
     sellerScope: s.sellerScope,
     livreurScope: s.livreurScope,
+    zoneIncludesAssigned: s.zoneIncludesAssigned,
     geoCheckMode: s.geoCheckMode,
     geoRadiusM: s.geoRadiusM,
     geoMaxAccuracyM: s.geoMaxAccuracyM,

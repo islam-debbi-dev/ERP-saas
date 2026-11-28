@@ -74,7 +74,9 @@
     "SELLER": "البائع",
     "STOREKEEPER": "أمين المخزن",
     "SUPERVISOR": "مشرف",
-    "LIVREUR": "موزّع"
+    "LIVREUR": "موزّع",
+    "AREA_MANAGER": "رئيس المنطقة",
+    "PREVENDEUR": "بائع مسبق"
   },
   "auth": {
     "loginTitle": "تسجيل الدخول",
@@ -523,6 +525,11 @@
     "COMMUNE_UNKNOWN": "هذه البلدية غير موجودة في القائمة الرسمية.",
     "COMMUNE_WILAYA_MISMATCH": "هذه البلدية لا تتبع الولاية المختارة.",
     "COMMUNE_UNDER_REVIEW": "لا يمكن اختيار هذه البلدية بعد: ما زال انتقالها إلى ولايتها الجديدة قيد التحقق. اختر الولاية فقط.",
+    "ZONE_COMMUNE_TAKEN": "توجد بلدية في منطقة «{zoneName}» من قبل.",
+    "ZONE_NOT_INSIDE_AREA": "المنطقة «{areaName}» لا تغطي كل بلديات المدينة «{zoneName}».",
+    "ZONE_OUTSIDE_SCOPE": "بعض هذه البلديات خارج مناطقك.",
+    "ZONE_IN_USE": "ما زالت هذه المنطقة تضم مدنا أو بائعين. انقلهم أولا.",
+    "MANAGER_ROLE_NOT_ALLOWED": "رئيس المنطقة لا يتبع إلا المالك أو المسير أو لا أحد.",
     "WAREHOUSE_NOT_FOUND": "المستودع غير موجود.",
     "WAREHOUSE_NAME_TAKEN": "يوجد مستودع بهذا الاسم.",
     "WAREHOUSE_NOT_EMPTY": "هذا المستودع ما زال فيه مخزون. حوّله أولاً.",

@@ -19,12 +19,24 @@ enum Role {
   STOREKEEPER
   SUPERVISOR
   LIVREUR
+  /// Chef de zone (phase 40b).
+  AREA_MANAGER
+  /// Pré-vendeur: commandes and visits only (phase 40b).
+  PREVENDEUR
 }
 
 /// Which clients a seller sees when SALES_FORCE is on (phase 14).
 enum SellerScope {
   ALL_CLIENTS
   ASSIGNED_ONLY
+  /// Phase 40b: the clients of the communes he is currently assigned to.
+  BY_ZONE
+}
+
+/// A chef de zone's area, or a city inside it (phase 40b).
+enum ZoneKind {
+  AREA
+  CITY
 }
 
 enum LivreurScope {
@@ -129,6 +141,9 @@ model Tenant {
 
   sellerScope SellerScope @default(ALL_CLIENTS)
 
+  /// Under BY_ZONE, sellers also see the clients assigned to them (phase 40b).
+  zoneIncludesAssigned Boolean @default(false)
+
   /// Which clients a livreur sees: all of them (since phase 14), or only the clients of
   /// the commandes given to him to deliver. The owner decides (REPORT-35, A-1).
   livreurScope LivreurScope @default(ALL_CLIENTS)
@@ -161,6 +176,8 @@ model Tenant {
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
   users                    User[]
+  fieldZones               FieldZone[]
+  sellerZoneAssignments    SellerZoneAssignment[]
   sessions                 Session[]
   auditLogs                AuditLog[]
   userInvitations          UserInvitation[]
@@ -318,6 +335,9 @@ model User {
   warehouseAccess        UserWarehouseAccess[]   @relation("AccessUser")
   assistantConversations AssistantConversation[]
   employee               Employee?
+  responsibleZones       FieldZone[]             @relation("ZoneResponsible")
+  zoneAssignments        SellerZoneAssignment[]  @relation("ZoneAssignee")
+  zoneAssignmentsMade    SellerZoneAssignment[]  @relation("ZoneAssigner")
 
   @@index([tenantId, role])
   @@index([tenantId, managerId])
@@ -1089,6 +1109,8 @@ model Client {
   geoSetAt         DateTime?  @db.Timestamptz(3)
   geoSetBy         String?    @db.Uuid
   version          Int        @default(1)
+  /// Who created it (phase 40b); null for rows the audit log could not tell.
+  createdBy        String?    @db.Uuid
   deletedAt        DateTime?  @db.Timestamptz(3)
   createdAt        DateTime   @default(now()) @db.Timestamptz(3)
   updatedAt        DateTime   @updatedAt @db.Timestamptz(3)
@@ -3855,4 +3877,59 @@ model CashCount {
   @@index([tenantId, cashAccountId, createdAt])
   @@index([tenantId, alert, createdAt])
   @@map("cash_counts")
+}
+
+/// A place a part of the field team works in (phase 40b). A whole wilaya counts as all its
+/// communes. Two live zones of one kind share no commune, and an area covers its cities
+/// (both checked by the API in one transaction).
+model FieldZone {
+  id                String    @id @default(uuid()) @db.Uuid
+  tenantId          String    @db.Uuid
+  name              String    @db.VarChar(120)
+  kind              ZoneKind
+  /// The area a CITY zone sits in; always null on an AREA (CHECK in the migration).
+  parentZoneId      String?   @db.Uuid
+  wilayaCodes       Int[]     @default([]) @db.SmallInt
+  communeCodes      Int[]     @default([])
+  responsibleUserId String?   @db.Uuid
+  version           Int       @default(1)
+  deletedAt         DateTime? @db.Timestamptz(3)
+  createdAt         DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime  @updatedAt @db.Timestamptz(3)
+
+  tenant      Tenant                 @relation(fields: [tenantId], references: [id])
+  parent      FieldZone?             @relation("ZoneTree", fields: [parentZoneId], references: [id], onDelete: Restrict)
+  children    FieldZone[]            @relation("ZoneTree")
+  responsible User?                  @relation("ZoneResponsible", fields: [responsibleUserId], references: [id], onDelete: Restrict)
+  assignments SellerZoneAssignment[]
+
+  @@index([tenantId, kind, deletedAt])
+  @@index([tenantId, responsibleUserId])
+  @@index([tenantId, parentZoneId])
+  @@map("field_zones")
+}
+
+/// Where a seller or pré-vendeur works, from when to when (phase 40b). Append-only (DB
+/// trigger): the only change ever made to a row is closing it, once. At most one open row
+/// per user (partial unique index in the migration).
+model SellerZoneAssignment {
+  id           String    @id @default(uuid()) @db.Uuid
+  tenantId     String    @db.Uuid
+  userId       String    @db.Uuid
+  /// Exactly one of `zoneId` and a non-empty `communeCodes` (CHECK in the migration).
+  zoneId       String?   @db.Uuid
+  communeCodes Int[]     @default([])
+  validFrom    DateTime  @db.Timestamptz(3)
+  validTo      DateTime? @db.Timestamptz(3)
+  assignedBy   String    @db.Uuid
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+
+  tenant   Tenant     @relation(fields: [tenantId], references: [id])
+  user     User       @relation("ZoneAssignee", fields: [userId], references: [id], onDelete: Restrict)
+  zone     FieldZone? @relation(fields: [zoneId], references: [id], onDelete: Restrict)
+  assigner User       @relation("ZoneAssigner", fields: [assignedBy], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, userId, validFrom(sort: Desc)])
+  @@index([tenantId, zoneId])
+  @@map("seller_zone_assignments")
 }

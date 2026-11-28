@@ -34,6 +34,7 @@ import {
   type SellOutDto,
   type SellOutQuery,
   sellOutQuerySchema,
+  TEAM_LEAD_ROLES,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { CurrentUser, RequireFeature, RequirePermission, Roles } from '../auth/decorators';
@@ -220,7 +221,7 @@ export class ReportsController {
 
   /** Sell-out par marque (phase 20). Declared before ':name'. */
   @Get('sell-out')
-  @Roles(Role.OWNER, Role.MANAGER, Role.SUPERVISOR)
+  @Roles(Role.OWNER, Role.MANAGER, ...TEAM_LEAD_ROLES)
   sellOut(
     @Query(new ZodValidationPipe(sellOutQuerySchema)) query: SellOutQuery,
     @CurrentUser() user: CurrentUserInfo,
@@ -229,7 +230,7 @@ export class ReportsController {
   }
 
   @Get('sell-out/export.xlsx')
-  @Roles(Role.OWNER, Role.MANAGER, Role.SUPERVISOR)
+  @Roles(Role.OWNER, Role.MANAGER, ...TEAM_LEAD_ROLES)
   async sellOutExport(
     @Query(new ZodValidationPipe(sellOutQuerySchema)) query: SellOutQuery,
     @CurrentUser() user: CurrentUserInfo,

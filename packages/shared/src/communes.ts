@@ -96,6 +96,21 @@ export function dairasOf(wilayaCode: number): readonly Daira[] {
   return DAIRAS_BY_WILAYA.get(wilayaCode) ?? [];
 }
 
+/**
+ * Every commune a zone covers (phase 40b): its own communes plus all the communes of its
+ * whole wilayas, ordered, without duplicates.
+ */
+export function zoneCommuneCodes(zone: {
+  wilayaCodes: readonly number[];
+  communeCodes: readonly number[];
+}): number[] {
+  const codes = new Set(zone.communeCodes);
+  for (const wilayaCode of zone.wilayaCodes) {
+    for (const commune of communesOf(wilayaCode)) codes.add(commune.code);
+  }
+  return [...codes].sort((a, b) => a - b);
+}
+
 export function communeByCode(code: number | null | undefined): Commune | null {
   return code == null ? null : (COMMUNE_BY_CODE.get(code) ?? null);
 }

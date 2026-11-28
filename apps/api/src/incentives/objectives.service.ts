@@ -13,10 +13,10 @@ import {
   type ObjectiveDto,
   objectiveProgress,
   Permission,
-  Role,
   ruleMainMetric,
   ruleThresholds,
   scopeKey,
+  isTeamLead,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { can } from '../auth/permissions';
@@ -50,11 +50,12 @@ export class ObjectivesService {
   async mine(user: CurrentUserInfo, today = algiersDay()): Promise<MyObjectivesDto> {
     const month = today.slice(0, 7);
     const period = runPeriod(month, IncentivePeriod.MONTH);
-    const team = user.role === Role.SUPERVISOR ? await this.scope.teamIds(user.id) : [user.id];
+    const team = isTeamLead(user.role) ? await this.scope.teamIds(user.id) : [user.id];
     const targets = await this.prisma.db.salesTarget.findMany({
       where: {
         periodStart: fromDay(period.firstDay),
-        OR: [{ userId: { in: team } }, { teamManagerId: user.id }],
+        // A chef de zone also reads the team targets of the supervisors under him.
+        OR: [{ userId: { in: team } }, { teamManagerId: { in: team } }],
       },
       orderBy: [{ teamManagerId: 'asc' }, { metric: 'asc' }, { scopeKey: 'asc' }],
     });
@@ -123,8 +124,8 @@ export class ObjectivesService {
         achieved: hidden ? null : fixed(achieved, decimals),
         target: hidden ? null : fixed(value, decimals),
         pct: progress.pct,
-        thresholds: [...new Set(thresholds.length ? thresholds : ['100'])].sort(
-          (x, y) => money(x).comparedTo(money(y)),
+        thresholds: [...new Set(thresholds.length ? thresholds : ['100'])].sort((x, y) =>
+          money(x).comparedTo(money(y)),
         ),
         next: progress.next
           ? { pct: progress.next.pct, remaining: hidden ? null : progress.next.remaining }

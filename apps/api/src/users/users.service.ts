@@ -17,6 +17,9 @@ import {
   type UpdateUserInput,
   type UserDto,
   type UserPermissionsInput,
+  isTeamLead,
+  ORDERING_ROLES,
+  TEAM_LEAD_ROLES,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import { AuthService, hashPassword } from '../auth/auth.service';
@@ -37,7 +40,9 @@ type UserRow = User & {
 };
 
 /** Who can have a team under him (phase 14). */
-const MANAGER_ROLES = new Set<string>([Role.OWNER, Role.MANAGER, Role.SUPERVISOR]);
+const MANAGER_ROLES = new Set<string>([Role.OWNER, Role.MANAGER, ...TEAM_LEAD_ROLES]);
+/** Whom a chef de zone may report to (phase 40b): the office, or nobody. */
+const AREA_MANAGER_BOSSES = new Set<string>([Role.OWNER, Role.MANAGER]);
 
 function toDto(u: UserRow): UserDto {
   return {
@@ -112,7 +117,7 @@ export class UsersService {
         await this.assertUserSlot(tx);
         // Serialized on the tenant like every hierarchy change (see lockUser).
         await tx.$queryRaw`SELECT id FROM tenants WHERE id = ${tenantContext.requireTenantId()}::uuid FOR UPDATE`;
-        if (input.managerId) await this.checkManager(tx, null, input.managerId);
+        if (input.managerId) await this.checkManager(tx, null, input.managerId, input.role);
         const user = await tx.user.create({
           data: {
             tenantId: tenantContext.requireTenantId(),
@@ -162,13 +167,14 @@ export class UsersService {
           await this.checkRoleChange(tx, before, actor);
           assertBelowActor(actor, { ...before, role: input.role });
         }
-        if (
-          input.managerId !== undefined &&
-          input.managerId !== before.managerId &&
-          input.managerId
-        ) {
-          await this.checkManager(tx, id, input.managerId);
+        const managerId = input.managerId === undefined ? before.managerId : input.managerId;
+        if (managerId && managerId !== before.managerId) {
+          await this.checkManager(tx, id, managerId, input.role);
+        } else if (managerId && input.role !== before.role) {
+          // A new role is checked against the manager he keeps (phase 40b).
+          await this.checkBoss(tx, input.role, managerId);
         }
+        if (input.role !== before.role) await this.checkReportsKeepBoss(tx, id, input.role);
         // A role that cannot drive leaves its truck, with a history row (test-36 A-3).
         if (input.role !== before.role && !DRIVING_ROLES.includes(input.role)) {
           await this.vehicles.releaseDriver(tx, id);
@@ -399,7 +405,7 @@ export class UsersService {
           .map((m) => node(m, seen)),
       };
     };
-    if (actor.role === Role.SUPERVISOR) {
+    if (isTeamLead(actor.role)) {
       const self = users.find((u) => u.id === actor.id);
       return self ? [node(self, new Set())] : [];
     }
@@ -407,15 +413,19 @@ export class UsersService {
   }
 
   /**
-   * Active users who can be put on a sale, a versement or a client (phase 14), for the
-   * pickers of office roles. A supervisor gets his team only.
+   * Active users who can be put on a sale or a versement (phase 14), for the pickers of
+   * office roles. With `orderTakers`, those who can be put on a route, a commande, a visit
+   * or a client: the pré-vendeurs too (phase 40b). A team lead gets his team(s) only.
    */
-  async sellers(actor: CurrentUserInfo): Promise<{ id: string; fullName: string; role: Role }[]> {
-    const team = actor.role === Role.SUPERVISOR ? await this.scope.teamIds(actor.id) : null;
+  async sellers(
+    actor: CurrentUserInfo,
+    orderTakers = false,
+  ): Promise<{ id: string; fullName: string; role: Role }[]> {
+    const team = isTeamLead(actor.role) ? await this.scope.teamIds(actor.id) : null;
     return this.prisma.db.user.findMany({
       where: {
         deletedAt: null,
-        role: { in: [...SELLING_ROLES] },
+        role: { in: [...(orderTakers ? ORDERING_ROLES : SELLING_ROLES)] },
         ...(team ? { id: { in: team } } : {}),
       },
       orderBy: { fullName: 'asc' },
@@ -424,11 +434,17 @@ export class UsersService {
   }
 
   /**
-   * A manager must be a live OWNER, MANAGER or SUPERVISOR of the tenant, and not the
+   * A manager must be a live OWNER, MANAGER, SUPERVISOR or AREA_MANAGER of the tenant
+   * (for a chef de zone: OWNER or MANAGER only), and not the
    * user himself or anyone under him (MANAGER_CYCLE). Called with the tenant row locked,
    * so two concurrent edits cannot build a cycle between them.
    */
-  private async checkManager(tx: Tx, userId: string | null, managerId: string): Promise<void> {
+  private async checkManager(
+    tx: Tx,
+    userId: string | null,
+    managerId: string,
+    role: Role,
+  ): Promise<void> {
     if (userId === managerId) {
       throw new AppException(ErrorCode.MANAGER_CYCLE, 'A user cannot be his own manager');
     }
@@ -438,6 +454,7 @@ export class UsersService {
         field: 'managerId',
       });
     }
+    assertBossAllowed(role, manager.role);
     if (!userId) return;
     const tenantId = tenantContext.requireTenantId();
     const [hit] = await tx.$queryRaw<{ found: boolean }[]>`
@@ -453,6 +470,24 @@ export class UsersService {
         managerId,
       });
     }
+  }
+
+  /** The role rule alone, on a link that stays (active or not). */
+  private async checkBoss(tx: Tx, role: Role, managerId: string): Promise<void> {
+    const manager = await tx.user.findFirst({
+      where: { id: managerId },
+      select: { role: true },
+    });
+    if (manager) assertBossAllowed(role, manager.role);
+  }
+
+  /** Nobody leaves the office while an active chef de zone reports to him. */
+  private async checkReportsKeepBoss(tx: Tx, id: string, role: Role): Promise<void> {
+    if (AREA_MANAGER_BOSSES.has(role)) return;
+    const reports = await tx.user.count({
+      where: { managerId: id, deletedAt: null, role: Role.AREA_MANAGER },
+    });
+    if (reports > 0) assertBossAllowed(Role.AREA_MANAGER, role);
   }
 
   /**
@@ -551,6 +586,15 @@ function pick(u: User) {
     role: u.role,
     managerId: u.managerId,
   };
+}
+
+function assertBossAllowed(role: Role, bossRole: Role): void {
+  if (role !== Role.AREA_MANAGER || AREA_MANAGER_BOSSES.has(bossRole)) return;
+  throw new AppException(
+    ErrorCode.MANAGER_ROLE_NOT_ALLOWED,
+    'A chef de zone reports to the owner, a manager or nobody',
+    { field: 'managerId', role, managerRole: bossRole },
+  );
 }
 
 /** Owner accounts and the OWNER role are the owner's business only (phase 24). */

@@ -95,3 +95,34 @@ describe('module permissions (phase 24)', () => {
     expect([...grouped].sort()).toEqual([...PERMISSIONS].sort());
   });
 });
+
+describe('phase 40b roles', () => {
+  it('gives the chef de zone exactly the supervisor defaults', () => {
+    expect(effectivePermissions(Role.AREA_MANAGER)).toEqual(effectivePermissions(Role.SUPERVISOR));
+  });
+
+  it('lets the pré-vendeur read and keep client files, nothing about money or stock', () => {
+    const held = effectivePermissions(Role.PREVENDEUR);
+    expect(held).toContain('CLIENTS_CREATE');
+    expect(held).toContain('CLIENTS_EDIT');
+    expect(held).not.toContain('SALES_CREATE');
+    expect(held).not.toContain('PAYMENTS_CREATE');
+    expect(held).not.toContain('STOCK_TRANSFER');
+  });
+
+  it('never gives a pré-vendeur a forbidden permission, even granted', () => {
+    const forbidden = [
+      'SALES_CREATE',
+      'SALES_RETURN',
+      'SALE_CANCEL',
+      'PAYMENTS_CREATE',
+      'PAYMENT_CANCEL',
+      'PAYMENTS_BOUNCE',
+      'STOCK_TRANSFER',
+      'STOCK_ADJUST',
+    ];
+    const held = effectivePermissions(Role.PREVENDEUR, [...forbidden, 'EXPORT_DATA']);
+    expect(held.filter((p) => forbidden.includes(p))).toEqual([]);
+    expect(held).toContain('EXPORT_DATA');
+  });
+});

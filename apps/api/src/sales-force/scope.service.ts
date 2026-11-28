@@ -4,8 +4,13 @@ import {
   ErrorCode,
   Feature,
   Permission,
+  FIELD_SELLER_ROLES,
+  isFieldSeller,
+  isTeamLead,
+  ORDERING_ROLES,
   Role,
   SELLING_ROLES,
+  TEAM_LEAD_ROLES,
   LivreurScope,
   SellerScope,
   WarehouseAccessLevel,
@@ -17,10 +22,16 @@ import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
+import { currentAssignmentCommunes, responsibleCommunes } from './zone-cover';
 
 /**
  * What a user may see. null = no restriction.
  * - `clientSellerIds`: only clients assigned to one of these users (phase 14).
+ * - `clientCommuneCodes` (phase 40b): only clients in one of these communes ([] = none).
+ *   With `clientSellerIds` as well, the two add up: the communes, plus the clients with a
+ *   commune that are assigned to those users.
+ * - `clientNoCommuneUserIds` (phase 40b, team leads): added to either restriction, the
+ *   clients without a commune assigned to or created by these users, to be fixed.
  * - `clientLivreurId`: only clients with a commande given to this livreur to deliver
  *   (the company's `livreurScope` setting).
  * - `documentUserIds`: only sales / versements made by one of these users (phase 14).
@@ -32,6 +43,8 @@ import { PrismaService, type Tx } from '../prisma/prisma.service';
  */
 export interface DataScope {
   clientSellerIds: string[] | null;
+  clientCommuneCodes?: number[] | null;
+  clientNoCommuneUserIds?: string[] | null;
   clientLivreurId?: string | null;
   documentUserIds: string[] | null;
   warehouseIds: string[] | null;
@@ -67,7 +80,15 @@ type Db = PrismaService['db'] | Tx;
  * - SELLER: everything under ALL_CLIENTS; under ASSIGNED_ONLY, his assigned clients and
  *   his own sales and versements (the client comptoir has no client, so it stays open).
  * - SUPERVISOR: the documents of his team (himself and everyone under him); under
- *   ASSIGNED_ONLY, only the clients assigned to his team.
+ *   ASSIGNED_ONLY, only the clients assigned to his team; under BY_ZONE, the clients of the
+ *   communes of his zones and of his team's current assignments. In both, also the clients
+ *   without a commune that are his team's.
+ * - AREA_MANAGER (phase 40b): the documents of every team under him; the clients of the
+ *   communes of the zones he is responsible for, whatever `sellerScope` says (no zone:
+ *   none), plus his teams' clients without a commune.
+ * - SELLER / PREVENDEUR under BY_ZONE: the clients of the communes of his current
+ *   assignment (none without one), plus his assigned clients when `zoneIncludesAssigned`
+ *   is on; his own documents. A client without a commune is never his.
  */
 @Injectable()
 export class ScopeService {
@@ -79,7 +100,7 @@ export class ScopeService {
   async of(user: CurrentUserInfo, db: Db = this.prisma.db): Promise<DataScope> {
     const w = await this.warehouses(user, db);
     const units = { ...w, userId: user.id };
-    const restrictable: Role[] = [Role.SELLER, Role.SUPERVISOR, Role.LIVREUR];
+    const restrictable: Role[] = [...FIELD_SELLER_ROLES, ...TEAM_LEAD_ROLES, Role.LIVREUR];
     if (!restrictable.includes(user.role)) {
       return { clientSellerIds: null, documentUserIds: null, ...units };
     }
@@ -88,7 +109,7 @@ export class ScopeService {
     }
     const tenant = await db.tenant.findUniqueOrThrow({
       where: { id: user.tenantId },
-      select: { sellerScope: true, livreurScope: true },
+      select: { sellerScope: true, livreurScope: true, zoneIncludesAssigned: true },
     });
     if (user.role === Role.LIVREUR) {
       return {
@@ -99,13 +120,49 @@ export class ScopeService {
       };
     }
     const assignedOnly = tenant.sellerScope === SellerScope.ASSIGNED_ONLY;
-    if (user.role === Role.SELLER) {
+    const byZone = tenant.sellerScope === SellerScope.BY_ZONE;
+    if (isFieldSeller(user.role)) {
+      if (byZone) {
+        return {
+          clientSellerIds: tenant.zoneIncludesAssigned ? [user.id] : null,
+          clientCommuneCodes: await currentAssignmentCommunes(db, [user.id]),
+          documentUserIds: [user.id],
+          ...units,
+        };
+      }
       return assignedOnly
         ? { clientSellerIds: [user.id], documentUserIds: [user.id], ...units }
         : { clientSellerIds: null, documentUserIds: null, ...units };
     }
     const team = await this.teamIds(user.id, db);
-    return { clientSellerIds: assignedOnly ? team : null, documentUserIds: team, ...units };
+    if (user.role === Role.AREA_MANAGER) {
+      return {
+        clientSellerIds: null,
+        clientCommuneCodes: await responsibleCommunes(db, user.id),
+        clientNoCommuneUserIds: team,
+        documentUserIds: team,
+        ...units,
+      };
+    }
+    if (byZone) {
+      const codes = new Set([
+        ...(await responsibleCommunes(db, user.id)),
+        ...(await currentAssignmentCommunes(db, team)),
+      ]);
+      return {
+        clientSellerIds: tenant.zoneIncludesAssigned ? team : null,
+        clientCommuneCodes: [...codes].sort((a, b) => a - b),
+        clientNoCommuneUserIds: team,
+        documentUserIds: team,
+        ...units,
+      };
+    }
+    return {
+      clientSellerIds: assignedOnly ? team : null,
+      clientNoCommuneUserIds: assignedOnly ? team : null,
+      documentUserIds: team,
+      ...units,
+    };
   }
 
   /**
@@ -258,12 +315,11 @@ export class ScopeService {
     user: CurrentUserInfo,
     filters: { sellerId?: string; teamOf?: string } = {},
   ): Promise<string[] | null> {
-    let ids: string[] | null =
-      user.role === Role.SELLER
-        ? [user.id]
-        : user.role === Role.SUPERVISOR
-          ? await this.teamIds(user.id)
-          : null;
+    let ids: string[] | null = isFieldSeller(user.role)
+      ? [user.id]
+      : isTeamLead(user.role)
+        ? await this.teamIds(user.id)
+        : null;
     const narrow = (wanted: string[]) => {
       ids = ids === null ? wanted : ids.filter((id) => wanted.includes(id));
     };
@@ -302,9 +358,33 @@ export class ScopeService {
     return rows.map((r) => r.id);
   }
 
+  /** Whether the user sees only some clients (a livreur's own rule is not counted). */
+  private restrictsClients(scope: DataScope): boolean {
+    return Boolean(scope.clientSellerIds || scope.clientCommuneCodes);
+  }
+
   clientWhere(scope: DataScope): Prisma.ClientWhereInput {
     if (scope.clientLivreurId) return { orders: { some: { livreurId: scope.clientLivreurId } } };
-    return scope.clientSellerIds ? { assignedSellerId: { in: scope.clientSellerIds } } : {};
+    if (!this.restrictsClients(scope)) return {};
+    const { clientSellerIds: sellers, clientCommuneCodes: communes } = scope;
+    const any: Prisma.ClientWhereInput[] = [];
+    if (communes) any.push({ communeCode: { in: communes } });
+    if (sellers) {
+      any.push({
+        assignedSellerId: { in: sellers },
+        // Under BY_ZONE a client without a commune is not a seller's.
+        ...(communes ? { communeCode: { not: null } } : {}),
+      });
+    }
+    const fix = scope.clientNoCommuneUserIds;
+    if (fix) {
+      any.push({
+        communeCode: null,
+        OR: [{ assignedSellerId: { in: fix } }, { createdBy: { in: fix } }],
+      });
+    }
+    // Under AND, so a caller may add its own OR.
+    return { AND: [{ OR: any }] };
   }
 
   /**
@@ -382,8 +462,23 @@ export class ScopeService {
         WHERE lo."clientId" = ${a}.id AND lo."tenantId" = ${a}."tenantId"
           AND lo."livreurId" = ${scope.clientLivreurId}::uuid)`;
     }
-    if (!scope.clientSellerIds) return Prisma.sql`TRUE`;
-    return Prisma.sql`${Prisma.raw(`${alias}."assignedSellerId"`)} = ANY(${scope.clientSellerIds}::uuid[])`;
+    if (!this.restrictsClients(scope)) return Prisma.sql`TRUE`;
+    const { clientSellerIds: sellers, clientCommuneCodes: communes } = scope;
+    const commune = Prisma.raw(`${alias}."communeCode"`);
+    const assigned = Prisma.raw(`${alias}."assignedSellerId"`);
+    const any: Prisma.Sql[] = [];
+    if (communes) any.push(Prisma.sql`${commune} = ANY(${communes}::int[])`);
+    if (sellers) {
+      const own = Prisma.sql`${assigned} = ANY(${sellers}::uuid[])`;
+      any.push(communes ? Prisma.sql`(${own} AND ${commune} IS NOT NULL)` : own);
+    }
+    const fix = scope.clientNoCommuneUserIds;
+    if (fix) {
+      any.push(
+        Prisma.sql`(${commune} IS NULL AND (${assigned} = ANY(${fix}::uuid[]) OR ${Prisma.raw(`${alias}."createdBy"`)} = ANY(${fix}::uuid[])))`,
+      );
+    }
+    return Prisma.sql`(${Prisma.join(any, ' OR ')})`;
   }
 
   /** Same as `saleWhere` for raw SQL, on a sales alias. */
@@ -407,7 +502,7 @@ export class ScopeService {
   async assertClient(db: Db, user: CurrentUserInfo, clientId: string | null): Promise<void> {
     if (!clientId) return;
     const scope = await this.of(user, db);
-    if (!scope.clientSellerIds) return;
+    if (!this.restrictsClients(scope)) return;
     const c = await db.client.findFirst({
       where: { id: clientId, ...this.clientWhere(scope) },
       select: { id: true },
@@ -416,12 +511,24 @@ export class ScopeService {
   }
 
   /**
-   * A user who can be put on a sale as its seller, on a versement as its collector, or
-   * on a client as his assigned seller: live, of this tenant, with a selling role.
+   * A user who can be put on a sale as its seller or on a versement as its collector:
+   * live, of this tenant, with a selling role.
    */
   async assertSeller(db: Db, userId: string): Promise<void> {
+    await this.assertUserOfRoles(db, userId, SELLING_ROLES);
+  }
+
+  /**
+   * A user who can be put on a route, a commande, a visit, or on a client as his assigned
+   * seller: the selling roles and the pré-vendeur (phase 40b).
+   */
+  async assertOrderTaker(db: Db, userId: string): Promise<void> {
+    await this.assertUserOfRoles(db, userId, ORDERING_ROLES);
+  }
+
+  private async assertUserOfRoles(db: Db, userId: string, roles: readonly Role[]): Promise<void> {
     const u = await db.user.findFirst({
-      where: { id: userId, deletedAt: null, role: { in: [...SELLING_ROLES] } },
+      where: { id: userId, deletedAt: null, role: { in: [...roles] } },
       select: { id: true },
     });
     if (!u) {

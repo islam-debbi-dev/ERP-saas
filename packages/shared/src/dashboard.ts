@@ -3,7 +3,7 @@
  * buckets of its chart. Algiers days (`YYYY-MM-DD`), pure functions, shared by the API
  * (which computes) and the web (which only builds links and labels).
  */
-import { Role } from './enums';
+import { isFieldSeller, isTeamLead, Role } from './enums';
 import { money, type MoneyInput, toMoneyString } from './money';
 import { previousPeriod } from './overview';
 import { addDays, type DayRange, daysInMonth, rangeLength } from './periods';
@@ -203,7 +203,7 @@ export function defaultDashboardLayout(role: Role): DashboardLayout {
   const first: DashboardCardId[] =
     role === Role.OWNER || role === Role.MANAGER
       ? ['todo', 'figures', 'target', 'chart', 'cheques', 'debtors', 'top', 'stock']
-      : role === Role.SELLER || role === Role.SUPERVISOR
+      : isFieldSeller(role) || isTeamLead(role)
         ? ['todo', 'objectives', 'figures', 'chart', 'top']
         : role === Role.STOREKEEPER
           ? ['stock', 'todo']

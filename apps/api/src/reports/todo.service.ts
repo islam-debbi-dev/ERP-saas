@@ -14,6 +14,9 @@ import {
   todoKey,
   type TodoType,
   toMoneyString,
+  FIELD_SELLER_ROLES,
+  TEAM_LEAD_ROLES,
+  isFieldSeller,
 } from '@erp/shared';
 import type { CurrentUserInfo } from '../auth/auth.types';
 import { algiersRange } from '../common/algiers';
@@ -26,7 +29,7 @@ import { OrdersService } from '../tournees/orders.service';
 import { saleLineFacts } from './reports-sql';
 
 const MANAGERS: readonly Role[] = [Role.OWNER, Role.MANAGER];
-const FIELD: readonly Role[] = [Role.SELLER, Role.SUPERVISOR];
+const FIELD: readonly Role[] = [...FIELD_SELLER_ROLES, ...TEAM_LEAD_ROLES];
 
 const day = (d: Date): string => d.toISOString().slice(0, 10);
 const daysBetween = (from: string, to: string): number =>
@@ -73,18 +76,14 @@ export class TodoService {
     const manager = MANAGERS.includes(user.role);
     const field = FIELD.includes(user.role);
     const seesStock = manager || user.role === Role.STOREKEEPER;
-    // null = every client (managers); otherwise the sellers whose clients count.
-    const sellers = field
-      ? user.role === Role.SELLER
-        ? [user.id]
-        : await this.scopes.teamIds(user.id)
-      : null;
+    // null = every client (managers); otherwise which clients count.
+    const clients = field ? await this.clientFilter(user) : null;
     const seesClients = manager || field;
     const parts = await Promise.all([
       manager ? this.chequesDue(today) : [],
       manager ? this.supplierCheques(today) : [],
-      seesClients ? this.overLimit(tenantId, sellers) : [],
-      seesClients ? this.late(tenantId, sellers) : [],
+      seesClients ? this.overLimit(tenantId, clients) : [],
+      seesClients ? this.late(tenantId, clients) : [],
       seesStock ? this.outOfStockSold(tenantId, today) : [],
       (await this.scopes.tourneesOn(tenantId)) ? this.ordersToConfirm(user, today) : [],
       this.oldDrafts(user, now, today),
@@ -152,13 +151,18 @@ export class TodoService {
     });
   }
 
-  private sellerFilter(sellers: string[] | null, alias = 'c'): Prisma.Sql {
-    return sellers
-      ? Prisma.sql`AND ${Prisma.raw(`${alias}."assignedSellerId"`)} = ANY(${sellers}::uuid[])`
-      : Prisma.empty;
+  /**
+   * The clients whose items a field user gets: those assigned to him or his team. When his
+   * scope goes by commune (BY_ZONE, chef de zone), the clients of his scope instead.
+   */
+  private async clientFilter(user: CurrentUserInfo): Promise<Prisma.Sql> {
+    const scope = await this.scopes.of(user);
+    if (scope.clientCommuneCodes) return Prisma.sql`AND ${this.scopes.clientSql(scope, 'c')}`;
+    const sellers = isFieldSeller(user.role) ? [user.id] : await this.scopes.teamIds(user.id);
+    return Prisma.sql`AND c."assignedSellerId" = ANY(${sellers}::uuid[])`;
   }
 
-  private async overLimit(tenantId: string, sellers: string[] | null): Promise<TodoItem[]> {
+  private async overLimit(tenantId: string, clients: Prisma.Sql | null): Promise<TodoItem[]> {
     const rows = await this.prisma.db.$queryRaw<
       {
         id: string;
@@ -172,7 +176,7 @@ export class TodoService {
       FROM client_balances b JOIN clients c ON c.id = b."clientId"
       WHERE b."tenantId" = ${tenantId}::uuid AND c."deletedAt" IS NULL
         AND c."creditLimit" IS NOT NULL AND b.balance > c."creditLimit"
-        ${this.sellerFilter(sellers)}
+        ${clients ?? Prisma.empty}
       ORDER BY b.balance - c."creditLimit" DESC, c.id
       LIMIT ${TODO_LIST_CAP}`;
     return rows.map((r) =>
@@ -187,16 +191,16 @@ export class TodoService {
   }
 
   /** "Clients à relancer" (phase 28): the oldest unpaid amount is older than the term. */
-  private async late(tenantId: string, sellers: string[] | null): Promise<TodoItem[]> {
+  private async late(tenantId: string, clients: Prisma.Sql | null): Promise<TodoItem[]> {
     const { items } = await this.aging.toRemind();
     let allowed: Set<string> | null = null;
-    if (sellers) {
+    if (clients) {
       const ids = items.map((i) => i.client.id);
       const mine = ids.length
         ? await this.prisma.db.$queryRaw<{ id: string }[]>`
             SELECT c.id FROM clients c
             WHERE c."tenantId" = ${tenantId}::uuid AND c.id = ANY(${ids}::uuid[])
-              ${this.sellerFilter(sellers)}`
+              ${clients}`
         : [];
       allowed = new Set(mine.map((r) => r.id));
     }

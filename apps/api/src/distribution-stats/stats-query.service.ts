@@ -41,6 +41,8 @@ export interface StatsReach {
   warehouseIds: string[] | null;
   /** A row without a dépôt counts as this one's (the dépôt principal). */
   defaultWarehouseId: string | null;
+  /** A chef de zone's area (phase 40b): what a location filter may name. */
+  clientCommuneCodes?: number[];
 }
 
 export interface StatsRunInput {
@@ -464,6 +466,10 @@ export class StatsQueryService {
         (v) => Prisma.sql`c."communeCode" = ANY(${communeCodesOfDairas(v)}::int[])`,
       );
       any(filters.clientCommunes, (v) => Prisma.sql`c."communeCode" = ANY(${v}::int[])`);
+      const byPlace = [filters.clientWilayas, filters.clientDairas, filters.clientCommunes];
+      if (reach.clientCommuneCodes && byPlace.some((v) => v && v.length > 0)) {
+        where.push(Prisma.sql`c."communeCode" = ANY(${reach.clientCommuneCodes}::int[])`);
+      }
     }
     if (withProduct) {
       any(filters.productIds, (v) => Prisma.sql`r."productId" = ANY(${v}::uuid[])`);

@@ -23,6 +23,8 @@ import {
   type UpdateOrderInput,
   WarehouseType,
   addDays,
+  isTeamLead,
+  ORDERING_ROLES,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import { type CurrentUserInfo } from '../auth/auth.types';
@@ -42,7 +44,7 @@ import { ScopeService } from '../sales-force/scope.service';
 import { StockService } from '../stock/stock.service';
 import { VehiclesService } from '../stock/vehicles.service';
 import { WarehousesService } from '../stock/warehouses.service';
-import { assertTeamMember, tourneeSellerIds } from './tournee-scope';
+import { assertTeamMember, tourneeSellerIds, tourneeVehicleIds } from './tournee-scope';
 
 const orderInclude = {
   client: { select: { id: true, code: true, name: true, phone: true } },
@@ -325,6 +327,7 @@ export class OrdersService {
         const truck = await this.vehicles.assertVehicle(tx, deliveryVehicleId);
         await this.scope.assertWarehouse(tx, user, deliveryVehicleId);
         livreurId = truck.assignedUserId;
+        await this.assertTeamTruck(tx, user, deliveryVehicleId, livreurId);
       } else {
         // A person named alone takes the order off its truck.
         if (livreurId !== undefined && deliveryVehicleId === undefined) deliveryVehicleId = null;
@@ -354,6 +357,29 @@ export class OrdersService {
       });
     });
     return this.get(id, user);
+  }
+
+  /**
+   * A team lead puts an order only on a truck of his team(s) (phase 40b): one driven by
+   * one of his people, or one without a driver among the trucks he reaches.
+   */
+  private async assertTeamTruck(
+    tx: Tx,
+    user: CurrentUserInfo,
+    vehicleId: string,
+    driverId: string | null,
+  ): Promise<void> {
+    if (!isTeamLead(user.role)) return;
+    if (driverId) {
+      await assertTeamMember(this.scope, user, driverId, 'deliveryVehicleId', tx);
+      return;
+    }
+    const reach = await tourneeVehicleIds(this.scope, this.vehicles, user, tx);
+    if (reach && !reach.includes(vehicleId)) {
+      throw new AppException(ErrorCode.FORBIDDEN, 'This truck is not one of your team', {
+        field: 'deliveryVehicleId',
+      });
+    }
   }
 
   // ---------------------------------------------------------------- deliver
@@ -657,8 +683,7 @@ export class OrdersService {
     user: CurrentUserInfo,
     limit: number,
   ): Promise<{ id: string; client: string; totalTtc: string; createdAt: Date }[]> {
-    if (!([Role.OWNER, Role.MANAGER, Role.SUPERVISOR, Role.SELLER] as Role[]).includes(user.role))
-      return [];
+    if (!ORDERING_ROLES.includes(user.role)) return [];
     const rows = await this.prisma.db.order.findMany({
       where: { AND: [await this.visibleWhere(user), { status: OrderStatus.DRAFT }] },
       select: { id: true, totalTtc: true, createdAt: true, client: { select: { name: true } } },
@@ -690,7 +715,11 @@ export class OrdersService {
       case Role.LIVREUR:
         return { OR: await this.deliveredBy(user.id, db) };
       case Role.SUPERVISOR:
+      case Role.AREA_MANAGER:
         return { sellerId: { in: await this.scope.teamIds(user.id, db) } };
+      case Role.PREVENDEUR:
+        // He delivers nothing: only the commandes he took.
+        return { sellerId: user.id };
       default:
         // A seller also delivers the orders put on him.
         return { OR: [{ sellerId: user.id }, ...(await this.deliveredBy(user.id, db))] };
@@ -769,7 +798,13 @@ export class OrdersService {
     currentSellerId: string | null | undefined,
   ): Promise<{ sellerId: string | null | undefined; warehouseId: string | null }> {
     await this.sales.checkClient(tx, input.clientId, user);
-    const sellerId = await this.sales.resolveSeller(tx, user, input.sellerId, currentSellerId);
+    const sellerId = await this.sales.resolveSeller(
+      tx,
+      user,
+      input.sellerId,
+      currentSellerId,
+      'ORDER',
+    );
     // A user who works in one dépôt takes orders for it (phase 24), and only for what it sells.
     const warehouseId = input.warehouseId
       ? await this.warehouses.resolve(tx, input.warehouseId)

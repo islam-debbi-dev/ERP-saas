@@ -37,6 +37,7 @@ function toResponse(t: Tenant): TenantSettingsResponse {
     maxDiscountPct: toMoneyString(t.maxDiscountPct.toString()),
     reminderDays: t.reminderDays,
     sellerScope: t.sellerScope,
+    zoneIncludesAssigned: t.zoneIncludesAssigned,
     livreurScope: t.livreurScope,
     geoCheckMode: t.geoCheckMode,
     geoRadiusM: t.geoRadiusM,

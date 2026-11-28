@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ErrorCode, Permission, Role } from '@erp/shared';
+import { ErrorCode, Permission, Role, FIELD_SELLER_ROLES, isTeamLead } from '@erp/shared';
 import { type CurrentUserInfo } from '../auth/auth.types';
 import { AppException } from '../common/app-exception';
 import { PrismaService } from '../prisma/prisma.service';
@@ -8,14 +8,16 @@ import { VehiclesService } from '../stock/vehicles.service';
 import { type StatsReach } from './stats-query.service';
 
 /** Roles that only get the "Mon véhicule" card: no other truck, no ranking. */
-const ROAD_ROLES: readonly Role[] = [Role.SELLER, Role.LIVREUR];
+const ROAD_ROLES: readonly Role[] = [...FIELD_SELLER_ROLES, Role.LIVREUR];
 
 /**
  * Whose figures a user sees in the distribution statistics: exactly the phase 14 / 24
  * rules, written once.
  * - owner, and anyone with VIEW_ALL_WAREHOUSES: everything;
- * - a supervisor: the trucks his team drives, plus the dépôts he has access to (and their
- *   trucks) when the company uses MULTI_UNIT;
+ * - a supervisor or chef de zone: the trucks his team(s) drive, plus the dépôts he has
+ *   access to (and their trucks) when the company uses MULTI_UNIT. A chef de zone's
+ *   location filters also stay inside his area (phase 40b): a sale of his team to a client
+ *   outside it still counts in his figures;
  * - anyone else at the office (manager, storekeeper…): the dépôts where he has OPERATE or
  *   VIEW_STATS and their trucks; everything without MULTI_UNIT;
  * - a seller or a livreur: the statistics are refused; `own()` gives the truck he drives
@@ -45,14 +47,20 @@ export class StatsScopeService {
       return { warehouseIds: null, defaultWarehouseId };
     }
     const units = await this.scope.warehouses(user);
-    if (user.role !== Role.SUPERVISOR) {
+    if (!isTeamLead(user.role)) {
       return { warehouseIds: units.statsWarehouseIds, defaultWarehouseId };
     }
     const team = await this.scope.teamIds(user.id);
     const driven = [...(await this.vehicles.currentVehiclesOf(team)).values()].map((v) => v.id);
     const multiUnit = await this.scope.multiUnitOn(user.tenantId);
     const depots = multiUnit ? (units.statsWarehouseIds ?? []) : [];
-    return { warehouseIds: [...new Set([...driven, ...depots])], defaultWarehouseId };
+    const area =
+      user.role === Role.AREA_MANAGER ? (await this.scope.of(user)).clientCommuneCodes : null;
+    return {
+      warehouseIds: [...new Set([...driven, ...depots])],
+      defaultWarehouseId,
+      ...(area ? { clientCommuneCodes: area } : {}),
+    };
   }
 
   /** The reach of "Mon véhicule": the one truck the user drives now, or nothing. */

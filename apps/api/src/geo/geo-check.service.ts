@@ -13,6 +13,7 @@ import {
   type LatLng,
   Permission,
   Role,
+  FIELD_SELLER_ROLES,
 } from '@erp/shared';
 import { AuditService } from '../audit/audit.service';
 import type { CurrentUserInfo } from '../auth/auth.types';
@@ -27,7 +28,7 @@ import { type Tx } from '../prisma/prisma.service';
  * Roles whose operations happen at the client's place. Office staff selling at the
  * counter are not checked (their position says nothing about the client).
  */
-const FIELD_ROLES = new Set<string>([Role.SELLER, Role.LIVREUR]);
+const FIELD_ROLES = new Set<string>([...FIELD_SELLER_ROLES, Role.LIVREUR]);
 
 export interface GeoCheckRequest {
   refType: GeoRefType;

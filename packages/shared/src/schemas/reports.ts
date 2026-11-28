@@ -35,6 +35,9 @@ export const REPORTS_BY_ROLE: Record<Role, readonly ReportName[]> = {
   // A supervisor's reports cover his team (himself and everyone under him).
   [Role.SUPERVISOR]: ['sales', 'payments'],
   [Role.LIVREUR]: [],
+  [Role.AREA_MANAGER]: ['sales', 'payments'],
+  // The seller's reports without the money he never collects.
+  [Role.PREVENDEUR]: ['sales'],
 };
 
 /** Groupings that need the SALES_FORCE module (brand is core). */

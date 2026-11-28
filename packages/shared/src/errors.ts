@@ -120,6 +120,16 @@ export const ErrorCode = {
   COMMUNE_WILAYA_MISMATCH: 'COMMUNE_WILAYA_MISMATCH',
   /** A commune of wilayas 59 to 69, until the owner approves the review list. */
   COMMUNE_UNDER_REVIEW: 'COMMUNE_UNDER_REVIEW',
+  /** Two live zones of the same kind would share a commune; details name the other zone. */
+  ZONE_COMMUNE_TAKEN: 'ZONE_COMMUNE_TAKEN',
+  /** A city zone has a commune its parent area does not cover. */
+  ZONE_NOT_INSIDE_AREA: 'ZONE_NOT_INSIDE_AREA',
+  /** A commune outside the caller's own zones. */
+  ZONE_OUTSIDE_SCOPE: 'ZONE_OUTSIDE_SCOPE',
+  /** The zone still has city zones or sellers assigned to it. */
+  ZONE_IN_USE: 'ZONE_IN_USE',
+  /** This role cannot report to that manager (a chef de zone reports to the office). */
+  MANAGER_ROLE_NOT_ALLOWED: 'MANAGER_ROLE_NOT_ALLOWED',
   // Warehouses (phase 15)
   WAREHOUSE_NOT_FOUND: 'WAREHOUSE_NOT_FOUND',
   WAREHOUSE_NAME_TAKEN: 'WAREHOUSE_NAME_TAKEN',

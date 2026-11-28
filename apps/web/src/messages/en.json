@@ -74,7 +74,9 @@
     "SELLER": "Seller",
     "STOREKEEPER": "Storekeeper",
     "SUPERVISOR": "Supervisor",
-    "LIVREUR": "Delivery driver"
+    "LIVREUR": "Delivery driver",
+    "AREA_MANAGER": "Area manager",
+    "PREVENDEUR": "Pre-seller"
   },
   "auth": {
     "loginTitle": "Log in",
@@ -523,6 +525,11 @@
     "COMMUNE_UNKNOWN": "This commune is not in the official list.",
     "COMMUNE_WILAYA_MISMATCH": "This commune is not in the selected wilaya.",
     "COMMUNE_UNDER_REVIEW": "This commune cannot be chosen yet: its move to a new wilaya is still being checked. Choose the wilaya only.",
+    "ZONE_COMMUNE_TAKEN": "A commune is already in the zone “{zoneName}”.",
+    "ZONE_NOT_INSIDE_AREA": "The area “{areaName}” does not cover every commune of the city “{zoneName}”.",
+    "ZONE_OUTSIDE_SCOPE": "Some of these communes are outside your own zones.",
+    "ZONE_IN_USE": "This zone still has cities or sellers. Move them first.",
+    "MANAGER_ROLE_NOT_ALLOWED": "An area manager can only report to the owner, a manager or nobody.",
     "WAREHOUSE_NOT_FOUND": "Warehouse not found.",
     "WAREHOUSE_NAME_TAKEN": "A warehouse already has this name.",
     "WAREHOUSE_NOT_EMPTY": "This warehouse still holds stock. Transfer it out first.",

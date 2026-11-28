@@ -69,7 +69,14 @@ export type SessionClientType = (typeof SessionClientType)[keyof typeof SessionC
  * Roles whose phone logins need the MOBILE_APP module and take a seat of the plan's
  * maxMobileSellers (phase 39 A1). The magasinier is not counted (owner's decision).
  */
-export const MOBILE_SEAT_ROLES: readonly Role[] = [Role.SELLER, Role.LIVREUR, Role.SUPERVISOR];
+export const MOBILE_SEAT_ROLES: readonly Role[] = [
+  Role.SELLER,
+  Role.LIVREUR,
+  Role.SUPERVISOR,
+  // Phase 40b: the chef de zone takes a seat like the supervisor (owner, 2026-11-28).
+  Role.AREA_MANAGER,
+  Role.PREVENDEUR,
+];
 
 export interface AuthUser {
   id: string;

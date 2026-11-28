@@ -8,6 +8,7 @@ import {
   findCommune,
   findWilaya,
   isCommuneUnderReview,
+  zoneCommuneCodes,
   resolveLocation,
   type CommuneCandidate,
   type ResolvedLocation,
@@ -202,6 +203,26 @@ describe('findWilaya', () => {
   it('accepts a missing text', () => {
     expect(findWilaya(null)).toBeNull();
     expect(findWilaya(undefined)).toBeNull();
+  });
+});
+
+describe('zoneCommuneCodes', () => {
+  const codes = (wilayaCode: number) => communesOf(wilayaCode).map((c) => c.code);
+
+  it('is the communes alone, sorted and without duplicates', () => {
+    expect(zoneCommuneCodes({ wilayaCodes: [], communeCodes: [3101, 1621, 3101] })).toEqual([
+      1621, 3101,
+    ]);
+  });
+
+  it('counts a whole wilaya as all its communes, with the others', () => {
+    const result = zoneCommuneCodes({ wilayaCodes: [68], communeCodes: [3101, codes(68)[0]!] });
+    expect(result).toEqual([...new Set([...codes(68), 3101])].sort((a, b) => a - b));
+    expect(result).toContain(2820);
+  });
+
+  it('is empty for an empty zone', () => {
+    expect(zoneCommuneCodes({ wilayaCodes: [], communeCodes: [] })).toEqual([]);
   });
 });
 
