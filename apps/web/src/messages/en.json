@@ -4367,7 +4367,7 @@
     "addDairas": "Add dairas",
     "addCommunes": "Add communes",
     "chosenCommunes": "Chosen communes",
-    "search": "Search in French or Arabic",
+    "search": "Search a name",
     "noResult": "No result",
     "underReview": "Under review",
     "loading": "Loading…",
@@ -4379,6 +4379,8 @@
     "undo": "Undo the change",
     "remove": "Remove {name}",
     "done": "{count, plural, =0 {Close} one {Done (# chosen)} other {Done (# chosen)}}",
-    "inWilaya": "{filter}: look in wilaya"
+    "wilayas": "Wilayas",
+    "dairas": "Dairas",
+    "lookIn": "Look in wilaya"
   }
 }

@@ -126,7 +126,7 @@ export function PlaceFilterGroups({
         <div className="space-y-2">
           <OptionField
             multiple
-            label={t('filter_clientWilayas')}
+            label={tl('wilayas')}
             placeholder={tl('addWilayas')}
             options={wilayaOptions(locale)}
             selectedIds={selectedCodes.map(String)}
@@ -169,7 +169,6 @@ function PlaceInWilaya({
   values: string[];
   onToggle: (value: string) => void;
 }) {
-  const t = useTranslations('stats');
   const tl = useTranslations('locations');
   const locale = useLocale();
   const [browsed, setBrowsed] = useState<number | null>(null);
@@ -184,7 +183,7 @@ function PlaceInWilaya({
   return (
     <div className="space-y-2">
       <OptionField
-        label={tl('inWilaya', { filter: t(`filter_${filterKey}`) })}
+        label={tl('lookIn')}
         placeholder={tl('chooseWilaya')}
         value={wilayaLabel(wilaya, locale)}
         options={wilayaOptions(locale)}
@@ -193,7 +192,7 @@ function PlaceInWilaya({
       />
       <OptionField
         multiple
-        label={t(`filter_${filterKey}`)}
+        label={tl(dairas ? 'dairas' : 'communes')}
         placeholder={wilaya === null ? tl('wilayaFirst') : tl(dairas ? 'addDairas' : 'addCommunes')}
         disabled={wilaya === null || !data}
         options={options}

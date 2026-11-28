@@ -4367,7 +4367,7 @@
     "addDairas": "Ajouter des daïras",
     "addCommunes": "Ajouter des communes",
     "chosenCommunes": "Communes choisies",
-    "search": "Rechercher en français ou en arabe",
+    "search": "Chercher un nom",
     "noResult": "Aucun résultat",
     "underReview": "En cours de vérification",
     "loading": "Chargement…",
@@ -4379,6 +4379,8 @@
     "undo": "Annuler le changement",
     "remove": "Retirer {name}",
     "done": "{count, plural, =0 {Fermer} one {Terminé (# choisi)} other {Terminé (# choisis)}}",
-    "inWilaya": "{filter} : chercher dans la wilaya"
+    "wilayas": "Wilayas",
+    "dairas": "Daïras",
+    "lookIn": "Chercher dans la wilaya"
   }
 }
