@@ -32,7 +32,7 @@ function Report() {
   const format = useFormatter();
   const errorMessage = useErrorMessage();
   const office = useIsOffice();
-  const sellers = useSellers();
+  const sellers = useSellers({ orderTakers: true });
   const [to, setTo] = useState(() => algiersDay());
   const [from, setFrom] = useState(() => addDays(algiersDay(), -6));
   const [sellerId, setSellerId] = useState('');

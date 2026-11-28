@@ -4,7 +4,14 @@ import { Crosshair, ListFilter, Loader2, MapPinned, Route } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { type CSSProperties, useMemo, useRef, useState } from 'react';
-import { type ClientNearbyPointDto, Feature, haversineM, type LatLng, Role } from '@erp/shared';
+import {
+  type ClientNearbyPointDto,
+  Feature,
+  haversineM,
+  type LatLng,
+  OFFICE_ROLES,
+  isFieldSeller,
+} from '@erp/shared';
 import { FeatureGate } from '@/components/shared/feature-gate';
 import { PageHeader } from '@/components/shared/page-header';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -36,7 +43,7 @@ import { ClientsMap, MapLegend } from './clients-map-lazy';
 import { NearbySheet } from './nearby-sheet';
 import { type BubbleClient, PointBubble } from './point-bubble';
 
-const PLANNERS = new Set<string>([Role.OWNER, Role.MANAGER, Role.SUPERVISOR]);
+const PLANNERS = new Set<string>(OFFICE_ROLES);
 
 interface FilterState {
   search: string;
@@ -318,7 +325,7 @@ function MapFilters({
   const salesForce = useFeature(Feature.SALES_FORCE);
   const role = useAuth().state.user?.role;
   const sectors = useSectors();
-  const sellers = useSellers();
+  const sellers = useSellers({ orderTakers: true });
   const set = (patch: Partial<FilterState>) => onChange({ ...value, ...patch });
   const id = (k: string) => `${idPrefix}-${k}`;
   return (
@@ -349,7 +356,7 @@ function MapFilters({
               ))}
             </NativeSelect>
           </div>
-          {role !== Role.SELLER ? (
+          {!role || !isFieldSeller(role) ? (
             <div className="space-y-1">
               <Label htmlFor={id('seller')}>{tc('filterSeller')}</Label>
               <NativeSelect

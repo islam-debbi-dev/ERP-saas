@@ -15,7 +15,7 @@ import {
 import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
-import { type AiProvider, Feature, Permission, Role } from '@erp/shared';
+import { type AiProvider, Feature, Permission, Role, isFieldSeller, isTeamLead } from '@erp/shared';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -45,7 +45,7 @@ function useSuggestions(): string[] {
   const { state } = useAuth();
   const role = state.user?.role;
   const manager = role === Role.OWNER || role === Role.MANAGER;
-  const seesSales = manager || role === Role.SELLER || role === Role.SUPERVISOR;
+  const seesSales = manager || (!!role && (isFieldSeller(role) || isTeamLead(role)));
   const clients = usePermission(Permission.CLIENTS_VIEW);
   const tournees = useFeature(Feature.TOURNEES);
   return [

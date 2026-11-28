@@ -26,6 +26,7 @@ import {
   money,
   type PutVehicleTargetsInput,
   type VehicleTargetsDto,
+  isFieldSeller,
 } from '@erp/shared';
 import { api } from './api-client';
 import { useAuth, useFeature, usePermission } from './auth';
@@ -232,7 +233,7 @@ export function useHasDistributionStats(): boolean {
   const on = useFeature(Feature.DISTRIBUTION_STATS);
   const reports = usePermission(Permission.REPORTS_VIEW);
   if (state.status !== 'authenticated') return false;
-  const road = state.user.role === Role.SELLER || state.user.role === Role.LIVREUR;
+  const road = isFieldSeller(state.user.role) || state.user.role === Role.LIVREUR;
   return on && reports && !road;
 }
 

@@ -23,6 +23,8 @@ import {
   type CreateVisitInput,
   Feature,
   NO_SALE_REASONS,
+  Permission,
+  Role,
   type NoSaleReason,
   type OrderDto,
   type TodayStopDto,
@@ -53,7 +55,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { VehicleCode } from '@/components/vehicles/vehicle-code';
 import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/lib/api-client';
-import { useFeature } from '@/lib/auth';
+import { useAuth, useFeature, usePermission } from '@/lib/auth';
 import { useClient } from '@/lib/clients';
 import { tourneeKeys, useToday } from '@/lib/tournees';
 import { useErrorMessage } from '@/lib/use-error-message';
@@ -246,6 +248,9 @@ function StopCard({
     onError: (err) => toast.error(errorMessage(err)),
   });
   const last = stop.lastVisit;
+  // A pré-vendeur takes commandes only: these rights are never his (phase 40b).
+  const sells = usePermission(Permission.SALES_CREATE);
+  const collects = usePermission(Permission.PAYMENTS_CREATE);
 
   return (
     <Card className={cn('gap-3 p-4', stop.visitedToday && 'border-primary/40 bg-primary/5')}>
@@ -297,13 +302,15 @@ function StopCard({
         ) : null}
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <Button asChild variant="outline">
-          <Link href={`/ventes/nouvelle?client=${stop.client.id}`}>
-            <ReceiptText aria-hidden />
-            {t('actionSale')}
-          </Link>
-        </Button>
+      <div className={cn('grid grid-cols-2 gap-2', sells && collects && 'sm:grid-cols-4')}>
+        {sells ? (
+          <Button asChild variant="outline">
+            <Link href={`/ventes/nouvelle?client=${stop.client.id}`}>
+              <ReceiptText aria-hidden />
+              {t('actionSale')}
+            </Link>
+          </Button>
+        ) : null}
         <Button variant="outline" disabled={order.isPending} onClick={() => order.mutate()}>
           {order.isPending ? (
             <Loader2 className="animate-spin" aria-hidden />
@@ -312,10 +319,12 @@ function StopCard({
           )}
           {t('actionOrder')}
         </Button>
-        <Button variant="outline" onClick={onPay}>
-          <Banknote aria-hidden />
-          {t('actionPayment')}
-        </Button>
+        {collects ? (
+          <Button variant="outline" onClick={onPay}>
+            <Banknote aria-hidden />
+            {t('actionPayment')}
+          </Button>
+        ) : null}
         <Button onClick={onVisit}>
           <CircleCheck aria-hidden />
           {t('actionVisit')}
@@ -369,12 +378,18 @@ function VisitDialog({ stop, onClose }: { stop: TodayStopDto | null; onClose: ()
   const [startedAt] = useState(() => new Date().toISOString());
 
   const docs = stop?.today;
-  const choices: { outcome: VisitOutcome; available: boolean }[] = [
+  const role = useAuth().state.user?.role;
+  // A pré-vendeur's visit ends with a commande or without one.
+  const preSeller = role === Role.PREVENDEUR;
+  const all: { outcome: VisitOutcome; available: boolean }[] = [
     { outcome: 'SALE', available: !!docs?.saleId },
     { outcome: 'ORDER', available: !!docs?.orderId },
     { outcome: 'PAYMENT_ONLY', available: !!docs?.paymentId },
     { outcome: 'NO_SALE', available: true },
   ];
+  const choices = preSeller
+    ? all.filter((c) => c.outcome === 'ORDER' || c.outcome === 'NO_SALE')
+    : all;
   // The most useful outcome is picked first: what the seller just did.
   const current =
     outcome ?? choices.find((c) => c.available && c.outcome !== 'NO_SALE')?.outcome ?? 'NO_SALE';

@@ -34,6 +34,8 @@ export function ClientPackagingCard({ client }: { client: ClientDto }) {
   const t = useTranslations('packaging');
   const format = useFormatter();
   const on = useFeature(Feature.PACKAGING);
+  // A pré-vendeur reads the counts; he never moves empties (phase 40b).
+  const readOnly = useAuth().state.user?.role === Role.PREVENDEUR;
   const data = useClientPackaging(client.id);
   const [open, setOpen] = useState(false);
   const pages = data.data?.pages ?? [];
@@ -56,7 +58,7 @@ export function ClientPackagingCard({ client }: { client: ClientDto }) {
               fileName={`emballages-${client.code}.pdf`}
             />
           ) : null}
-          {on && client.archivedAt === null ? (
+          {on && client.archivedAt === null && !readOnly ? (
             <Button className="min-h-11" onClick={() => setOpen(true)}>
               <Undo2 aria-hidden />
               {t('newMovement')}

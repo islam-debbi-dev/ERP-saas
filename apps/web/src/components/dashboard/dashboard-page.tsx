@@ -25,7 +25,7 @@ import {
   Feature,
   formatDA,
   money,
-  Role,
+  isTeamLead,
 } from '@erp/shared';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
@@ -250,7 +250,7 @@ function FigureFilterBar({
   const sellers = useSellers();
   const brands = useBrands();
   if (!office) return null;
-  const supervisors = (sellers.data ?? []).filter((u) => u.role === Role.SUPERVISOR);
+  const supervisors = (sellers.data ?? []).filter((u) => isTeamLead(u.role));
   const active = [value.sellerId, value.teamOf, value.brandId].filter(Boolean).length;
   const set = (patch: Partial<FigureFilters>) => onChange({ ...value, ...patch });
   return (

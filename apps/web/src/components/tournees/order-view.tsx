@@ -108,7 +108,10 @@ function View({ id, backHref }: { id: string; backHref: string }) {
       (v.active && !!v.vehicleType && DELIVERY_ACTIVITIES.includes(v.vehicleType.activity)),
   );
   const draft = o?.status === 'DRAFT';
-  const canDeliver = o?.status === 'CONFIRMED' && role !== 'STOREKEEPER';
+  // A pré-vendeur never delivers (delivering makes a BL), but may cancel his commande.
+  const preSeller = role === 'PREVENDEUR';
+  const canDeliver = o?.status === 'CONFIRMED' && role !== 'STOREKEEPER' && !preSeller;
+  const canCancelConfirmed = o?.status === 'CONFIRMED' && preSeller;
 
   useEffect(() => {
     if (entry) qtyRef.current?.select();
@@ -273,9 +276,16 @@ function View({ id, backHref }: { id: string; backHref: string }) {
         <Alert role="status">
           <AlertDescription>
             {t('deliveredBy')}{' '}
-            <Link href={`/ventes/${o.sale.id}`} className="font-medium underline" dir="ltr">
-              {o.sale.number}
-            </Link>
+            {preSeller ? (
+              // He has no sales screens: the number only.
+              <bdi dir="ltr" className="font-medium">
+                {o.sale.number}
+              </bdi>
+            ) : (
+              <Link href={`/ventes/${o.sale.id}`} className="font-medium underline" dir="ltr">
+                {o.sale.number}
+              </Link>
+            )}
           </AlertDescription>
         </Alert>
       ) : null}
@@ -589,7 +599,7 @@ function View({ id, backHref }: { id: string; backHref: string }) {
         </table>
       </div>
 
-      {draft || canDeliver ? (
+      {draft || canDeliver || canCancelConfirmed ? (
         <StickyActions className="justify-between md:sticky md:bottom-0 md:z-20 md:-mx-4 md:border-t md:bg-background/95 md:px-4 md:py-3 md:backdrop-blur lg:-mx-6 lg:px-6">
           {role !== 'LIVREUR' ? (
             <AlertDialog onOpenChange={(open) => open && setReason('')}>
@@ -636,12 +646,12 @@ function View({ id, backHref }: { id: string; backHref: string }) {
               )}
               {t('confirm')}
             </Button>
-          ) : (
+          ) : canDeliver ? (
             <Button onClick={() => setDelivering(true)}>
               <PackageCheck aria-hidden />
               {t('deliver')}
             </Button>
-          )}
+          ) : null}
         </StickyActions>
       ) : null}
 
