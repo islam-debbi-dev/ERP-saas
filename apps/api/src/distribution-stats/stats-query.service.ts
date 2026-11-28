@@ -23,6 +23,7 @@ import { ClockService } from '../clock/clock.service';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { VehiclesService } from '../stock/vehicles.service';
+import { communeCodesOfDairas, DAIRA_OF_COMMUNE, wilayaCodesOf } from './client-places';
 import {
   type DimensionNeed,
   DIMENSIONS,
@@ -85,6 +86,8 @@ const FILTER_NEED: Record<StatFilterKey, DimensionNeed> = {
   activities: 'vehicle',
   vehicleWilayas: 'vehicle',
   clientWilayas: 'client',
+  clientDairas: 'client',
+  clientCommunes: 'client',
   segmentIds: 'client',
   sectorIds: 'client',
   clientIds: 'client',
@@ -331,7 +334,11 @@ export class StatsQueryService {
     const need = (kind: DimensionNeed) =>
       dims.some((d) => DIMENSIONS[d].needs === kind) ||
       activeFilters(input.filters).some((f) => FILTER_NEED[f] === kind);
-    const joins = { client: need('client'), product: need('product') };
+    const joins = {
+      client: need('client'),
+      product: need('product'),
+      daira: dims.includes('clientDaira'),
+    };
 
     const names = dims.map((_, i) => Prisma.raw(`d${i}`));
     const keys = dims.map((d, i) => Prisma.sql`${DIMENSIONS[d].key} AS ${names[i]!}`);
@@ -406,7 +413,7 @@ export class StatsQueryService {
   private frame(
     fact: FactKey,
     ctx: FactCtx,
-    joins: { client: boolean; product: boolean },
+    joins: { client: boolean; product: boolean; daira: boolean },
     input: StatsRunInput,
     categoryIds: string[] | null,
   ): Prisma.Sql {
@@ -415,6 +422,7 @@ export class StatsQueryService {
     const unit = businessUnit('r.wh', reach.defaultWarehouseId, 'w');
     const withClient = joins.client && def.has.client;
     const withProduct = joins.product && def.has.product;
+    const withDaira = withClient && joins.daira;
     const truck = Prisma.sql`w.type = 'VEHICLE'`;
 
     const where: Prisma.Sql[] = [];
@@ -449,8 +457,13 @@ export class StatsQueryService {
       any(filters.sectorIds, (v) => Prisma.sql`c."sectorId" = ANY(${v}::uuid[])`);
       any(
         filters.clientWilayas,
-        (v) => Prisma.sql`lower(btrim(c.wilaya)) = ANY(${v.map((w) => w.toLowerCase())}::text[])`,
+        (v) => Prisma.sql`c."wilayaCode" = ANY(${wilayaCodesOf(v)}::int[])`,
       );
+      any(
+        filters.clientDairas,
+        (v) => Prisma.sql`c."communeCode" = ANY(${communeCodesOfDairas(v)}::int[])`,
+      );
+      any(filters.clientCommunes, (v) => Prisma.sql`c."communeCode" = ANY(${v}::int[])`);
     }
     if (withProduct) {
       any(filters.productIds, (v) => Prisma.sql`r."productId" = ANY(${v}::uuid[])`);
@@ -467,10 +480,11 @@ export class StatsQueryService {
         CASE WHEN ${truck} THEN w."wilayaCode" END AS "vehicleWilaya"
         ${
           withClient
-            ? Prisma.sql`, NULLIF(lower(btrim(c.wilaya)), '') AS "clientWilaya",
+            ? Prisma.sql`, c."wilayaCode" AS "clientWilaya", c."communeCode" AS "clientCommune",
                 c."segmentId", c."sectorId"`
             : Prisma.empty
         }
+        ${withDaira ? Prisma.sql`, dm.key AS "clientDaira"` : Prisma.empty}
         ${
           withProduct
             ? Prisma.sql`, p."brandId", COALESCE(cat."parentId", cat.id) AS "familyId",
@@ -481,6 +495,12 @@ export class StatsQueryService {
       ${unit.join}
       LEFT JOIN vehicle_types vt ON vt.id = w."vehicleTypeId"
       ${withClient ? Prisma.sql`LEFT JOIN clients c ON c.id = r."clientId"` : Prisma.empty}
+      ${
+        withDaira
+          ? Prisma.sql`LEFT JOIN unnest(${DAIRA_OF_COMMUNE.codes}::int[],
+              ${DAIRA_OF_COMMUNE.keys}::text[]) AS dm(code, key) ON dm.code = c."communeCode"`
+          : Prisma.empty
+      }
       ${
         withProduct
           ? Prisma.sql`LEFT JOIN products p ON p.id = r."productId"

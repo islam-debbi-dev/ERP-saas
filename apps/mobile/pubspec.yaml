@@ -102,6 +102,8 @@ flutter:
     - lib/core/localization/ 
     - assets/config/env.default
     - assets/
+    # Communes and dairas for the client form (lib/core/locations).
+    - assets/data/
 
   fonts:
     - family: Almarai

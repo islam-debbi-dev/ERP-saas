@@ -158,6 +158,10 @@ export function dimensionLink(
       return stats({ view: 'vehicles', vehicleWilayas: key });
     case 'clientWilaya':
       return stats({ view: 'clients', clientWilayas: key });
+    case 'clientDaira':
+      return stats({ view: 'clients', clientDairas: key });
+    case 'clientCommune':
+      return stats({ view: 'clients', clientCommunes: key });
     case 'category':
     case 'subCategory':
       return stats({ view: 'products', categoryIds: key });

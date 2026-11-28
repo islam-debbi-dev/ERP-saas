@@ -8,6 +8,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/di/dependency_injection.dart';
 import 'core/helpers/bloc_observer.dart';
 import 'core/helpers/connectivity_services.dart';
+import 'core/locations/communes_licence.dart';
 import 'core/localization/locale_cubit.dart';
 import 'core/theme/cubit/theme_cubit.dart';
 import 'soft_smart.dart';
@@ -22,6 +23,7 @@ Future<void> main() async {
   runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+      registerCommunesLicence();
 
       // The real env file is gitignored (see .gitignore); copy `.env.example`
       // → `assets/config/env.default` locally. Missing file is fine: AppEnv

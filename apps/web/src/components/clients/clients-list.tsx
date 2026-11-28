@@ -4,7 +4,7 @@ import { type ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-
 import { BellRing, Loader2, Map as MapIcon, MapPinned, Plus, UserCheck, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { z } from 'zod';
 import { clientListQuerySchema, type ClientDto, Feature, Role } from '@erp/shared';
@@ -24,6 +24,8 @@ import { useAuth, useFeature } from '@/lib/auth';
 import { useSectors, useSellers } from '@/lib/sales-force';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useCanManageCredit, useClientPages } from '@/lib/clients';
+import { type CommunesModule, communeDisplay, wilayaDisplay } from '@/lib/locations';
+import { useCommunes } from '@/lib/use-communes';
 import { useUrlFilters } from '@/lib/url-filters';
 import { BalanceAmount } from './balance-amount';
 import { Amount } from '@/components/shared/amount';
@@ -106,6 +108,9 @@ export function ClientsList() {
       return next;
     });
 
+  const locale = useLocale();
+  // The commune data is only fetched when a listed client has a commune code.
+  const communes = useCommunes(items.some((c) => c.communeCode !== null));
   const columns = useMemo<ColumnDef<ClientDto>[]>(
     () => [
       ...(canAssign
@@ -152,11 +157,7 @@ export function ClientsList() {
             >
               {row.original.name}
             </Link>
-            {row.original.wilaya || row.original.commune ? (
-              <p className="text-xs text-muted-foreground">
-                {[row.original.commune, row.original.wilaya].filter(Boolean).join(', ')}
-              </p>
-            ) : null}
+            <PlaceLine client={row.original} data={communes.data} locale={locale} />
           </div>
         ),
       },
@@ -216,7 +217,7 @@ export function ClientsList() {
           ]
         : []),
     ],
-    [t, canAssign, salesForce, selected],
+    [t, canAssign, salesForce, selected, communes.data, locale],
   );
   const table = useReactTable({ data: items, columns, getCoreRowModel: getCoreRowModel() });
 
@@ -380,4 +381,27 @@ export function ClientsList() {
       ) : null}
     </>
   );
+}
+
+/** "Commune, wilaya": the names of the codes in the screen's language, else the stored text. */
+function PlaceLine({
+  client,
+  data,
+  locale,
+}: {
+  client: ClientDto;
+  data: CommunesModule | undefined;
+  locale: string;
+}) {
+  const text = [
+    communeDisplay(data, client.communeCode, client.commune, locale),
+    wilayaDisplay(client.wilayaCode, client.wilaya, locale),
+  ]
+    .filter(Boolean)
+    .join(locale === 'ar' ? '، ' : ', ');
+  return text ? (
+    <p dir="auto" className="truncate text-xs text-muted-foreground" title={text}>
+      {text}
+    </p>
+  ) : null;
 }

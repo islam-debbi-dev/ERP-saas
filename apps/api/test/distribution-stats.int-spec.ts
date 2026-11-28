@@ -39,6 +39,7 @@ import {
   type WarehouseDto,
   weekdayOf,
 } from '@erp/shared';
+import { dairaByKey, findCommune } from '@erp/shared/communes';
 import ExcelJS from 'exceljs';
 import {
   DIMENSIONS,
@@ -62,6 +63,9 @@ import {
   uniqueEmail,
   withoutGeoCheck,
 } from './helpers';
+
+const MSILA_TOWN = findCommune("M'Sila", 28)[0]!.commune;
+const BATNA_TOWN = findCommune('Batna', 5)[0]!.commune;
 
 const errorOf = (res: { body: unknown }) => res.body as ApiError;
 type Who = { auth: { accessToken: string } };
@@ -377,8 +381,8 @@ describe('statistiques distribution (phase 37)', () => {
           .post('/clients', { code: `SC${++seq}`, name, ...body }, null)
           .expect(201)
       ).body as ClientDto;
-    c1 = await client('Épicerie Un', { segmentId: seg1.id, wilaya: "M'sila" });
-    c2 = await client('Supérette Deux', { segmentId: seg2.id, wilaya: 'Batna' });
+    c1 = await client('Épicerie Un', { segmentId: seg1.id, communeCode: MSILA_TOWN.code });
+    c2 = await client('Supérette Deux', { segmentId: seg2.id, communeCode: BATNA_TOWN.code });
     c3 = await client('Sans Type', {});
 
     // ---- a tournée for V1 today: three stops
@@ -641,6 +645,8 @@ describe('statistiques distribution (phase 37)', () => {
         'depot',
         'vehicleWilaya',
         'clientWilaya',
+        'clientDaira',
+        'clientCommune',
         'segment',
         'sector',
         'client',
@@ -688,10 +694,33 @@ describe('statistiques distribution (phase 37)', () => {
       });
       expect(await by('vehicleWilaya')).toEqual({ 28: '14280.00', 5: '5712.00', none: '2856.00' });
       expect(await by('clientWilaya')).toEqual({
-        "m'sila": '8568.00',
-        batna: '11424.00',
+        28: '8568.00',
+        5: '11424.00',
         none: '2856.00',
       });
+      expect(await by('clientCommune')).toEqual({
+        [MSILA_TOWN.code]: '8568.00',
+        [BATNA_TOWN.code]: '11424.00',
+        none: '2856.00',
+      });
+      expect(await by('clientDaira')).toEqual({
+        [MSILA_TOWN.dairaKey!]: '8568.00',
+        [BATNA_TOWN.dairaKey!]: '11424.00',
+        none: '2856.00',
+      });
+      const places = async (dimension: string, code: number) => {
+        const dto = await stats<StatsByDimensionDto>(
+          d,
+          'by-dimension',
+          `${range}&dimension=${dimension}`,
+        );
+        return dto.rows.find((r) => r.key === String(code))!;
+      };
+      expect(await places('clientWilaya', 28)).toMatchObject({ label: null });
+      expect((await places('clientWilaya', 28)).link).toContain('clientWilayas=28');
+      const town = await places('clientCommune', MSILA_TOWN.code);
+      expect(town.label).toBe(MSILA_TOWN.fr);
+      expect(town.link).toContain(`clientCommunes=${MSILA_TOWN.code}`);
       expect(await by('segment')).toEqual({
         [seg1.id]: '8568.00',
         [seg2.id]: '11424.00',
@@ -733,7 +762,24 @@ describe('statistiques distribution (phase 37)', () => {
       expect(await ca(`vehicleTypeIds=${liv.id}`)).toBe('5712.00');
       expect(await ca('activities=CASH_VAN')).toBe('14280.00');
       expect(await ca('vehicleWilayas=5')).toBe('5712.00');
+      expect(await ca('clientWilayas=5')).toBe('11424.00');
+      // Old links carry the name (deprecated): the same figure.
       expect(await ca('clientWilayas=batna')).toBe('11424.00');
+      expect(await ca(`clientWilayas=${encodeURIComponent("m'sila")},5`)).toBe('19992.00');
+      // A name that is no wilaya matches nothing: the filter is never dropped.
+      expect(await ca('clientWilayas=Atlantide')).toBe('0.00');
+      expect(await ca('clientWilayas=99')).toBe('0.00');
+      expect(await ca('clientWilayas=Atlantide,5')).toBe('11424.00');
+      expect(await ca(`clientCommunes=${BATNA_TOWN.code}`)).toBe('11424.00');
+      expect(await ca(`clientDairas=${MSILA_TOWN.dairaKey}`)).toBe('8568.00');
+      expect(await ca('clientDairas=nowhere')).toBe('0.00');
+      // Another company's codes filter only its own rows: it has none here.
+      const foreign = await stats<StatsOverviewDto>(
+        other,
+        'overview',
+        `${range}&clientCommunes=${BATNA_TOWN.code}`,
+      );
+      expect(value(foreign.tiles, 'caTtc')).toBe('0.00');
       expect(await ca(`segmentIds=${seg1.id}`)).toBe('8568.00');
       expect(await ca(`clientIds=${c3.id}`)).toBe('2856.00');
       expect(await ca(`brandIds=${brand2.id}`)).toBe('2856.00');
@@ -934,6 +980,8 @@ describe('statistiques distribution (phase 37)', () => {
         'depot',
         'vehicleWilaya',
         'clientWilaya',
+        'clientDaira',
+        'clientCommune',
         'segment',
         'sector',
         'client',
@@ -941,7 +989,14 @@ describe('statistiques distribution (phase 37)', () => {
         'week',
         'month',
       ],
-      activeClients: ['clientWilaya', 'segment', 'sector', 'client'],
+      activeClients: [
+        'clientWilaya',
+        'clientDaira',
+        'clientCommune',
+        'segment',
+        'sector',
+        'client',
+      ],
       activeVehicles: ['vehicle', 'vehicleType', 'activity', 'depot', 'vehicleWilaya'],
     };
 
@@ -989,7 +1044,7 @@ describe('statistiques distribution (phase 37)', () => {
           checked += 1;
         }
       }
-      // 29 measures over 17 dimensions, less the pairs a fact cannot carry.
+      // 29 measures over 19 dimensions, less the pairs a fact cannot carry.
       expect(checked).toBeGreaterThan(250);
     });
   });
@@ -1253,6 +1308,47 @@ describe('statistiques distribution (phase 37)', () => {
   });
 
   describe('export', () => {
+    it.each([
+      {
+        dimension: 'clientDaira',
+        title: 'Daïra du client',
+        names: [dairaByKey(MSILA_TOWN.dairaKey)!.fr, dairaByKey(BATNA_TOWN.dairaKey)!.fr],
+      },
+      {
+        dimension: 'clientCommune',
+        title: 'Commune du client',
+        names: [MSILA_TOWN.fr, BATNA_TOWN.fr],
+      },
+    ])('titles the $dimension sheet and names its rows', async ({ dimension, title, names }) => {
+      const res = await as(d)
+        .get(`/stats/distribution/export.xlsx?view=by-dimension&dimension=${dimension}&${range}`)
+        .buffer()
+        .parse((r, done) => {
+          const chunks: Buffer[] = [];
+          r.on('data', (c: Buffer) => chunks.push(c));
+          r.on('end', () => done(null, Buffer.concat(chunks)));
+        })
+        .expect(200);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(res.body as ArrayBuffer);
+      const sheet = workbook.worksheets[0]!;
+      expect(sheet.name).toBe(title);
+      expect(sheet.getCell('A1').value).toBe(
+        `Statistiques par ${title.toLowerCase()} du ${today} au ${today}`,
+      );
+      const header = (sheet.getRow(3).values as unknown[]).slice(1);
+      expect(header[0]).toBe(title);
+      const caColumn = header.indexOf('CA TTC') + 1;
+      expect(caColumn).toBeGreaterThan(1);
+      const rows = sheet.getSheetValues().slice(4) as unknown[][];
+      expect(Object.fromEntries(rows.map((r) => [r[1] as string, r[caColumn]]))).toEqual({
+        [names[0]!]: 8568,
+        [names[1]!]: 11424,
+        'Non renseigné': 2856,
+        Total: 22848,
+      });
+    });
+
     it('writes the rows of a view as one sheet, numbers as numbers', async () => {
       const res = await as(d)
         .get(`/stats/distribution/export.xlsx?view=by-vehicle&${range}`)

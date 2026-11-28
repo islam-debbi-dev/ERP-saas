@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { type Role } from '../enums';
+import { communeCodeInput, wilayaCodeInput } from './location';
 
 const id = z.uuid();
 const name = (max: number) => z.string().trim().min(1).max(max);
@@ -27,33 +28,53 @@ export interface BrandDto {
 
 // ---------------------------------------------------------------- sectors (SALES_FORCE)
 
+const sectorWilaya = z
+  .string()
+  .trim()
+  .max(60)
+  .transform((v) => (v === '' ? null : v))
+  .nullable();
+
+/** Communes covered by the sector, deduplicated case-insensitively. */
+const sectorCommunes = z
+  .array(name(80))
+  .max(100)
+  .transform((list) => {
+    const seen = new Set<string>();
+    return list.filter((c) => {
+      const k = c.toLowerCase();
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  });
+
+/** Official commune codes (phase 40a), without duplicates. */
+const sectorCommuneCodes = z
+  .array(communeCodeInput.unwrap().unwrap())
+  .max(100)
+  .transform((list) => [...new Set(list)]);
+
 export const createSectorSchema = z.object({
   name: name(80),
-  wilaya: z
-    .string()
-    .trim()
-    .max(60)
-    .transform((v) => (v === '' ? null : v))
-    .nullable()
-    .default(null),
-  /** Communes covered by the sector, deduplicated case-insensitively. */
-  communes: z
-    .array(name(80))
-    .max(100)
-    .default([])
-    .transform((list) => {
-      const seen = new Set<string>();
-      return list.filter((c) => {
-        const k = c.toLowerCase();
-        if (seen.has(k)) return false;
-        seen.add(k);
-        return true;
-      });
-    }),
+  wilaya: sectorWilaya.default(null),
+  communes: sectorCommunes.default([]),
+  /** Omitted differs from null / empty: see `createClientSchema.wilayaCode`. */
+  wilayaCode: wilayaCodeInput,
+  communeCodes: sectorCommuneCodes.nullable().optional(),
 });
 export type CreateSectorInput = z.infer<typeof createSectorSchema>;
 
-export const updateSectorSchema = createSectorSchema.partial().strict();
+/** No defaults here: a key left out keeps what is stored. */
+export const updateSectorSchema = z
+  .object({
+    name: name(80).optional(),
+    wilaya: sectorWilaya.optional(),
+    communes: sectorCommunes.optional(),
+    wilayaCode: wilayaCodeInput,
+    communeCodes: sectorCommuneCodes.nullable().optional(),
+  })
+  .strict();
 export type UpdateSectorInput = z.infer<typeof updateSectorSchema>;
 
 export interface SectorDto {
@@ -61,6 +82,8 @@ export interface SectorDto {
   name: string;
   wilaya: string | null;
   communes: string[];
+  wilayaCode: number | null;
+  communeCodes: number[];
   clientCount: number;
 }
 

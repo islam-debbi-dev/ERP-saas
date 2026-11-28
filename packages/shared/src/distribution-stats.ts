@@ -199,7 +199,10 @@ export const STAT_DIMENSIONS = [
   'activity',
   'depot',
   'vehicleWilaya',
+  /** The client's location codes (phase 40a); the daïra is derived from the commune. */
   'clientWilaya',
+  'clientDaira',
+  'clientCommune',
   'segment',
   'sector',
   'brand',

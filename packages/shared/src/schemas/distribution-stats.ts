@@ -46,6 +46,8 @@ export const STAT_FILTER_KEYS = [
   'activities',
   'vehicleWilayas',
   'clientWilayas',
+  'clientDairas',
+  'clientCommunes',
   'brandIds',
   'categoryIds',
   'productIds',
@@ -63,8 +65,16 @@ const filterFields = {
   activities: list(z.enum(VEHICLE_ACTIVITIES)),
   /** Wilaya numbers of the trucks. */
   vehicleWilayas: list(z.coerce.number().int().min(WILAYA_MIN).max(WILAYA_MAX)),
-  /** Wilaya of the client, as written on his fiche. */
+  /**
+   * Wilaya numbers of the clients. A wilaya NAME is also accepted so that old links keep
+   * working (deprecated, phase 40a): the API maps it with `findWilaya`, and a value it
+   * cannot map matches no client.
+   */
   clientWilayas: list(z.string().trim().min(1).max(60)),
+  /** Daïra keys of `@erp/shared/communes`. */
+  clientDairas: list(z.string().trim().min(1).max(100)),
+  /** Commune codes. */
+  clientCommunes: list(z.coerce.number().int().min(1).max(99_999)),
   brandIds: list(id),
   /** A family includes its sub-families. */
   categoryIds: list(id),
@@ -245,7 +255,10 @@ export interface StatsByVehicleDto extends StatsMetaDto {
 export interface StatDimensionRowDto {
   /** null: rows without a value on this dimension ("Non renseigné"). */
   key: string | null;
-  /** The name to print; null when the web names the key itself (wilaya number, activity). */
+  /**
+   * The name to print; null when the web names the key itself (wilaya number, activity).
+   * Daïras and communes (keys: daïra key, commune code) come with their French name.
+   */
   label: string | null;
   cells: StatCell[];
   link: string | null;

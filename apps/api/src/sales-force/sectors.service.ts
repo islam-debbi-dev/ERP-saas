@@ -8,6 +8,7 @@ import {
 import { AuditService } from '../audit/audit.service';
 import { AppException } from '../common/app-exception';
 import { tenantContext } from '../common/tenant-context';
+import { sectorPlace } from '../locations/location-codes';
 import { PrismaService, type Tx } from '../prisma/prisma.service';
 
 /** Secteurs (SALES_FORCE): a zone, wilaya + communes, clients belong to. */
@@ -29,6 +30,8 @@ export class SectorsService {
       name: s.name,
       wilaya: s.wilaya,
       communes: s.communes,
+      wilayaCode: s.wilayaCode,
+      communeCodes: s.communeCodes,
       clientCount: s._count.clients,
     }));
   }
@@ -37,16 +40,25 @@ export class SectorsService {
     return this.prisma.db.$transaction(async (tx) => {
       await this.lockTenant(tx);
       await this.checkNameFree(tx, input.name, null);
+      const { place, resolution } = sectorPlace(input, null);
       const s = await tx.sector.create({
-        data: { tenantId: tenantContext.requireTenantId(), ...input },
+        data: { tenantId: tenantContext.requireTenantId(), name: input.name, ...place },
       });
       await this.audit.log(tx, {
         action: 'SECTOR_CREATED',
         entity: 'Sector',
         entityId: s.id,
-        after: s,
+        after: resolution && resolution !== 'EMPTY' ? { ...s, locationResolution: resolution } : s,
       });
-      return { id: s.id, name: s.name, wilaya: s.wilaya, communes: s.communes, clientCount: 0 };
+      return {
+        id: s.id,
+        name: s.name,
+        wilaya: s.wilaya,
+        communes: s.communes,
+        wilayaCode: s.wilayaCode,
+        communeCodes: s.communeCodes,
+        clientCount: 0,
+      };
     });
   }
 
@@ -55,13 +67,18 @@ export class SectorsService {
       await this.lockTenant(tx);
       const before = await this.findLive(tx, id);
       if (input.name !== undefined) await this.checkNameFree(tx, input.name, id);
-      const after = await tx.sector.update({ where: { id }, data: input });
+      // Sector writes hold the tenant lock: `before` is what is being replaced.
+      const { place, resolution } = sectorPlace(input, before);
+      const after = await tx.sector.update({
+        where: { id },
+        data: { name: input.name, ...place },
+      });
       await this.audit.log(tx, {
         action: 'SECTOR_UPDATED',
         entity: 'Sector',
         entityId: id,
         before,
-        after,
+        after: resolution ? { ...after, locationResolution: resolution } : after,
       });
     });
     const all = await this.list();

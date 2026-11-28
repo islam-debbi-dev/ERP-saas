@@ -114,6 +114,12 @@ export const ErrorCode = {
   MANAGER_CYCLE: 'MANAGER_CYCLE',
   SELLER_NOT_ALLOWED: 'SELLER_NOT_ALLOWED',
   SECTOR_NAME_TAKEN: 'SECTOR_NAME_TAKEN',
+  /** Locations (phase 40a). */
+  COMMUNE_UNKNOWN: 'COMMUNE_UNKNOWN',
+  /** The commune is not in the wilaya sent with it. */
+  COMMUNE_WILAYA_MISMATCH: 'COMMUNE_WILAYA_MISMATCH',
+  /** A commune of wilayas 59 to 69, until the owner approves the review list. */
+  COMMUNE_UNDER_REVIEW: 'COMMUNE_UNDER_REVIEW',
   // Warehouses (phase 15)
   WAREHOUSE_NOT_FOUND: 'WAREHOUSE_NOT_FOUND',
   WAREHOUSE_NAME_TAKEN: 'WAREHOUSE_NAME_TAKEN',

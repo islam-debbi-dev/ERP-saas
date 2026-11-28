@@ -99,6 +99,9 @@
     "INVENTORY_CLOSED": "This stock count is closed and can no longer be changed.",
     "PROMO_OVERRIDE_FORBIDDEN": "Only an authorised user can change the free units or discount of a promotion.",
     "CLIENT_CODE_TAKEN": "This customer code is already used.",
+    "COMMUNE_UNKNOWN": "This commune is not in the official list.",
+    "COMMUNE_WILAYA_MISMATCH": "This commune does not belong to the chosen wilaya.",
+    "COMMUNE_UNDER_REVIEW": "This commune is still under review. Choose the wilaya only.",
     "PHONE_ALREADY_USED": "This phone number is already used.",
     "AI_QUOTA_EXCEEDED": "Your company has used its questions for this month.",
     "AI_RATE_LIMITED": "The provider is getting too many requests. Try again in a moment.",
@@ -207,6 +210,19 @@
     "status_LOW_ACCURACY": "Low position accuracy.",
     "status_NO_CLIENT_GPS": "This client has no saved location.",
     "status_FAR": "You are far from the client: the operation will be reviewed."
+  },
+  "location": {
+    "wilaya": "Wilaya",
+    "daira": "Daïra",
+    "commune": "Commune",
+    "choose_wilaya": "Choose the wilaya",
+    "choose_daira": "Choose the daïra",
+    "choose_commune": "Choose the commune",
+    "wilaya_first": "Choose the wilaya first",
+    "all_communes": "Show all communes of the wilaya",
+    "under_review": "Under review",
+    "under_review_note": "The communes of this wilaya are under review. Choose the wilaya only.",
+    "no_result": "No result"
   },
   "clients": {
     "title": "Clients",

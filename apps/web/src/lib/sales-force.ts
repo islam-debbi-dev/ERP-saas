@@ -101,7 +101,14 @@ export function useDeleteBrand() {
 export function useSaveSector() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, body }: { id: string | null; body: CreateSectorInput }) =>
+    // Location keys may be left out: the API then keeps what is stored.
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: string | null;
+      body: Pick<CreateSectorInput, 'name'> & Partial<CreateSectorInput>;
+    }) =>
       api.request<SectorDto>(id ? `/sectors/${id}` : '/sectors', {
         method: id ? 'PATCH' : 'POST',
         body,

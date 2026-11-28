@@ -1,4 +1,6 @@
 import '../../../../core/geo/geo_fix.dart';
+import '../../../../core/locations/algeria_locations.dart';
+import '../../../../core/locations/wilayas.dart';
 import '../../../../core/models/paginated.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_result.dart';
@@ -121,6 +123,7 @@ class NewClient {
     required this.name,
     this.phone,
     this.address,
+    this.wilaya,
     this.commune,
     this.professional = false,
   });
@@ -129,7 +132,8 @@ class NewClient {
   final String name;
   final String? phone;
   final String? address;
-  final String? commune;
+  final Wilaya? wilaya;
+  final Commune? commune;
   final bool professional;
 
   Map<String, dynamic> toJson() => {
@@ -138,6 +142,10 @@ class NewClient {
     'type': professional ? 'PROFESSIONNEL' : 'PARTICULIER',
     'phone': phone?.trim() ?? '',
     'address': address?.trim() ?? '',
-    'commune': commune?.trim() ?? '',
+    // The codes are what counts; the French names fill the older text fields.
+    'wilaya': wilaya?.fr ?? '',
+    'commune': commune?.fr ?? '',
+    'wilayaCode': ?wilaya?.code,
+    'communeCode': ?commune?.code,
   };
 }

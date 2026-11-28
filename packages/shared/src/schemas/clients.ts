@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { ClientType, type ClientLedgerType } from '../enums';
 import { parseDA } from '../money';
 import { amountString, decimalQuery, normalizeDecimal, searchText, fitsMoney } from './common';
+import { communeCodeInput, wilayaCodeInput } from './location';
 import { type ClientLocationDto } from './geo';
 
 const id = z.uuid();
@@ -35,6 +36,12 @@ const clientFields = {
   address: optionalText(255),
   wilaya: optionalText(60),
   commune: optionalText(80),
+  /**
+   * Official location codes (phase 40a). Omitted differs from null: omitted means an old
+   * client of the API (the codes follow the text, see docs/domain.md), null clears them.
+   */
+  wilayaCode: wilayaCodeInput,
+  communeCode: communeCodeInput,
   rc: optionalText(40),
   nif: optionalText(40),
   nis: optionalText(40),
@@ -229,6 +236,8 @@ export interface ClientDto {
   address: string | null;
   wilaya: string | null;
   commune: string | null;
+  wilayaCode: number | null;
+  communeCode: number | null;
   rc: string | null;
   nif: string | null;
   nis: string | null;

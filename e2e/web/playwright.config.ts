@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
  * - `desktop`: the behaviour checks of web.spec.ts at 1280 px;
  * - `mobile`: the phone checks of mobile.spec.ts on a Pixel 5 (393 × 851);
  * - `mobile-360`: the same phone checks on the smallest phone we support.
+ * locations.spec.ts (phase 40a) runs in all three.
  */
 const stateFile = fileURLToPath(new URL('../.auth/state.json', import.meta.url));
 
@@ -34,17 +35,17 @@ export default defineConfig({
   projects: [
     {
       name: 'desktop',
-      testMatch: /web\.spec\.ts/,
+      testMatch: /(web|locations)\.spec\.ts/,
       use: { viewport: { width: 1280, height: 800 } },
     },
     {
       name: 'mobile',
-      testMatch: /mobile\.spec\.ts/,
+      testMatch: /(mobile|locations)\.spec\.ts/,
       use: { ...devices['Pixel 5'] },
     },
     {
       name: 'mobile-360',
-      testMatch: /mobile\.spec\.ts/,
+      testMatch: /(mobile|locations)\.spec\.ts/,
       use: {
         ...devices['Pixel 5'],
         viewport: { width: 360, height: 640 },

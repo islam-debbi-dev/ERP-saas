@@ -62,6 +62,8 @@ const DIMENSION_TITLES: Record<StatDimension, string> = {
   depot: 'Dépôt',
   vehicleWilaya: 'Wilaya du véhicule',
   clientWilaya: 'Wilaya du client',
+  clientDaira: 'Daïra du client',
+  clientCommune: 'Commune du client',
   segment: 'Type de client',
   sector: 'Secteur',
   brand: 'Marque',
@@ -139,7 +141,9 @@ export function byVehicleTable(dto: StatsByVehicleDto): XlsxTable {
 function dimensionLabel(dimension: StatDimension, key: string | null, label: string | null) {
   if (key === null) return dimension === 'vehicle' ? 'Sans véhicule / dépôt' : 'Non renseigné';
   if (dimension === 'activity') return ACTIVITY_TITLES[key] ?? key;
-  if (dimension === 'vehicleWilaya') return wilaya(Number(key)) ?? key;
+  if (dimension === 'vehicleWilaya' || dimension === 'clientWilaya') {
+    return wilaya(Number(key)) ?? key;
+  }
   return label ?? key;
 }
 

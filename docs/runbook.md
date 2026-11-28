@@ -357,6 +357,40 @@ SELECT count(*) FROM visits v JOIN sales s ON s.id = v."saleId" JOIN warehouses 
 
 **Contract release (later, not with phase 36):** making `Route.vehicleId` required waits until every company has converted its seller routes.
 
+### Commune backfill (phase 40a: migrate before the API deploys, backfill after, **back up first**)
+
+Phase 40a stores the official wilaya and commune codes next to the old text. The migration only adds columns. Clients written before it have text and no code until this backfill, and until then the statistics by wilaya, daïra and commune count them under "Non renseigné".
+
+**Order:** back up, migrate (`db:deploy`, "Migrations on Neon" below) **before** the merge reaches production, let the API and the web deploy, then back up again and run the backfill twice.
+
+For each client whose two codes are empty (archived ones included, they are in the past figures), the backfill reads the text with the one matcher (`resolveLocation`):
+- one exact commune, also through a former wilaya, or a wilaya with no commune: the codes are set and their French names replace the text; the client's version goes up and one audit row (`CLIENT_LOCATION_BACKFILLED`) keeps the old text;
+- anything else (not found, several communes, a commune of wilayas 59 to 69 still under review): nothing changes.
+
+A code already there is never replaced. Sectors are not touched: choose their communes on screen.
+
+It writes a CSV (`communes-backfill-<time>.csv` in `apps/api`, or the path given with `--out`; an existing file is never overwritten; git ignores the default name). It lists **every client with a text that was not matched** and **every client matched through a former wilaya**, to be checked by hand. It holds client names: keep it private. The second run changes 0 clients and lists only what is still not matched, so **keep the first file**: the former-wilaya rows are only in it.
+
+```bash
+NEON_OWNER='postgresql://<owner>:<password>@<neon-direct-host>/<db>?sslmode=require'
+NEON_APP='postgresql://<erp_app>:<password>@<neon-host>/<db>?sslmode=require'
+
+# 1. back up, and check that the dump opens (no backup, no backfill)
+STAMP=$(date +%Y%m%d-%H%M%S); mkdir -p ~/backups/erp-neon/$STAMP
+pg_dump "$NEON_OWNER" -Fc -f ~/backups/erp-neon/$STAMP/erp.dump
+ls -lh ~/backups/erp-neon/$STAMP/erp.dump
+pg_restore --list ~/backups/erp-neon/$STAMP/erp.dump | grep -c 'TABLE DATA'
+
+# 2. run it twice
+pnpm --filter @erp/shared build && pnpm --filter @erp/api build   # reaches no database
+DATABASE_URL_MIGRATE="$NEON_OWNER" DATABASE_URL="$NEON_APP" pnpm --filter @erp/api db:backfill-communes   # "Clients changed: N."
+DATABASE_URL_MIGRATE="$NEON_OWNER" DATABASE_URL="$NEON_APP" pnpm --filter @erp/api db:backfill-communes   # "Clients changed: 0."
+```
+
+When the owner approves `docs/review/communes-59-69.md` and the release that opens the gate is live, run it again: it then codes the clients of those communes.
+
+**Contract release (later):** `apps/api/prisma/contract/phase-40-locations-contract.sql` drops the old text columns. It refuses to run while a text has no code.
+
 ## Database roles
 
 | Role | Used by | RLS |

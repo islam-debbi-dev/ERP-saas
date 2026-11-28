@@ -20,6 +20,17 @@
 - Client statement (relevé de compte) with running balance, printable and shareable (PDF/WhatsApp).
 - Aging: how long each client has owed (0–30, 31–60, 61–90, 90+ days), phase 21 below.
 
+## Wilaya, daïra, commune (phase 40a)
+The official list is `packages/shared/src/communes.ts`: 69 wilayas, their communes (the ONS code does not change when a commune moves to a new wilaya) and their daïras. The quartier stays free text (the secteur, the address).
+- A client has `wilayaCode` (1 to 69) and `communeCode`; a secteur has one `wilayaCode` and a list of `communeCodes`. **The daïra is derived from the commune, never stored.** The old text columns stay until a later contract release, and a text is never destroyed by the system.
+- **A commune sent** must exist (`COMMUNE_UNKNOWN`). Its wilaya is derived; another wilaya sent with it is refused (`COMMUNE_WILAYA_MISMATCH`). Every commune of a secteur is in the secteur's wilaya. Saving codes writes the **French names** into the old text columns.
+- **Review gate**: until the owner approves `docs/review/communes-59-69.md`, a commune of wilayas 59 to 69 cannot be set (`COMMUNE_UNDER_REVIEW`). One of these wilayas without a commune is allowed.
+- **A wilaya alone** is allowed (1 to 69): its French name is written, the commune text stays as sent.
+- **Codes sent as null**: cleared, the text is stored as sent.
+- **Codes left out** (an old app or an old web page): while the wilaya and commune text do not change (nothing and empty are the same), the codes stay. When it changes, or on a create with text, the new text goes through the one matcher (`resolveLocation`): one exact commune, also through a former wilaya, or a wilaya with no commune, sets the codes and the French names; anything else (not found, several, under review) clears both codes. The audit log keeps before, after and what the matcher said. A secteur gets codes this way only when **every** commune is found for sure inside one wilaya (a secteur with a wilaya and no commune gets the wilaya).
+- The matcher never guesses: a spelling that is only close is not enough.
+- Clients written before phase 40a get their codes from `db:backfill-communes` (docs/runbook.md, "Commune backfill"), which writes only clients with no code at all.
+
 ## Suppliers (fournisseurs)
 - Supplier account (dettes fournisseurs, phase 21) = ledger of: validated BRs (+TTC as the BR stores it), règlements RGF (−, what is paid at reception is one since phase 34), retours fournisseur (−), opening balance (±, Excel import "Fournisseurs et soldes"). Positive balance = we owe the supplier.
 - Cancelling a BR reverses exactly what its BR and retours still leave on the account, and cancels the règlement made at reception, which is never cancelled alone (phase 34); cancelling a règlement (MANAGER+, with a reason) brings the debt back. Nothing is deleted.
@@ -63,6 +74,7 @@
 - Three imports: **Produits**, **Stock initial**, **Clients et soldes**, from .xlsx or .csv (10 MB, 10 000 rows max).
 - Preview writes nothing but the `ImportJob`. A preview with any error row cannot be confirmed: the trader fixes the file and uploads it again. Warnings do not block.
 - Confirm re-validates against current data and writes every row in one transaction; any failure rolls the whole import back and marks the job `FAILED`.
+- Clients may carry **Wilaya** and **Commune** columns (French or Arabic headers and names). A place that is not recognised, matches several communes or is under review is a warning in the preview: the text is kept, without a code, and no commune is ever created. A commune found through its former wilaya has its own warning naming the new one. Blank cells keep the client's text and codes; a changed text follows the rule for codes left out (above).
 - Matching: products by reference, clients by code. An existing record gets only the non-empty cells (a blank cell keeps the stored value); importing products never touches stock.
 - Opening stock and opening balance go through the ledgers (`OPENING`) and are refused for a product/client that already has one, so re-importing the same file never doubles them.
 - Numbers accept `1 234,50`, `1.234,50`, `1,234.50`, `1234.5`, `1 234 DA`. A lone `,` is decimal; a single `.` is decimal; several `.` are thousands separators.
@@ -83,7 +95,7 @@
 ## Sales force & distribution (phases 14–20)
 - **Vendeur** (SELLER) sells in the shop or on the road; **superviseur** (SUPERVISOR) and **chef des ventes** manage a team through `User.managerId`; **livreur** (LIVREUR) delivers pre-sale orders.
 - Every sale has a `sellerId` and every versement a `collectedBy`, frozen like prices. Objectives and bonuses are computed from them.
-- **Secteur**: a zone (wilaya + communes); clients belong to a sector and can be assigned to a seller.
+- **Secteur**: a zone (one wilaya and communes of it, from the official list: "Wilaya, daïra, commune" above); clients belong to a sector and can be assigned to a seller.
 - **Marque**: master data of every plan (not only Distribution); a product has at most one. The product import accepts a "Marque" column and creates unknown brands.
 
 ### Who sold, who collected, who sees what (phase 14)
@@ -255,7 +267,7 @@ Big distributors follow the **truck**, not the worker: sellers and drivers chang
 - Not in this phase: budgets / objectives per dépôt, forecasting, the Flutter owner app.
 
 ## Statistiques distribution (phase 37, module DISTRIBUTION_STATS)
-Figures per truck, truck type, activity, dépôt, wilaya, product family, brand, client segment. **One definition per figure**, written here and in `packages/shared/src/distribution-stats.ts`; the API computes every value and sends it with its unit; the same figure is equal in every view, and the groups of a view add up to its total. The statistics write nothing.
+Figures per truck, truck type, activity, dépôt, wilaya, client daïra and commune, product family, brand, client segment. **One definition per figure**, written here and in `packages/shared/src/distribution-stats.ts`; the API computes every value and sends it with its unit; the same figure is equal in every view, and the groups of a view add up to its total. The statistics write nothing.
 
 | Figure | Definition |
 |---|---|
@@ -282,10 +294,11 @@ Figures per truck, truck type, activity, dépôt, wilaya, product family, brand,
 | Réalisation vs objectif | The month's figure of the truck / its target for that metric (CA TTC, poids in kg, Nb BL, clients actifs). |
 
 - **Which truck a figure belongs to** (one rule, `vehicleOfSql`): a sale, its avoirs and its avaries → the dépôt or truck the sale left from; a visit → the truck frozen on it; an order taken → the prévendeur's truck, an order to deliver → its delivery truck; a chargement → the truck loaded; a clôture → the session's truck; a versement → its own truck, else the truck its collector drove when it was recorded (driver history), else its dépôt. What has no truck is **"Sans véhicule / dépôt"**, never dropped: Σ trucks = the total.
+- **The client's place** (phase 40a) is read from his codes today, not frozen on documents, and is a filter and a dimension only. **Wilaya du client** = `wilayaCode`; **Daïra du client** = the daïra of his `communeCode` (worked out when the figure is read, never stored); **Commune du client** = `communeCode`. A client without that code is in "Non renseigné", so the groups still add up to the total. The filters take wilaya numbers, daïra keys and commune codes. Old links that carry a wilaya **name** keep working (deprecated): a name that is no wilaya matches no client, it never removes the filter.
 - **A dépôt** in the statistics is the business unit of phase 24: its own rows and its trucks'; a row without a dépôt is the dépôt principal's.
 - **What adds up**: amounts, weights, quantities and counts of events add up on every dimension. A count of distinct things adds up only on the dimensions its subject belongs to: a BL has one truck and one client but may carry two brands (it counts once in each), a client is in one segment but may buy from two trucks. Rates are derived from two figures after aggregation, never summed or averaged.
 - **CA by product, brand or family** is the lines' own TTC; the few centimes between a document's TTC and Σ of its lines go to the product of its last line, so Σ products = the CA to the centime.
-- **Filters** (dépôts, trucks, types, activities, wilayas, brands, families with their sub-families, products, segments, sectors, clients) are applied to every figure that can follow them. A figure that cannot (a versement has no brand) is shown empty with the reason, never unfiltered; a view where no figure can follow a filter refuses it (`STATS_FILTER_NOT_APPLICABLE`).
+- **Filters** (dépôts, trucks, types, activities, wilayas of trucks, wilayas, daïras and communes of clients, brands, families with their sub-families, products, segments, sectors, clients) are applied to every figure that can follow them. A figure that cannot (a versement has no brand) is shown empty with the reason, never unfiltered; a view where no figure can follow a filter refuses it (`STATS_FILTER_NOT_APPLICABLE`).
 - **Who sees what**: owner and "Tous les dépôts" everything; a user with Travailler or Voir les statistiques on a dépôt, that dépôt and its trucks; a supervisor the trucks his team drives (plus his dépôts with MULTI_UNIT); a seller or a livreur only "Mon véhicule" on his dashboard (the truck he drives today: no other truck, no ranking). A truck outside the reach never appears, not even in a total. Cost values need `REPORTS_FINANCE`.
 - **Client segments** (`ClientSegment`): the owner's own names for his kinds of clients (détaillant, supérette, grossiste, café…), set on the client form or by the Excel import ("Type" column: unknown values are listed in the preview and created only when the owner ticks it at confirm). No behaviour attached; `ClientType` (PARTICULIER / PROFESSIONNEL) stays as is. Archived, never deleted.
 - **Targets per truck** (`VehicleTarget`): one value per truck, month and metric, with an audit trail; last month's can be copied. Not read by objectifs & primes (phase 18), which stay per user.

@@ -1,10 +1,11 @@
 'use client';
 
 import { ArrowLeft, Loader2, MapPinned, Pencil, Plus, Trash2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Feature, Role } from '@erp/shared';
+import { Feature, Role, type SectorDto } from '@erp/shared';
+import { SectorLocationPicker } from '@/components/locations/location-picker';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FeatureGate } from '@/components/shared/feature-gate';
 import { PageHeader } from '@/components/shared/page-header';
@@ -34,22 +35,24 @@ import {
 } from '@/components/ui/responsive-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/lib/auth';
+import {
+  sectorCommuneNames,
+  sectorLocationFields,
+  sectorOldText,
+  type SectorSelection,
+  wilayaDisplay,
+} from '@/lib/locations';
 import { useDeleteSector, useSaveSector, useSectors } from '@/lib/sales-force';
+import { useCommunes } from '@/lib/use-communes';
 import { useErrorMessage } from '@/lib/use-error-message';
 
 interface Editing {
-  id: string | null;
+  /** Null for a new sector. */
+  sector: SectorDto | null;
   name: string;
-  wilaya: string;
-  /** Typed as "Bab Ezzouar, El Harrach"; split on commas when saved. */
-  communes: string;
+  /** Null until the user changes the location: nothing about it is then rewritten. */
+  place: SectorSelection | null;
 }
-
-const splitCommunes = (text: string) =>
-  text
-    .split(/[,،\n]/)
-    .map((c) => c.trim())
-    .filter(Boolean);
 
 /** Clients > Secteurs (phase 14, SALES_FORCE). */
 export function SectorsManager() {
@@ -70,21 +73,23 @@ function Sectors() {
   const save = useSaveSector();
   const remove = useDeleteSector();
   const [editing, setEditing] = useState<Editing | null>(null);
+  const locale = useLocale();
+  // Only fetched when a saved sector has codes to name.
+  const communes = useCommunes(sectors.data?.some((s) => s.communeCodes.length > 0) ?? false);
 
   const submit = () => {
     if (!editing || !editing.name.trim()) return;
     save.mutate(
       {
-        id: editing.id,
+        id: editing.sector?.id ?? null,
         body: {
           name: editing.name.trim(),
-          wilaya: editing.wilaya.trim() || null,
-          communes: splitCommunes(editing.communes),
+          ...sectorLocationFields(editing.sector, editing.place),
         },
       },
       {
         onSuccess: () => {
-          toast.success(editing.id ? t('saved') : t('created'));
+          toast.success(editing.sector ? t('saved') : t('created'));
           setEditing(null);
         },
         onError: (err) => toast.error(errorMessage(err)),
@@ -93,7 +98,7 @@ function Sectors() {
   };
 
   const list = sectors.data ?? [];
-  const preview = editing ? splitCommunes(editing.communes) : [];
+  const stored = editing?.sector ?? null;
 
   return (
     <>
@@ -102,7 +107,7 @@ function Sectors() {
         description={t('subtitle')}
         actions={
           writer ? (
-            <Button onClick={() => setEditing({ id: null, name: '', wilaya: '', communes: '' })}>
+            <Button onClick={() => setEditing({ sector: null, name: '', place: null })}>
               <Plus aria-hidden />
               {t('new')}
             </Button>
@@ -138,16 +143,21 @@ function Sectors() {
                     {s.name}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {[s.wilaya, t('clientCount', { count: s.clientCount })]
+                    {[
+                      wilayaDisplay(s.wilayaCode, s.wilaya, locale),
+                      t('clientCount', { count: s.clientCount }),
+                    ]
                       .filter(Boolean)
                       .join(' · ')}
                   </p>
                   {s.communes.length > 0 ? (
                     <ul className="flex flex-wrap gap-1" aria-label={t('communes')}>
-                      {s.communes.map((c) => (
-                        <li key={c}>
-                          <Badge variant="secondary" className="font-normal">
-                            {c}
+                      {sectorCommuneNames(communes.data, s, locale).map((c, i) => (
+                        <li key={`${c}-${i}`} className="min-w-0 max-w-full">
+                          <Badge variant="secondary" className="max-w-full font-normal">
+                            <span dir="auto" className="whitespace-normal break-words">
+                              {c}
+                            </span>
                           </Badge>
                         </li>
                       ))}
@@ -161,14 +171,7 @@ function Sectors() {
                       size="icon"
                       className="size-11"
                       aria-label={t('editNamed', { name: s.name })}
-                      onClick={() =>
-                        setEditing({
-                          id: s.id,
-                          name: s.name,
-                          wilaya: s.wilaya ?? '',
-                          communes: s.communes.join(', '),
-                        })
-                      }
+                      onClick={() => setEditing({ sector: s, name: s.name, place: null })}
                     >
                       <Pencil aria-hidden />
                     </Button>
@@ -223,7 +226,9 @@ function Sectors() {
             }}
           >
             <ResponsiveDialogHeader>
-              <ResponsiveDialogTitle>{editing?.id ? t('edit') : t('new')}</ResponsiveDialogTitle>
+              <ResponsiveDialogTitle>
+                {editing?.sector ? t('edit') : t('new')}
+              </ResponsiveDialogTitle>
               <ResponsiveDialogDescription>{t('help')}</ResponsiveDialogDescription>
             </ResponsiveDialogHeader>
             <div className="space-y-2">
@@ -239,42 +244,23 @@ function Sectors() {
                 }
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="sector-wilaya">{t('wilaya')}</Label>
-              <Input
-                id="sector-wilaya"
-                maxLength={60}
-                value={editing?.wilaya ?? ''}
-                onChange={(e) =>
-                  setEditing((cur) => (cur ? { ...cur, wilaya: e.target.value } : cur))
+            {editing ? (
+              <SectorLocationPicker
+                value={
+                  editing.place ?? {
+                    wilayaCode: stored?.wilayaCode ?? null,
+                    communeCodes: stored?.communeCodes ?? [],
+                  }
+                }
+                touched={editing.place !== null}
+                onChange={(place) => setEditing((cur) => (cur ? { ...cur, place } : cur))}
+                onUndo={() => setEditing((cur) => (cur ? { ...cur, place: null } : cur))}
+                oldText={stored ? sectorOldText(stored) : ''}
+                storedNames={
+                  new Map(stored?.communeCodes.map((code, i) => [code, stored.communes[i] ?? '']))
                 }
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="sector-communes">{t('communes')}</Label>
-              <Input
-                id="sector-communes"
-                aria-describedby="sector-communes-hint"
-                value={editing?.communes ?? ''}
-                onChange={(e) =>
-                  setEditing((cur) => (cur ? { ...cur, communes: e.target.value } : cur))
-                }
-              />
-              <p id="sector-communes-hint" className="text-xs text-muted-foreground">
-                {t('communesHint')}
-              </p>
-              {preview.length > 0 ? (
-                <ul className="flex flex-wrap gap-1">
-                  {preview.map((c, i) => (
-                    <li key={`${c}-${i}`}>
-                      <Badge variant="secondary" className="font-normal">
-                        {c}
-                      </Badge>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
+            ) : null}
             <ResponsiveDialogFooter>
               <Button type="button" variant="ghost" onClick={() => setEditing(null)}>
                 {tc('cancel')}

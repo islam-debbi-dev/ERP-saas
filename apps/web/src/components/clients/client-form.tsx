@@ -16,6 +16,7 @@ import {
   type PriceLevelDto,
   updateClientSchema,
 } from '@erp/shared';
+import { LocationPicker } from '@/components/locations/location-picker';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { StickyActions } from '@/components/shared/sticky-actions';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,7 @@ import { NativeSelect } from '@/components/ui/native-select';
 import { api } from '@/lib/api-client';
 import { useFeature } from '@/lib/auth';
 import { clientKeys, useCanManageCredit } from '@/lib/clients';
+import { clientLocationFields, clientOldText, type PlaceSelection } from '@/lib/locations';
 import { useIsOffice, useSectors, useSellers } from '@/lib/sales-force';
 import { useClientSegments } from '@/lib/distribution-stats';
 import { useErrorMessage } from '@/lib/use-error-message';
@@ -36,8 +38,6 @@ const TEXT_FIELDS = [
   'phone',
   'phone2',
   'address',
-  'wilaya',
-  'commune',
   'rc',
   'nif',
   'nis',
@@ -117,6 +117,8 @@ export function ClientForm({
   const segmentsOn = useFeature(Feature.DISTRIBUTION_STATS);
   const segments = useClientSegments(segmentsOn);
   const [problems, setProblems] = useState<string[]>([]);
+  // Null until the user changes the location: nothing about it is then rewritten.
+  const [place, setPlace] = useState<PlaceSelection | null>(null);
   const form = useForm<FormValues>({ defaultValues: toFormValues(client) });
   const type = useWatch({ control: form.control, name: 'type' });
   const isEdit = client !== null;
@@ -138,6 +140,7 @@ export function ClientForm({
   const onSubmit = form.handleSubmit(({ sectorId, assignedSellerId, segmentId, ...v }) => {
     const body = {
       ...v,
+      ...clientLocationFields(client, place),
       ...(segmentsOn ? { segmentId: segmentId || null } : {}),
       ...(canAssign
         ? { sectorId: sectorId || null, assignedSellerId: assignedSellerId || null }
@@ -216,8 +219,18 @@ export function ClientForm({
           {field('phone', { ltr: true })}
           {field('phone2', { ltr: true })}
           {field('address', { wide: true })}
-          {field('wilaya')}
-          {field('commune')}
+          <LocationPicker
+            value={
+              place ?? {
+                wilayaCode: client?.wilayaCode ?? null,
+                communeCode: client?.communeCode ?? null,
+              }
+            }
+            touched={place !== null}
+            onChange={setPlace}
+            onUndo={() => setPlace(null)}
+            oldText={client ? clientOldText(client) : ''}
+          />
         </Section>
 
         {type === ClientType.PROFESSIONNEL ? (

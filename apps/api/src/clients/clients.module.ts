@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CreditModule } from '../credit/credit.module';
+import { CommuneBackfillService } from '../locations/commune-backfill.service';
 import { SalesForceModule } from '../sales-force/sales-force.module';
 import { StockModule } from '../stock/stock.module';
 import { ClientAccountService } from './client-account.service';
@@ -26,6 +27,7 @@ import { ClientsService } from './clients.service';
     ClientLocationService,
     ClientMapService,
     ClientSegmentsService,
+    CommuneBackfillService,
   ],
   exports: [ClientAccountService, ClientsService, ClientLocationService, ClientSegmentsService],
 })
