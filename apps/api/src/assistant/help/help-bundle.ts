@@ -580,10 +580,12 @@ export const WEB_ROUTES: readonly string[] = [
   "/clients/a-relancer",
   "/clients/carte",
   "/clients/nouveau",
+  "/clients/sans-commune",
   "/clients/secteurs",
   "/commandes",
   "/commandes/[id]",
   "/depenses",
+  "/equipe/[userId]",
   "/inscription",
   "/invitation/[token]",
   "/livraisons",
@@ -648,5 +650,6 @@ export const WEB_ROUTES: readonly string[] = [
   "/ventes/[id]",
   "/ventes/nouvelle",
   "/versements",
-  "/vue-ensemble"
+  "/vue-ensemble",
+  "/zones"
 ];

@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 type TitleKey =
+  | 'zones.title'
+  | 'memberZone.title'
+  | 'withoutCommune.title'
   | 'vehicles.title'
   | 'vehicleTypes.title'
   | 'nav.treasury'
