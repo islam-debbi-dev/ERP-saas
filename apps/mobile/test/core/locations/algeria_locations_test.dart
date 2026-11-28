@@ -44,6 +44,11 @@ void main() {
     });
   });
 
+  test('the gate is open since the owner approved the review file', () {
+    expect(communes5969Reviewed, isTrue);
+    expect([59, 69].map(isWilayaUnderReview), [false, false]);
+  });
+
   test('the gate covers wilayas 59 to 69 only, until reviewed', () {
     expect([58, 59, 69].map((w) => isWilayaUnderReview(w, reviewed: false)), [
       false,

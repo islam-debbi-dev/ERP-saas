@@ -165,7 +165,7 @@ describe('search and names', () => {
   it('finds a commune in French or Arabic, whatever the screen language', () => {
     const options = communeOptions(communes, 28, null, 'fr', 'x');
     const bousaada = communes.findCommune("M'Sila", 28)[0]!.commune;
-    for (const query of ['msila', "M SILA", bousaada.ar]) {
+    for (const query of ['msila', 'M SILA', bousaada.ar]) {
       expect(filterOptions(options, query)[0]!.id).toBe(String(bousaada.code));
     }
     expect(filterOptions(options, 'zzzz')).toEqual([]);
@@ -200,11 +200,17 @@ describe('search and names', () => {
   });
 
   it('marks the communes under review, and no other', () => {
+    const closed = {
+      ...communes,
+      isCommuneUnderReview: (code: number | null | undefined) =>
+        communes.isCommuneUnderReview(code, false),
+    };
     expect(
-      communeOptions(communes, 60, null, 'fr', 'review').every(
-        (o) => o.disabledReason === 'review',
-      ),
+      communeOptions(closed, 60, null, 'fr', 'review').every((o) => o.disabledReason === 'review'),
     ).toBe(true);
+    expect(communeOptions(communes, 60, null, 'fr', 'review').some((o) => o.disabledReason)).toBe(
+      false,
+    );
     expect(communeOptions(communes, 16, null, 'fr', 'review').some((o) => o.disabledReason)).toBe(
       false,
     );

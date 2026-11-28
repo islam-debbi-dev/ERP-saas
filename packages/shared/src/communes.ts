@@ -109,10 +109,11 @@ export function dairaByKey(key: string | null | undefined): Daira | null {
 // ---------------------------------------------------------------------------
 
 /**
- * The owner has not yet approved `docs/review/communes-59-69.md`. While false, the communes
- * of wilayas 59 to 69 cannot be saved on anything. The wilaya code alone is allowed.
+ * The owner approved `docs/review/communes-59-69.md` on 2026-11-28, so the gate is open. While
+ * false, the communes of wilayas 59 to 69 cannot be saved on anything (the wilaya code alone
+ * is allowed). The gate stays in the code for a later list that needs the same review.
  */
-export const COMMUNES_59_69_REVIEWED: boolean = false;
+export const COMMUNES_59_69_REVIEWED: boolean = true;
 
 const GATED_WILAYA_MIN = 59;
 const GATED_WILAYA_MAX = 69;

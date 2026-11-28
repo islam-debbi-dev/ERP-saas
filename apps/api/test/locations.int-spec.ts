@@ -31,8 +31,8 @@ const EL_HARRACH = 1613;
 const ORAN = 3101;
 /** Touggourt left Ouargla (30) for wilaya 55: not gated. */
 const TOUGGOURT = 3013;
-/** A commune of wilaya 68, formerly M'Sila: under review. */
-const GATED = communesOf(68)[0]!;
+/** A commune of wilaya 68, formerly M'Sila: open since the review of 2026-11-28. */
+const REVIEWED = communesOf(68)[0]!;
 
 /** Phase 40a: wilaya and commune codes on clients and sectors. */
 describe('locations (phase 40a)', () => {
@@ -137,7 +137,7 @@ describe('locations (phase 40a)', () => {
       expect(c.wilaya).not.toBeNull();
     });
 
-    it('refuses an unknown commune, a wrong wilaya, a commune under review and wilaya 70', async () => {
+    it('refuses an unknown commune, a wrong wilaya and wilaya 70, accepts a reviewed one', async () => {
       const post = (body: object) =>
         as(a).post('/clients', { code: `L${++seq}`, name: 'Refusé', ...body });
       const code = async (body: object) => errorOf(await post(body)).code;
@@ -145,12 +145,15 @@ describe('locations (phase 40a)', () => {
       expect(await code({ communeCode: BAB_EZZOUAR, wilayaCode: 31 })).toBe(
         ErrorCode.COMMUNE_WILAYA_MISMATCH,
       );
-      expect(await code({ communeCode: GATED.code })).toBe(ErrorCode.COMMUNE_UNDER_REVIEW);
+      expect(await newClient({ communeCode: REVIEWED.code })).toMatchObject({
+        wilayaCode: 68,
+        communeCode: REVIEWED.code,
+      });
       expect(await code({ wilayaCode: 70 })).toBe(ErrorCode.VALIDATION_FAILED);
       // The same rules on an update, which then changes nothing.
       const c = await newClient({ communeCode: ORAN });
-      const res = await editClient(c, { communeCode: GATED.code });
-      expect(errorOf(res).code).toBe(ErrorCode.COMMUNE_UNDER_REVIEW);
+      const res = await editClient(c, { communeCode: 99999 });
+      expect(errorOf(res).code).toBe(ErrorCode.COMMUNE_UNKNOWN);
       const now = (await as(a).get(`/clients/${c.id}`).expect(200)).body as ClientDto;
       expect(now).toMatchObject({ communeCode: ORAN, version: c.version });
     });
@@ -224,8 +227,12 @@ describe('locations (phase 40a)', () => {
         communeCode: null,
       });
       expect((await lastAudit(c.id)).after).toMatchObject({ locationResolution: 'NO_MATCH' });
-      const gated = await newClient({ wilaya: "M'Sila", commune: GATED.fr });
-      expect(gated).toMatchObject({ wilayaCode: null, communeCode: null, commune: GATED.fr });
+      const moved = await newClient({ wilaya: "M'Sila", commune: REVIEWED.fr });
+      expect(moved).toMatchObject({
+        wilayaCode: 68,
+        communeCode: REVIEWED.code,
+        commune: REVIEWED.fr,
+      });
     });
   });
 
@@ -255,7 +262,7 @@ describe('locations (phase 40a)', () => {
       expect(renamed).toEqual({ ...s, name: `${s.name} bis` });
     });
 
-    it('refuses unknown, foreign and gated communes', async () => {
+    it('refuses unknown and foreign communes, accepts a reviewed one', async () => {
       const code = async (body: object) =>
         errorOf(await as(a).post('/sectors', { name: `S${++seq}`, ...body })).code;
       expect(await code({ communeCodes: [99999] })).toBe(ErrorCode.COMMUNE_UNKNOWN);
@@ -265,7 +272,10 @@ describe('locations (phase 40a)', () => {
       expect(await code({ wilayaCode: 31, communeCodes: [BAB_EZZOUAR] })).toBe(
         ErrorCode.COMMUNE_WILAYA_MISMATCH,
       );
-      expect(await code({ communeCodes: [GATED.code] })).toBe(ErrorCode.COMMUNE_UNDER_REVIEW);
+      expect(await sector({ communeCodes: [REVIEWED.code] })).toMatchObject({
+        wilayaCode: 68,
+        communeCodes: [REVIEWED.code],
+      });
     });
 
     it('codes an old client only when every commune is found in one wilaya', async () => {
@@ -333,7 +343,7 @@ describe('locations (phase 40a)', () => {
         wilayaOnly: await legacy(c, 'Wilaya seule', '31', null),
         former: await legacy(c, 'Ancienne wilaya', 'Ouargla', 'Touggourt'),
         lost: await legacy(c, '=HYPERLINK("x")', 'Alger', '+213 cité inconnue'),
-        gated: await legacy(c, 'Sous revue', "M'Sila", GATED.fr),
+        reviewed: await legacy(c, 'Revue faite', "M'Sila", REVIEWED.fr),
         archived: await legacy(c, 'Archivé', null, 'Bab Ezzouar'),
         empty: await legacy(c, 'Sans texte', null, '  '),
         foreign: await legacy(outside, 'Autre société', 'Alger', 'Bab Ezzouar'),
@@ -347,7 +357,7 @@ describe('locations (phase 40a)', () => {
       )`UPDATE clients SET commune = 'Bab Ezzouar', wilaya = 'Alger' WHERE id IN (${coded.id}::uuid, ${half.id}::uuid)`;
 
       const first = await run('first.csv', [c.tenantId]);
-      expect(first).toEqual({ tenants: 1, changed: 4, unmatched: 2, listed: 3 });
+      expect(first).toEqual({ tenants: 1, changed: 5, unmatched: 1, listed: 3 });
 
       expect(await stored(ids.exact)).toMatchObject({
         wilaya: 'Alger',
@@ -369,7 +379,10 @@ describe('locations (phase 40a)', () => {
         wilayaCode: null,
         version: 1,
       });
-      expect(await stored(ids.gated)).toMatchObject({ wilayaCode: null, communeCode: null });
+      expect(await stored(ids.reviewed)).toMatchObject({
+        wilayaCode: 68,
+        communeCode: REVIEWED.code,
+      });
       expect(await stored(ids.foreign)).toMatchObject({ wilayaCode: null, version: 1 });
       expect(await stored(coded.id)).toMatchObject({ communeCode: ORAN, wilayaCode: 31 });
       expect(await stored(half.id)).toMatchObject({ communeCode: null, wilayaCode: 31 });
@@ -390,15 +403,14 @@ describe('locations (phase 40a)', () => {
       expect(line('Ancienne wilaya')).toContain(
         `"Ouargla";"Touggourt";"MATCHED_FORMER_WILAYA";"55";"${TOUGGOURT}"`,
       );
-      expect(line('Sous revue')).toContain('"UNDER_REVIEW";"";""');
-      expect(line('Sous revue')).toContain(`${GATED.code} ${GATED.fr}`);
+      expect(line('Revue faite')).toContain(`"MATCHED_FORMER_WILAYA";"68";"${REVIEWED.code}"`);
       // No cell can run as a formula in a spreadsheet.
       expect(line('HYPERLINK')).toContain(`"'=HYPERLINK(""x"")"`);
       expect(line('HYPERLINK')).toContain(`"'+213 cité inconnue";"NO_MATCH"`);
       expect(lines.every((l) => l.startsWith(`"'=Lieux C";"${c.tenantId}"`))).toBe(true);
 
       const second = await run('second.csv', [c.tenantId]);
-      expect(second).toEqual({ tenants: 1, changed: 0, unmatched: 2, listed: 2 });
+      expect(second).toEqual({ tenants: 1, changed: 0, unmatched: 1, listed: 1 });
       expect((await stored(ids.exact)).version).toBe(2);
 
       // An existing report is never overwritten, and nothing runs without a report.
@@ -433,7 +445,7 @@ describe('locations (phase 40a)', () => {
         ['IMP-NEW', 'Nouveau', 'Alger', 'el harrach'],
         ['IMP-FORMER', 'Ancienne', 'Ouargla', 'Touggourt'],
         ['IMP-UNKNOWN', 'Inconnue', 'Alger', 'Cité inconnue'],
-        ['IMP-GATED', 'Revue', "M'Sila", GATED.fr],
+        ['IMP-REVIEWED', 'Revue', "M'Sila", REVIEWED.fr],
         ['IMP-WILAYA', 'Wilaya', '31', null],
         ['IMP-KEEP', 'Renommé', null, null],
         ['IMP-MOVE', null, null, 'El Harrach'],
@@ -447,7 +459,7 @@ describe('locations (phase 40a)', () => {
         'IMP-NEW': [],
         'IMP-FORMER': ['location_former_wilaya'],
         'IMP-UNKNOWN': ['location_not_found'],
-        'IMP-GATED': ['commune_under_review'],
+        'IMP-REVIEWED': ['location_former_wilaya'],
         'IMP-WILAYA': [],
         'IMP-KEEP': [],
         'IMP-MOVE': [],
@@ -468,7 +480,11 @@ describe('locations (phase 40a)', () => {
         wilayaCode: null,
         communeCode: null,
       });
-      expect(await byCode('IMP-GATED')).toMatchObject({ commune: GATED.fr, communeCode: null });
+      expect(await byCode('IMP-REVIEWED')).toMatchObject({
+        commune: REVIEWED.fr,
+        wilayaCode: 68,
+        communeCode: REVIEWED.code,
+      });
       expect(await byCode('IMP-WILAYA')).toMatchObject({ wilayaCode: 31, communeCode: null });
       // Blank cells keep the text, so the codes stay.
       expect(await byCode('IMP-KEEP')).toMatchObject({

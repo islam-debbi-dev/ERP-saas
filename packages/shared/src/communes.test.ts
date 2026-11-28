@@ -206,15 +206,16 @@ describe('findWilaya', () => {
 });
 
 describe('review gate', () => {
-  it('is closed until the owner approves the review file', () => {
-    expect(COMMUNES_59_69_REVIEWED).toBe(false);
-    expect(ALL.filter((c) => isCommuneUnderReview(c.code))).toHaveLength(108);
+  it('is open since the owner approved the review file', () => {
+    expect(COMMUNES_59_69_REVIEWED).toBe(true);
+    expect(ALL.filter((c) => isCommuneUnderReview(c.code))).toHaveLength(0);
   });
 
-  it('covers exactly wilayas 59 to 69', () => {
-    for (const c of ALL) expect(isCommuneUnderReview(c.code)).toBe(c.wilayaCode >= 59);
-    expect(isCommuneUnderReview(null)).toBe(false);
-    expect(isCommuneUnderReview(9999)).toBe(false);
+  it('covers exactly wilayas 59 to 69 when closed', () => {
+    expect(ALL.filter((c) => isCommuneUnderReview(c.code, false))).toHaveLength(108);
+    for (const c of ALL) expect(isCommuneUnderReview(c.code, false)).toBe(c.wilayaCode >= 59);
+    expect(isCommuneUnderReview(null, false)).toBe(false);
+    expect(isCommuneUnderReview(9999, false)).toBe(false);
   });
 
   it('can be exercised open', () => {
@@ -254,11 +255,17 @@ describe('resolveLocation', () => {
 
   it('keeps the gated commune of an old text empty while the gate is closed', () => {
     // The old text names the former wilaya of Bou Saada.
-    const result = resolve("M'Sila", 'Bou Saada');
+    const result = resolve("M'Sila", 'Bou Saada', false);
     expect(outcome(result)).toEqual(none('UNDER_REVIEW'));
     expect(exactCodes(result.candidates)).toEqual([2820]);
-    expect(outcome(resolve('Bou Saâda', 'Bou Saada'))).toEqual(none('UNDER_REVIEW'));
-    expect(outcome(resolve(null, 'بوسعادة'))).toEqual(none('UNDER_REVIEW'));
+    expect(outcome(resolve('Bou Saâda', 'Bou Saada', false))).toEqual(none('UNDER_REVIEW'));
+    expect(outcome(resolve(null, 'بوسعادة', false))).toEqual(none('UNDER_REVIEW'));
+  });
+
+  it('moves it to the new wilaya by default, the gate being open', () => {
+    expect(outcome(resolve("M'Sila", 'Bou Saada'))).toEqual(
+      matched(2820, 68, 'MATCHED_FORMER_WILAYA'),
+    );
   });
 
   it('moves it to the new wilaya once the gate is open', () => {
